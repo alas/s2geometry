@@ -13,7 +13,7 @@ namespace S2Geometry
         public S2EdgeClippingTests(ITestOutputHelper logger) { _logger = logger; }
 
         [Fact]
-        public void Test_S2EdgeUtil_FaceClipping()
+        public void Test_S2_FaceClipping()
         {
             // Start with a few simple cases.
             // An edge that is entirely contained within one cube face:
@@ -38,8 +38,8 @@ namespace S2Geometry
                 int face = S2Testing.Random.Uniform(6);
                 int i = S2Testing.Random.Uniform(4);
                 int j = (i + 1) & 3;
-                S2Point p = S2Coords.FaceUVtoXYZ(face, biunit.GetVertex(i));
-                S2Point q = S2Coords.FaceUVtoXYZ(face, biunit.GetVertex(j));
+                S2Point p = S2.FaceUVtoXYZ(face, biunit.GetVertex(i));
+                S2Point q = S2.FaceUVtoXYZ(face, biunit.GetVertex(j));
 
                 // Now choose two points that are nearly on the edge PQ, preferring points
                 // that are near cube corners, face midpoints, or edge midpoints.
@@ -50,7 +50,7 @@ namespace S2Geometry
         }
 
         [Fact]
-        public void Test_S2EdgeUtil_EdgeClipping()
+        public void Test_S2_EdgeClipping()
         {
             // Test clipping against random rectangles.
             for (int i = 0; i < 5; ++i)
@@ -69,11 +69,8 @@ namespace S2Geometry
 
         private void TestFaceClipping(S2Point a_raw, S2Point b_raw)
         {
-            S2Point a = a_raw.Normalized;
-            S2Point b = b_raw.Normalized;
-            // TODO(ericv): Remove the following line once S2.RobustCrossProd is
-            // extended to use simulation of simplicity.
-            if (a == -b) return;
+            S2Point a = a_raw.Normalize();
+            S2Point b = b_raw.Normalize();
 
             // First we test GetFaceSegments.
             FaceSegmentVector segments = new();
@@ -81,7 +78,7 @@ namespace S2Geometry
             int n = segments.Count;
             Assert.True(n >= 1);
 
-            var msg = new StringBuilder($"\nA={a_raw}\nB={b_raw}\nN={S2PointUtil.RobustCrossProd(a, b)}\nSegments:\n");
+            var msg = new StringBuilder($"\nA={a_raw}\nB={b_raw}\nN={S2.RobustCrossProd(a, b)}\nSegments:\n");
             int i1 = 0;
             foreach (var s in segments)
             {
@@ -93,12 +90,12 @@ namespace S2Geometry
             var kErrorRadians = kFaceClipErrorRadians;
 
             // The first and last vertices should approximately equal A and B.
-            Assert.True(a.Angle(S2Coords.FaceUVtoXYZ(segments[0].face, segments[0].a)) <=
+            Assert.True(a.Angle(S2.FaceUVtoXYZ(segments[0].face, segments[0].a)) <=
                       kErrorRadians);
-            Assert.True(b.Angle(S2Coords.FaceUVtoXYZ(segments[n - 1].face, segments[n - 1].b)) <=
+            Assert.True(b.Angle(S2.FaceUVtoXYZ(segments[n - 1].face, segments[n - 1].b)) <=
                       kErrorRadians);
 
-            S2Point norm = S2PointUtil.RobustCrossProd(a, b).Normalized;
+            S2Point norm = S2.RobustCrossProd(a, b).Normalize();
             S2Point a_tangent = norm.CrossProd(a);
             S2Point b_tangent = b.CrossProd(norm);
             for (int i = 0; i < n; ++i)
@@ -111,13 +108,13 @@ namespace S2Geometry
                 // The two representations of each interior vertex (on adjacent faces)
                 // must correspond to exactly the same S2Point.
                 Assert.NotEqual(segments[i - 1].face, segments[i].face);
-                Assert.Equal(S2Coords.FaceUVtoXYZ(segments[i - 1].face, segments[i - 1].b),
-                          S2Coords.FaceUVtoXYZ(segments[i].face, segments[i].a));
+                Assert.Equal(S2.FaceUVtoXYZ(segments[i - 1].face, segments[i - 1].b),
+                          S2.FaceUVtoXYZ(segments[i].face, segments[i].a));
 
                 // Interior vertices should be in the plane containing A and B, and should
                 // be contained in the wedge of angles between A and B (i.e., the dot
                 // products with a_tangent and b_tangent should be non-negative).
-                S2Point p = S2Coords.FaceUVtoXYZ(segments[i].face, segments[i].a).Normalized;
+                S2Point p = S2.FaceUVtoXYZ(segments[i].face, segments[i].a).Normalize();
                 Assert.True(Math.Abs(p.DotProd(norm)) <= kErrorRadians);
                 Assert.True(p.DotProd(a_tangent) >= -kErrorRadians);
                 Assert.True(p.DotProd(b_tangent) >= -kErrorRadians);
@@ -138,8 +135,8 @@ namespace S2Geometry
             {
                 if (ClipToPaddedFace(a, b, face, padding, out var a_uv, out var b_uv))
                 {
-                    S2Point a_clip = S2Coords.FaceUVtoXYZ(face, a_uv).Normalized;
-                    S2Point b_clip = S2Coords.FaceUVtoXYZ(face, b_uv).Normalized;
+                    S2Point a_clip = S2.FaceUVtoXYZ(face, a_uv).Normalize();
+                    S2Point b_clip = S2.FaceUVtoXYZ(face, b_uv).Normalize();
                     Assert.True(Math.Abs(a_clip.DotProd(norm)) <= kErrorRadians);
                     Assert.True(Math.Abs(b_clip.DotProd(norm)) <= kErrorRadians);
                     if (a_clip.Angle(a) > kErrorRadians)
@@ -188,14 +185,14 @@ namespace S2Geometry
             {
                 // For coordinates near 1 (say > 0.5), this perturbation yields values
                 // that are only a few representable values away from the initial value.
-                a += 4 * S2Constants.DoubleEpsilon * S2Testing.RandomPoint();
+                a += 4 * S2.DoubleEpsilon * S2Testing.RandomPoint();
             }
             else
             {
                 // A perturbation whose magnitude is in the range [1e-25, 1e-10].
-                a += 1e-10 * Math.Pow(S2Constants.DoubleError, S2Testing.Random.RandDouble()) * S2Testing.RandomPoint();
+                a += 1e-10 * Math.Pow(S2.DoubleError, S2Testing.Random.RandDouble()) * S2Testing.RandomPoint();
             }
-            if (a.Norm2 < S2Constants.DoubleMinNorm)
+            if (a.Norm2() < S2.DoubleMinNorm)
             {
                 // If a.Norm2 is denormalized, Normalize() loses too much precision.
                 return PerturbedCornerOrMidpoint(p, q);
@@ -233,7 +230,7 @@ namespace S2Geometry
             double kError = kEdgeClipErrorUVDist + kIntersectsRectErrorUVDist;
             if (a == b) return 0.0;
             R2Point dir = R2Point.Normalize(b - a);
-            Assert.True(Math.Abs((x - a).DotProd(dir.Ortho)) <= kError);
+            Assert.True(Math.Abs((x - a).DotProd(dir.GetOrtho())) <= kError);
             return (x - a).DotProd(dir);
         }
 
@@ -275,7 +272,7 @@ namespace S2Geometry
             R2Rect initial_clip = R2Rect.FromPointPair(ChooseRectPoint(a, b),
                                                         ChooseRectPoint(a, b));
             R2Rect bound = GetClippedEdgeBound(a, b, initial_clip);
-            if (bound.IsEmpty) return;  // Precondition of ClipEdgeBound not met
+            if (bound.IsEmpty()) return;  // Precondition of ClipEdgeBound not met
             R2Rect max_bound = bound.Intersection(clip);
             if (!ClipEdgeBound(a, b, clip, ref bound))
             {
@@ -306,7 +303,7 @@ namespace S2Geometry
                 {
                     0 => clip.Lo - S2Testing.Random.RandDouble(),
                     1 => clip.Hi + S2Testing.Random.RandDouble(),
-                    _ => clip.Lo + S2Testing.Random.RandDouble() * clip.Length,
+                    _ => clip.Lo + S2Testing.Random.RandDouble() * clip.GetLength(),
                 };
             }
         }
@@ -332,7 +329,7 @@ namespace S2Geometry
             }
         }
 
-        // Given a rectangle "clip", test the S2EdgeUtil edge clipping methods using
+        // Given a rectangle "clip", test the S2 edge clipping methods using
         // many edges that are randomly constructed to trigger special cases.
         private void TestEdgeClipping(R2Rect clip)
         {

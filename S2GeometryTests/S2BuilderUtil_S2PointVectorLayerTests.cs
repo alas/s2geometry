@@ -1,25 +1,17 @@
-using System;
-using System.Collections.Generic;
-using Xunit;
-using S2Geometry.S2BuilderUtil;
-using static S2Geometry.S2TextFormat;
-
 namespace S2Geometry
 {
-    using LabelSet = List<int>;
-
     public class S2BuilderUtil_S2PointVectorLayerTests
     {
         [Fact]
         public void Test_S2PointVectorLayer_MergeDuplicates() {
-            S2Builder builder=new(new S2Builder.Options());
+            S2Builder builder=new(new Options());
             List<S2Point> output=new();
             IdSetLexicon label_set_lexicon = new();
             LabelSet label_set_ids = new();
             builder.StartLayer(new S2PointVectorLayer(
                 output, label_set_ids, label_set_lexicon,
                 new S2PointVectorLayer.Options(
-                    S2Builder.GraphOptions.DuplicateEdges.MERGE)));
+                    GraphOptions.DuplicateEdges.MERGE)));
 
             builder.SetLabel(1);
             AddPoint(MakePointOrDie("0:1"), builder);
@@ -42,14 +34,14 @@ namespace S2Geometry
 
         [Fact]
         public void Test_S2PointVectorLayer_KeepDuplicates() {
-            S2Builder builder=new(new S2Builder.Options());
+            S2Builder builder=new(new Options());
             List<S2Point> output=new();
             IdSetLexicon label_set_lexicon=new();
             LabelSet label_set_ids=new();
             builder.StartLayer(new S2PointVectorLayer(
                 output, label_set_ids, label_set_lexicon,
                 new S2PointVectorLayer.Options(
-                    S2Builder.GraphOptions.DuplicateEdges.KEEP)));
+                    GraphOptions.DuplicateEdges.KEEP)));
 
             builder.SetLabel(1);
             AddPoint(MakePointOrDie("0:1"), builder);
@@ -72,11 +64,11 @@ namespace S2Geometry
 
         [Fact]
         public void Test_S2PointVectorLayer_Error() {
-            S2Builder builder=new(new S2Builder.Options());
+            S2Builder builder=new(new Options());
             List<S2Point> output=new();
             builder.StartLayer(new S2PointVectorLayer(
                 output, new S2PointVectorLayer.Options(
-                             S2Builder.GraphOptions.DuplicateEdges.KEEP)));
+                             GraphOptions.DuplicateEdges.KEEP)));
 
             AddPoint(MakePointOrDie("0:1"), builder);
             builder.AddEdge(MakePointOrDie("0:3"), MakePointOrDie("0:4"));
@@ -92,13 +84,13 @@ namespace S2Geometry
 
         [Fact]
         public void Test_IndexedS2PointVectorLayer_AddsShapes() {
-            S2Builder builder=new(new S2Builder.Options());
+            S2Builder builder=new(new Options());
             MutableS2ShapeIndex index=new();
             builder.StartLayer(new IndexedS2PointVectorLayer(index));
             string point0_str = "0:0";
             string point1_str = "2:2";
-            builder.AddPoint(S2TextFormat.MakePointOrDie(point0_str));
-            builder.AddPoint(S2TextFormat.MakePointOrDie(point1_str));
+            builder.AddPoint(MakePointOrDie(point0_str));
+            builder.AddPoint(MakePointOrDie(point1_str));
             Assert.True(builder.Build(out _));
             Assert.Equal(1, index.NumShapeIds());
             var shape = (S2PointVectorShape) index.Shape(0);
@@ -109,7 +101,7 @@ namespace S2Geometry
 
         [Fact]
         public void Test_IndexedS2PointVectorLayer_AddsEmptyShape() {
-            S2Builder builder=new(new S2Builder.Options());
+            S2Builder builder=new(new Options());
             MutableS2ShapeIndex index=new();
             builder.StartLayer(new IndexedS2PointVectorLayer(index));
             Assert.True(builder.Build(out _));
@@ -120,7 +112,7 @@ namespace S2Geometry
             LabelSet label_set_ids, IdSetLexicon label_set_lexicon, List<S2Point> output,
             string str_expected_points, Int32[][] expected_labels)
         {
-            var expected_points = S2TextFormat.ParsePointsOrDie(str_expected_points);
+            var expected_points = ParsePointsOrDie(str_expected_points);
 
             Assert.Equal(expected_labels.Length, label_set_ids.Count);
             for (int i = 0; i < output.Count; ++i)

@@ -7,13 +7,13 @@ namespace S2Geometry
         [Fact]
         public void Test_R1Interval_TestBasic() {
             // Constructors and accessors.
-            R1Interval unit = new R1Interval(0, 1);
-            R1Interval negunit = new R1Interval(-1, 0);
+            R1Interval unit = new(0, 1);
+            R1Interval negunit = new(-1, 0);
             Assert.Equal(0, unit.Lo);
             Assert.Equal(1, unit.Hi);
             Assert.Equal(-1, negunit[0]);
             Assert.Equal(0, negunit[1]);
-            R1Interval ten = new R1Interval(0, 10);
+            R1Interval ten = new(0, 10);
             Assert.Equal(new R1Interval(0, 10), ten);
             ten = new R1Interval(-10, ten.Hi);
             Assert.Equal(new R1Interval(-10, 10), ten);
@@ -23,11 +23,11 @@ namespace S2Geometry
             Assert.Equal(new R1Interval(0, 10), ten);
 
             // IsEmpty
-            R1Interval half = new R1Interval(0.5, 0.5);
-            Assert.False(unit.IsEmpty);
-            Assert.False(half.IsEmpty);
+            R1Interval half = new(0.5, 0.5);
+            Assert.False(unit.IsEmpty());
+            Assert.False(half.IsEmpty());
             R1Interval empty = R1Interval.Empty;
-            Assert.True(empty.IsEmpty);
+            Assert.True(empty.IsEmpty());
 
             // == and !=
             Assert.True(empty == R1Interval.Empty);
@@ -37,16 +37,16 @@ namespace S2Geometry
 
             // Check that the default R1Interval is identical to Empty().
             R1Interval default_empty = R1Interval.Empty;
-            Assert.True(default_empty.IsEmpty);
+            Assert.True(default_empty.IsEmpty());
             Assert.Equal(empty.Lo, default_empty.Lo);
             Assert.Equal(empty.Hi, default_empty.Hi);
 
             // GetCenter(), GetLength()
-            Assert.Equal(0.5, unit.Center);
-            Assert.Equal(0.5, half.Center);
-            Assert.Equal(1.0, negunit.Length);
-            Assert.Equal(0, half.Length);
-            Assert.True(empty.Length < 0);
+            Assert.Equal(0.5, unit.GetCenter());
+            Assert.Equal(0.5, half.GetCenter());
+            Assert.Equal(1.0, negunit.GetLength());
+            Assert.Equal(0, half.GetLength());
+            Assert.True(empty.GetLength() < 0);
 
             // Contains(double), InteriorContains(double)
             Assert.True(unit.Contains(0.5));
@@ -93,23 +93,23 @@ namespace S2Geometry
             Assert.Equal(empty, empty.Expanded(0.45));
             Assert.Equal(new R1Interval(-0.5, 1.5), unit.Expanded(0.5));
             Assert.Equal(new R1Interval(0.5, 0.5), unit.Expanded(-0.5));
-            Assert.True(unit.Expanded(-0.51).IsEmpty);
-            Assert.True(unit.Expanded(-0.51).Expanded(0.51).IsEmpty);
+            Assert.True(unit.Expanded(-0.51).IsEmpty());
+            Assert.True(unit.Expanded(-0.51).Expanded(0.51).IsEmpty());
 
             // Union(), Intersection()
             Assert.Equal(new R1Interval(99, 100), new R1Interval(99, 100).Union(empty));
             Assert.Equal(new R1Interval(99, 100), empty.Union(new R1Interval(99, 100)));
-            Assert.True(new R1Interval(5, 3).Union(new R1Interval(0, -2)).IsEmpty);
-            Assert.True(new R1Interval(0, -2).Union(new R1Interval(5, 3)).IsEmpty);
+            Assert.True(new R1Interval(5, 3).Union(new R1Interval(0, -2)).IsEmpty());
+            Assert.True(new R1Interval(0, -2).Union(new R1Interval(5, 3)).IsEmpty());
             Assert.Equal(unit, unit.Union(unit));
             Assert.Equal(new R1Interval(-1, 1), unit.Union(negunit));
             Assert.Equal(new R1Interval(-1, 1), negunit.Union(unit));
             Assert.Equal(unit, half.Union(unit));
             Assert.Equal(half, unit.Intersection(half));
             Assert.Equal(new R1Interval(0, 0), unit.Intersection(negunit));
-            Assert.True(negunit.Intersection(half).IsEmpty);
-            Assert.True(unit.Intersection(empty).IsEmpty);
-            Assert.True(empty.Intersection(unit).IsEmpty);
+            Assert.True(negunit.Intersection(half).IsEmpty());
+            Assert.True(unit.Intersection(empty).IsEmpty());
+            Assert.True(empty.Intersection(unit).IsEmpty());
         }
 
         [Fact]
@@ -117,8 +117,8 @@ namespace S2Geometry
         {
             // Choose two values kLo and kHi such that it's okay to shift an endpoint by
             // kLo (i.e., the resulting interval is equivalent) but not by kHi.
-            const double kLo = 4 * S2Constants.DoubleEpsilon;  // < max_error default
-            const double kHi = 6 * S2Constants.DoubleEpsilon;  // > max_error default
+            const double kLo = 4 * S2.DoubleEpsilon;  // < max_error default
+            const double kHi = 6 * S2.DoubleEpsilon;  // > max_error default
 
             // Empty intervals.
             R1Interval empty = R1Interval.Empty;
@@ -162,7 +162,7 @@ namespace S2Geometry
             Assert.Equal(expected[3] == 'T', x.InteriorIntersects(y));
 
             Assert.Equal(x.Contains(y), x.Union(y) == x);
-            Assert.Equal(x.Intersects(y), !x.Intersection(y).IsEmpty);
+            Assert.Equal(x.Intersects(y), !x.Intersection(y).IsEmpty());
 
             R1Interval z = x;
             z = R1Interval.AddInterval(z, y);

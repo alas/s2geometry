@@ -17,7 +17,7 @@ namespace S2Geometry
                 // All points in a tiny cap to test avalanche property of hash
                 // function (the cap would be of radius 1mm on Earth (4*10^9/2^35).
                 S2Point perturbed = base_ + S2Testing.RandomPoint() / (1UL << 35);
-                perturbed = perturbed.Normalized;
+                perturbed = perturbed.Normalize();
                 set.Add(perturbed.GetHashCode());
                 points.Add(perturbed);
             }

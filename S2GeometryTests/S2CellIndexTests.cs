@@ -1,15 +1,11 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Xunit;
-using LabelledCell = S2Geometry.S2CellIndex.LabelledCell;
-
 namespace S2Geometry
 {
+    using LabelledCell = S2CellIndex.LabelledCell;
+
     public class S2CellIndexTests
     {
         private readonly S2CellIndex _index = new();
-        private readonly List<LabelledCell> contents_ = new List<LabelledCell>();
+        private readonly List<LabelledCell> contents_ = new();
         
         [Fact]
         public void Test_S2CellIndexTest_Empty()
@@ -170,8 +166,8 @@ namespace S2Geometry
                     if (S2Testing.Random.OneIn(10)) Add(id, i);
                     if (S2Testing.Random.OneIn(4)) target.Add(id);
                     if (S2Testing.Random.OneIn(2)) id = id.NextWrap();
-                    if (S2Testing.Random.OneIn(6) && !id.IsFace) id = id.Parent();
-                    if (S2Testing.Random.OneIn(6) && !id.IsLeaf) id = id.ChildBegin();
+                    if (S2Testing.Random.OneIn(6) && !id.IsFace()) id = id.Parent();
+                    if (S2Testing.Random.OneIn(6) && !id.IsLeaf()) id = id.ChildBegin();
                 }
                 Build();
                 TestIntersection(new S2CellUnion(target));
@@ -277,7 +273,7 @@ namespace S2Geometry
                 S2CellId start = it.Current.StartId;
                 it2.Seek(it.Current.StartId);
                 Assert.Equal(start, it2.Current.StartId);
-                it2.Seek(it.GetLimitId().Prev);
+                it2.Seek(it.GetLimitId().Prev());
                 Assert.Equal(start, it2.Current.StartId);
 
                 // And also for non-empty ranges.
@@ -285,7 +281,7 @@ namespace S2Geometry
                 S2CellId non_empty_start = non_empty.Current.StartId;
                 non_empty2.Seek(it.Current.StartId);
                 Assert.Equal(non_empty_start, non_empty2.Current.StartId);
-                non_empty2.Seek(it.GetLimitId().Prev);
+                non_empty2.Seek(it.GetLimitId().Prev());
                 Assert.Equal(non_empty_start, non_empty2.Current.StartId);
 
                 // Test Prev() and Next().
@@ -334,22 +330,22 @@ namespace S2Geometry
         private void VerifyIndexContents()
         {
             // "min_cellid" is the first S2CellId that has not been validated yet.
-            S2CellId min_cell_id = S2CellId.Begin(S2Constants.kMaxCellLevel);
+            S2CellId min_cell_id = S2CellId.Begin(S2.kMaxCellLevel);
             var range = _index.GetRangeNodeEnumerator();
             while (range.MoveNext())
             {
                 var rn = range.Current;
                 Assert.Equal(min_cell_id, rn.StartId);
                 Assert.True(min_cell_id < range.GetLimitId());
-                Assert.True(range.GetLimitId().IsLeaf);
+                Assert.True(range.GetLimitId().IsLeaf());
                 min_cell_id = range.GetLimitId();
 
                 // Build a list of expected (cell_id, label) pairs for this range.
                 List<LabelledCell> expected = new();
                 foreach (var x in contents_)
                 {
-                    if (x.CellId.RangeMin <= rn.StartId &&
-                        x.CellId.RangeMax.Next >= range.GetLimitId())
+                    if (x.CellId.RangeMin() <= rn.StartId &&
+                        x.CellId.RangeMax().Next() >= range.GetLimitId())
                     {
                         // The cell contains the entire range.
                         expected.Add(x);
@@ -357,8 +353,8 @@ namespace S2Geometry
                     else
                     {
                         // Verify that the cell does not intersect the range.
-                        Assert.False(x.CellId.RangeMin <= range.GetLimitId().Prev &&
-                                        x.CellId.RangeMax >= rn.StartId);
+                        Assert.False(x.CellId.RangeMin() <= range.GetLimitId().Prev() &&
+                                        x.CellId.RangeMax() >= rn.StartId);
                     }
                 }
                 List<LabelledCell> actual = new();
@@ -370,7 +366,7 @@ namespace S2Geometry
                 }
                 ExpectEqual(expected, actual);
             }
-            Assert.Equal(S2CellId.End(S2Constants.kMaxCellLevel), min_cell_id);
+            Assert.Equal(S2CellId.End(S2.kMaxCellLevel), min_cell_id);
         }
 
         // Tests that VisitIntersectingCells() and GetIntersectingLabels() return
@@ -379,7 +375,7 @@ namespace S2Geometry
         {
             List<LabelledCell> expected = new();
             List<LabelledCell> actual = new();
-            List<int> expected_labels = new();
+            LabelSet expected_labels = new();
             foreach (var it in _index.GetCellEnumerable())
             {
                 if (target.Intersects(it.CellId))
@@ -396,8 +392,7 @@ namespace S2Geometry
                 });
             ExpectEqual(expected, actual);
             var actual_labels = _index.GetIntersectingLabels(target);
-            actual_labels.Sort();
-            Assert.Equal(expected_labels, actual_labels);
+            Assert.Equal(expected_labels, actual_labels.ToList());
         }
 
         // Given an S2CellId "target_str" in human-readable form, expects that the
@@ -409,7 +404,7 @@ namespace S2Geometry
                 .ToList();
 
             var range = _index.GetRangeNodeEnumerator();
-            range.Seek(S2CellId.FromDebugString(target_str).RangeMin);
+            range.Seek(S2CellId.FromDebugString(target_str).RangeMin());
             contents.StartUnion(range.Current);
 
             var actual = new List<LabelledCell>();

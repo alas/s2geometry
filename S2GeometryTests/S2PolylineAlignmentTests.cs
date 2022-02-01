@@ -267,25 +267,25 @@ namespace S2Geometry
 
         [Fact]
         public void Test_S2PolylineAlignmentTest_HalvesZeroLengthPolyline() {
-            var line = S2TextFormat.MakePolylineOrDie("");
+            var line = MakePolylineOrDie("");
             var halved = S2PolylineAlignment.HalfResolution(line);
-            var correct = S2TextFormat.MakePolylineOrDie("");
+            var correct = MakePolylineOrDie("");
             Assert.Equal(halved.ToDebugString(), correct.ToDebugString());
         }
 
         [Fact]
         public void Test_S2PolylineAlignmentTest_HalvesEvenLengthPolyline() {
-            var line = S2TextFormat.MakePolylineOrDie("0:0, 0:1, 0:2, 1:2");
+            var line = MakePolylineOrDie("0:0, 0:1, 0:2, 1:2");
             var halved = S2PolylineAlignment.HalfResolution(line);
-            var correct = S2TextFormat.MakePolylineOrDie("0:0, 0:2");
+            var correct = MakePolylineOrDie("0:0, 0:2");
             Assert.Equal(halved.ToDebugString(), correct.ToDebugString());
         }
 
         [Fact]
         public void Test_S2PolylineAlignmentTest_HalvesOddLengthPolyline() {
-            var line = S2TextFormat.MakePolylineOrDie("0:0, 0:1, 0:2, 1:2, 3:5");
+            var line = MakePolylineOrDie("0:0, 0:1, 0:2, 1:2, 3:5");
             var halved = S2PolylineAlignment.HalfResolution(line);
-            var correct = S2TextFormat.MakePolylineOrDie("0:0, 0:2, 3:5");
+            var correct = MakePolylineOrDie("0:0, 0:2, 3:5");
             Assert.Equal(halved.ToDebugString(), correct.ToDebugString());
         }
 
@@ -293,32 +293,32 @@ namespace S2Geometry
 
         [Fact]
         public void Test_S2PolylineAlignmentTest_ExactLengthZeroInputs() {
-            var a = S2TextFormat.MakePolylineOrDie("");
-            var b = S2TextFormat.MakePolylineOrDie("");
+            var a = MakePolylineOrDie("");
+            var b = MakePolylineOrDie("");
             var correct_path = new WarpPath{ };
             Assert.Throws<AssertionException>(() => VerifyPath(a, b, correct_path));
         }
 
         [Fact]
         public void Test_S2PolylineAlignmentTest_ExactLengthZeroInputA() {
-            var a = S2TextFormat.MakePolylineOrDie("");
-            var b = S2TextFormat.MakePolylineOrDie("0:0, 1:1, 2:2");
-            WarpPath correct_path = new WarpPath{ };
+            var a = MakePolylineOrDie("");
+            var b = MakePolylineOrDie("0:0, 1:1, 2:2");
+            WarpPath correct_path = new() { };
             Assert.Throws<AssertionException>(() => VerifyPath(a, b, correct_path));
         }
 
         [Fact]
         public void Test_S2PolylineAlignmentTest_ExactLengthZeroInputB() {
-            var a = S2TextFormat.MakePolylineOrDie("0:0, 1:1, 2:2");
-            var b = S2TextFormat.MakePolylineOrDie("");
+            var a = MakePolylineOrDie("0:0, 1:1, 2:2");
+            var b = MakePolylineOrDie("");
             var correct_path = new WarpPath{ };
             Assert.Throws<AssertionException>(() => VerifyPath(a, b, correct_path));
         }
 
         [Fact]
         public void Test_S2PolylineAlignmentTest_ExactLengthOneInputs() {
-            var a = S2TextFormat.MakePolylineOrDie("1:1");
-            var b = S2TextFormat.MakePolylineOrDie("2:2");
+            var a = MakePolylineOrDie("1:1");
+            var b = MakePolylineOrDie("2:2");
             var correct_path = new WarpPath{ (0, 0) };
             VerifyPath(a, b, correct_path);
             VerifyCost(a, b);
@@ -326,8 +326,8 @@ namespace S2Geometry
 
         [Fact]
         public void Test_S2PolylineAlignmentTest_ExactLengthOneInputA() {
-            var a = S2TextFormat.MakePolylineOrDie("0:0");
-            var b = S2TextFormat.MakePolylineOrDie("0:0, 1:1, 2:2");
+            var a = MakePolylineOrDie("0:0");
+            var b = MakePolylineOrDie("0:0, 1:1, 2:2");
             var correct_path = new WarpPath{ (0, 0), (0, 1), (0, 2) };
             VerifyPath(a, b, correct_path);
             VerifyCost(a, b);
@@ -335,8 +335,8 @@ namespace S2Geometry
 
         [Fact]
         public void Test_S2PolylineAlignmentTest_ExactLengthOneInputB() {
-            var a = S2TextFormat.MakePolylineOrDie("0:0, 1:1, 2:2");
-            var b = S2TextFormat.MakePolylineOrDie("0:0");
+            var a = MakePolylineOrDie("0:0, 1:1, 2:2");
+            var b = MakePolylineOrDie("0:0");
             var correct_path = new WarpPath{ (0, 0), (1, 0), (2, 0) };
             VerifyPath(a, b, correct_path);
             VerifyCost(a, b);
@@ -344,8 +344,8 @@ namespace S2Geometry
 
         [Fact]
         public void Test_S2PolylineAlignmentTest_ExactHeaderFileExample() {
-            var a = S2TextFormat.MakePolylineOrDie("1:0, 5:0, 6:0, 9:0");
-            var b = S2TextFormat.MakePolylineOrDie("2:0, 7:0, 8:0");
+            var a = MakePolylineOrDie("1:0, 5:0, 6:0, 9:0");
+            var b = MakePolylineOrDie("2:0, 7:0, 8:0");
             var correct_path = new WarpPath{ (0, 0), (1, 1), (2, 1), (3, 2) };
             VerifyPath(a, b, correct_path);
             VerifyCost(a, b);
@@ -371,7 +371,7 @@ namespace S2Geometry
         // Tests for GetMedoidPolyline
         [Fact]
         public void Test_S2PolylineAlignmentTest_MedoidPolylineNoPolylines() {
-            S2Polyline[] polylines = { };
+            S2Polyline[] polylines = Array.Empty<S2Polyline>();
             var default_opts = new S2PolylineAlignment.MedoidOptions();
             Assert.Throws<AssertionException>(() => S2PolylineAlignment.GetMedoidPolyline(polylines, default_opts));
         }
@@ -379,7 +379,7 @@ namespace S2Geometry
         [Fact]
         public void Test_S2PolylineAlignmentTest_MedoidPolylineOnePolyline() {
             S2Polyline[] polylines = new S2Polyline[]{
-            S2TextFormat.MakePolylineOrDie("5:0, 5:1, 5:2") };
+            MakePolylineOrDie("5:0, 5:1, 5:2") };
             var default_opts = new S2PolylineAlignment.MedoidOptions();
             var medoid = S2PolylineAlignment.GetMedoidPolyline(polylines, default_opts);
             Assert.Equal(0, medoid);
@@ -390,8 +390,8 @@ namespace S2Geometry
             // Tie-breaking is contractually done by choosing the smallest tied index.
             // These inputs (really, any collection of two polylines) yield a tie.
             var polylines = new S2Polyline[]{
-            S2TextFormat.MakePolylineOrDie("5:0, 5:1, 5:2"),
-            S2TextFormat.MakePolylineOrDie("1:0, 1:1, 1:2")};
+            MakePolylineOrDie("5:0, 5:1, 5:2"),
+            MakePolylineOrDie("1:0, 1:1, 1:2")};
 
             var default_opts = new S2PolylineAlignment.MedoidOptions();
             var medoid = S2PolylineAlignment.GetMedoidPolyline(polylines, default_opts);
@@ -401,9 +401,9 @@ namespace S2Geometry
         [Fact]
         public void Test_S2PolylineAlignmentTest_MedoidPolylineFewSmallPolylines() {
             var polylines = new S2Polyline[] {
-                S2TextFormat.MakePolylineOrDie("5:0, 5:1, 5:2"),
-                S2TextFormat.MakePolylineOrDie("3:0, 3:1, 3:2"),
-                S2TextFormat.MakePolylineOrDie("1:0, 1:1, 1:2"),
+                MakePolylineOrDie("5:0, 5:1, 5:2"),
+                MakePolylineOrDie("3:0, 3:1, 3:2"),
+                MakePolylineOrDie("1:0, 1:1, 1:2"),
             };
 
             var default_opts = new S2PolylineAlignment.MedoidOptions();
@@ -415,8 +415,8 @@ namespace S2Geometry
         public void Test_S2PolylineAlignmentTest_MedoidPolylineOverlappingPolylines() {
             // Given two identical polylines as input, break the tie with smallest index.
             var polylines = new S2Polyline[] {
-            S2TextFormat.MakePolylineOrDie("1:0, 1:1, 1:2"),
-            S2TextFormat.MakePolylineOrDie("1:0, 1:1, 1:2"),
+            MakePolylineOrDie("1:0, 1:1, 1:2"),
+            MakePolylineOrDie("1:0, 1:1, 1:2"),
             };
             var default_opts = new S2PolylineAlignment.MedoidOptions();
             var medoid = S2PolylineAlignment.GetMedoidPolyline(polylines, default_opts);
@@ -427,9 +427,9 @@ namespace S2Geometry
         public void Test_S2PolylineAlignmentTest_MedoidPolylineDifferentLengthPolylines() {
             var polylines = new S2Polyline[]
             {
-                S2TextFormat.MakePolylineOrDie("5:0, 5:1, 5:2"),
-                S2TextFormat.MakePolylineOrDie("3:0, 3:0.5, 3:1, 3:2"),
-                S2TextFormat.MakePolylineOrDie("1:0, 1:0.5, 1:1, 1:1.5, 1:2")
+                MakePolylineOrDie("5:0, 5:1, 5:2"),
+                MakePolylineOrDie("3:0, 3:0.5, 3:1, 3:2"),
+                MakePolylineOrDie("1:0, 1:0.5, 1:1, 1:1.5, 1:2")
             };
 
             var default_opts = new S2PolylineAlignment.MedoidOptions();
@@ -469,8 +469,10 @@ namespace S2Geometry
 
             int approx_medoid_index = approx_costs.IndexOfMin();
 
-            var options = new S2PolylineAlignment.MedoidOptions();
-            options.Approx = false;
+            var options = new S2PolylineAlignment.MedoidOptions
+            {
+                Approx = false
+            };
             var exact_medoid = S2PolylineAlignment.GetMedoidPolyline(polylines, options);
             Assert.Equal(exact_medoid, exact_medoid_index);
 
@@ -490,11 +492,11 @@ namespace S2Geometry
 
         [Fact]
         public void Test_S2PolylineAlignmentTest_ConsensusPolylineOnePolyline() {
-            var polylines = new[] { S2TextFormat.MakePolylineOrDie("3:0, 3:1, 3:2") };
+            var polylines = new[] { MakePolylineOrDie("3:0, 3:1, 3:2") };
 
             var default_opts = new S2PolylineAlignment.ConsensusOptions();
             var result = S2PolylineAlignment.GetConsensusPolyline(polylines, default_opts);
-            var expected = S2TextFormat.MakePolylineOrDie("3:0, 3:1, 3:2");
+            var expected = MakePolylineOrDie("3:0, 3:1, 3:2");
             Assert.True(result.ApproxEquals(expected));
         }
 
@@ -502,13 +504,13 @@ namespace S2Geometry
         public void Test_S2PolylineAlignmentTest_ConsensusPolylineTwoPolylines() {
             S2Polyline[] polylines = new S2Polyline[] 
             {
-                S2TextFormat.MakePolylineOrDie("3:0, 3:1, 3:2"),
-                S2TextFormat.MakePolylineOrDie("1:0, 1:1, 1:2"),
+                MakePolylineOrDie("3:0, 3:1, 3:2"),
+                MakePolylineOrDie("1:0, 1:1, 1:2"),
             };
 
             var default_opts = new S2PolylineAlignment.ConsensusOptions();
             var result = S2PolylineAlignment.GetConsensusPolyline(polylines, default_opts);
-            var expected = S2TextFormat.MakePolylineOrDie("2:0, 2:1, 2:2");
+            var expected = MakePolylineOrDie("2:0, 2:1, 2:2");
             Assert.True(result.ApproxEquals(expected));
         }
 
@@ -516,24 +518,25 @@ namespace S2Geometry
         public void Test_S2PolylineAlignmentTest_ConsensusPolylineOverlappingPolylines() {
             var polylines = new S2Polyline[]
             {
-                S2TextFormat.MakePolylineOrDie("1:0, 1:1, 1:2"),
-                S2TextFormat.MakePolylineOrDie("1:0, 1:1, 1:2")
+                MakePolylineOrDie("1:0, 1:1, 1:2"),
+                MakePolylineOrDie("1:0, 1:1, 1:2")
             };
 
             var default_opts = new S2PolylineAlignment.ConsensusOptions();
             var result = S2PolylineAlignment.GetConsensusPolyline(polylines, default_opts);
-            var expected = S2TextFormat.MakePolylineOrDie("1:0, 1:1, 1:2");
+            var expected = MakePolylineOrDie("1:0, 1:1, 1:2");
             Assert.True(result.ApproxEquals(expected));
         }
 
-        private double[][] DistanceMatrix(S2Polyline a, S2Polyline b) {
-            int a_n = a.NumVertices;
-            int b_n = b.NumVertices;
+        private static double[][] DistanceMatrix(S2Polyline a, S2Polyline b)
+        {
+            int a_n = a.NumVertices();
+            int b_n = b.NumVertices();
             var table = new double[a_n][];
             for (int i = 0; i < a_n; ++i) {
                 table[i] = new double[b_n];
                 for (int j = 0; j < b_n; ++j) {
-                    table[i][j] = (a.Vertex(i) - b.Vertex(j)).Norm2;
+                    table[i][j] = (a.Vertex(i) - b.Vertex(j)).Norm2();
                 }
             }
             return table;
@@ -560,8 +563,8 @@ namespace S2Geometry
 
         // Use Brute Force solver to verify exact Dynamic Programming solvers.
         private void VerifyCost(S2Polyline a, S2Polyline b) {
-            int a_n = a.NumVertices;
-            int b_n = b.NumVertices;
+            int a_n = a.NumVertices();
+            int b_n = b.NumVertices();
             double brute_cost =
                 GetBruteForceCost(DistanceMatrix(a, b), a_n - 1, b_n - 1);
             double exact_cost = S2PolylineAlignment.GetExactVertexAlignmentCost(a, b);
@@ -575,7 +578,7 @@ namespace S2Geometry
         private static void VerifyPath(S2Polyline a, S2Polyline b, WarpPath p) {
             double correct = 0;
             foreach (var (start, end) in p) {
-                correct += (a.Vertex(start) - b.Vertex(end)).Norm2;
+                correct += (a.Vertex(start) - b.Vertex(end)).Norm2();
             }
             double exact_cost = S2PolylineAlignment.GetExactVertexAlignmentCost(a, b);
             var exact_alignment = S2PolylineAlignment.GetExactVertexAlignment(a, b);
@@ -603,7 +606,7 @@ namespace S2Geometry
         // benchmarks and fuzz tests.
         private static S2Polyline[] GenPolylines(int num_polylines, int num_vertices, double perturbation) {
             var kLoopRadius = S1Angle.FromRadians(0.01);
-            var edge_length = S2Constants.M_2_PI * kLoopRadius / num_vertices;
+            var edge_length = S2.M_2_PI * kLoopRadius / num_vertices;
             var perturbation_radius = perturbation * edge_length;
             var center = S2Testing.RandomPoint();
             var loop = S2Testing.MakeRegularPoints(center, kLoopRadius, num_vertices);
@@ -619,5 +622,11 @@ namespace S2Geometry
             }
             return polylines;
         }
+    }
+
+
+    public static class StringExtensions
+    {
+        public static string NoCR(this string s) => s.Replace("\r", "");
     }
 }

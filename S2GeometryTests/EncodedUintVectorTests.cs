@@ -1,4 +1,3 @@
-using System;
 using System.Runtime.InteropServices;
 using Xunit;
 
@@ -8,7 +7,9 @@ namespace S2Geometry
     {
         static EncodedUintVectorTests()
         {
-            Assert.Equal(16, Marshal.SizeOf(typeof(EncodedUintVector_UInt64)));
+            // Make sure that this class is compact since it is extensively used.
+            // 16 for 64-bit, 12 for 32-bit.
+            Assert.True(Marshal.SizeOf(typeof(EncodedUintVector_UInt64)) <= 16);
         }
 
         [Fact]
@@ -66,6 +67,25 @@ namespace S2Geometry
                     }
                 }
             }
+        }
+
+        [Fact]
+        public void Test_EncodedUintVectorTest_RoundtripEncoding()
+        {
+            var values = new ulong[] { 10, 20, 30, 40 };
+
+            Encoder a_encoder = new();
+            var a = EncodedUintVectorTesting.MakeEncodedVector_64(values, a_encoder);
+            Assert.Equal(a.Decode(), values);
+
+            Encoder b_encoder = new();
+            a.Encode(b_encoder);
+            var decoder = b_encoder.Decoder();
+
+            EncodedUintVector_UInt64 v2 = new();
+            Assert.True(v2.Init(decoder));
+
+            Assert.Equal(v2.Decode(), values);
         }
 
         private static void TestEncodedUintVector<T>(T[] expected, int expected_bytes)

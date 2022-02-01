@@ -1,53 +1,50 @@
-using System.Collections.Generic;
+namespace S2Geometry;
 
-namespace S2Geometry
+// An abstract class that adds edges to a MutableS2ShapeIndex for benchmarking.
+public interface IShapeIndexFactory
 {
-    // An abstract class that adds edges to a MutableS2ShapeIndex for benchmarking.
-    public interface IShapeIndexFactory
-    {
-        // Requests that approximately "num_edges" edges located within the given
-        // S2Cap bound should be added to "index".
-        public void AddEdges(S2Cap index_cap, int num_edges, MutableS2ShapeIndex index);
-    }
+    // Requests that approximately "num_edges" edges located within the given
+    // S2Cap bound should be added to "index".
+    public void AddEdges(S2Cap index_cap, int num_edges, MutableS2ShapeIndex index);
+}
 
-    // Generates a regular loop that approximately fills the given S2Cap.
-    //
-    // Regular loops are nearly the worst case for distance calculations, since
-    // many edges are nearly equidistant from any query point that is not
-    // immediately adjacent to the loop.
-    public class RegularLoopShapeIndexFactory : IShapeIndexFactory
+// Generates a regular loop that approximately fills the given S2Cap.
+//
+// Regular loops are nearly the worst case for distance calculations, since
+// many edges are nearly equidistant from any query point that is not
+// immediately adjacent to the loop.
+public class RegularLoopShapeIndexFactory : IShapeIndexFactory
+{
+    public void AddEdges(S2Cap index_cap, int num_edges, MutableS2ShapeIndex index)
     {
-        public void AddEdges(S2Cap index_cap, int num_edges, MutableS2ShapeIndex index)
-        {
-            index.Add(new S2Loop.Shape(S2Loop.MakeRegularLoop(
-                index_cap.Center, index_cap.RadiusAngle, num_edges)));
-        }
+        index.Add(new S2Loop.Shape(S2Loop.MakeRegularLoop(
+            index_cap.Center, index_cap.RadiusAngle(), num_edges)));
     }
+}
 
-    // Generates a fractal loop that approximately fills the given S2Cap.
-    public class FractalLoopShapeIndexFactory : IShapeIndexFactory
+// Generates a fractal loop that approximately fills the given S2Cap.
+public class FractalLoopShapeIndexFactory : IShapeIndexFactory
+{
+    public void AddEdges(S2Cap index_cap, int num_edges, MutableS2ShapeIndex index)
     {
-        public void AddEdges(S2Cap index_cap, int num_edges, MutableS2ShapeIndex index)
-        {
-            var fractal = new S2Testing.Fractal();
-            fractal.SetLevelForApproxMaxEdges(num_edges);
-            index.Add(new S2Loop.Shape(
-                fractal.MakeLoop(S2Testing.GetRandomFrameAt(index_cap.Center),
-                                 index_cap.RadiusAngle)));
-        }
+        var fractal = new S2Testing.Fractal();
+        fractal.SetLevelForApproxMaxEdges(num_edges);
+        index.Add(new S2Loop.Shape(
+            fractal.MakeLoop(S2Testing.GetRandomFrameAt(index_cap.Center),
+                             index_cap.RadiusAngle())));
     }
+}
 
-    // Generates a cloud of points that approximately fills the given S2Cap.
-    public class PointCloudShapeIndexFactory : IShapeIndexFactory
+// Generates a cloud of points that approximately fills the given S2Cap.
+public class PointCloudShapeIndexFactory : IShapeIndexFactory
+{
+    public void AddEdges(S2Cap index_cap, int num_edges, MutableS2ShapeIndex index)
     {
-        public void AddEdges(S2Cap index_cap, int num_edges, MutableS2ShapeIndex index)
+        var points = new List<S2Point>();
+        for (int i = 0; i < num_edges; ++i)
         {
-            var points = new List<S2Point>();
-            for (int i = 0; i < num_edges; ++i)
-            {
-                points.Add(S2Testing.SamplePoint(index_cap));
-            }
-            index.Add(new S2PointVectorShape(points.ToArray()));
+            points.Add(S2Testing.SamplePoint(index_cap));
         }
+        index.Add(new S2PointVectorShape(points.ToArray()));
     }
 }

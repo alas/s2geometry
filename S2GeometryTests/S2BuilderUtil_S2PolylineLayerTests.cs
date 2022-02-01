@@ -1,13 +1,5 @@
-using System;
-using System.Collections.Generic;
-using Xunit;
-
 namespace S2Geometry
 {
-    using S2BuilderUtil;
-    using EdgeType = S2Builder.EdgeType;
-    using LabelSetIds = List<int>;
-
     public class S2BuilderUtil_S2PolylineLayerTests
     {
         [Fact]
@@ -40,7 +32,7 @@ namespace S2Geometry
             //
             // This example tests a code path where the early walk termination code
             // should not be triggered at all (but was at one point due to a bug).
-            S2Builder.Options options = new();
+            Options options = new();
             options.SnapFunction = (new IntLatLngSnapFunction(2));
             TestS2Polyline(new[] { "0:0, 0:2, 0:1" }, "0:0, 0:1, 0:2, 0:1", options);
         }
@@ -98,7 +90,7 @@ namespace S2Geometry
             // because (1) the edges form a loop, and (2) the first and last edges are
             // identical (but reversed).  This is designed to test the heuristics that
             // attempt to find the first edge of the input polyline.
-            S2Builder.Options options = new();
+            Options options = new();
             options.SplitCrossingEdges = (true);
             options.SnapFunction = (new IntLatLngSnapFunction(7));
             TestS2Polyline(
@@ -111,25 +103,25 @@ namespace S2Geometry
         [Fact]
         public void Test_S2PolylineLayer_SimpleEdgeLabels()
         {
-            S2Builder builder = new(new S2Builder.Options());
+            S2Builder builder = new(new Options());
             S2Polyline output = new();
-            LabelSetIds label_set_ids = new();
+            LabelSet label_set_ids = new();
             IdSetLexicon label_set_lexicon = new();
             builder.StartLayer(new S2PolylineLayer(
                 output, label_set_ids, label_set_lexicon,
                 new S2PolylineLayer.Options(EdgeType.UNDIRECTED)));
             builder.SetLabel(5);
-            builder.AddPolyline(S2TextFormat.MakePolylineOrDie("0:0, 0:1, 0:2"));
+            builder.AddPolyline(MakePolylineOrDie("0:0, 0:1, 0:2"));
             builder.PushLabel(7);
-            builder.AddPolyline(S2TextFormat.MakePolylineOrDie("0:3, 0:2"));
+            builder.AddPolyline(MakePolylineOrDie("0:3, 0:2"));
             builder.ClearLabels();
-            builder.AddPolyline(S2TextFormat.MakePolylineOrDie("0:3, 0:4, 0:5"));
+            builder.AddPolyline(MakePolylineOrDie("0:3, 0:4, 0:5"));
             builder.SetLabel(11);
-            builder.AddPolyline(S2TextFormat.MakePolylineOrDie("0:6, 0:5"));
+            builder.AddPolyline(MakePolylineOrDie("0:6, 0:5"));
             Assert.True(builder.Build(out _));
-            var expected = new List<LabelSetIds> {
-                new LabelSetIds { 5 }, new LabelSetIds { 5 }, new LabelSetIds { 5, 7 },
-                new LabelSetIds { }, new LabelSetIds { }, new LabelSetIds { 11 } };
+            var expected = new List<LabelSet> {
+                new LabelSet { 5 }, new LabelSet { 5 }, new LabelSet { 5, 7 },
+                new LabelSet { }, new LabelSet { }, new LabelSet { 11 } };
             Assert.Equal(expected.Count, label_set_ids.Count);
             for (int i = 0; i < expected.Count; ++i)
             {
@@ -146,7 +138,7 @@ namespace S2Geometry
         [Fact]
         public void Test_S2PolylineLayer_InvalidPolyline()
         {
-            S2Builder builder = new(new S2Builder.Options());
+            S2Builder builder = new(new Options());
             S2Polyline output = new();
             S2PolylineLayer.Options options = new();
             options.Validate = (true);
@@ -156,7 +148,7 @@ namespace S2Geometry
                 new S2Point(1, 0, 0),
                 new S2Point(-1, 0, 0)
             };
-            S2Polyline input = new(vertices, false);
+            S2Polyline input = new(vertices, S2Debug.DISABLE);
             builder.AddPolyline(input);
             Assert.False(builder.Build(out var error));
             Assert.Equal(S2ErrorCode.ANTIPODAL_VERTICES, error.Code);
@@ -165,11 +157,11 @@ namespace S2Geometry
         [Fact]
         public void Test_IndexedS2PolylineLayer_AddsShape()
         {
-            S2Builder builder = new(new S2Builder.Options());
+            S2Builder builder = new(new Options());
             MutableS2ShapeIndex index = new();
             builder.StartLayer(new IndexedS2PolylineLayer(index));
             string polyline_str = "0:0, 0:10";
-            builder.AddPolyline(S2TextFormat.MakePolylineOrDie(polyline_str));
+            builder.AddPolyline(MakePolylineOrDie(polyline_str));
             Assert.True(builder.Build(out _));
             Assert.Equal(1, index.NumShapeIds());
             S2Polyline polyline = ((S2Polyline.Shape)
@@ -180,7 +172,7 @@ namespace S2Geometry
         [Fact]
         public void Test_IndexedS2PolylineLayer_AddsEmptyShape()
         {
-            S2Builder builder = new(new S2Builder.Options());
+            S2Builder builder = new(new Options());
             MutableS2ShapeIndex index = new();
             builder.StartLayer(new IndexedS2PolylineLayer(index));
             S2Polyline line = new();
@@ -192,15 +184,15 @@ namespace S2Geometry
         private static void TestS2Polyline(
             string[] input_strs,
             string expected_str, EdgeType edge_type,
-            S2Builder.Options options = null)
+            Options options = null)
         {
-            S2Builder builder = new(options ?? new S2Builder.Options());
+            S2Builder builder = new(options ?? new Options());
             S2Polyline output = new();
             builder.StartLayer(new S2PolylineLayer(
                 output, new S2PolylineLayer.Options(edge_type)));
             foreach (var input_str in input_strs)
             {
-                builder.AddPolyline(S2TextFormat.MakePolylineOrDie(input_str));
+                builder.AddPolyline(MakePolylineOrDie(input_str));
             }
             Assert.True(builder.Build(out _));
             Assert.Equal(expected_str, output.ToDebugString());
@@ -208,9 +200,9 @@ namespace S2Geometry
 
         // Convenience function that tests both directed and undirected edges.
         private static void TestS2Polyline(string[] input_strs,
-            string expected_str, S2Builder.Options options = null)
+            string expected_str, Options options = null)
         {
-            options ??= new S2Builder.Options();
+            options ??= new Options();
             TestS2Polyline(input_strs, expected_str, EdgeType.DIRECTED, options);
             TestS2Polyline(input_strs, expected_str, EdgeType.UNDIRECTED, options);
         }

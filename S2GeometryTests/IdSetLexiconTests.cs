@@ -1,6 +1,3 @@
-using System;
-using System.Linq;
-using Xunit;
 using IdSet = System.Collections.Generic.List<System.Int32>;
 using Seq = System.Collections.Generic.List<System.Int32>;
 
@@ -20,7 +17,7 @@ namespace S2Geometry
         {
             IdSetLexicon lexicon = new();
             Assert.Equal(5, lexicon.Add(new Seq { 5 }));
-            Assert.Equal(0, lexicon.Add(new Seq { 0 }));
+            Assert.Equal(0, lexicon.Add(new Seq { 0, 0 }));
             Assert.Equal(1, IdSetLexicon.AddSingleton(1));
             var m = int.MaxValue;
             Assert.Equal(m, lexicon.Add(new Seq { m }));

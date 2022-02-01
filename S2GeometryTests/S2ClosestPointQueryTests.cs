@@ -102,7 +102,7 @@ namespace S2Geometry
         private class CirclePointIndexFactory : IPointIndexFactory {
             public void AddPoints(S2Cap index_cap, int num_points, TestIndex index) {
                 var points = S2Testing.MakeRegularPoints(
-                    index_cap.Center, index_cap.RadiusAngle, num_points);
+                    index_cap.Center, index_cap.RadiusAngle(), num_points);
                 for (int i = 0; i < points.Length; ++i) {
                     index.Add(points[i], i);
                 }
@@ -118,7 +118,7 @@ namespace S2Geometry
                 fractal.FractalDimension = (1.5);
                 var loop = (
                     fractal.MakeLoop(S2Testing.GetRandomFrameAt(index_cap.Center),
-                                     index_cap.RadiusAngle));
+                                     index_cap.RadiusAngle()));
                 for (int i = 0; i < loop.NumVertices; ++i) {
                     index.Add(loop.Vertex(i), i);
                 }
@@ -130,13 +130,13 @@ namespace S2Geometry
             public void AddPoints(S2Cap index_cap, int num_points, TestIndex index) {
                 int sqrt_num_points = (int)Math.Ceiling(Math.Sqrt(num_points));
                 S2PointVector3 frame = S2Testing.GetRandomFrameAt(index_cap.Center);
-                double radius = index_cap.RadiusAngle.Radians;
+                double radius = index_cap.RadiusAngle().Radians;
                 double spacing = 2 * radius / sqrt_num_points;
                 for (int i = 0; i < sqrt_num_points; ++i) {
                     for (int j = 0; j < sqrt_num_points; ++j) {
                         S2Point point = new(Math.Tan((i + 0.5) * spacing - radius),
                                       Math.Tan((j + 0.5) * spacing - radius), 1.0);
-                        index.Add(S2PointUtil.FromFrame(frame, point.Normalized),
+                        index.Add(S2.FromFrame(frame, point.Normalize()),
                                    i * sqrt_num_points + j);
                     }
                 }
@@ -213,7 +213,7 @@ namespace S2Geometry
 
                 // Choose query points from an area approximately 4x larger than the
                 // geometry being tested.
-                S1Angle query_radius = 2 * index_cap.RadiusAngle;
+                S1Angle query_radius = 2 * index_cap.RadiusAngle();
                 S2Cap query_cap = new(index_cap.Center, query_radius);
                 TestQuery query = new(indexes[i_index]);
 
@@ -255,9 +255,9 @@ namespace S2Geometry
                     TestFindClosestPoints(target, query);
                 } else if (target_type == 2) {
                     // Find the points closest to a given cell.
-                    int min_level = S2Metrics.kMaxDiag.GetLevelForMaxValue(query_radius.Radians);
+                    int min_level = S2.kMaxDiag.GetLevelForMaxValue(query_radius.Radians);
                     int level = min_level + S2Testing.Random.Uniform(
-                        S2Constants.kMaxCellLevel - min_level + 1);
+                        S2.kMaxCellLevel - min_level + 1);
                     S2Point a = S2Testing.SamplePoint(query_cap);
                     S2Cell cell = new(new S2CellId(a).Parent(level));
                     TestQuery.CellTarget target = new(cell);

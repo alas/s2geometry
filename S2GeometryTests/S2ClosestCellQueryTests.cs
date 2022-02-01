@@ -1,13 +1,8 @@
-using System;
-using System.Linq;
-using System.Collections.Generic;
-using Xunit;
-using static S2Geometry.S2TextFormat;
-using LabelledCell = S2Geometry.S2CellIndex.LabelledCell;
-using Target = S2Geometry.S2DistanceTarget<S2Geometry.S1ChordAngle>; // S2MinDistanceTarget
-
 namespace S2Geometry
 {
+    using LabelledCell = S2CellIndex.LabelledCell;
+    using Target = S2DistanceTarget<S1ChordAngle>; // S2MinDistanceTarget
+
     public class S2ClosestCellQueryTests
     {
         // The approximate radius of S2Cap from which query cells are chosen.
@@ -26,7 +21,7 @@ namespace S2Geometry
             Assert.Equal(S1ChordAngle.Infinity, result.Distance);
             Assert.Equal(S2CellId.None, result.CellId);
             Assert.Equal(-1, result.Label);
-            Assert.True(result.IsEmpty);
+            Assert.True(result.IsEmpty());
             Assert.Equal(S1ChordAngle.Infinity, query.GetDistance(target));
         }
 
@@ -47,7 +42,7 @@ namespace S2Geometry
             S2ClosestCellQuery query = new(index, options);
             S2ClosestCellQuery.PointTarget target = new(MakePointOrDie("2:2"));
             Assert.Equal(2, query.FindClosestCell(target).Label);
-            Assert2.Near(1.0, query.GetDistance(target).Degrees, 1e-7);
+            Assert2.Near(1.0, query.GetDistance(target).Degrees(), 1e-7);
             Assert.True(query.IsDistanceLess(target, S1ChordAngle.FromDegrees(1.5)));
 
             // Verify that none of the options above were modified.
@@ -76,7 +71,7 @@ namespace S2Geometry
 
             // Now try two cells separated by a non-zero distance.
             S2ClosestCellQuery.CellTarget target1 = new(new S2Cell(id1));
-            S1ChordAngle dist1 = new S2Cell(id0).GetDistance(new S2Cell(id1));
+            S1ChordAngle dist1 = new S2Cell(id0).Distance(new S2Cell(id1));
             Assert.False(query.IsDistanceLess(target1, dist1));
             Assert.True(query.IsDistanceLessOrEqual(target1, dist1));
             Assert.True(query.IsConservativeDistanceLessOrEqual(target1, dist1));
@@ -189,7 +184,7 @@ namespace S2Geometry
             GetClosestCells(target, query, expected);
             query.Options_.UseBruteForce = (false);
             GetClosestCells(target, query, actual);
-            Assert.True(S2TestingCheckDistance<S2CellIndex.LabelledCell, S1ChordAngle>
+            Assert.True(S2TestingCheckDistance<LabelledCell, S1ChordAngle>
                 .CheckDistanceResults(expected, actual,
                     query.Options_.MaxResults,
                     query.Options_.MaxDistance,
@@ -238,7 +233,7 @@ namespace S2Geometry
 
                 // Choose query points from an area approximately 4x larger than the
                 // geometry being tested.
-                S1Angle query_radius = 2 * index_cap.RadiusAngle;
+                S1Angle query_radius = 2 * index_cap.RadiusAngle();
                 S2Cap query_cap = new(index_cap.Center, query_radius);
                 S2ClosestCellQuery query = new(indexes[i_index]);
 
@@ -289,9 +284,9 @@ namespace S2Geometry
                 else if (target_type == 2)
                 {
                     // Find the cells closest to a given cell.
-                    int min_level = S2Metrics.kMaxDiag.GetLevelForMaxValue(query_radius.Radians);
+                    int min_level = S2.kMaxDiag.GetLevelForMaxValue(query_radius.Radians);
                     int level = min_level + S2Testing.Random.Uniform(
-                        S2Constants.kMaxCellLevel - min_level + 1);
+                        S2.kMaxCellLevel - min_level + 1);
                     S2Point a = S2Testing.SamplePoint(query_cap);
                     S2Cell cell = new(new S2CellId(a).Parent(level));
                     S2ClosestCellQuery.CellTarget target = new(cell);
@@ -360,7 +355,7 @@ namespace S2Geometry
                 // All of this math is fairly approximate, since the coverings don't have
                 // exactly the given number of cells, etc.
                 int num_caps = (num_cells - 1) / max_cells_per_cap_ + 1;
-                double max_area = index_cap.Area * cap_density_ / num_caps;
+                double max_area = index_cap.Area() * cap_density_ / num_caps;
                 for (int i = 0; i < num_caps; ++i)
                 {
                     // The coverings are bigger than the caps, so we compensate for this by

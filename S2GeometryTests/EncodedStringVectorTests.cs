@@ -6,7 +6,7 @@ namespace S2Geometry
     {
         [Fact]
         public void Test_EncodedStringVectorTest_Empty() {
-            TestEncodedStringVector(System.Array.Empty<string>(), 1);
+            TestEncodedStringVector(Array.Empty<string>(), 1);
         }
 
         [Fact]
@@ -38,10 +38,11 @@ namespace S2Geometry
         {
             Encoder encoder = new();
             StringVectorEncoder.Encode(input, encoder);
-            Assert.Equal(expected_bytes, encoder.Length);
-            Decoder decoder = new(encoder.Buffer, 0, encoder.Length);
-            Assert.True(EncodedStringVector.Init(decoder, out var actual));
-            Assert.Equal(actual.Decode(), input);
+            Assert.Equal(expected_bytes, encoder.Length());
+            var decoder = encoder.Decoder();
+            var (success, actual) = EncodedStringVector.Init(decoder);
+            Assert.True(success);
+            Assert.Equal(actual!.Decode(), input);
         }
     }
 }

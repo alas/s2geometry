@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using Xunit;
 
 namespace S2Geometry
@@ -17,20 +15,6 @@ namespace S2Geometry
         private const string kEncodedCapFromPoint = "3F36105836A8E93F2A2460E5CE1AE13F2A2460E5CE1AD13F0000000000000000";
         // S2Cap from S2Point(0, 0, 1) with height 5
         private const string kEncodedCapFromCenterHeight = "00000000000000000000000000000000000000000000F03F0000000000001040";
-
-        // S2CellId.
-        // S2CellId from Face 0.
-        private const string kEncodedCellIDFace0 = "0000000000000010";
-        // S2CellId from Face 5.
-        private const string kEncodedCellIDFace5 = "00000000000000B0";
-        // S2CellId from Face 0 in the last S2Cell at kMaxLevel.
-        private const string kEncodedCellIDFace0MaxLevel = "0100000000000020";
-        // S2CellId from Face 5 in the last S2Cell at kMaxLevel.
-        private const string kEncodedCellIDFace5MaxLevel = "01000000000000C0";
-        // S2CellId FromFacePosLevel(3, 0x12345678, S2Constants.kMaxCellLevel - 4)
-        private const string kEncodedCellIDFacePosLevel = "0057341200000060";
-        // S2CellId from the 0 value.
-        private const string kEncodedCellIDInvalid = "0000000000000000";
 
         // S2Cell.
         // S2Cell from S2Point(1, 2, 3)
@@ -73,26 +57,12 @@ namespace S2Geometry
             + "389D52A246DF91BF"  // S2Loop.bound_.Lng.Lo
             + "389D52A246DF913F"; // S2Loop.bound_.Lng.Hi
 
-
-        // S2Loop encoded using EncodeCompressed from snapped points.
-        // S2Point[] snapped_loop_a_vertices = {
-        //       S2CellId(S2TextFormat.MakePoint("0:178")).ToPoint(),
-        //       S2CellId(S2TextFormat.MakePoint("-1:180")).ToPoint(),
-        //       S2CellId(S2TextFormat.MakePoint("0:-179")).ToPoint(),
-        //       S2CellId(S2TextFormat.MakePoint("1:-180")).ToPoint()};
-        // snapped_loop = new S2Loop>(snapped_loop_a_vertices));
-        // absl.FixedArray<S2XYZFaceSiTi> points(loop.NumVertices);
-        // loop.GetXYZFaceSiTiVertices(points.data());
-        // loop.EncodeCompressed(encoder, points.data(), level);
-        //
-        private const string kEncodedLoopCompressed = "041B02222082A222A806A0C7A991DE86D905D7C3A691F2DEE40383908880A0958805000003";
-
         // S2PointRegion
         // The difference between an S2PointRegion and an S2Point being encoded is the
         // presence of the encoding version number as the first 8 bits. (i.e. when
         // S2Loop and others encode a stream of S2Points, they are writing triples of
         // doubles instead of encoding the points with the version byte.)
-        // S2PointRegion(S2PointUtil.Origin)
+        // S2PointRegion(S2.Origin)
         private const string kEncodedPointOrigin = "013BED86AA997A84BF88EC8B48C53C653FACD2721A90FFEF3F";
         // S2PointRegion(S2Point(12.34, 56.78, 9.1011).Normalize())
         private const string kEncodedPointTesting = "0109AD578332DBCA3FBC9FDB9BB4E4EE3FE67E7C2CA7CEC33F";
@@ -147,8 +117,8 @@ namespace S2Geometry
         [Fact]
         public void Test_S2RegionEncodeDecodeTest_S2Cap()
         {
-            S2Cap cap_from_point = S2Cap.FromPoint(new S2Point(3, 2, 1).Normalized);
-            var cap_from_center_height = S2Cap.FromCenterHeight(new S2Point(0, 0, 1).Normalized, 5);
+            S2Cap cap_from_point = S2Cap.FromPoint(new S2Point(3, 2, 1).Normalize());
+            var cap_from_center_height = S2Cap.FromCenterHeight(new S2Point(0, 0, 1).Normalize(), 5);
 
             var cap = TestEncodeDecode(kEncodedCapEmpty, S2Cap.Empty);
             Assert.True(S2Cap.Empty.ApproxEquals(cap));
@@ -162,9 +132,9 @@ namespace S2Geometry
 
         [Fact]
         public void Test_S2RegionEncodeDecodeTest_S2Cell() {
-            S2Cell cell_from_point = new S2Cell(new S2Point(1, 2, 3));
-            S2Cell cell_from_latlng = new S2Cell(S2LatLng.FromDegrees(39.0, -120.0));
-            S2Cell cell_from_face_pos_lvl = S2Cell.FromFacePosLevel(3, 0x12345678, S2Constants.kMaxCellLevel - 4);
+            S2Cell cell_from_point = new(new S2Point(1, 2, 3));
+            S2Cell cell_from_latlng = new(S2LatLng.FromDegrees(39.0, -120.0));
+            S2Cell cell_from_face_pos_lvl = S2Cell.FromFacePosLevel(3, 0x12345678, S2.kMaxCellLevel - 4);
             S2Cell cell_from_from_face = S2Cell.FromFace(0);
 
             var cell = TestEncodeDecode(kEncodedCellFromPoint, cell_from_point);
@@ -179,8 +149,8 @@ namespace S2Geometry
 
         [Fact]
         public void Test_S2RegionEncodeDecodeTest_S2CellUnion() {
-            S2CellUnion cu_empty = new S2CellUnion();
-            S2CellUnion cu_face1 = new S2CellUnion(new List<S2CellId>{ S2CellId.FromFace(1)});
+            S2CellUnion cu_empty = new();
+            S2CellUnion cu_face1 = new(new List<S2CellId>{ S2CellId.FromFace(1)});
             // Cell ids taken from S2CellUnion EncodeDecode test.
             S2CellUnion cu_latlngs = S2CellUnion.FromNormalized(new List<S2CellId>
                 {
@@ -217,7 +187,7 @@ namespace S2Geometry
             const string kCross1 = "-2:1, -1:1, 1:1, 2:1, 2:-1, 1:-1, -1:-1, -2:-1";
             // string kCrossCenterHole = "-0.5:0.5, 0.5:0.5, 0.5:-0.5, -0.5:-0.5;";
 
-            var loop_cross = S2TextFormat.MakeLoopOrDie(kCross1);
+            var loop_cross = MakeLoopOrDie(kCross1);
 
             var loop = TestEncodeDecode(kEncodedLoopEmpty, S2Loop.kEmpty);
             Assert.True(S2Loop.kEmpty == loop);
@@ -229,8 +199,8 @@ namespace S2Geometry
 
         [Fact]
         public void Test_S2RegionEncodeDecodeTest_S2PointRegion() {
-            S2PointRegion point_origin = new S2PointRegion(S2PointUtil.Origin);
-            S2PointRegion point_testing = new S2PointRegion(new S2Point(12.34, 56.78, 9.1011).Normalized);
+            S2PointRegion point_origin = new(S2.Origin);
+            S2PointRegion point_testing = new(new S2Point(12.34, 56.78, 9.1011).Normalize());
             TestEncodeDecode(kEncodedPointOrigin, point_origin);
             TestEncodeDecode(kEncodedPointTesting, point_testing);
         }
@@ -240,10 +210,10 @@ namespace S2Geometry
             string kCross1 = "-2:1, -1:1, 1:1, 2:1, 2:-1, 1:-1, -1:-1, -2:-1";
             string kCrossCenterHole = "-0.5:0.5, 0.5:0.5, 0.5:-0.5, -0.5:-0.5;";
 
-            var polygon_empty = S2TextFormat.MakePolygonOrDie("");
-            var polygon_full = S2TextFormat.MakeVerbatimPolygonOrDie("full");
-            var polygon_cross = S2TextFormat.MakePolygonOrDie(kCross1);
-            var polygon_cross_hole = S2TextFormat.MakePolygonOrDie(kCross1 + ";" + kCrossCenterHole);
+            var polygon_empty = MakePolygonOrDie("");
+            var polygon_full = MakeVerbatimPolygonOrDie("full");
+            var polygon_cross = MakePolygonOrDie(kCross1);
+            var polygon_cross_hole = MakePolygonOrDie(kCross1 + ";" + kCrossCenterHole);
 
             var polygon = TestEncodeDecode(kEncodedPolygonEmpty, polygon_empty);
             Assert.True(polygon_empty == polygon);
@@ -266,7 +236,7 @@ namespace S2Geometry
                     S2LatLng.FromDegrees(0, 90),
                     S2LatLng.FromDegrees(0, 180),
                 });
-            var polyline_3segments = S2TextFormat.MakePolylineOrDie("0:0, 0:10, 10:20, 20:30");
+            var polyline_3segments = MakePolylineOrDie("0:0, 0:10, 10:20, 20:30");
 
             var polyline = TestEncodeDecode(kEncodedPolylineEmpty, polyline_empty);
             Assert.True(polyline_empty == polyline);
@@ -282,37 +252,40 @@ namespace S2Geometry
         // S2RegionUnion
         // TestEncodeDecode tests that the input encodes to match the expected
         // golden data, and then returns the decode of the data into dst.
-        private static Region TestEncodeDecode<Region>(string golden, Region src) where Region : ICoder, IS2Region
+        private static Region TestEncodeDecode<Region>(string golden, Region src) where Region : IEncoder, IS2Region<Region>
         {
             Encoder encoder = new();
             src.Encode(encoder);
 
-            var str = encoder.Buffer.ToHexa(encoder.Length);
+            var str = encoder.HexString();
             Assert.Equal(golden, str);
 
-            var decoder = new Decoder(encoder.Buffer, 0, encoder.Buffer.Length);
-            var funcDict = new Dictionary<Type, Func<Decoder, (bool success, ICoder result)>>
+            var decoder = encoder.Decoder();
+            Dictionary<Type, Func<Decoder, (bool, IEncoder?)>> funcDict = new()
                 {
-                    { typeof(S2Cap), (d) => S2Cap.DecodeStatic(d) },
-                    { typeof(S2Cell), (d) => S2Cell.DecodeStatic(d) },
-                    { typeof(S2CellUnion), (d) => S2CellUnion.DecodeStatic(d) },
-                    { typeof(S2LatLngRect), (d) => S2LatLngRect.DecodeStatic(d) },
-                    { typeof(S2Loop), (d) => S2Loop.DecodeStatic(d) },
-                    { typeof(S2PointRegion), (d) => S2PointRegion.DecodeStatic(d) },
-                    { typeof(S2Polygon), (d) => S2Polygon.DecodeStatic(d) },
-                    { typeof(S2Polyline), (d) => S2Polyline.DecodeStatic(d) },
-                    { typeof(S2CellId), (d) => S2CellId.DecodeStatic(d) },
+                    { typeof(S2Cap), (d) => S2Cap.Decode(d) },
+                    { typeof(S2Cell), (d) => S2Cell.Decode(d) },
+                    { typeof(S2CellUnion), (d) => S2CellUnion.Decode(d) },
+                    { typeof(S2LatLngRect), (d) => S2LatLngRect.Decode(d) },
+                    { typeof(S2Loop), (d) => S2Loop.Decode(d) },
+                    { typeof(S2PointRegion), (d) => S2PointRegion.Decode(d) },
+                    { typeof(S2Polygon), (d) => S2Polygon.Decode(d) },
+                    { typeof(S2Polyline), (d) => S2Polyline.Decode(d) },
+                    { typeof(S2CellId), (d) => S2CellId.Decode(d) },
                 };
-            if (funcDict.ContainsKey(typeof(Region)))
+            var func = funcDict.GetValueOrDefault(typeof(Region));
+            if (func is not null)
             {
-                var func = funcDict[typeof(Region)];
                 var (success, result) = func(decoder);
-                if (success) return (Region)result;
+                if (success) return (Region)result!;
             }
 
             var mi = typeof(Region).GetMember("DecodeStatic").GetValue(0) as System.Reflection.MethodInfo;
-            var (success_r, result_r) = ((bool, Region))mi.Invoke(null, new[] { decoder });
-            if (success_r) return result_r;
+            if (mi != null)
+            {
+                var (success_r, result_r) = ((bool, Region))mi.Invoke(null, new[] { decoder })!;
+                if (success_r) return result_r;
+            }
 
             throw new NotImplementedException($"TestEncodeDecode for type: {typeof(Region).FullName}");
         }

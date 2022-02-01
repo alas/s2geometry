@@ -115,7 +115,8 @@ namespace S2Geometry
             public override string ToString() => $"{(IsHole ? "Hole(" : "Shell(")}{EdgeStr}) ";
         }
 
-        private class DegeneracyCheckingLayer : S2Builder.Layer {
+        private class DegeneracyCheckingLayer : Layer
+        {
             public DegeneracyCheckingLayer(TestDegeneracy[] expected)
             { expected_ = expected; }
             public override GraphOptions GraphOptions_() {
@@ -130,7 +131,7 @@ namespace S2Geometry
                 foreach (var degeneracy in degeneracies)
                 {
                     var edge = g.GetEdge((int)degeneracy.EdgeId);
-                    var points = new S2Point[] { g.Vertex(edge.Item1), g.Vertex(edge.Item2) };
+                    var points = new S2Point[] { g.Vertex(edge.ShapeId), g.Vertex(edge.EdgeId) };
                     actual.Add(new TestDegeneracy(S2TextFormat.ToDebugString(points), degeneracy.IsHole));
                 }
                 actual = new SortedSet<TestDegeneracy>(actual).ToList();
@@ -143,18 +144,14 @@ namespace S2Geometry
 
         private static void ExpectDegeneracies(string polygon_str, TestDegeneracy[] expected)
         {
-            S2Builder builder = new(new S2Builder.Options());
+            S2Builder builder = new(new Options());
             builder.StartLayer(new DegeneracyCheckingLayer(expected));
-            var polygon = S2TextFormat.MakeLaxPolygonOrDie(polygon_str);
+            var polygon = MakeLaxPolygonOrDie(polygon_str);
             builder.AddIsFullPolygonPredicate((IsFullPolygonPredicate)((Graph graph, out S2Error error) => {
                 error = S2Error.OK;
                 return (bool)polygon.GetReferencePoint().Contained;
             }));
-            for (int i = 0; i < polygon.NumEdges; ++i)
-            {
-                var edge = polygon.GetEdge(i);
-                builder.AddEdge(edge.V0, edge.V1);
-            }
+            builder.AddShape(polygon);
             Assert.True(builder.Build(out var error));
         }
     }

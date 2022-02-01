@@ -1,11 +1,7 @@
-using S2Geometry.S2ShapeUtil;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Xunit;
-
 namespace S2Geometry
 {
+    using static MutableS2ShapeIndex;
+
     public class MutableS2ShapeIndexTests
     {
         // This test harness owns a MutableS2ShapeIndex for convenience.
@@ -54,7 +50,7 @@ namespace S2Geometry
             // other cells on that face should also have index entries, in order to
             // indicate that they are contained by the loop.
             var loop = S2Loop.MakeRegularLoop(
-                new S2Point(1, 0.5, 0.5).Normalized, S1Angle.FromDegrees(89), 100);
+                new S2Point(1, 0.5, 0.5).Normalize(), S1Angle.FromDegrees(89), 100);
             index_.Add(new S2Loop.Shape(loop));
             QuadraticValidate(index_);
             TestEncodeDecode(index_);
@@ -68,7 +64,7 @@ namespace S2Geometry
             // Construct two loops consisting of kNumEdges vertices each, centered
             // around the cube vertex at the start of the Hilbert curve.
             S2Testing.ConcentricLoopsPolygon(
-                new S2Point(1, -1, -1).Normalized, 2, kNumEdges, out var polygon);
+                new S2Point(1, -1, -1).Normalize(), 2, kNumEdges, out var polygon);
             var loops = polygon.Release();
             foreach (var loop in loops)
             {
@@ -83,8 +79,8 @@ namespace S2Geometry
         public void Test_MutableS2ShapeIndexTest_ManyIdenticalEdges()
         {
             int kNumEdges = 100;  // Validation is quadratic
-            S2Point a = new S2Point(0.99, 0.99, 1).Normalized;
-            S2Point b = new S2Point(-0.99, -0.99, 1).Normalized;
+            S2Point a = new S2Point(0.99, 0.99, 1).Normalize();
+            S2Point b = new S2Point(-0.99, -0.99, 1).Normalize();
             for (int i = 0; i < kNumEdges; ++i)
             {
                 Assert.Equal(i, index_.Add(new S2EdgeVectorShape(a, b)));
@@ -96,7 +92,7 @@ namespace S2Geometry
             // have occurred (with the default index options).
             foreach (var it in index_.GetNewEnumerable())
             {
-                Assert.Equal(0, it.Item1.Level);
+                Assert.Equal(0, it.Item1.Level());
             }
         }
 
@@ -105,7 +101,7 @@ namespace S2Geometry
         {
             // This test verifies that degenerate edges are supported.  The following
             // point is a cube face vertex, and so it should be indexed in 3 cells.
-            var a = new S2Point(1, 1, 1).Normalized;
+            var a = new S2Point(1, 1, 1).Normalize();
             var shape = new S2EdgeVectorShape();
             shape.Add(a, a);
             index_.Add(shape);
@@ -116,7 +112,7 @@ namespace S2Geometry
             foreach (var it in index_.GetNewEnumerable())
             {
                 ++count;
-                Assert.True(it.Item1.IsLeaf);
+                Assert.True(it.Item1.IsLeaf());
                 Assert.Equal(1, it.Item2.NumClipped());
                 Assert.Equal(1, it.Item2.Clipped(0).NumEdges);
             }
@@ -131,7 +127,7 @@ namespace S2Geometry
             int kNumEdges = 100;  // Validation is quadratic
                                   // Construct two points in the same leaf cell.
             S2Point a = new S2CellId(new S2Point(1, 0, 0)).ToPoint();
-            S2Point b = (a + new S2Point(0, 1e-12, 0)).Normalized;
+            S2Point b = (a + new S2Point(0, 1e-12, 0)).Normalize();
             var shape = new S2EdgeVectorShape();
             for (int i = 0; i < kNumEdges; ++i)
             {
@@ -143,7 +139,7 @@ namespace S2Geometry
             // Check that there is exactly one index cell and that it is a leaf cell.
             var it = index_.GetNewEnumerator();
             Assert.True(it.MoveNext());
-            Assert.True(it.Current.Item1.IsLeaf);
+            Assert.True(it.Current.Item1.IsLeaf());
             Assert.False(it.MoveNext());
         }
 
@@ -161,6 +157,7 @@ namespace S2Geometry
             for (int id = 0; id < polygon.NumLoops(); ++id)
             {
                 index_.Release(id);
+                Assert.Null(index_.Shape(id));
                 QuadraticValidate(index_);
                 TestEncodeDecode(index_);
             }
@@ -169,23 +166,29 @@ namespace S2Geometry
         [Fact]
         public void Test_MutableS2ShapeIndexTest_RandomUpdates()
         {
+            // Set the temporary memory budget such that at least one shape needs to be
+            // split into multiple update batches (namely, the "5 concentric rings"
+            // polygon below which needs ~25KB of temporary space).
+            //absl.FlagSaver fs;
+            //absl.SetFlag(&FLAGS_s2shape_index_tmp_memory_budget, 10000);
+
             // Allow the seed to be varied from the command line.
             S2Testing.Random.Reset(S2Testing.Random.RandomSeed);
 
             // A few polylines.
             index_.Add(new S2Polyline.OwningShape(
-                S2TextFormat.MakePolylineOrDie("0:0, 2:1, 0:2, 2:3, 0:4, 2:5, 0:6")));
+                MakePolylineOrDie("0:0, 2:1, 0:2, 2:3, 0:4, 2:5, 0:6")));
             index_.Add(new S2Polyline.OwningShape(
-                S2TextFormat.MakePolylineOrDie("1:0, 3:1, 1:2, 3:3, 1:4, 3:5, 1:6")));
+                MakePolylineOrDie("1:0, 3:1, 1:2, 3:3, 1:4, 3:5, 1:6")));
             index_.Add(new S2Polyline.OwningShape(
-                S2TextFormat.MakePolylineOrDie("2:0, 4:1, 2:2, 4:3, 2:4, 4:5, 2:6")));
+                MakePolylineOrDie("2:0, 4:1, 2:2, 4:3, 2:4, 4:5, 2:6")));
 
             // A loop that used to trigger an indexing bug.
             index_.Add(new S2Loop.Shape(S2Loop.MakeRegularLoop(
-                new S2Point(1, 0.5, 0.5).Normalized, S1Angle.FromDegrees(89), 20)));
+                new S2Point(1, 0.5, 0.5).Normalize(), S1Angle.FromDegrees(89), 20)));
 
             // Five concentric loops.
-            S2Testing.ConcentricLoopsPolygon(new S2Point(1, -1, -1).Normalized, 5, 20, out var polygon5);
+            S2Testing.ConcentricLoopsPolygon(new S2Point(1, -1, -1).Normalize(), 5, 20, out var polygon5);
             for (int i = 0; i < polygon5.NumLoops(); ++i)
             {
                 index_.Add(new S2Loop.Shape(polygon5.Loop(i)));
@@ -193,9 +196,9 @@ namespace S2Geometry
 
             // Two clockwise loops around S2Cell cube vertices.
             index_.Add(new S2Loop.Shape(S2Loop.MakeRegularLoop(
-                new S2Point(-1, 1, 1).Normalized, S1Angle.FromRadians(Math.PI - 0.001), 10)));
+                new S2Point(-1, 1, 1).Normalize(), S1Angle.FromRadians(Math.PI - 0.001), 10)));
             index_.Add(new S2Loop.Shape(S2Loop.MakeRegularLoop(
-                new S2Point(-1, -1, -1).Normalized, S1Angle.FromRadians(Math.PI - 0.001), 10)));
+                new S2Point(-1, -1, -1).Normalize(), S1Angle.FromRadians(Math.PI - 0.001), 10)));
 
             // A shape with no edges and no interior.
             index_.Add(new S2Loop.Shape(S2Loop.kEmpty));
@@ -235,42 +238,18 @@ namespace S2Geometry
         }
 
         [Fact]
-        public void Test_LazyUpdatesTest_ConstMethodsThreadSafe()
+        public void Test_MutableS2ShapeIndex_ConstMethodsThreadSafe()
         {
             // Ensure that lazy updates are thread-safe.  In other words, make sure that
             // nothing bad happens when multiple threads call "const" methods that
             // cause pending updates to be applied.
+            LazyUpdatesTest test = new();
 
             // The number of readers should be large enough so that it is likely that
             // several readers will be running at once (with a multiple-core CPU).
-            /*int kNumReaders = 8;
-            using var pool = new ReaderThreadPool(this, kNumReaders);
-            lock (lock_)
-            {
-                int kIters = 100;
-                for (int iter = 0; iter < kIters; ++iter)
-                {
-                    // Loop invariant: lock_ is held and num_readers_left_ == 0.
-                    Assert.Equal(0, num_readers_left_);
-                    // Since there are no readers, it is safe to modify the index.
-                    index_.Clear();
-                    int num_vertices = 4 * S2Testing.Random.Skewed(10);  // Up to 4K vertices
-                    S2Loop loop = (S2Loop.MakeRegularLoop(
-                        S2Testing.RandomPoint(), S2Testing.KmToAngle(5), num_vertices));
-                    index_.Add(new S2Loop.Shape(loop));
-                    num_readers_left_ = kNumReaders;
-                    ++num_updates_;
-                    update_ready_.SignalAll();
-                    while (num_readers_left_ > 0)
-                    {
-                        all_readers_done_.Wait(lock_);
-                    }
-                }
-                // Signal the readers to exit.
-                num_updates_ = -1;
-                update_ready_.SignalAll();
-            }
-            // ReaderThreadPool destructor waits for all threads to complete.*/
+            const int kNumReaders = 8;
+            const int kIters = 100;
+            test.Run(kNumReaders, kIters);
         }
 
         [Fact]
@@ -282,19 +261,263 @@ namespace S2Geometry
             // that are outside the bounds of the given geometry.
             var polylines = new List<S2Polyline>
             {
-                S2TextFormat.MakePolylineOrDie("0:0, 2:1, 0:2, 2:3, 0:4, 2:5, 0:6"),
-                S2TextFormat.MakePolylineOrDie("1:0, 3:1, 1:2, 3:3, 1:4, 3:5, 1:6"),
-                S2TextFormat.MakePolylineOrDie("2:0, 4:1, 2:2, 4:3, 2:4, 4:5, 2:6"),
+                MakePolylineOrDie("0:0, 2:1, 0:2, 2:3, 0:4, 2:5, 0:6"),
+                MakePolylineOrDie("1:0, 3:1, 1:2, 3:3, 1:4, 3:5, 1:6"),
+                MakePolylineOrDie("2:0, 4:1, 2:2, 4:3, 2:4, 4:5, 2:6"),
             };
             MutableS2ShapeIndex index = new();
             foreach (var polyline in polylines)
             {
                 index.Add(new S2Polyline.OwningShape(polyline));
             }
-            S2Loop loop = new(new S2Cell(S2CellId.Begin(S2Constants.kMaxCellLevel)));
+            S2Loop loop = new(new S2Cell(S2CellId.Begin(S2.kMaxCellLevel)));
             index.Add(new S2Loop.Shape(loop));
             // No geometry intersects face 1, so there should be no index cells there.
             Assert.Equal(S2ShapeIndex.CellRelation.DISJOINT, index.LocateCell(S2CellId.FromFace(1)).cellRelation);
+        }
+
+        [Fact]
+        public void Test_MutableS2ShapeIndexTest_LinearSpace()
+        {
+            // Build an index that requires FLAGS_s2shape_index_min_short_edge_fraction
+            // to be non-zero in order to use a non-quadratic amount of space.
+
+            // Uncomment the following line to check whether this test works properly.
+            // FLAGS_s2shape_index_min_short_edge_fraction = 0;
+
+            // Set the maximum number of "short" edges per cell to 1 so that we can
+            // implement this test using a smaller index.
+            Options options = new()
+            {
+                MaxEdgesPerCell = 1
+            };
+            MutableS2ShapeIndex index = new(options);
+            index_.Init();
+
+            // The idea is to create O(n) copies of a single long edge, along with O(n)
+            // clusters of (M + 1) points equally spaced along the long edge, where "M"
+            // is the max_edges_per_cell() parameter.  The edges are divided such that
+            // there are equal numbers of long and short edges; this maximizes the index
+            // size when FLAGS_s2shape_index_min_short_edge_fraction is set to zero.
+            const int kNumEdges = 100;  // Validation is quadratic
+            int edges_per_cluster = options.MaxEdgesPerCell + 1;
+            int num_clusters = (kNumEdges / 2) / edges_per_cluster;
+
+            // Create the long edges.
+            S2Point a = new(1, 0, 0), b = new(0, 1, 0);
+            for (int i = 0; i < kNumEdges / 2; ++i)
+            {
+                index_.Add(new S2EdgeVectorShape(a, b));
+            }
+            // Create the clusters of short edges.
+            for (int k = 0; k < num_clusters; ++k)
+            {
+                S2Point p = S2.Interpolate(k / (num_clusters - 1.0), a, b);
+                var points = new S2Point[edges_per_cluster];
+                points.Fill(p);
+                index_.Add(new S2PointVectorShape(points));
+            }
+            QuadraticValidate(index_);
+
+            // The number of index cells should not exceed the number of clusters.
+            int cell_count = 0;
+            foreach (var it in index_)
+            {
+                ++cell_count;
+            }
+            Assert.True(cell_count <= num_clusters);
+        }
+
+        [Fact]
+        public void Test_MutableS2ShapeIndexTest_LongIndexEntriesBound()
+        {
+            // This test demonstrates that the c2 = 366 upper bound (using default
+            // parameter values) mentioned in the .cc file is achievable.
+
+            // Set the maximum number of "short" edges per cell to 1 so that we can test
+            // using a smaller index.
+            Options options = new()
+            {
+                MaxEdgesPerCell = 1
+            };
+            MutableS2ShapeIndex index = new(options);
+            index_.Init();
+
+            // This is a worst-case edge AB that touches as many cells as possible at
+            // level 30 while still being considered "short" at level 29.  We create an
+            // index consisting of two copies of this edge plus a full polygon.
+            S2Point a = S2.FaceSiTitoXYZ(0, 0, (1 << 30) + 0).Normalize();
+            S2Point b = S2.FaceSiTitoXYZ(0, 0, (1 << 30) + 6).Normalize();
+            for (int i = 0; i < 2; ++i)
+            {
+                index_.Add(new S2EdgeVectorShape(a, b));
+            }
+            index_.Add(new S2LaxPolygonShape(new List<List<S2Point>>()));
+
+            // Count the number of index cells at each level.
+            var counts = new int[S2.kMaxCellLevel + 1];
+            foreach (var it in index_.GetNewEnumerable())
+            {
+                ++counts[it.Item1.Level()];
+            }
+            int sum = 0;
+            for (int i = 0; i < counts.Length; ++i)
+            {
+                //S2_LOG(INFO) << i << ": " << counts[i];
+                sum += counts[i];
+            }
+            Assert.Equal(366, sum);
+        }
+
+        // NOTE(ericv): The tests below are all somewhat fragile since they depend on
+        // the internal BatchGenerator heuristics; if these heuristics change
+        // (including constants) then the tests below may need to change as well.
+
+        [Fact]
+        public void Test_MutableS2ShapeIndexTest_RemoveFullPolygonBatch()
+        {
+            TestBatchGenerator(0, Array.Empty<int>(), 100 /*bytes*/, 7,
+                     new List<BatchDescriptor> { new(new(7, 0), new(7, 0), 0) });
+        }
+
+        [Fact]
+        public void Test_MutableS2ShapeIndexTest_AddFullPolygonBatch()
+        {
+            TestBatchGenerator(0, new[] { 0 }, 100 /*bytes*/, 7,
+                new List<BatchDescriptor> { new(new(7, 0), new(8, 0), 0) });
+        }
+
+        [Fact]
+        public void Test_MutableS2ShapeIndexTest_RemoveManyEdgesInOneBatch()
+        {
+            // Test removing more edges than would normally fit in a batch.  For good
+            // measure we also add two full polygons in the same batch.
+            TestBatchGenerator(1000, new[] { 0, 0 }, 100 /*bytes*/, 7,
+                    new List<BatchDescriptor> { new(new(7, 0), new(9, 0), 1000) });
+        }
+
+        [Fact]
+        public void Test_MutableS2ShapeIndexTest_RemoveAndAddEdgesInOneBatch()
+        {
+            // Test removing and adding edges in one batch.
+            TestBatchGenerator(3, new[] { 4, 5 }, 10000 /*bytes*/, 7,
+                    new List<BatchDescriptor> { new(new(7, 0), new(9, 0), 12) });
+        }
+
+        [Fact]
+        public void Test_MutableS2ShapeIndexTest_RemoveAndAddEdgesInTwoBatches()
+        {
+            // Test removing many edges and then adding a few.
+            TestBatchGenerator(1000, new[] { 3 }, 1000 /*bytes*/, 7,
+                   new List<BatchDescriptor> {
+                new(new(7, 0), new(7, 0), 1000),
+                      new(new(7, 0), new(8, 0), 3)
+            });
+        }
+
+        [Fact]
+        public void Test_MutableS2ShapeIndexTest_RemoveAndAddEdgesAndFullPolygonsInTwoBatches()
+        {
+            // Like the above, but also add two full polygons such that one polygon is
+            // processed in each batch.
+            TestBatchGenerator(1000, new[] { 0, 3, 0 }, 1000 /*bytes*/, 7,
+                   new List<BatchDescriptor>  {
+                new(new(7, 0), new(8, 0), 1000),
+                      new(new(8, 0), new(10, 0), 3)
+            });
+        }
+
+        [Fact]
+        public void Test_MutableS2ShapeIndexTest_SeveralShapesInOneBatch()
+        {
+            // Test adding several shapes in one batch.
+            TestBatchGenerator(0, new[] { 3, 4, 5 }, 10000 /*bytes*/, 7,
+                   new List<BatchDescriptor> { new(new(7, 0), new(10, 0), 12) });
+        }
+
+        [Fact]
+        public void Test_MutableS2ShapeIndexTest_GroupSmallShapesIntoBatches()
+        {
+            // Test adding several small shapes that must be split into batches.
+            // 10000 bytes ~= temporary space to process 48 edges.
+            TestBatchGenerator(0, new[] { 20, 20, 20, 20, 20 }, 10000 /*bytes*/, 7,
+                  new List<BatchDescriptor>   {
+                new(new(7, 0), new(9, 0), 40),
+                      new(new(9, 0), new(11, 0), 40),
+                      new (new (11, 0), new(12, 0), 20)
+            });
+        }
+
+        [Fact]
+        public void Test_MutableS2ShapeIndexTest_AvoidPartialShapeInBatch()
+        {
+            // Test adding a small shape followed by a large shape that won't fit in the
+            // same batch as the small shape, but will fit in its own separate batch.
+            // 10000 bytes ~= temporary space to process 48 edges.
+            TestBatchGenerator(0, new[] { 20, 40, 20 }, 10000 /*bytes*/, 7,
+                  new List<BatchDescriptor>   {
+                new(new(7, 0), new(8, 0), 20),
+                      new (new (8, 0), new(9, 0), 40),
+                      new(new(9, 0), new(10, 0), 20)
+            });
+        }
+
+        [Fact]
+        public void Test_MutableS2ShapeIndexTest_SplitShapeIntoTwoBatches()
+        {
+            // Test adding a few small shapes, then a large shape that can be split
+            // across the remainder of the first batch plus the next batch.  The first
+            // two batches should have the same amount of remaining space relative to
+            // their maximum size.  (For 10000 bytes of temporary space, the ideal batch
+            // sizes are 48, 46, 45.)
+            //
+            // Note that we need a separate batch for the full polygon at the end, even
+            // though it has no edges, because partial shapes must always be the last
+            // shape in their batch.
+            TestBatchGenerator(0, new[] { 20, 60, 0 }, 10000 /*bytes*/, 7,
+                   new List<BatchDescriptor>  {
+                new(new(7, 0), new(8, 21), 41),
+                      new (new (8, 21), new(9, 0), 39),
+                      new(new(9, 0), new(10, 0), 0)
+            });
+        }
+
+        [Fact]
+        public void Test_MutableS2ShapeIndexTest_RemoveEdgesAndAddPartialShapeInSameBatch()
+        {
+            // Test a batch that consists of removing some edges and then adding a
+            // partial shape.  We also check that the small shape at the end is put into
+            // its own batch, since partial shapes must be the last shape in their batch.
+            TestBatchGenerator(20, new[] { 60, 5 }, 10000 /*bytes*/, 7,
+                   new List<BatchDescriptor>  {
+                new(new( 7, 0), new(7, 21), 41),
+                      new(new(7, 21), new(8, 0), 39),
+                      new(new(8, 0), new(9, 0), 5)
+            });
+        }
+
+        [Fact]
+        public void Test_MutableS2ShapeIndexTest_SplitShapeIntoManyBatches()
+        {
+            // Like the above except that the shape is split into 10 batches.  With
+            // 10000 bytes of temporary space, the ideal batch sizes are 63, 61, 59, 57,
+            // 55, 53, 51, 49, 48, 46.  The first 8 batches are as full as possible,
+            // while the last two batches have the same amount of remaining space
+            // relative to their ideal size.  There is also a small batch at the end.
+            TestBatchGenerator(0, new[] { 20, 500, 5 }, 10000 /*bytes*/, 7,
+                    new List<BatchDescriptor> {
+                        new(new(7, 0), new(8, 43), 63),
+                      new(new(8, 43), new(8, 104), 61),
+                      new(new(8, 104), new(8, 163), 59),
+                      new(new(8, 163), new(8, 220), 57),
+                      new(new(8, 220), new(8, 275), 55),
+                      new(new(8, 275), new(8, 328), 53),
+                      new(new(8, 328), new(8, 379), 51),
+                      new(new(8, 379), new(8, 428), 49),
+                      new(new(8, 428), new(8, 465), 37),
+                      new(new(8, 465), new(9, 0), 35),
+                      new(new(9, 0), new(10, 0), 5)
+            });
         }
 
         // Verifies that that every cell of the index contains the correct edges, and
@@ -307,7 +530,7 @@ namespace S2Geometry
             // each cell id, verify that the expected set of edges is present.
 
             // "min_cellid" is the first S2CellId that has not been validated yet.
-            S2CellId min_cellid = S2CellId.Begin(S2Constants.kMaxCellLevel);
+            S2CellId min_cellid = S2CellId.Begin(S2.kMaxCellLevel);
             var it = index.GetNewEnumerator();
             bool done = it.MoveNext();
             for (; ; )
@@ -319,17 +542,19 @@ namespace S2Geometry
                 {
                     S2CellId cellid = it.Current.Item1;
                     Assert.True(cellid >= min_cellid);
-                    skipped.InitFromBeginEnd(min_cellid, cellid.RangeMin);
-                    min_cellid = cellid.RangeMax.Next;
+                    skipped.InitFromBeginEnd(min_cellid, cellid.RangeMin());
+                    min_cellid = cellid.RangeMax().Next();
                 }
                 else
                 {
                     // Validate the empty cells beyond the last cell in the index.
-                    skipped.InitFromBeginEnd(min_cellid, S2CellId.End(S2Constants.kMaxCellLevel));
+                    skipped.InitFromBeginEnd(min_cellid, S2CellId.End(S2.kMaxCellLevel));
                 }
                 // Iterate through all the shapes, simultaneously validating the current
                 // index cell and all the skipped cells.
-                int short_edges = 0;  // number of edges counted toward subdivision
+                int num_edges = 0;              // all edges in the cell
+                int num_short_edges = 0;        // "short" edges
+                int num_containing_shapes = 0;  // shapes containing cell's entry vertex
                 for (int id = 0; id < index.NumShapeIds(); ++id)
                 {
                     S2Shape shape = index.Shape(id);
@@ -345,6 +570,12 @@ namespace S2Geometry
                     {
                         bool contains_center = clipped != null && clipped.ContainsCenter;
                         ValidateInterior(shape, it.Current.Item1, contains_center);
+                        S2PaddedCell pcell = new(it.Current.Item1, kCellPadding);
+                        if (shape != null)
+                        {
+                            num_containing_shapes +=
+                                shape.ContainsBruteForce(pcell.GetEntryVertex()) ? 1 : 0;
+                        }
                     }
                     // If this shape has been released, it should not be present at all.
                     if (shape == null)
@@ -353,10 +584,10 @@ namespace S2Geometry
                         continue;
                     }
                     // Otherwise check that the appropriate edges are present.
-                    for (int e = 0; e < shape.NumEdges; ++e)
+                    for (int e = 0; e < shape.NumEdges(); ++e)
                     {
                         var edge = shape.GetEdge(e);
-                        for (int j = 0; j < skipped.NumCells; ++j)
+                        for (int j = 0; j < skipped.Size(); ++j)
                         {
                             ValidateEdge(edge.V0, edge.V1, skipped.CellId(j), false);
                         }
@@ -364,15 +595,24 @@ namespace S2Geometry
                         {
                             bool has_edge = clipped != null && clipped.ContainsEdge(e);
                             ValidateEdge(edge.V0, edge.V1, it.Current.Item1, has_edge);
-                            int max_level = MutableS2ShapeIndex.GetEdgeMaxLevel(edge);
-                            if (has_edge && it.Current.Item1.Level < max_level)
+                            int max_level = GetEdgeMaxLevel(edge);
+                            if (has_edge)
                             {
-                                ++short_edges;
+                                ++num_edges;
+                                if (it.Current.Item1.Level() < max_level) ++num_short_edges;
                             }
                         }
                     }
                 }
-                Assert.True(short_edges <= index.Options_.MaxEdgesPerCell);
+                // This mirrors the calculation in MutableS2ShapeIndex.MakeIndexCell().
+                // It is designed to ensure that the index size is always linear in the
+                // number of indexed edges.
+                int max_short_edges = Math.Max(
+                    index.Options_.MaxEdgesPerCell,
+                    (int)(
+                        s2shape_index_min_short_edge_fraction *
+                        (num_edges + num_containing_shapes)));
+                Assert.True(num_short_edges < max_short_edges);
                 if (done) break;
 
                 done = it.MoveNext();
@@ -388,10 +628,10 @@ namespace S2Geometry
         {
             // Expand or shrink the padding slightly to account for errors in the
             // function we use to test for intersection (IntersectsRect).
-            var padding = MutableS2ShapeIndex.kCellPadding;
+            var padding = kCellPadding;
             padding += (index_has_edge ? 1 : -1) * S2EdgeClipping.kIntersectsRectErrorUVDist;
-            R2Rect bound = id.GetBoundUV().Expanded(padding);
-            Assert.Equal(S2EdgeClipping.ClipToPaddedFace(a, b, (int)id.Face, padding, out var a_uv, out var b_uv)
+            R2Rect bound = id.BoundUV().Expanded(padding);
+            Assert.Equal(S2EdgeClipping.ClipToPaddedFace(a, b, (int)id.Face(), padding, out var a_uv, out var b_uv)
                       && S2EdgeClipping.IntersectsRect(a_uv, b_uv, bound),
                       index_has_edge);
         }
@@ -416,31 +656,62 @@ namespace S2Geometry
         {
             Encoder encoder = new();
             index.Encode(encoder);
-            Decoder decoder = new(encoder.Buffer, 0, encoder.Length);
+            var decoder = encoder.Decoder();
             MutableS2ShapeIndex index2 = new();
             Assert.True(index2.Init(decoder, new S2ShapeUtilCoding.WrappedShapeFactory(index)));
-            S2ShapeTestsUtil.ExpectEqual(index, index2);
+            S2ShapeUtil_Testing.ExpectEqual(index, index2);
         }
 
-        private static void TestEnumeratorMethods(MutableS2ShapeIndex index) {
+        // Converts the given vector of batches to a human-readable form.
+        private static string BatchDescriptorsToString(List<BatchDescriptor> batches)
+        {
+            return String.Join(", ", batches);
+        }
+
+        // Verifies that removing and adding the given combination of shapes with
+        // the given memory budget yields the expected vector of batches.
+        private static void TestBatchGenerator(
+            int num_edges_removed, int[] shape_edges_added,
+            Int64 tmp_memory_budget, int shape_id_begin,
+            List<BatchDescriptor> expected_batches)
+        {
+            //absl.FlagSaver fs;
+            //absl.SetFlag(s2shape_index_tmp_memory_budget, tmp_memory_budget);
+
+            int num_edges_added = 0;
+            foreach (var n in shape_edges_added) num_edges_added += n;
+            BatchGenerator bgen = new(num_edges_removed, num_edges_added,
+                                                     shape_id_begin);
+            for (int i = 0; i < shape_edges_added.Length; ++i)
+            {
+                bgen.AddShape(shape_id_begin + i, shape_edges_added[i]);
+            }
+            var actual_batches = bgen.Finish();
+            Assert.Equal(BatchDescriptorsToString(actual_batches), BatchDescriptorsToString(expected_batches));
+        }
+
+        private static void TestEnumeratorMethods(MutableS2ShapeIndex index)
+        {
             S2ShapeIndex.Enumerator it = new(index);
             Assert.False(it.MovePrevious());
             it.Reset();
             List<S2CellId> ids = new();
             S2ShapeIndex.Enumerator it2 = new(index);
-            S2CellId min_cellid = S2CellId.Begin(S2Constants.kMaxCellLevel);
+            S2CellId min_cellid = S2CellId.Begin(S2.kMaxCellLevel);
             while (it.MoveNext())
             {
                 var cellid = it.Current.Item1;
-                var skipped = S2CellUnion.FromBeginEnd(min_cellid, cellid.RangeMin);
-                foreach (var skipped_id in skipped) {
+                var skipped = S2CellUnion.FromBeginEnd(min_cellid, cellid.RangeMin());
+                foreach (var skipped_id in skipped)
+                {
                     Assert.False(index.LocatePoint(skipped_id.ToPoint()).found);
                     Assert.Equal(S2ShapeIndex.CellRelation.DISJOINT, index.LocateCell(skipped_id).cellRelation);
                     it2.Reset();
                     it2.SetPosition(index.SeekCell(skipped_id).pos);
                     Assert.Equal(cellid, it2.Current.Item1);
                 }
-                if (ids.Any()) {
+                if (ids.Any())
+                {
                     it2 = it;
                     Assert.True(it2.MovePrevious());
                     Assert.Equal(ids.Last(), it2.Current.Item1);
@@ -460,16 +731,19 @@ namespace S2Geometry
                 Assert.Equal(S2ShapeIndex.CellRelation.INDEXED, rel2);
                 it2.SetPosition(pos2);
                 Assert.Equal(cellid, it2.Current.Item1);
-                if (!cellid.IsFace) {
+                if (!cellid.IsFace())
+                {
                     it2.Reset();
                     var (rel3, pos3) = index.LocateCell(cellid.Parent());
                     Assert.Equal(S2ShapeIndex.CellRelation.SUBDIVIDED, rel3);
                     it2.SetPosition(pos3);
                     Assert.True(it2.Current.Item1 >= cellid);
-                    Assert.True(it2.Current.Item1 >= cellid.Parent().RangeMin);
+                    Assert.True(it2.Current.Item1 >= cellid.Parent().RangeMin());
                 }
-                if (!cellid.IsLeaf) {
-                    for (int i = 0; i < 4; ++i) {
+                if (!cellid.IsLeaf())
+                {
+                    for (int i = 0; i < 4; ++i)
+                    {
                         it2.Reset();
                         var (rel3, pos3) = index.LocateCell(cellid.Child(i));
                         Assert.Equal(S2ShapeIndex.CellRelation.INDEXED, rel3);
@@ -478,7 +752,7 @@ namespace S2Geometry
                     }
                 }
                 ids.Add(cellid);
-                min_cellid = cellid.RangeMax.Next;
+                min_cellid = cellid.RangeMax().Next();
             }
         }
 
@@ -489,73 +763,26 @@ namespace S2Geometry
         // Note that we only test concurrent read access, since MutableS2ShapeIndex
         // requires all updates to be single-threaded and not concurrent with any
         // reads.
-        /*public class LazyUpdatesTest
+        public class LazyUpdatesTest : ReaderWriterTest
         {
-            public LazyUpdatesTest() { num_updates_ = 0; num_readers_left_ = 0; }
-
-            // The function executed by each reader thread.
-            public void ReaderThread()
+            public override void WriteOp()
             {
-                for (int last_update = 0; ; last_update = num_updates_)
+                index_.Clear();
+                int num_vertices = 4 * S2Testing.Random.Skewed(10);  // Up to 4K vertices
+                S2Loop loop = S2Loop.MakeRegularLoop(
+                    S2Testing.RandomPoint(), S2Testing.KmToAngle(5), num_vertices);
+                index_.Add(new S2Loop.Shape(loop));
+            }
+
+            public override void ReadOp()
+            {
+                foreach (var it in index_)
                 {
-                    lock (lock_)
-                    {
-                        while (num_updates_ == last_update)
-                        {
-                            update_ready_.Wait(lock_);
-                        }
-                        if (num_updates_ < 0) break;
-
-                        // The index is built on demand the first time we attempt to use it.
-                        // We intentionally release the lock so that many threads have a chance
-                        // to access the MutableS2ShapeIndex in parallel.
-                    }
-
-                    foreach (var it in index_.GetNewEnumerable())
-                    {
-                        continue;  // NOLINT
-                    }
-
-                    lock (lock_)
-                    {
-                        if (--num_readers_left_ == 0)
-                        {
-                            all_readers_done_.Signal();
-                        }
-                    }
+                    continue;  // NOLINT
                 }
             }
 
-            public class ReaderThreadPool : IDisposable
-            {
-                public ReaderThreadPool(LazyUpdatesTest test, int num_threads)
-                {
-                    threads_ = new thread[num_threads];
-                    num_threads_ = num_threads;
-                    for (int i = 0; i < num_threads_; ++i)
-                    {
-                        threads_[i] = new thread(LazyUpdatesTest.ReaderThread, test);
-                    }
-                }
-                public void Dispose()
-                {
-                    for (int i = 0; i < num_threads_; ++i) threads_[i].join();
-                }
-
-                private thread[] threads_;
-                private int num_threads_;
-            }
-
-            MutableS2ShapeIndex index_;
-            // The following fields are guarded by lock_.
-            object lock_ = new object();
-            int num_updates_;
-            int num_readers_left_;
-
-            // Signalled when a new update is ready to be processed.
-            CondVar update_ready_;
-            // Signalled when all readers have processed the latest update.
-            CondVar all_readers_done_;
-        }*/
+            protected MutableS2ShapeIndex index_ = new();
+        }
     }
 }

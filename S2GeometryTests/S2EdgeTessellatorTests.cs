@@ -48,7 +48,7 @@ namespace S2Geometry
             List<S2Point> vertices = new();
             tess.AppendUnprojected(new R2Point(-170, 0), new R2Point(170, 80), vertices);
             foreach (var v in vertices) {
-                Assert.True(Math.Abs(S2LatLng.Longitude(v).Degrees) >= 170);
+                Assert.True(Math.Abs(S2LatLng.Longitude(v).GetDegrees()) >= 170);
             }
         }
 
@@ -83,7 +83,7 @@ namespace S2Geometry
                                        new R2Point(180 - 0.03 * (lat + 1), lat + 1), vertices);
             }
             foreach (var v in vertices) {
-                Assert.True(Math.Abs(S2LatLng.Longitude(v).Degrees) >= 175);
+                Assert.True(Math.Abs(S2LatLng.Longitude(v).GetDegrees()) >= 175);
             }
         }
 
@@ -91,7 +91,7 @@ namespace S2Geometry
         public void Test_S2EdgeTessellator_ProjectedWrappingMultipleCrossings() {
             // The following loop crosses the 180 degree meridian four times (twice in
             // each direction).
-            var loop = S2TextFormat.ParsePointsOrDie("0:160, 0:-40, 0:120, 0:-80, 10:120, " +
+            var loop = ParsePointsOrDie("0:160, 0:-40, 0:120, 0:-80, 10:120, " +
                                          "10:-40, 0:160");
             PlateCarreeProjection proj = new(180);
             S1Angle tolerance = S1Angle.FromE7(1);
@@ -133,6 +133,7 @@ namespace S2Geometry
             Assert.True(stats.Max <= 1.0);
         }
 
+        // Repro case for b/110719057.
         [Fact]
         public void Test_S2EdgeTessellator_UnprojectedAccuracyCrossEquator() {
             MercatorProjection proj = new(180);
@@ -171,6 +172,7 @@ namespace S2Geometry
             Assert.True(stats.Max <= 1.0);
         }
 
+        // Repro case for b/110719057.
         [Fact]
         public void Test_S2EdgeTessellator_ProjectedAccuracyCrossEquator() {
             PlateCarreeProjection proj = new(180);
@@ -282,19 +284,19 @@ namespace S2Geometry
                 S2Point p = proj.Unproject(Projection.Interpolate(f, px, py));
                 if (dist_type == DistType.GEOMETRIC)
                 {
-                    S2EdgeDistances.UpdateMinDistance(p, x, y, ref dist);
+                    S2.UpdateMinDistance(p, x, y, ref dist);
                 }
                 else
                 {
                     Assert.True(dist_type == DistType.PARAMETRIC);
-                    dist = new S1ChordAngle(p, S2EdgeDistances.Interpolate(f, x, y));
+                    dist = new S1ChordAngle(p, S2.Interpolate(f, x, y));
                 }
                 if (dist > max_dist) max_dist = dist;
             }
             // Ensure that the maximum distance estimate is a lower bound, not an upper
             // bound, since we only want to record a failure of the distance estimation
             // algorithm if the number it returns is definitely too small.
-            return max_dist.PlusError(-S2EdgeDistances.GetUpdateMinDistanceMaxError(max_dist)).ToAngle();
+            return max_dist.PlusError(-S2.GetUpdateMinDistanceMaxError(max_dist)).ToAngle();
         }
 
         // Converts a projected edge to a sequence of geodesic edges and verifies that
@@ -314,7 +316,7 @@ namespace S2Geometry
                 return stats;
             }
             // Precompute the normal to the projected edge.
-            R2Point norm = R2Point.Normalize((pb - pa).Ortho);
+            R2Point norm = R2Point.Normalize((pb - pa).GetOrtho());
             S2Point x = vertices[0];
             R2Point px = proj.Project(x);
             for (int i = 1; i < vertices.Count; ++i)
@@ -322,7 +324,7 @@ namespace S2Geometry
                 S2Point y = vertices[i];
                 R2Point py = proj.WrapDestination(px, proj.Project(y));
                 // Check that every vertex is on the projected edge.
-                Assert.True((py - pa).DotProd(norm) <= 1e-14 * py.Norm);
+                Assert.True((py - pa).DotProd(norm) <= 1e-14 * py.GetNorm());
                 stats.Tally(GetMaxDistance(proj, px, x, py, y) / tolerance);
                 x = y;
                 px = py;
@@ -356,7 +358,7 @@ namespace S2Geometry
                 R2Point py = vertices[i];
                 S2Point y = proj.Unproject(py);
                 // Check that every vertex is on the geodesic edge.
-                Assert.True(S2EdgeDistances.IsDistanceLess(y, a, b, kMaxInterpolationError));
+                Assert.True(S2.IsDistanceLess(y, a, b, kMaxInterpolationError));
                 stats.Tally(GetMaxDistance(proj, px, x, py, y) / tolerance);
                 x = y;
                 px = py;
@@ -391,10 +393,10 @@ namespace S2Geometry
             // entire edge, under the assumption that the error is a convex combination
             // of E1(x) and E2(x) (see comments in the .cc file).
             double x = 1 - 2 * t;
-            double dlat = Math.Sin(0.5 * S2Constants.M_PI_4 * (1 - x));
-            double dlng = Math.Sin(S2Constants.M_PI_4 * (1 - x));
-            double dsin2 = dlat * dlat + dlng * dlng * Math.Sin(S2Constants.M_PI_4 * x) * S2Constants.M_SQRT1_2;
-            double dsin2_max = 0.5 * (1 - S2Constants.M_SQRT1_2);
+            double dlat = Math.Sin(0.5 * S2.M_PI_4 * (1 - x));
+            double dlng = Math.Sin(S2.M_PI_4 * (1 - x));
+            double dsin2 = dlat * dlat + dlng * dlng * Math.Sin(S2.M_PI_4 * x) * S2.M_SQRT1_2;
+            double dsin2_max = 0.5 * (1 - S2.M_SQRT1_2);
             // Note that this is the reciprocal of the value used in the .cc file!
             double kScaleFactor = Math.Max((2 * Math.Sqrt(3) / 9) / (x * (1 - x * x)),
                                             Math.Asin(Math.Sqrt(dsin2_max)) / Math.Asin(Math.Sqrt(dsin2)));
@@ -428,8 +430,8 @@ namespace S2Geometry
                 if (max_dist_p <= S2EdgeTessellator.kMinTolerance()) continue;
 
                 // Compute the estimated error bound.
-                S1Angle d1 = new(S2EdgeDistances.Interpolate(t, a, b), proj.Unproject((1 - t) * pa + t * pb));
-                S1Angle d2 = new(S2EdgeDistances.Interpolate(1 - t, a, b), proj.Unproject(t * pa + (1 - t) * pb));
+                S1Angle d1 = new(S2.Interpolate(t, a, b), proj.Unproject((1 - t) * pa + t * pb));
+                S1Angle d2 = new(S2.Interpolate(1 - t, a, b), proj.Unproject(t * pa + (1 - t) * pb));
                 S1Angle dist = kScaleFactor * new[] { S1Angle.FromRadians(1e-300), d1, d2 }.Max();
 
                 // Compute the ratio of the true geometric/parametric errors to the
@@ -442,7 +444,7 @@ namespace S2Geometry
                 if (r_g > 0.99999)
                 {
                     // Log any edges where the ratio is exceeded (or nearly so).
-                    _logger.WriteLine($"{pa} to {pb}: ratio = {r_g}, dist = {max_dist_g.Degrees}");
+                    _logger.WriteLine($"{pa} to {pb}: ratio = {r_g}, dist = {max_dist_g.GetDegrees()}");
                 }
                 stats_g.Tally(r_g);
                 stats_p.Tally(r_p);

@@ -131,18 +131,17 @@
 //#define S2_LINEAR_PROJECTION
 //#define S2_TAN_PROJECTION
 
-using System;
-using System.Linq;
+using System.Collections.ObjectModel;
 
-namespace S2Geometry
+namespace S2Geometry;
+
+public static partial class S2
 {
-    public static class S2Coords
+    // Convert an s- or t-value to the corresponding u- or v-value.  This is
+    // a non-linear transformation from [-1,1] to [-1,1] that attempts to
+    // make the cell sizes more uniform.
+    public static double STtoUV(double s)
     {
-        // Convert an s- or t-value to the corresponding u- or v-value.  This is
-        // a non-linear transformation from [-1,1] to [-1,1] that attempts to
-        // make the cell sizes more uniform.
-        public static double STtoUV(double s)
-        {
 #if S2_LINEAR_PROJECTION
             return 2 * s - 1;
 #elif S2_TAN_PROJECTION
@@ -156,393 +155,395 @@ namespace S2Geometry
             s = tan(S2Constants.M_PI_2 * s - S2Constants.M_PI_4);
             return s + (1.0 / (int64{1} << 53)) * s;
 #elif S2_QUADRATIC_PROJECTION
-            if (s >= 0.5) return (1/3.0) * (4*s*s - 1);
-            else          return (1/3.0) * (1 - 4*(1-s)*(1-s));
+        if (s >= 0.5) return (1 / 3.0) * (4 * s * s - 1);
+        else return (1 / 3.0) * (1 - 4 * (1 - s) * (1 - s));
 #else
             throw new NotImplementedException("Unknown value for S2_PROJECTION");
 #endif
-        }
+    }
 
-        // The inverse of the STtoUV transformation.  Note that it is not always
-        // true that UVtoST(STtoUV(x)) == x due to numerical errors.
-        public static double UVtoST(double u)
-        {
+    // The inverse of the STtoUV transformation.  Note that it is not always
+    // true that UVtoST(STtoUV(x)) == x due to numerical errors.
+    public static double UVtoST(double u)
+    {
 #if S2_LINEAR_PROJECTION
             return 0.5 * (u + 1);
 #elif S2_TAN_PROJECTION
             volatile double a = atan(u);
             return (2 * S2Constants.M_1_PI) * (a + S2Constants.M_PI_4);
 #elif S2_QUADRATIC_PROJECTION
-            if (u >= 0) return 0.5 * Math.Sqrt(1 + 3*u);
-            else        return 1 - 0.5 * Math.Sqrt(1 - 3*u);
+        if (u >= 0) return 0.5 * Math.Sqrt(1 + 3 * u);
+        else return 1 - 0.5 * Math.Sqrt(1 - 3 * u);
 #else
             throw new NotImplementedException("Unknown value for S2_PROJECTION");
 #endif
-        }
-
-        // Convert the i- or j-index of a leaf cell to the minimum corresponding s-
-        // or t-value contained by that cell.  The argument must be in the range
-        // [0..2**30], i.e. up to one position beyond the normal range of valid leaf
-        // cell indices.
-        public static double IJtoSTMin(int i)
-        {
-            Assert.True(i >= 0 && i <= S2Constants.kLimitIJ);
-            return (1.0 / S2Constants.kLimitIJ) * i;
-        }
-
-        // Return the i- or j-index of the leaf cell containing the given
-        // s- or t-value.  If the argument is outside the range spanned by valid
-        // leaf cell indices, return the index of the closest valid leaf cell (i.e.,
-        // return values are clamped to the range of valid leaf cell indices).
-        public static int STtoIJ(double s)
-        {
-            return (int)Math.Max(0, Math.Min(S2Constants.kLimitIJ - 1,
-                (long)Math.Round(S2Constants.kLimitIJ * s - 0.5)));
-        }
-
-        // Convert an si- or ti-value to the corresponding s- or t-value.
-        public static double SiTitoST(uint si)
-        {
-            Assert.True(si <= S2Constants.kMaxSiTi);
-            return (1.0 / S2Constants.kMaxSiTi) * si;
-        }
-
-        // Return the si- or ti-coordinate that is nearest to the given s- or
-        // t-value.  The result may be outside the range of valid (si,ti)-values.
-        public static uint STtoSiTi(double s)
-        {
-            // kMaxSiTi == 2^31, so the result doesn't fit in an Int32 when s == 1.
-            return (uint)Math.Round(s * S2Constants.kMaxSiTi);
-        }
-
-        // Convert (face, u, v) coordinates to a direction vector (not
-        // necessarily unit length).
-        public static S2Point FaceUVtoXYZ(int face, double u, double v)
-        {
-            return face switch
-            {
-                0 => new S2Point(1, u, v),
-                1 => new S2Point(-u, 1, v),
-                2 => new S2Point(-u, -v, 1),
-                3 => new S2Point(-1, -v, -u),
-                4 => new S2Point(v, -1, -u),
-                _ => new S2Point(v, u, -1),
-            };
-        }
-        public static S2Point FaceUVtoXYZ(int face, R2Point uv)
-        {
-            return FaceUVtoXYZ(face, uv[0], uv[1]);
-        }
-
-        // If the dot product of p with the given face normal is positive,
-        // set the corresponding u and v values (which may lie outside the range
-        // [-1,1]) and return true.  Otherwise return false.
-        public static bool FaceXYZtoUV(int face, S2Point p, out double pu, out double pv)
-        {
-            pu = 0;
-            pv = 0;
-            if (face < 3)
-            {
-                if (p[face] <= 0) return false;
-            }
-            else
-            {
-                if (p[face - 3] >= 0) return false;
-            }
-            ValidFaceXYZtoUV(face, p, out pu, out pv);
-            return true;
-        }
-
-        public static bool FaceXYZtoUV(int face, S2Point p, out R2Point puv)
-        {
-            var result = FaceXYZtoUV(face, p, out var x, out var y);
-            puv = new R2Point(x, y);
-            return result;
-        }
-
-        // Given a *valid* face for the given point p (meaning that dot product
-        // of p with the face normal is positive), return the corresponding
-        // u and v values (which may lie outside the range [-1,1]).
-        public static void ValidFaceXYZtoUV(int face, S2Point p, out double pu, out double pv)
-        {
-            Assert.True(p.DotProd(GetNorm(face)) > 0);
-            switch (face)
-            {
-                case 0: pu = p[1] / p[0]; pv = p[2] / p[0]; break;
-                case 1: pu = -p[0] / p[1]; pv = p[2] / p[1]; break;
-                case 2: pu = -p[0] / p[2]; pv = -p[1] / p[2]; break;
-                case 3: pu = p[2] / p[0]; pv = p[1] / p[0]; break;
-                case 4: pu = p[2] / p[1]; pv = -p[0] / p[1]; break;
-                default: pu = -p[1] / p[2]; pv = -p[0] / p[2]; break;
-            }
-        }
-        public static void ValidFaceXYZtoUV(int face, S2Point p, out R2Point puv)
-        {
-            ValidFaceXYZtoUV(face, p, out var x, out var y);
-            puv = new R2Point(x, y);
-        }
-
-        // Transform the given point P to the (u,v,w) coordinate frame of the given
-        // face (where the w-axis represents the face normal).
-        public static S2Point FaceXYZtoUVW(int face, S2Point p)
-        {
-            // The result coordinates are simply the dot products of P with the (u,v,w)
-            // axes for the given face (see kFaceUVWAxes).
-            return face switch
-            {
-                0 => new S2Point(p.Y, p.Z, p.X),
-                1 => new S2Point(-p.X, p.Z, p.Y),
-                2 => new S2Point(-p.X, -p.Y, p.Z),
-                3 => new S2Point(-p.Z, -p.Y, -p.X),
-                4 => new S2Point(-p.Z, p.X, -p.Y),
-                _ => new S2Point(p.Y, p.X, -p.Z),
-            };
-        }
-
-        // Return the face containing the given direction vector.  (For points on
-        // the boundary between faces, the result is arbitrary but repeatable.)
-        public static int GetFace(S2Point p)
-        {
-            int face = p.LargestAbsComponent;
-            if (p[face] < 0) face += 3;
-            return face;
-        }
-
-        // Convert a direction vector (not necessarily unit length) to
-        // (face, u, v) coordinates.
-        public static int XYZtoFaceUV(S2Point p, out double pu, out double pv)
-        {
-            int face = GetFace(p);
-            ValidFaceXYZtoUV(face, p, out pu, out pv);
-            return face;
-        }
-        public static int XYZtoFaceUV(S2Point p, out R2Point puv)
-        {
-            var res = XYZtoFaceUV(p, out var x, out var y);
-            puv = new R2Point(x, y);
-            return res;
-        }
-
-        // Convert a direction vector (not necessarily unit length) to
-        // (face, si, ti) coordinates and, if p is exactly equal to the center of a
-        // cell, return the level of this cell (-1 otherwise).
-        public static int XYZtoFaceSiTi(S2Point p, out int face, out uint si, out uint ti)
-        {
-            face = XYZtoFaceUV(p, out var u, out var v);
-            si = STtoSiTi(UVtoST(u));
-            ti = STtoSiTi(UVtoST(v));
-            // If the levels corresponding to si,ti are not equal, then p is not a cell
-            // center.  The si,ti values 0 and kMaxSiTi need to be handled specially
-            // because they do not correspond to cell centers at any valid level; they
-            // are mapped to level -1 by the code below.
-            int level = S2Constants.kMaxCellLevel - BitsUtils.FindLSBSetNonZero(si | S2Constants.kMaxSiTi);
-            if (level < 0 || level != S2Constants.kMaxCellLevel - BitsUtils.FindLSBSetNonZero(ti | S2Constants.kMaxSiTi))
-            {
-                return -1;
-            }
-            Assert.True(level <= S2Constants.kMaxCellLevel);
-            // In infinite precision, this test could be changed to ST == SiTi. However,
-            // due to rounding errors, UVtoST(XYZtoFaceUV(FaceUVtoXYZ(STtoUV(...)))) is
-            // not idempotent. On the other hand, center_raw is computed exactly the same
-            // way p was originally computed (if it is indeed the center of an S2Cell):
-            // the comparison can be exact.
-            var center = FaceSiTitoXYZ(face, si, ti).Normalized;
-            return p == center ? level : -1;
-        }
-
-        // Convert (face, si, ti) coordinates to a direction vector (not necessarily
-        // unit length).
-        public static S2Point FaceSiTitoXYZ(int face, uint si, uint ti)
-        {
-            double u = STtoUV(SiTitoST(si));
-            double v = STtoUV(SiTitoST(ti));
-            return FaceUVtoXYZ(face, u, v);
-        }
-
-        // Return the right-handed normal (not necessarily unit length) for an
-        // edge in the direction of the positive v-axis at the given u-value on
-        // the given face.  (This vector is perpendicular to the plane through
-        // the sphere origin that contains the given edge.)
-        public static S2Point GetUNorm(int face, double u)
-        {
-            return face switch
-            {
-                0 => new S2Point(u, -1, 0),
-                1 => new S2Point(1, u, 0),
-                2 => new S2Point(1, 0, u),
-                3 => new S2Point(-u, 0, 1),
-                4 => new S2Point(0, -u, 1),
-                _ => new S2Point(0, -1, -u),
-            };
-        }
-
-        // Return the right-handed normal (not necessarily unit length) for an
-        // edge in the direction of the positive u-axis at the given v-value on
-        // the given face.
-        public static S2Point GetVNorm(int face, double v)
-        {
-            return face switch
-            {
-                0 => new S2Point(-v, 0, 1),
-                1 => new S2Point(0, -v, 1),
-                2 => new S2Point(0, -1, -v),
-                3 => new S2Point(v, -1, 0),
-                4 => new S2Point(1, v, 0),
-                _ => new S2Point(1, 0, v),
-            };
-        }
-
-        // Return the unit-length normal, u-axis, or v-axis for the given face.
-        public static S2Point GetNorm(int face)
-        {
-            return GetUVWAxis(face, 2);
-        }
-        public static S2Point GetUAxis(int face)
-        {
-            return GetUVWAxis(face, 0);
-        }
-        public static S2Point GetVAxis(int face)
-        {
-            return GetUVWAxis(face, 1);
-        }
-
-        // Return the given axis of the given face (u=0, v=1, w=2).
-        public static S2Point GetUVWAxis(int face, int axis)
-        {
-            return new S2Point(kFaceUVWAxes[face][axis]);
-        }
-
-        // With respect to the (u,v,w) coordinate system of a given face, return the
-        // face that lies in the given direction (negative=0, positive=1) of the
-        // given axis (u=0, v=1, w=2).  For example, GetUVWFace(4, 0, 1) returns the
-        // face that is adjacent to face 4 in the positive u-axis direction.
-        public static int GetUVWFace(int face, int axis, bool direction) => GetUVWFace(face, axis, direction ? 1 : 0);
-        public static int GetUVWFace(int face, int axis, int direction)
-        {
-            Assert.True(face >= 0 && face <= 5);
-            Assert.True(axis >= 0 && axis <= 2);
-            Assert.True(new[] { 0, 1 }.Contains(direction));
-            return kFaceUVWFaces[face][axis][direction];
-        }
-
-        #region Tables
-
-        // The canonical Hilbert traversal order looks like an inverted 'U':
-        // the subcells are visited in the order (0,0), (0,1), (1,1), (1,0).
-        // The following tables encode the traversal order for various
-        // orientations of the Hilbert curve (axes swapped and/or directions
-        // of the axes reversed).
-
-        // kIJtoPos[orientation][ij] . pos
-        //
-        // Given a cell orientation and the (i,j)-index of a subcell (0=(0,0),
-        // 1=(0,1), 2=(1,0), 3=(1,1)), return the order in which this subcell is
-        // visited by the Hilbert curve (a position in the range [0..3]).
-        public static readonly int[][] kIJtoPos = new int[][] {
-            // (0,0) (0,1) (1,0) (1,1)
-            new[]{ 0, 1, 3, 2 },  // canonical order
-            new[]{ 0, 3, 1, 2 },  // axes swapped
-            new[]{ 2, 3, 1, 0 },  // bits inverted
-            new[]{ 2, 1, 3, 0 },  // swapped & inverted
-        };
-
-        // kPosToIJ[orientation][pos] . ij
-        //
-        // Return the (i,j) index of the subcell at the given position 'pos' in the
-        // Hilbert curve traversal order with the given orientation.  This is the
-        // inverse of the previous table:
-        //
-        //   kPosToIJ[r][kIJtoPos[r][ij]] == ij
-        public static readonly int[][] kPosToIJ = new int[][] {
-            // 0  1  2  3
-            new[]{ 0, 1, 3, 2 },    // canonical order:    (0,0), (0,1), (1,1), (1,0)
-            new[]{ 0, 2, 3, 1 },    // axes swapped:       (0,0), (1,0), (1,1), (0,1)
-            new[]{ 3, 2, 0, 1 },    // bits inverted:      (1,1), (1,0), (0,0), (0,1)
-            new[]{ 3, 1, 0, 2 },    // swapped & inverted: (1,1), (0,1), (0,0), (1,0)
-        };
-
-        // kPosToOrientation[pos] . orientation_modifier
-        //
-        // Return a modifier indicating how the orientation of the child subcell
-        // with the given traversal position [0..3] is related to the orientation
-        // of the parent cell.  The modifier should be XOR-ed with the parent
-        // orientation to obtain the curve orientation in the child.
-        public static readonly int[] kPosToOrientation = new int[]{
-            S2Constants.kSwapMask,
-            0,
-            0,
-            S2Constants.kInvertMask + S2Constants.kSwapMask,
-        };
-
-        // The precomputed neighbors of each face (see GetUVWFace).
-        public static readonly int[][][] kFaceUVWFaces = new int[][][] {
-            new int[][] {
-                new int[]{ 4, 1 },
-                new int[]{ 5, 2 },
-                new int[]{ 3, 0 }
-            },
-            new int[][] {
-                new int[]{ 0, 3 },
-                new int[]{ 5, 2 },
-                new int[]{ 4, 1 }
-            },
-            new int[] []{
-                new int[]{ 0, 3 },
-                new int[]{ 1, 4 },
-                new int[]{ 5, 2 }
-            },
-            new int[] []{
-                new int[]{ 2, 5 },
-                new int[]{ 1, 4 },
-                new int[]{ 0, 3 }
-            },
-            new int[] []{
-                new int[]{ 2, 5 },
-                new int[]{ 3, 0 },
-                new int[]{ 1, 4 }
-            },
-            new int[] []{
-                new int[]{ 4, 1 },
-                new int[]{ 3, 0 },
-                new int[]{ 2, 5 }
-            }
-        };
-
-        // The U,V,W axes for each face.
-        public static readonly double[][][] kFaceUVWAxes = new double[][][]
-        {
-            new double[][] {
-                new double[] { 0,  1,  0 },
-                new double[] { 0,  0,  1 },
-                new double[] { 1,  0,  0 }
-            },
-            new double[][] {
-                new double[] {-1,  0,  0 },
-                new double[] { 0,  0,  1 },
-                new double[] { 0,  1,  0 }
-            },
-            new double[][] {
-                new double[] {-1,  0,  0 },
-                new double[] { 0, -1,  0 },
-                new double[] { 0,  0,  1 }
-            },
-            new double[][] {
-                new double[] { 0,  0, -1 },
-                new double[] { 0, -1,  0 },
-                new double[] {-1,  0,  0 }
-            },
-            new double[][] {
-                new double[] { 0,  0, -1 },
-                new double[] { 1,  0,  0 },
-                new double[] { 0, -1,  0 }
-            },
-            new double[][] {
-                new double[] { 0,  1,  0 },
-                new double[] { 1,  0,  0 },
-                new double[] { 0,  0, -1 }
-            }
-        };
-
-        #endregion
     }
+
+    // Convert the i- or j-index of a leaf cell to the minimum corresponding s-
+    // or t-value contained by that cell.  The argument must be in the range
+    // [0..2**30], i.e. up to one position beyond the normal range of valid leaf
+    // cell indices.
+    public static double IJtoSTMin(int i)
+    {
+        Assert.True(i >= 0 && i <= S2.kLimitIJ);
+        return (1.0 / S2.kLimitIJ) * i;
+    }
+
+    // Return the i- or j-index of the leaf cell containing the given
+    // s- or t-value.  If the argument is outside the range spanned by valid
+    // leaf cell indices, return the index of the closest valid leaf cell (i.e.,
+    // return values are clamped to the range of valid leaf cell indices).
+    public static int STtoIJ(double s)
+    {
+        return (int)Math.Max(0, Math.Min(S2.kLimitIJ - 1,
+            (long)Math.Round(S2.kLimitIJ * s - 0.5)));
+    }
+
+    // Convert an si- or ti-value to the corresponding s- or t-value.
+    public static double SiTitoST(uint si)
+    {
+        Assert.True(si <= S2.kMaxSiTi);
+        return (1.0 / S2.kMaxSiTi) * si;
+    }
+
+    // Return the si- or ti-coordinate that is nearest to the given s- or
+    // t-value.  The result may be outside the range of valid (si,ti)-values.
+    public static uint STtoSiTi(double s)
+    {
+        // kMaxSiTi == 2^31, so the result doesn't fit in an Int32 when s == 1.
+        return (uint)Math.Round(s * S2.kMaxSiTi);
+    }
+
+    // Convert (face, u, v) coordinates to a direction vector (not
+    // necessarily unit length).
+    public static S2Point FaceUVtoXYZ(int face, double u, double v)
+    {
+        return face switch
+        {
+            0 => new S2Point(1, u, v),
+            1 => new S2Point(-u, 1, v),
+            2 => new S2Point(-u, -v, 1),
+            3 => new S2Point(-1, -v, -u),
+            4 => new S2Point(v, -1, -u),
+            _ => new S2Point(v, u, -1),
+        };
+    }
+    public static S2Point FaceUVtoXYZ(int face, R2Point uv)
+    {
+        return FaceUVtoXYZ(face, uv[0], uv[1]);
+    }
+
+    // If the dot product of p with the given face normal is positive,
+    // set the corresponding u and v values (which may lie outside the range
+    // [-1,1]) and return true.  Otherwise return false.
+    public static bool FaceXYZtoUV(int face, S2Point p, out double pu, out double pv)
+    {
+        pu = 0;
+        pv = 0;
+        if (face < 3)
+        {
+            if (p[face] <= 0) return false;
+        }
+        else
+        {
+            if (p[face - 3] >= 0) return false;
+        }
+        ValidFaceXYZtoUV(face, p, out pu, out pv);
+        return true;
+    }
+
+    public static bool FaceXYZtoUV(int face, S2Point p, out R2Point puv)
+    {
+        var result = FaceXYZtoUV(face, p, out var x, out var y);
+        puv = new R2Point(x, y);
+        return result;
+    }
+
+    // Given a *valid* face for the given point p (meaning that dot product
+    // of p with the face normal is positive), return the corresponding
+    // u and v values (which may lie outside the range [-1,1]).
+    public static void ValidFaceXYZtoUV(int face, S2Point p, out double pu, out double pv)
+    {
+        Assert.True(p.DotProd(GetNorm(face)) > 0);
+        switch (face)
+        {
+            case 0: pu = p[1] / p[0]; pv = p[2] / p[0]; break;
+            case 1: pu = -p[0] / p[1]; pv = p[2] / p[1]; break;
+            case 2: pu = -p[0] / p[2]; pv = -p[1] / p[2]; break;
+            case 3: pu = p[2] / p[0]; pv = p[1] / p[0]; break;
+            case 4: pu = p[2] / p[1]; pv = -p[0] / p[1]; break;
+            default: pu = -p[1] / p[2]; pv = -p[0] / p[2]; break;
+        }
+    }
+    public static void ValidFaceXYZtoUV(int face, S2Point p, out R2Point puv)
+    {
+        ValidFaceXYZtoUV(face, p, out var x, out var y);
+        puv = new R2Point(x, y);
+    }
+
+    // Transform the given point P to the (u,v,w) coordinate frame of the given
+    // face (where the w-axis represents the face normal).
+    public static S2Point FaceXYZtoUVW(int face, S2Point p)
+    {
+        // The result coordinates are simply the dot products of P with the (u,v,w)
+        // axes for the given face (see kFaceUVWAxes).
+        return face switch
+        {
+            0 => new S2Point(p.Y, p.Z, p.X),
+            1 => new S2Point(-p.X, p.Z, p.Y),
+            2 => new S2Point(-p.X, -p.Y, p.Z),
+            3 => new S2Point(-p.Z, -p.Y, -p.X),
+            4 => new S2Point(-p.Z, p.X, -p.Y),
+            _ => new S2Point(p.Y, p.X, -p.Z),
+        };
+    }
+
+    // Return the face containing the given direction vector.  (For points on
+    // the boundary between faces, the result is arbitrary but repeatable.)
+    public static int GetFace(S2Point p)
+    {
+        int face = p.LargestAbsComponent();
+        if (p[face] < 0) face += 3;
+        return face;
+    }
+
+    // Convert a direction vector (not necessarily unit length) to
+    // (face, u, v) coordinates.
+    public static int XYZtoFaceUV(S2Point p, out double pu, out double pv)
+    {
+        int face = GetFace(p);
+        ValidFaceXYZtoUV(face, p, out pu, out pv);
+        return face;
+    }
+    public static int XYZtoFaceUV(S2Point p, out R2Point puv)
+    {
+        var res = XYZtoFaceUV(p, out var x, out var y);
+        puv = new R2Point(x, y);
+        return res;
+    }
+
+    // Convert a direction vector (not necessarily unit length) to
+    // (face, si, ti) coordinates and, if p is exactly equal to the center of a
+    // cell, return the level of this cell (-1 otherwise).
+    public static int XYZtoFaceSiTi(S2Point p, out int face, out uint si, out uint ti)
+    {
+        face = XYZtoFaceUV(p, out var u, out var v);
+        si = STtoSiTi(UVtoST(u));
+        ti = STtoSiTi(UVtoST(v));
+        // If the levels corresponding to si,ti are not equal, then p is not a cell
+        // center.  The si,ti values 0 and kMaxSiTi need to be handled specially
+        // because they do not correspond to cell centers at any valid level; they
+        // are mapped to level -1 by the code below.
+        int level = S2.kMaxCellLevel - BitsUtils.FindLSBSetNonZero(si | S2.kMaxSiTi);
+        if (level < 0 || level != S2.kMaxCellLevel - BitsUtils.FindLSBSetNonZero(ti | S2.kMaxSiTi))
+        {
+            return -1;
+        }
+        Assert.True(level <= S2.kMaxCellLevel);
+        // In infinite precision, this test could be changed to ST == SiTi. However,
+        // due to rounding errors, UVtoST(XYZtoFaceUV(FaceUVtoXYZ(STtoUV(...)))) is
+        // not idempotent. On the other hand, center_raw is computed exactly the same
+        // way p was originally computed (if it is indeed the center of an S2Cell):
+        // the comparison can be exact.
+        var center = FaceSiTitoXYZ(face, si, ti).Normalize();
+        return p == center ? level : -1;
+    }
+
+    // Convert (face, si, ti) coordinates to a direction vector (not necessarily
+    // unit length).
+    public static S2Point FaceSiTitoXYZ(int face, uint si, uint ti)
+    {
+        double u = STtoUV(SiTitoST(si));
+        double v = STtoUV(SiTitoST(ti));
+        return FaceUVtoXYZ(face, u, v);
+    }
+
+    // Return the right-handed normal (not necessarily unit length) for an
+    // edge in the direction of the positive v-axis at the given u-value on
+    // the given face.  (This vector is perpendicular to the plane through
+    // the sphere origin that contains the given edge.)
+    public static S2Point GetUNorm(int face, double u)
+    {
+        return face switch
+        {
+            0 => new S2Point(u, -1, 0),
+            1 => new S2Point(1, u, 0),
+            2 => new S2Point(1, 0, u),
+            3 => new S2Point(-u, 0, 1),
+            4 => new S2Point(0, -u, 1),
+            _ => new S2Point(0, -1, -u),
+        };
+    }
+
+    // Return the right-handed normal (not necessarily unit length) for an
+    // edge in the direction of the positive u-axis at the given v-value on
+    // the given face.
+    public static S2Point GetVNorm(int face, double v)
+    {
+        return face switch
+        {
+            0 => new S2Point(-v, 0, 1),
+            1 => new S2Point(0, -v, 1),
+            2 => new S2Point(0, -1, -v),
+            3 => new S2Point(v, -1, 0),
+            4 => new S2Point(1, v, 0),
+            _ => new S2Point(1, 0, v),
+        };
+    }
+
+    // Return the unit-length normal, u-axis, or v-axis for the given face.
+    public static S2Point GetNorm(int face)
+    {
+        return GetUVWAxis(face, 2);
+    }
+    public static S2Point GetUAxis(int face)
+    {
+        return GetUVWAxis(face, 0);
+    }
+    public static S2Point GetVAxis(int face)
+    {
+        return GetUVWAxis(face, 1);
+    }
+
+    // Return the given axis of the given face (u=0, v=1, w=2).
+    public static S2Point GetUVWAxis(int face, int axis)
+    {
+        return new S2Point(kFaceUVWAxes[face][axis]);
+    }
+
+    // With respect to the (u,v,w) coordinate system of a given face, return the
+    // face that lies in the given direction (negative=0, positive=1) of the
+    // given axis (u=0, v=1, w=2).  For example, GetUVWFace(4, 0, 1) returns the
+    // face that is adjacent to face 4 in the positive u-axis direction.
+    public static int GetUVWFace(int face, int axis, bool direction) => GetUVWFace(face, axis, direction ? 1 : 0);
+    public static int GetUVWFace(int face, int axis, int direction)
+    {
+        Assert.True(face >= 0 && face <= 5);
+        Assert.True(axis >= 0 && axis <= 2);
+        Assert.True(new[] { 0, 1 }.Contains(direction));
+        return kFaceUVWFaces[face][axis][direction];
+    }
+
+    #region Tables
+
+    // The canonical Hilbert traversal order looks like an inverted 'U':
+    // the subcells are visited in the order (0,0), (0,1), (1,1), (1,0).
+    // The following tables encode the traversal order for various
+    // orientations of the Hilbert curve (axes swapped and/or directions
+    // of the axes reversed).
+
+    // kIJtoPos[orientation][ij] . pos
+    //
+    // Given a cell orientation and the (i,j)-index of a subcell (0=(0,0),
+    // 1=(0,1), 2=(1,0), 3=(1,1)), return the order in which this subcell is
+    // visited by the Hilbert curve (a position in the range [0..3]).
+    public static readonly ReadOnlyCollection<ReadOnlyCollection<int>> kIJtoPos = new List<ReadOnlyCollection<int>>
+    {
+        // (0,0) (0,1) (1,0) (1,1)
+        new List<int>{ 0, 1, 3, 2 }.AsReadOnly(),  // canonical order
+        new List<int>{ 0, 3, 1, 2 }.AsReadOnly(),  // axes swapped
+        new List<int>{ 2, 3, 1, 0 }.AsReadOnly(),  // bits inverted
+        new List<int>{ 2, 1, 3, 0 }.AsReadOnly(),  // swapped & inverted
+    }.AsReadOnly();
+
+    // kPosToIJ[orientation][pos] . ij
+    //
+    // Return the (i,j) index of the subcell at the given position 'pos' in the
+    // Hilbert curve traversal order with the given orientation.  This is the
+    // inverse of the previous table:
+    //
+    //   kPosToIJ[r][kIJtoPos[r][ij]] == ij
+    public static readonly ReadOnlyCollection<ReadOnlyCollection<int>> kPosToIJ = new List<ReadOnlyCollection<int>>
+    {
+        // 0  1  2  3
+        new List<int>{ 0, 1, 3, 2 }.AsReadOnly(),    // canonical order:    (0,0), (0,1), (1,1), (1,0)
+        new List<int>{ 0, 2, 3, 1 }.AsReadOnly(),    // axes swapped:       (0,0), (1,0), (1,1), (0,1)
+        new List<int>{ 3, 2, 0, 1 }.AsReadOnly(),    // bits inverted:      (1,1), (1,0), (0,0), (0,1)
+        new List<int>{ 3, 1, 0, 2 }.AsReadOnly(),    // swapped & inverted: (1,1), (0,1), (0,0), (1,0)
+    }.AsReadOnly();
+
+    // kPosToOrientation[pos] . orientation_modifier
+    //
+    // Return a modifier indicating how the orientation of the child subcell
+    // with the given traversal position [0..3] is related to the orientation
+    // of the parent cell.  The modifier should be XOR-ed with the parent
+    // orientation to obtain the curve orientation in the child.
+    public static readonly ReadOnlyCollection<int> kPosToOrientation = new List<int>
+    {
+        S2.kSwapMask,
+        0,
+        0,
+        S2.kInvertMask + S2.kSwapMask,
+    }.AsReadOnly();
+
+    // The precomputed neighbors of each face (see GetUVWFace).
+    private static readonly ReadOnlyCollection<ReadOnlyCollection<ReadOnlyCollection<int>>> kFaceUVWFaces = new List<ReadOnlyCollection<ReadOnlyCollection<int>>> {
+            new List<ReadOnlyCollection<int>> {
+                new List<int>{ 4, 1 }.AsReadOnly(),
+                new List<int>{ 5, 2 }.AsReadOnly(),
+                new List<int>{ 3, 0 }.AsReadOnly()
+            }.AsReadOnly(),
+            new List<ReadOnlyCollection<int>> {
+                new List<int>{ 0, 3 }.AsReadOnly(),
+                new List<int>{ 5, 2 }.AsReadOnly(),
+                new List<int>{ 4, 1 }.AsReadOnly()
+            }.AsReadOnly(),
+            new List<ReadOnlyCollection<int>>{
+                new List<int>{ 0, 3 }.AsReadOnly(),
+                new List<int>{ 1, 4 }.AsReadOnly(),
+                new List<int>{ 5, 2 }.AsReadOnly()
+            }.AsReadOnly(),
+            new List<ReadOnlyCollection<int>>{
+                new List<int>{ 2, 5 }.AsReadOnly(),
+                new List<int>{ 1, 4 }.AsReadOnly(),
+                new List<int>{ 0, 3 }.AsReadOnly()
+            }.AsReadOnly(),
+            new List<ReadOnlyCollection<int>>{
+                new List<int>{ 2, 5 }.AsReadOnly(),
+                new List<int>{ 3, 0 }.AsReadOnly(),
+                new List<int>{ 1, 4 }.AsReadOnly()
+            }.AsReadOnly(),
+            new List<ReadOnlyCollection<int>>{
+                new List<int>{ 4, 1 }.AsReadOnly(),
+                new List<int>{ 3, 0 }.AsReadOnly(),
+                new List<int>{ 2, 5 }.AsReadOnly()
+            }.AsReadOnly()
+        }.AsReadOnly();
+
+    // The U,V,W axes for each face.
+    private static readonly ReadOnlyCollection<ReadOnlyCollection<ReadOnlyCollection<double>>> kFaceUVWAxes = new List<ReadOnlyCollection<ReadOnlyCollection<double>>>
+    {
+            new List<ReadOnlyCollection<double>>{
+                new List<double>{ 0,  1,  0 }.AsReadOnly(),
+                new List<double>{ 0,  0,  1 }.AsReadOnly(),
+                new List<double>{ 1,  0,  0 }.AsReadOnly()
+            }.AsReadOnly(),
+            new List<ReadOnlyCollection<double>>{
+                new List<double>{-1,  0,  0 }.AsReadOnly(),
+                new List<double>{ 0,  0,  1 }.AsReadOnly(),
+                new List<double>{ 0,  1,  0 }.AsReadOnly()
+            }.AsReadOnly(),
+            new List<ReadOnlyCollection<double>>{
+                new List<double>{-1,  0,  0 }.AsReadOnly(),
+                new List<double>{ 0, -1,  0 }.AsReadOnly(),
+                new List<double>{ 0,  0,  1 }.AsReadOnly()
+            }.AsReadOnly(),
+            new List<ReadOnlyCollection<double>>{
+                new List<double>{ 0,  0, -1 }.AsReadOnly(),
+                new List<double>{ 0, -1,  0 }.AsReadOnly(),
+                new List<double>{-1,  0,  0 }.AsReadOnly()
+            }.AsReadOnly(),
+            new List<ReadOnlyCollection<double>>{
+                new List<double>{ 0,  0, -1 }.AsReadOnly(),
+                new List<double>{ 1,  0,  0 }.AsReadOnly(),
+                new List<double>{ 0, -1,  0 }.AsReadOnly()
+            }.AsReadOnly(),
+            new List<ReadOnlyCollection<double>>{
+                new List<double>{ 0,  1,  0 }.AsReadOnly(),
+                new List<double>{ 1,  0,  0 }.AsReadOnly(),
+                new List<double>{ 0,  0, -1 }.AsReadOnly()
+            }.AsReadOnly()
+    }.AsReadOnly();
+
+    #endregion
 }

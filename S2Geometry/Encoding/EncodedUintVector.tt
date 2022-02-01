@@ -5,298 +5,306 @@
 <#@ import namespace="System.Text" #>
 <#@ import namespace="System.Collections.Generic" #>
 <#@ output extension=".cs" #>
-using System;
-namespace S2Geometry
+namespace S2Geometry;
+
+/// <summary>
+/// This class represents an encoded vector of unsigned integers of type T.
+/// Values are decoded only when they are accessed.  This allows for very fast
+/// initialization and no additional memory use beyond the encoded data.
+/// The encoded data is not owned by this class; typically it points into a
+/// large contiguous buffer that contains other encoded data as well.
+///
+/// This is one of several helper classes that allow complex data structures to
+/// be initialized from an encoded format in constant time and then decoded on
+/// demand.  This can be a big performance advantage when only a small part of
+/// the data structure is actually used.
+///
+/// Values are encoded using a fixed number of bytes per value, where the
+/// number of bytes depends on the largest value present.
+///
+/// REQUIRES: T is an unsigned integer type.
+/// REQUIRES: 2 <= sizeof(T) <= 8
+/// </summary>
+public class EncodedUintVector
 {
-    /// <summary>
-    /// This class represents an encoded vector of unsigned integers of type T.
-    /// Values are decoded only when they are accessed.  This allows for very fast
-    /// initialization and no additional memory use beyond the encoded data.
-    /// The encoded data is not owned by this class; typically it points into a
-    /// large contiguous buffer that contains other encoded data as well.
-    ///
-    /// This is one of several helper classes that allow complex data structures to
-    /// be initialized from an encoded format in constant time and then decoded on
-    /// demand.  This can be a big performance advantage when only a small part of
-    /// the data structure is actually used.
-    ///
-    /// Values are encoded using a fixed number of bytes per value, where the
-    /// number of bytes depends on the largest value present.
-    ///
-    /// REQUIRES: T is an unsigned integer type.
-    /// REQUIRES: 2 <= sizeof(T) <= 8
-    /// </summary>
-    public class EncodedUintVector
+    static EncodedUintVector()
     {
-        static EncodedUintVector()
-        {
 #if BIGENDIAN || ARM
-            throw new NotImplementedException("Not implemented on big-endian architectures");
+        throw new NotImplementedException("Not implemented on big-endian architectures");
 #endif
 <#
 var types = new List<(Type typename, int typesize)>
 {
-    // (typeof(Byte), sizeof(Byte)),
-    (typeof(UInt16), sizeof(UInt16)),
-    (typeof(UInt32), sizeof(UInt32)),
-    (typeof(UInt64), sizeof(UInt64)),
+// (typeof(Byte), sizeof(Byte)),
+(typeof(UInt16), sizeof(UInt16)),
+(typeof(UInt32), sizeof(UInt32)),
+(typeof(UInt64), sizeof(UInt64)),
 };
 
 foreach (var tuple in types) {
-    Type type = tuple.typename;
-    int size = tuple.typesize;
-    if (type != typeof(Byte)) Write(Environment.NewLine);
+Type type = tuple.typename;
+int size = tuple.typesize;
+if (type != typeof(Byte)) Write(Environment.NewLine);
 #>
-            // <#= type.Name #> checks
-            Assert.True(<#= type.Name #>.MinValue == 0); // Unsupported signed integer
-            Assert.True((sizeof(<#= type.Name #>) & 0xE) != 0); // Unsupported integer length
-            Assert.True(2 <= sizeof(<#= type.Name #>)); // Unsupported integer length
-            Assert.True(sizeof(<#= type.Name #>) <= 8); // Unsupported integer length
-<# } #>
-        }
-<# foreach (var tuple in types) {
-    Type type = tuple.typename;
-    int size = tuple.typesize;
-#>
-
-        // Encodes a vector of unsigned integers in a format that can later be
-        // decoded as an EncodedUintVector.
-        //
-        // REQUIRES: T is an unsigned integer type.
-        // REQUIRES: 2 <= sizeof(T) <= 8
-        // REQUIRES: "encoder" uses the default constructor, so that its buffer
-        //           can be enlarged as necessary by calling Ensure(int).
-        public static void EncodeUintVector(<#= type.Name #>[] v, Encoder encoder)
-        {
-            // The encoding is as follows:
-            //
-            //   varint64: (v.size() * sizeof(T)) | (len - 1)
-            //   array of v.size() elements ["len" bytes each]
-            //
-            // Note that we don't allow (len == 0) since this would require an extra bit
-            // to encode the length.
-
-            <#= type.Name #> one_bits = 1;  // Ensures len >= 1.
-            foreach (var x in v)
-                one_bits |= x;
-            int len = (BitsUtils.FindMSBSetNonZero64(one_bits) >> 3) + 1;
-            Assert.True(len >= 1 && len <= 8);
-
-            // Note that the multiplication is optimized into a bit shift.
-            encoder.Ensure(Encoder.kVarintMax64 + v.Length * len);
-            UInt64 size_len = ((UInt64)(UInt32)v.Length * sizeof(<#= type.Name #>)) | (UInt32)(len - 1);
-            encoder.PutVarInt64(size_len);
-            foreach (var x in v)
-            {
-                EncodeUintWithLength(x, len, encoder);
-            }
-        }
-
-        /// <summary>
-        /// Encodes an unsigned integer in little-endian format using "length" bytes.
-        /// (The client must ensure that the encoder's buffer is large enough.)
-        ///
-        /// REQUIRES: T is an unsigned integer type.
-        /// REQUIRES: 2 <= sizeof(T) <= 8
-        /// REQUIRES: 0 <= length <= sizeof(T)
-        /// REQUIRES: value < 256 ** length
-        /// REQUIRES: encoder.Avail() >= length
-        /// </summary>
-        public static void EncodeUintWithLength(<#= type.Name #> value, int length, Encoder encoder)
-        {
-            Assert.True(length >= 0 && length <= sizeof(<#= type.Name #>));
-            Assert.True(encoder.Avail() >= length);
-
-            while (--length >= 0)
-            {
-                encoder.Put8((byte)value);
-                value = (<#= type.Name #>)(value >> 8);
-            }
-            Assert.True(value == 0);
-        }
-
-        // Decodes and consumes a variable-length integer consisting of "length" bytes
-        // in little-endian format.  Returns false if not enough bytes are available.
-        //
-        // REQUIRES: T is an unsigned integer type.
-        // REQUIRES: 2 <= sizeof(T) <= 8
-        // REQUIRES: 0 <= length <= sizeof(T)
-        public static bool DecodeUintWithLength(int length, Decoder decoder, out <#= type.Name #> result)
-        {
-            result = default;
-            if (decoder.Avail() < length) return false;
-            result = EncodedUintVector_<#= type.Name #>.GetUintWithLength(decoder.buf_, decoder.offset_, length);
-            decoder.Skip(length);
-            return true;
-        }
+        // <#= type.Name #> checks
+        Assert.True(<#= type.Name #>.MinValue == 0); // Unsupported signed integer
+        Assert.True((sizeof(<#= type.Name #>) & 0xE) != 0); // Unsupported integer length
+        Assert.True(2 <= sizeof(<#= type.Name #>)); // Unsupported integer length
+        Assert.True(sizeof(<#= type.Name #>) <= 8); // Unsupported integer length
 <# } #>
     }
 <# foreach (var tuple in types) {
-    Type type = tuple.typename;
-    int size = tuple.typesize;
+Type type = tuple.typename;
+int size = tuple.typesize;
 #>
 
-    public class EncodedUintVector_<#= type.Name #>
+    // Encodes a vector of unsigned integers in a format that can later be
+    // decoded as an EncodedUintVector.
+    //
+    // REQUIRES: T is an unsigned integer type.
+    // REQUIRES: 2 <= sizeof(T) <= 8
+    // REQUIRES: "encoder" uses the default constructor, so that its buffer
+    //           can be enlarged as necessary by calling Ensure(int).
+    public static void EncodeUintVector(<#= type.Name #>[] v, Encoder encoder)
     {
-        // Returns the size of the original vector.
-        public int Count { get; private set; }
-
-        /// <summary>
-        /// Decodes a variable-length integer consisting of "length" bytes starting at
-        /// "ptr" in little-endian format.
-        ///
-        /// REQUIRES: 0 <= length <= sizeof(T)
-        /// </summary>
-        public static <#= type.Name #> GetUintWithLength(byte[] ptr, int index, int length)
-        {
-            Assert.True(length >= 0 && length <= sizeof(<#= type.Name #>));
-
-            // Note that the following code is faster than any of the following:
-            //
-            //  - A loop that repeatedly loads and shifts one byte.
-            //  - memcpying "length" bytes to a local variable of type T.
-            //  - A switch statement that handles each length optimally.
-            //
-            // The following code is slightly faster:
-            //
-            //   T mask = (length == 0) ? 0 : ~T{0} >> 8 * (sizeof(T) - length);
-            //   return *reinterpret_cast<const T*>(ptr) & mask;
-            //
-            // However this technique is unsafe because in extremely rare cases it might
-            // access out-of-bounds heap memory.  (This can only happen if "ptr" is
-            // within (sizeof(T) - length) bytes of the end of a memory page and the
-            // following page in the address space is unmapped.)
-
-            if ((length & sizeof(<#= type.Name #>)) != 0)
-            {
-<# if (new [] { typeof(UInt16), typeof(UInt32), typeof(UInt64) }.Contains(type)) { #>
-                return BitConverter.To<#= type.Name #>(ptr, index);
-<# }  else { #>
-                Assert.True(sizeof(<#= type.Name #>) == 1);
-                return ptr[index];
-<# } #>
-            }
-            <#= type.Name #> x = 0;
-<# if (type != typeof(Byte)) { #>
-            index += length;
-<# } #>
- <# if (size > 4) { #>
-            if ((length & 4) != 0)
-            {
-                index -= sizeof(UInt32);
-                x = BitConverter.ToUInt32(ptr, index);
-            }
-<# } #>
-<# if (size > 2) { #>
-            if ((length & 2) != 0)
-            {
-                index -= sizeof(UInt16);
-                x = (x << 16) + BitConverter.ToUInt16(ptr, index);
-            }
-<# } #>
-<# if (size > 1) { #>
-            if ((length & 1) != 0)
-            {
-                x = (<#= type.Name #>)(((<#= type.Name #>)(x << 8)) + ptr[--index]);
-            }
-<# } #>
-            return x;
-        }
-
-        // Initializes the EncodedUintVector.  Returns false on errors, leaving the
-        // vector in an unspecified state.
+        // The encoding is as follows:
         //
-        // REQUIRES: The Decoder data buffer must outlive this object.
-        public bool Init(Decoder decoder)
-        {
-            if (!decoder.TryGetVar64(out var size_len)) return false;
-            Count = (int)(size_len / sizeof(<#= type.Name #>));  // Optimized into bit shift.
-            len_ = (Byte)((size_len & ((<#= type.Name #>)(sizeof(<#= type.Name #>) - 1))) + 1);
-            if (Count > int.MaxValue / sizeof(<#= type.Name #>)) return false;
-            int bytes = Count * len_;
-            if (decoder.Avail() < bytes) return false;
-            data_ = decoder.buf_;
-            decoder.Skip(bytes);
-            return true;
-        }
-
-        // Resets the vector to be empty.
-        public void Clear()
-        {
-            Count = 0;
-            data_ = null;
-        }
-
-        // Returns the element at the given index.  
-        public <#= type.Name #> this[int i]
-        {
-            get
-            {
-                Assert.True(i >= 0 && i < Count);
-                return GetUintWithLength(data_, i * len_, len_);
-            }
-        }
-
-        // Returns the index of the first element x such that (x >= target), or
-        // size() if no such element exists.
+        //   varint64: (v.size() * sizeof(T)) | (len - 1)
+        //   array of v.size() elements ["len" bytes each]
         //
-        // REQUIRES: The vector elements are sorted in non-decreasing order.
-        public int LowerBound(<#= type.Name #> target)
+        // Note that we don't allow (len == 0) since this would require an extra bit
+        // to encode the length.
+
+        <#= type.Name #> one_bits = 1;  // Ensures len >= 1.
+        foreach (var x in v)
+            one_bits |= x;
+        int len = (BitsUtils.FindMSBSetNonZero64(one_bits) >> 3) + 1;
+        Assert.True(len >= 1 && len <= 8);
+
+        // Note that the multiplication is optimized into a bit shift.
+        encoder.Ensure(Encoder.kVarintMax64 + v.Length * len);
+        UInt64 size_len = ((UInt64)(UInt32)v.Length * sizeof(<#= type.Name #>)) | (UInt32)(len - 1);
+        encoder.PutVarInt64((Int64)size_len);
+        foreach (var x in v)
         {
-            Assert.True(len_ >= 1 && len_ <= sizeof(<#= type.Name #>));
-
-            // TODO(ericv): Consider using the unused 28 bits of "len_" to store the
-            // last result of GetLowerBound() to be used as a hint.  This should help in
-            // common situation where the same element is looked up repeatedly.  This
-            // would require declaring the new field (length_GetLowerBound_hint_) as
-            // mutable std.atomic<uint32> (accessed using std.memory_order_relaxed)
-            // with a custom copy constructor that resets the hint component to zero.
-            return len_ switch
-            {
-                1 => LowerBound(target, 1),
-                2 => LowerBound(target, 2),
-                3 => LowerBound(target, 3),
-                4 => LowerBound(target, 4),
-                5 => LowerBound(target, 5),
-                6 => LowerBound(target, 6),
-                7 => LowerBound(target, 7),
-                _ => LowerBound(target, 8),
-            };
+            EncodeUintWithLength(x, len, encoder);
         }
+    }
 
-        private int LowerBound(<#= type.Name #> target, int length)
+    /// <summary>
+    /// Encodes an unsigned integer in little-endian format using "length" bytes.
+    /// (The client must ensure that the encoder's buffer is large enough.)
+    ///
+    /// REQUIRES: T is an unsigned integer type.
+    /// REQUIRES: 2 <= sizeof(T) <= 8
+    /// REQUIRES: 0 <= length <= sizeof(T)
+    /// REQUIRES: value < 256 ** length
+    /// REQUIRES: encoder.Avail() >= length
+    /// </summary>
+    public static void EncodeUintWithLength(<#= type.Name #> value, int length, Encoder encoder)
+    {
+        Assert.True(length >= 0 && length <= sizeof(<#= type.Name #>));
+        Assert.True(encoder.Avail() >= length);
+
+        while (--length >= 0)
         {
-            var lo = 0;
-            var hi = Count;
-            while (lo < hi)
-            {
-                var mid = (lo + hi) >> 1;
-                <#= type.Name #> value = GetUintWithLength(data_, mid * length, length);
-                if (value.CompareTo(target) < 0)
-                {
-                    lo = mid + 1;
-                }
-                else
-                {
-                    hi = mid;
-                }
-            }
-            return lo;
+            encoder.Put8((byte)value);
+            value = (<#= type.Name #>)(value >> 8);
         }
+        Assert.True(value == 0);
+    }
 
-        // Decodes and returns the entire original vector.
-        public <#= type.Name #>[] Decode()
-        {
-            var result = new <#= type.Name #>[Count];
-            for (int i = 0; i < Count; i++)
-            {
-                result[i] = this[i];
-            }
-            return result;
-        }
-
-        private byte[] data_;
-        private byte len_;
+    // Decodes and consumes a variable-length integer consisting of "length" bytes
+    // in little-endian format.  Returns false if not enough bytes are available.
+    //
+    // REQUIRES: T is an unsigned integer type.
+    // REQUIRES: 2 <= sizeof(T) <= 8
+    // REQUIRES: 0 <= length <= sizeof(T)
+    public static bool DecodeUintWithLength(int length, Decoder decoder, out <#= type.Name #> result)
+    {
+        result = default;
+        if (decoder.Avail() < length) return false;
+        result = EncodedUintVector_<#= type.Name #>.GetUintWithLength(decoder.Buffer, decoder.Offset, length);
+        decoder.Skip(length);
+        return true;
     }
 <# } #>
 }
+<# foreach (var tuple in types) {
+Type type = tuple.typename;
+int size = tuple.typesize;
+#>
+
+public class EncodedUintVector_<#= type.Name #>
+{
+    // Returns the size of the original vector.
+    public int Count { get; private set; }
+
+    /// <summary>
+    /// Decodes a variable-length integer consisting of "length" bytes starting at
+    /// "ptr" in little-endian format.
+    ///
+    /// REQUIRES: 0 <= length <= sizeof(T)
+    /// </summary>
+    public static <#= type.Name #> GetUintWithLength(byte[] ptr, int index, int length)
+    {
+        Assert.True(length >= 0 && length <= sizeof(<#= type.Name #>));
+
+        // Note that the following code is faster than any of the following:
+        //
+        //  - A loop that repeatedly loads and shifts one byte.
+        //  - memcpying "length" bytes to a local variable of type T.
+        //  - A switch statement that handles each length optimally.
+        //
+        // The following code is slightly faster:
+        //
+        //   T mask = (length == 0) ? 0 : ~T{0} >> 8 * (sizeof(T) - length);
+        //   return *reinterpret_cast<const T*>(ptr) & mask;
+        //
+        // However this technique is unsafe because in extremely rare cases it might
+        // access out-of-bounds heap memory.  (This can only happen if "ptr" is
+        // within (sizeof(T) - length) bytes of the end of a memory page and the
+        // following page in the address space is unmapped.)
+
+        if ((length & sizeof(<#= type.Name #>)) != 0)
+        {
+<# if (new [] { typeof(UInt16), typeof(UInt32), typeof(UInt64) }.Contains(type)) { #>
+            return BitConverter.To<#= type.Name #>(ptr, index);
+<# }  else { #>
+            Assert.True(sizeof(<#= type.Name #>) == 1);
+            return ptr[index];
+<# } #>
+        }
+        <#= type.Name #> x = 0;
+<# if (type != typeof(Byte)) { #>
+        index += length;
+<# } #>
+<# if (size > 4) { #>
+        if ((length & 4) != 0)
+        {
+            index -= sizeof(UInt32);
+            x = BitConverter.ToUInt32(ptr, index);
+        }
+<# } #>
+<# if (size > 2) { #>
+        if ((length & 2) != 0)
+        {
+            index -= sizeof(UInt16);
+            x = (x << 16) + BitConverter.ToUInt16(ptr, index);
+        }
+<# } #>
+<# if (size > 1) { #>
+        if ((length & 1) != 0)
+        {
+            x = (<#= type.Name #>)(((<#= type.Name #>)(x << 8)) + ptr[--index]);
+        }
+<# } #>
+        return x;
+    }
+
+    // Initializes the EncodedUintVector.  Returns false on errors, leaving the
+    // vector in an unspecified state.
+    //
+    // REQUIRES: The Decoder data buffer must outlive this object.
+    public bool Init(Decoder decoder)
+    {
+        if (!decoder.TryGetVarUInt64(out var size_len)) return false;
+        Count = (int)(size_len / sizeof(<#= type.Name #>));  // Optimized into bit shift.
+        len_ = (Byte)((size_len & ((<#= type.Name #>)(sizeof(<#= type.Name #>) - 1))) + 1);
+        if (Count > int.MaxValue / sizeof(<#= type.Name #>)) return false;
+        int bytes = Count * len_;
+        if (decoder.Avail() < bytes) return false;
+        data_ = decoder.Buffer;
+        decoder.Skip(bytes);
+        return true;
+    }
+
+    // Resets the vector to be empty.
+    public void Clear()
+    {
+        Count = 0;
+        data_ = null;
+    }
+
+    // Returns the element at the given index.  
+    public <#= type.Name #> this[int i]
+    {
+        get
+        {
+            Assert.True(i >= 0 && i < Count);
+            return GetUintWithLength(data_, i * len_, len_);
+        }
+    }
+
+    // Returns the index of the first element x such that (x >= target), or
+    // size() if no such element exists.
+    //
+    // REQUIRES: The vector elements are sorted in non-decreasing order.
+    public int LowerBound(<#= type.Name #> target)
+    {
+        Assert.True(len_ >= 1 && len_ <= sizeof(<#= type.Name #>));
+
+        // TODO(ericv): Consider using the unused 28 bits of "len_" to store the
+        // last result of GetLowerBound() to be used as a hint.  This should help in
+        // common situation where the same element is looked up repeatedly.  This
+        // would require declaring the new field (length_GetLowerBound_hint_) as
+        // mutable std.atomic<uint32> (accessed using std.memory_order_relaxed)
+        // with a custom copy constructor that resets the hint component to zero.
+        return len_ switch
+        {
+            1 => LowerBound(target, 1),
+            2 => LowerBound(target, 2),
+            3 => LowerBound(target, 3),
+            4 => LowerBound(target, 4),
+            5 => LowerBound(target, 5),
+            6 => LowerBound(target, 6),
+            7 => LowerBound(target, 7),
+            _ => LowerBound(target, 8),
+        };
+    }
+
+    private int LowerBound(<#= type.Name #> target, int length)
+    {
+        var lo = 0;
+        var hi = Count;
+        while (lo < hi)
+        {
+            var mid = (lo + hi) >> 1;
+            <#= type.Name #> value = GetUintWithLength(data_, mid * length, length);
+            if (value.CompareTo(target) < 0)
+            {
+                lo = mid + 1;
+            }
+            else
+            {
+                hi = mid;
+            }
+        }
+        return lo;
+    }
+
+    // Decodes and returns the entire original vector.
+    public <#= type.Name #>[] Decode()
+    {
+        var result = new <#= type.Name #>[Count];
+        for (int i = 0; i < Count; i++)
+        {
+            result[i] = this[i];
+        }
+        return result;
+    }
+        
+    // The encoding must be identical to StringVectorEncoder.Encode().
+    public void Encode(Encoder encoder)
+    {
+        var size_len = (Count * sizeof(<#= type.Name #>)) | (len_ - 1);
+
+        encoder.Ensure(Encoder.kVarintMax64 + size_len);
+        encoder.PutVarInt64(size_len);
+        encoder.PutN(data_, Count * len_);
+    }
+
+    private byte[] data_;
+    private byte len_;
+}
+<# } #>

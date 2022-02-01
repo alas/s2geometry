@@ -1,9 +1,6 @@
-using S2Geometry.S2BuilderUtil;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Xunit;
 using Xunit.Abstractions;
+using S2Geometry.S2BuilderUtil;
 
 namespace S2Geometry
 {
@@ -333,12 +330,12 @@ namespace S2Geometry
 
         [Fact]
         public void Test_S2Polygon_OriginNearPole() {
-            // S2Polygon operations are more efficient if S2PointUtil.Origin is near a pole.
+            // S2Polygon operations are more efficient if S2.Origin is near a pole.
             // (Loops that contain a pole tend to have very loose bounding boxes because
             // they span the full longitude range.  S2Polygon canonicalizes all loops so
-            // that they don't contain S2PointUtil.Origin, thus by placing S2PointUtil.Origin near a
+            // that they don't contain S2.Origin, thus by placing S2.Origin near a
             // pole we minimize the number of canonical loops which contain that pole.)
-            Assert.True(S2LatLng.Latitude(S2PointUtil.Origin).Degrees >= 80);
+            Assert.True(S2LatLng.Latitude(S2.Origin).GetDegrees() >= 80);
         }
 
         [Fact]
@@ -357,26 +354,26 @@ namespace S2Geometry
             S2Testing.Random.Reset(S2Testing.Random.RandomSeed);
             for (int iter = 0; iter < kIters; ++iter) {
                 S2CellId id = S2Testing.GetRandomCellId(10);
-                S2Polygon parent_polygon = new S2Polygon(new S2Cell(id));
-                S2Polygon child_polygon = new S2Polygon(new S2Cell(id.Child(0)));
+                S2Polygon parent_polygon = new(new S2Cell(id));
+                S2Polygon child_polygon = new(new S2Cell(id.Child(0)));
 
                 // Get the intersection.  There is no guarantee that the intersection will
                 // be contained by A or B.  Similarly, the intersection may slightly
                 // overlap an adjacent disjoint polygon C.
-                S2Polygon intersection = new S2Polygon();
+                S2Polygon intersection = new();
                 intersection.InitToIntersection(parent_polygon, child_polygon);
                 if (parent_polygon.Contains(intersection)) {
                     ++exact_contains;
                 }
                 Assert.True(parent_polygon.ApproxContains(
-                    intersection, S2EdgeCrossings.kIntersectionMergeRadiusS1Angle));
+                    intersection, S2.kIntersectionMergeRadiusS1Angle));
 
-                S2Polygon adjacent_polygon = new S2Polygon(new S2Cell(id.Child(1)));
+                S2Polygon adjacent_polygon = new(new S2Cell(id.Child(1)));
                 if (!adjacent_polygon.Intersects(intersection)) {
                     ++exact_disjoint;
                 }
                 Assert.True(adjacent_polygon.ApproxDisjoint(
-                    intersection, S2EdgeCrossings.kIntersectionMergeRadiusS1Angle));
+                    intersection, S2.kIntersectionMergeRadiusS1Angle));
             }
             // All of the approximate results are true, so we check that at least some
             // of the exact results are false in order to make sure that this test
@@ -399,11 +396,12 @@ namespace S2Geometry
             // the parent 50% of the time.  Otherwise there is a 50% chance that the
             // intersection point will not be chosen for snapping because it has a
             // higher S2CellId that the shared vertex, and otherwise there is still a
-            // 50% chance that intersection point is on the side of the shared edge that
-            // results in no intersection.  This works out to an expectation that
-            // (1 - 0.5 * 0.5 * 0.5) = 87.5% of the exact disjoint tests will succeed.
+            // 50-75% chance that intersection point will not be inside the adjacent
+            // child cell (depending on how far the shared vertex is outside the parent
+            // cell).  This means that we expect 1 - 0.5 * 0.5 * (0.25 ~ 0.5) = 87.5% to
+            // 93.75% of the exact disjoint tests to succeed on average.
             Assert.True(exact_contains <= 0.40 * kIters);  // about 37.5% succeed
-            Assert.True(exact_disjoint <= 0.90 * kIters);  // about 87.5% succeed
+            Assert.True(exact_disjoint <= 0.96 * kIters);  // 87.5% - 93.75% succeed
         }
 
         [Fact]
@@ -484,10 +482,10 @@ namespace S2Geometry
 
         [Fact]
         public void Test_S2PolygonTestBase_EmptyAndFull() {
-            Assert.True(empty_.IsEmpty);
-            Assert.False(full_.IsEmpty);
-            Assert.False(empty_.IsFull);
-            Assert.True(full_.IsFull);
+            Assert.True(empty_.IsEmpty());
+            Assert.False(full_.IsEmpty());
+            Assert.False(empty_.IsFull());
+            Assert.True(full_.IsFull());
 
             TestNestedPair(empty_, empty_);
             TestNestedPair(full_, empty_);
@@ -496,7 +494,7 @@ namespace S2Geometry
 
         [Fact]
         public void Test_S2PolygonTestBase_Operations() {
-            S2Polygon far_south = new S2Polygon();
+            S2Polygon far_south = new();
             far_south.InitToIntersection(far_H_, south_H_);
             CheckEqual(far_south, far_H_south_H_, S1Angle.FromRadians(1e-15));
 
@@ -548,7 +546,7 @@ namespace S2Geometry
             var a = MakePolygon("0:0, 0:10, 1:10, 1:0");
             var b = MakePolygon("0:0, 0:10, 3:0");
             var expected = MakePolygon("0:0, 0:10, 1:7, 1:0");
-            S2Polygon actual = new S2Polygon();
+            S2Polygon actual = new();
             actual.InitToIntersection(a, b, new IntLatLngSnapFunction(0));  // E0 coords
             CheckEqual(expected, actual);
         }
@@ -557,9 +555,32 @@ namespace S2Geometry
         public void Test_S2Polygon_IntersectionPreservesLoopOrder() {
             var a = MakePolygon("0:0, 0:10, 10:10, 10:0");
             var b = MakePolygon("1:1, 1:9, 9:5; 2:2, 2:8, 8:5");
-            S2Polygon actual = new S2Polygon();
+            S2Polygon actual = new();
             actual.InitToIntersection(a, b);
             Assert.Equal(b.ToDebugString(), actual.ToDebugString());
+        }
+
+        // Verifies that the bounding rectangle optimization in InitToIntersection()
+        // resets the result polygon to be empty.
+        [Fact]
+        public void Test_S2Polygon_EmptyIntersectionClearsResult()
+        {
+            // The bounding rectangles of these two polygons do not intersect.
+            var a = MakePolygon("0:0, 0:1, 1:0");
+            var b = MakePolygon("3:3, 3:4, 4:3");
+
+            // Initialize the result polygon to be non-empty, then verify that computing
+            // the intersection clears the result.
+            var result = MakePolygon("0:0, 0:1, 1:0");
+            result.InitToIntersection(a, b);
+            Assert.True(result.IsEmpty());
+
+            // Repeat with the version of InitToIntersection that allows error reporting.
+            S2Error error;
+            result = MakePolygon("0:0, 0:1, 1:0");
+            Assert.True(result.InitToIntersection(a, b,
+                new IdentitySnapFunction(S1Angle.Zero), out error));
+            Assert.True(result.IsEmpty());
         }
 
         // Verifies that S2Polygon does not destroy or replace pointers to S2Loop, so
@@ -568,20 +589,20 @@ namespace S2Geometry
         public void Test_S2Polygon_LoopPointers() {
             var loops = new List<S2Loop>
             {
-                S2TextFormat.MakeLoopOrDie("4:4, 4:6, 6:6, 6:4"),
-                S2TextFormat.MakeLoopOrDie("3:3, 3:7, 7:7, 7:3"),
-                S2TextFormat.MakeLoopOrDie("2:2, 2:8, 8:8, 8:2"),
-                S2TextFormat.MakeLoopOrDie("1:1, 1:9, 9:9, 9:1"),
-                S2TextFormat.MakeLoopOrDie("10:10, 15:15, 20:10"),
-                S2TextFormat.MakeLoopOrDie("-1:-1, -9:-1, -9:-9, -1:-9"),
-                S2TextFormat.MakeLoopOrDie("-5:-5, -6:-5, -6:-6, -5:-6")
+                MakeLoopOrDie("4:4, 4:6, 6:6, 6:4"),
+                MakeLoopOrDie("3:3, 3:7, 7:7, 7:3"),
+                MakeLoopOrDie("2:2, 2:8, 8:8, 8:2"),
+                MakeLoopOrDie("1:1, 1:9, 9:9, 9:1"),
+                MakeLoopOrDie("10:10, 15:15, 20:10"),
+                MakeLoopOrDie("-1:-1, -9:-1, -9:-9, -1:-9"),
+                MakeLoopOrDie("-5:-5, -6:-5, -6:-6, -5:-6")
             };
 
             var loops_raw_ptrs = new List<S2Loop>();
             foreach (var loop in loops) {
                 loops_raw_ptrs.Add(loop);
             }
-            S2Polygon polygon = new S2Polygon(loops);
+            S2Polygon polygon = new(loops);
 
             // Check that loop pointers didn't change (but could've gotten reordered).
             Assert.Equal(loops_raw_ptrs.Count, polygon.NumLoops());
@@ -613,14 +634,14 @@ namespace S2Geometry
       new S2Point(-0.1053117575499668, -0.80522236690813498, 0.58354637652254981),
     },
   };
-            S2Polygon a = new S2Polygon(MakeLoops(a_vertices));
-            S2Polygon b = new S2Polygon(MakeLoops(b_vertices));
-            S2Polygon c = new S2Polygon();
+            S2Polygon a = new(MakeLoops(a_vertices));
+            S2Polygon b = new(MakeLoops(b_vertices));
+            S2Polygon c = new();
             c.InitToUnion(a, b);
             // Given edges do not form loops (indegree != outdegree)
             _ = a.ToDebugString();
             _ = b.ToDebugString();
-            Assert.False(c.IsEmpty);
+            Assert.False(c.IsEmpty());
         }
 
         [Fact]
@@ -641,14 +662,14 @@ namespace S2Geometry
       new S2Point(-0.10618898834264634, -0.80546453817003949, 0.58305297915823251),
     },
   };
-            S2Polygon a = new S2Polygon(MakeLoops(a_vertices));
-            S2Polygon b = new S2Polygon(MakeLoops(b_vertices));
-            S2Polygon c = new S2Polygon();
+            S2Polygon a = new(MakeLoops(a_vertices));
+            S2Polygon b = new(MakeLoops(b_vertices));
+            S2Polygon c = new();
             c.InitToUnion(a, b);
             _ = a.ToDebugString();
             _ = b.ToDebugString();
             // Given edges do not form loops (indegree != outdegree)
-            Assert.False(c.IsEmpty);
+            Assert.False(c.IsEmpty());
         }
 
         [Fact]
@@ -685,14 +706,14 @@ namespace S2Geometry
       new S2Point(-0.10703494991860348, -0.8054223284704729, 0.58295659555161028),
     },
   };
-            S2Polygon a = new S2Polygon(MakeLoops(a_vertices));
-            S2Polygon b = new S2Polygon(MakeLoops(b_vertices));
-            S2Polygon c = new S2Polygon();
+            S2Polygon a = new(MakeLoops(a_vertices));
+            S2Polygon b = new(MakeLoops(b_vertices));
+            S2Polygon c = new();
             c.InitToUnion(a, b);
             _ = a.ToDebugString();
             _ = b.ToDebugString();
             // Given edges do not form loops (indegree != outdegree)
-            Assert.False(c.IsEmpty);
+            Assert.False(c.IsEmpty());
         }
 
         [Fact]
@@ -725,14 +746,14 @@ namespace S2Geometry
       new S2Point(-0.1066707756642685, -0.80657588679775971, 0.58142642222003538),
     },
   };
-            S2Polygon a = new S2Polygon(MakeLoops(a_vertices));
-            S2Polygon b = new S2Polygon(MakeLoops(b_vertices));
-            S2Polygon c = new S2Polygon();
+            S2Polygon a = new(MakeLoops(a_vertices));
+            S2Polygon b = new(MakeLoops(b_vertices));
+            S2Polygon c = new();
             c.InitToUnion(a, b);
             _ = a.ToDebugString();
             _ = b.ToDebugString();
             // Loop 1: Edge 1 crosses edge 3
-            Assert.False(c.IsEmpty);
+            Assert.False(c.IsEmpty());
         }
 
         [Fact]
@@ -761,14 +782,14 @@ namespace S2Geometry
       new S2Point(-0.10574408013270691, -0.80816042846771807, 0.57939184614193739),
     },
   };
-            S2Polygon a = new S2Polygon(MakeLoops(a_vertices));
-            S2Polygon b = new S2Polygon(MakeLoops(b_vertices));
-            S2Polygon c = new S2Polygon();
+            S2Polygon a = new(MakeLoops(a_vertices));
+            S2Polygon b = new(MakeLoops(b_vertices));
+            S2Polygon c = new();
             c.InitToUnion(a, b);
             _ = a.ToDebugString();
             _ = b.ToDebugString();
             // Loop 0 edge 8 crosses loop 1 edge 0
-            Assert.False(c.IsEmpty);
+            Assert.False(c.IsEmpty());
         }
 
         [Fact]
@@ -797,14 +818,14 @@ namespace S2Geometry
       new S2Point(-0.10618857084449349, -0.80552213329605649, 0.58297348155141182),
     },
   };
-            S2Polygon a = new S2Polygon(MakeLoops(a_vertices));
-            S2Polygon b = new S2Polygon(MakeLoops(b_vertices));
-            S2Polygon c = new S2Polygon();
+            S2Polygon a = new(MakeLoops(a_vertices));
+            S2Polygon b = new(MakeLoops(b_vertices));
+            S2Polygon c = new ();
             c.InitToUnion(a, b);
             _ = a.ToDebugString();
             _ = b.ToDebugString();
             // Loop 0 edge 0 crosses loop 1 edge 4
-            Assert.False(c.IsEmpty);
+            Assert.False(c.IsEmpty());
         }
 
         [Fact]
@@ -880,14 +901,14 @@ namespace S2Geometry
       new S2Point(-0.10651680240261419, -0.80805648524178353, 0.57939527739240138),
     },
   };
-            S2Polygon a = new S2Polygon(MakeLoops(a_vertices));
-            S2Polygon b = new S2Polygon(MakeLoops(b_vertices));
-            S2Polygon c = new S2Polygon();
+            S2Polygon a = new(MakeLoops(a_vertices));
+            S2Polygon b = new(MakeLoops(b_vertices));
+            S2Polygon c = new();
             c.InitToUnion(a, b);
             _ = a.ToDebugString();
             _ = b.ToDebugString();
             // Loop 0: Edge 33 crosses edge 35
-            Assert.False(c.IsEmpty);
+            Assert.False(c.IsEmpty());
         }
 
         [Fact]
@@ -916,9 +937,9 @@ namespace S2Geometry
       new S2Point(-0.10703955455230836, -0.8084631691824391, 0.57873123108808489),
     },
   };
-            S2Polygon a = new S2Polygon(MakeLoops(a_vertices));
-            S2Polygon b = new S2Polygon(MakeLoops(b_vertices));
-            S2Polygon c = new S2Polygon();
+            S2Polygon a = new(MakeLoops(a_vertices));
+            S2Polygon b = new(MakeLoops(b_vertices));
+            S2Polygon c = new();
             c.InitToUnion(a, b);
             //  Loop 1: Edge 1 crosses edge 3
         }
@@ -941,14 +962,14 @@ namespace S2Geometry
       new S2Point(-0.10639937099529816, -0.80810205676695701, 0.57935329437297478),
     },
   };
-            S2Polygon a = new S2Polygon(MakeLoops(a_vertices));
-            S2Polygon b = new S2Polygon(MakeLoops(b_vertices));
-            S2Polygon c = new S2Polygon();
+            S2Polygon a = new(MakeLoops(a_vertices));
+            S2Polygon b = new(MakeLoops(b_vertices));
+            S2Polygon c = new();
             c.InitToUnion(a, b);
             _ = a.ToDebugString();
             _ = b.ToDebugString();
             // Given edges do not form loops (indegree != outdegree)
-            Assert.False(c.IsEmpty);
+            Assert.False(c.IsEmpty());
         }
 
         [Fact]
@@ -1064,9 +1085,9 @@ namespace S2Geometry
       new S2Point(-0.10592546626662946, -0.80701045545303429, 0.580959482568004),
     },
   };
-            S2Polygon a = new S2Polygon(MakeLoops(a_vertices));
-            S2Polygon b = new S2Polygon(MakeLoops(b_vertices));
-            S2Polygon c = new S2Polygon();
+            S2Polygon a = new(MakeLoops(a_vertices));
+            S2Polygon b = new(MakeLoops(b_vertices));
+            S2Polygon c = new();
             c.InitToUnion(a, b);
             // Inconsistent loop orientations detected
         }
@@ -1134,14 +1155,14 @@ namespace S2Geometry
       new S2Point(-0.10727296024152314, -0.80875606050496718, 0.57827860638061501),
     },
   };
-            S2Polygon a = new S2Polygon(MakeLoops(a_vertices));
-            S2Polygon b = new S2Polygon(MakeLoops(b_vertices));
-            S2Polygon c = new S2Polygon();
+            S2Polygon a = new(MakeLoops(a_vertices));
+            S2Polygon b = new(MakeLoops(b_vertices));
+            S2Polygon c = new();
             c.InitToUnion(a, b);
             _ = a.ToDebugString();
             _ = b.ToDebugString();
             // Given edges do not form loops (indegree != outdegree)
-            Assert.False(c.IsEmpty);
+            Assert.False(c.IsEmpty());
         }
 
         [Fact]
@@ -1162,104 +1183,14 @@ namespace S2Geometry
       new S2Point(-0.10772930088347589, -0.80699639167806647, 0.58064724364259113),
     },
   };
-            S2Polygon a = new S2Polygon(MakeLoops(a_vertices));
-            S2Polygon b = new S2Polygon(MakeLoops(b_vertices));
-            S2Polygon c = new S2Polygon();
+            S2Polygon a = new(MakeLoops(a_vertices));
+            S2Polygon b = new(MakeLoops(b_vertices));
+            S2Polygon c = new();
             c.InitToUnion(a, b);
             _ = a.ToDebugString();
             _ = b.ToDebugString();
             // Given edges do not form loops (indegree != outdegree)
-            Assert.False(c.IsEmpty);
-        }
-
-        [Fact]
-        public void Test_S2Polygon_Bug13() {
-            // This test exercises a rare special case in GetCrossedVertexIndex where
-            // two crossing edge chains snap to a different permutation of the same
-            // vertices.  In this example one input edge crosses another edge from right
-            // to left, the first edge snaps to BCD and the second snaps to ABDC, and
-            // triangle BCD is CCW.  Since BCD is to the right of BD, this means that
-            // the first edge has not yet crossed the second at vertex B, leaving C or D
-            // as the possible crossing vertices.
-            S2Point[][] a_vertices = new S2Point[][]{
-    new S2Point[]{
-      new S2Point(-0.38306437985388492, -0.74921955334206214, 0.54030708099846292),
-      new S2Point(-0.3830643798552798, -0.74921955334134249, 0.5403070809984718),
-      new S2Point(-0.38306437985529124, -0.74921955334136414, 0.54030708099843361),
-      new S2Point(-0.38306437985389635, -0.74921955334208379, 0.54030708099842473),
-    },
-  };
-            S2Point[][] b_vertices = new S2Point[][]{
-    new S2Point[]{
-      new S2Point(-0.38306437985390962, -0.74921955334210588, 0.54030708099838465),
-      new S2Point(-0.38306437985527797, -0.74921955334134205, 0.54030708099847369),
-      new S2Point(-0.38306437985527941, -0.74921955334134405, 0.54030708099847014),
-      new S2Point(-0.38306437985391095, -0.74921955334210777, 0.54030708099838098),
-    },
-  };
-            S2Polygon a = new S2Polygon(MakeLoops(a_vertices));
-            S2Polygon b = new S2Polygon(MakeLoops(b_vertices));
-            S2Polygon c = new S2Polygon();
-            c.InitToUnion(a, b);
-            _ = a.ToDebugString();
-            _ = b.ToDebugString();
-            // Given edges do not form loops (indegree != outdegree)
-            Assert.False(c.IsEmpty);
-        }
-
-        [Fact]
-        public void Test_S2Polygon_Bug14() {
-            // This test exercises another rare case where the crossing vertices chosen
-            // by GetCrossedVertexIndex() are not ordered correctly along the edge being
-            // crossed.  This is handled by adding extra edges to the output in order to
-            // link up the crossings in the correct order.
-            S2Point[][] a_vertices = new S2Point[][]{
-    new S2Point[]{
-      new S2Point(-0.3837392878495085, -0.7477800800281974, 0.5418201831546835),
-      new S2Point(-0.38373928785696076, -0.7477800800212292, 0.54182018315902258),
-      new S2Point(-0.38373928785701278, -0.74778008002124685, 0.5418201831589613),
-      new S2Point(-0.38373928785703426, -0.7477800800212544, 0.54182018315893576),
-      new S2Point(-0.38373947205489456, -0.74778014227795497, 0.5418199667802881),
-      new S2Point(-0.38373947204434411, -0.74778014228781997, 0.54181996677414512),
-      new S2Point(-0.38373947205872994, -0.74778014228185352, 0.54181996677219124),
-      new S2Point(-0.38373947218468357, -0.74778014288930306, 0.54181996584462788),
-      new S2Point(-0.3837396702525171, -0.74778021044361542, 0.54181973233114322),
-      new S2Point(-0.38373967023137123, -0.74778021046333043, 0.54181973231891067),
-      new S2Point(-0.38373947216030285, -0.74778014290791484, 0.54181996583620895),
-      new S2Point(-0.38373947217087578, -0.74778014289805739, 0.54181996584232528),
-      new S2Point(-0.38373947215649007, -0.74778014290402395, 0.54181996584427927),
-      new S2Point(-0.3837394720305386, -0.74778014229658485, 0.5418199667718262),
-      new S2Point(-0.38373928783585998, -0.74778008004095942, 0.54182018314673686),
-      new S2Point(-0.38373928784641037, -0.7477800800310942, 0.54182018315287972),
-      new S2Point(-0.38373928783578648, -0.74778008004093421, 0.54182018314682368),
-      new S2Point(-0.383739287835765, -0.74778008004092666, 0.54182018314684921),
-    },
-  };
-            S2Point[][] b_vertices = new S2Point[][]{
-    new S2Point[]{
-      new S2Point(-0.38373923813692823, -0.7477800632164362, 0.54182024156551456),
-      new S2Point(-0.3837392878569364, -0.74778008002122087, 0.54182018315905123),
-      new S2Point(-0.38373928784640354, -0.74778008003106944, 0.54182018315291858),
-      new S2Point(-0.38373928784638789, -0.74778008003108642, 0.54182018315290648),
-      new S2Point(-0.38373928784638023, -0.74778008003109453, 0.54182018315290048),
-      new S2Point(-0.38373928783692102, -0.74778008004124585, 0.54182018314559),
-      new S2Point(-0.38373928783691913, -0.74778008004124541, 0.54182018314559188),
-      new S2Point(-0.38373928784636568, -0.74778008003110774, 0.54182018315289271),
-      new S2Point(-0.38373928784637329, -0.74778008003109953, 0.54182018315289848),
-      new S2Point(-0.38373928783583561, -0.74778008004095109, 0.5418201831467655),
-      new S2Point(-0.38373923811582744, -0.74778006323616641, 0.54182024155322883),
-      new S2Point(-0.38373857650312843, -0.74777983961840766, 0.54182101875399913),
-      new S2Point(-0.38373857652422921, -0.74777983959867744, 0.54182101876628486),
-    },
-  };
-            S2Polygon a = new S2Polygon(MakeLoops(a_vertices));
-            S2Polygon b = new S2Polygon(MakeLoops(b_vertices));
-            S2Polygon c = new S2Polygon();
-            c.InitToUnion(a, b);
-            _ = a.ToDebugString();
-            _ = b.ToDebugString();
-            // Given edges do not form loops (indegree != outdegree)
-            Assert.False(c.IsEmpty);
+            Assert.False(c.IsEmpty());
         }
 
         // This tests polygon-polyline intersections.
@@ -1296,7 +1227,7 @@ namespace S2Geometry
                     var tmp2 = ab != 0 ? b : a;
                     for (int l = 0; l < tmp.NumLoops(); l++) {
                         points.Clear();
-                        if (tmp.Loop(l).IsHole) {
+                        if (tmp.Loop(l).IsHole()) {
                             for (int v = tmp.Loop(l).NumVertices; v >= 0; v--) {
                                 points.Add(tmp.Loop(l).Vertex(v));
                             }
@@ -1305,13 +1236,13 @@ namespace S2Geometry
                                 points.Add(tmp.Loop(l).Vertex(v));
                             }
                         }
-                        S2Polyline polyline = new S2Polyline(points.ToArray());
+                        S2Polyline polyline = new(points.ToArray());
                         polylines.AddRange(tmp2.IntersectWithPolyline(polyline));
                     }
                 }
 
-                S2Builder builder = new S2Builder(new S2Builder.Options());
-                S2Polygon a_and_b = new S2Polygon();
+                S2Builder builder = new(new Options());
+                S2Polygon a_and_b = new();
                 builder.StartLayer(new S2PolygonLayer(a_and_b));
                 foreach (var polyline in polylines) {
                     builder.AddPolyline(polyline);
@@ -1351,17 +1282,17 @@ namespace S2Geometry
 
                 // Choose a random non-leaf cell.
                 S2CellId big_cell =
-                    S2Testing.GetRandomCellId(S2Testing.Random.Uniform(S2Constants.kMaxCellLevel));
+                    S2Testing.GetRandomCellId(S2Testing.Random.Uniform(S2.kMaxCellLevel));
                 // Get all neighbors at some smaller level.
-                int small_level = big_cell.Level +
-                    S2Testing.Random.Uniform(Math.Min(16, S2Constants.kMaxCellLevel - big_cell.Level));
+                int small_level = big_cell.Level() +
+                    S2Testing.Random.Uniform(Math.Min(16, S2.kMaxCellLevel - big_cell.Level()));
                 var neighbors = new List<S2CellId>();
                 big_cell.AppendAllNeighbors(small_level, neighbors);
                 // Pick one at random.
                 S2CellId small_cell = neighbors[S2Testing.Random.Uniform(neighbors.Count)];
                 // If it's diagonally adjacent, bail out.
                 var edge_neighbors = new S2CellId[4];
-                big_cell.GetEdgeNeighbors(edge_neighbors);
+                big_cell.EdgeNeighbors(edge_neighbors);
                 bool diagonal = true;
                 for (int i = 0; i < 4; ++i) {
                     if (edge_neighbors[i].Contains(small_cell)) {
@@ -1377,9 +1308,9 @@ namespace S2Geometry
                     big_cell,
                     small_cell
                 };
-                S2CellUnion cell_union = new S2CellUnion(cells);
-                Assert.Equal(2, cell_union.NumCells);
-                S2Polygon poly = new S2Polygon();
+                S2CellUnion cell_union = new(cells);
+                Assert.Equal(2, cell_union.Size());
+                S2Polygon poly = new();
                 poly.InitToCellUnionBorder(cell_union);
                 Assert.Equal(1, poly.NumLoops());
                 // If the conversion were perfect we could test containment, but due to
@@ -1402,17 +1333,17 @@ namespace S2Geometry
     new S2Point(0.044855344598821352, -0.80679219751320641, 0.589130162266992),
     new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
   };
-            S2Polygon a = new S2Polygon(new S2Loop(a_vertices));
-            S2Polygon b = new S2Polygon(new S2Loop(b_vertices));
-            S2Polygon c = new S2Polygon();
+            S2Polygon a = new(new S2Loop(a_vertices));
+            S2Polygon b = new(new S2Loop(b_vertices));
+            S2Polygon c = new();
             c.InitToUnion(a, b);
-            Assert.False(c.IsEmpty);
+            Assert.False(c.IsEmpty());
         }
 
         [Fact]
         public void Test_S2Polygon_InitToSloppySupportsEmptyPolygons() {
-            S2Polygon empty_polygon = new S2Polygon();
-            S2Polygon polygon = new S2Polygon();
+            S2Polygon empty_polygon = new();
+            S2Polygon polygon = new();
             polygon.InitToSnapped(empty_polygon);
             // InitToSloppy is further tested by SnapSplitsPolygon.
         }
@@ -1421,19 +1352,19 @@ namespace S2Geometry
         public void Test_S2Polygon_InitToSnappedDoesNotRotateVertices() {
             // This particular example came from MapFacts, but in fact InitToSnapped
             // used to cyclically rotate the vertices of all "hole" loops.
-            var polygon = S2TextFormat.MakePolygonOrDie(
+            var polygon = MakePolygonOrDie(
       "49.9305505:-124.8345463, 49.9307448:-124.8299657, " +
       "49.9332101:-124.8301996, 49.9331224:-124.8341368; " +
       "49.9311087:-124.8327042, 49.9318176:-124.8312621, " +
       "49.9318866:-124.8334451");
-            S2Polygon polygon2 = new S2Polygon(), polygon3 = new S2Polygon();
+            S2Polygon polygon2 = new(), polygon3 = new();
             polygon2.InitToSnapped(polygon);
 
             // Check that the first vertex is the same when converted to E7.
-            Assert.Equal(S2LatLng.Latitude(polygon.Loop(0).Vertex(0)).E7,
-                      S2LatLng.Latitude(polygon2.Loop(0).Vertex(0)).E7);
-            Assert.Equal(S2LatLng.Longitude(polygon.Loop(0).Vertex(0)).E7,
-                      S2LatLng.Longitude(polygon2.Loop(0).Vertex(0)).E7);
+            Assert.Equal(S2LatLng.Latitude(polygon.Loop(0).Vertex(0)).E7(),
+                      S2LatLng.Latitude(polygon2.Loop(0).Vertex(0)).E7());
+            Assert.Equal(S2LatLng.Longitude(polygon.Loop(0).Vertex(0)).E7(),
+                      S2LatLng.Longitude(polygon2.Loop(0).Vertex(0)).E7());
 
             // Check that snapping twice doesn't rotate the vertices.
             polygon3.InitToSnapped(polygon2);
@@ -1442,13 +1373,13 @@ namespace S2Geometry
 
         [Fact]
         public void Test_S2Polygon_InitToSnappedWithSnapLevel() {
-            var polygon = S2TextFormat.MakePolygonOrDie("0:0, 0:2, 2:0; 0:0, 0:-2, -2:-2, -2:0");
-            for (int level = 0; level <= S2Constants.kMaxCellLevel; ++level) {
-                S2Polygon snapped_polygon = new S2Polygon();
+            var polygon = MakePolygonOrDie("0:0, 0:2, 2:0; 0:0, 0:-2, -2:-2, -2:0");
+            for (int level = 0; level <= S2.kMaxCellLevel; ++level) {
+                S2Polygon snapped_polygon = new();
                 snapped_polygon.InitToSnapped(polygon, level);
-                Assert.True(snapped_polygon.IsValid);
+                Assert.True(snapped_polygon.IsValid());
                 S1Angle merge_radius = new[]{
-                    S1Angle.FromRadians(S2Metrics.kMaxDiag.GetValue(level)),
+                    S1Angle.FromRadians(S2.kMaxDiag.GetValue(level)),
                     SnapFunction.kMaxSnapRadius}.Min();
                 Assert.True(snapped_polygon.ApproxContains(polygon, merge_radius));
             }
@@ -1456,19 +1387,19 @@ namespace S2Geometry
 
         [Fact]
         public void Test_S2Polygon_InitToSnappedIsValid_A() {
-            var poly = S2TextFormat.MakePolygonOrDie(
+            var poly = MakePolygonOrDie(
       "53.1328020478452:6.39444903453293, 53.1328019:6.394449, " +
       "53.1327091:6.3961766, 53.1313753:6.3958652, 53.1312825:6.3975924, " +
       "53.132616:6.3979042, 53.1326161348736:6.39790423150577");
-            Assert.True(poly.IsValid);
-            S2Polygon poly_snapped = new S2Polygon();
+            Assert.True(poly.IsValid());
+            S2Polygon poly_snapped = new();
             poly_snapped.InitToSnapped(poly);
             Assert.False(poly_snapped.FindValidationError(out _));
         }
 
         [Fact]
         public void Test_S2Polygon_InitToSnappedIsValid_B() {
-            var poly = S2TextFormat.MakePolygonOrDie(
+            var poly = MakePolygonOrDie(
       "51.6621651:4.9858102, 51.6620965:4.9874227, 51.662028:4.9890355, " +
       "51.6619796006122:4.99017864445347, 51.6622335420397:4.98419752545216, " +
       "51.6622334:4.9841975; 51.66189957578:4.99206198576131, " +
@@ -1482,15 +1413,15 @@ namespace S2Geometry
       "51.6615946694783:4.99923124520759, 51.6616389353165:4.99819106536521, " +
       "51.6616852:4.9971, 51.6617538:4.995487, " +
       "51.661753964726:4.99548702962593");
-            Assert.True(poly.IsValid);
-            S2Polygon poly_snapped = new S2Polygon();
+            Assert.True(poly.IsValid());
+            S2Polygon poly_snapped = new();
             poly_snapped.InitToSnapped(poly);
             Assert.False(poly_snapped.FindValidationError(out _));
         }
 
         [Fact]
         public void Test_S2Polygon_InitToSnappedIsValid_C() {
-            var poly = S2TextFormat.MakePolygonOrDie(
+            var poly = MakePolygonOrDie(
       "53.5316236236404:19.5841192796855, 53.5416584:19.5915903, " +
       "53.5416584189104:19.5915901888287; 53.5416584:19.5915903, " +
       "53.5363122:19.62299, 53.5562817:19.6378935, 53.5616342:19.606474; " +
@@ -1498,38 +1429,38 @@ namespace S2Geometry
       "53.5925176:19.6317308, 53.5928526:19.6297652, 53.6015949:19.6362943, " +
       "53.6015950436033:19.6362944072725, 53.6015950814439:19.6362941852262, " +
       "53.5616342380536:19.6064737764314");
-            Assert.True(poly.IsValid);
-            S2Polygon poly_snapped = new S2Polygon();
+            Assert.True(poly.IsValid());
+            S2Polygon poly_snapped = new();
             poly_snapped.InitToSnapped(poly);
             Assert.False(poly_snapped.FindValidationError(out _));
         }
 
         [Fact]
         public void Test_S2Polygon_InitToSnappedIsValid_D() {
-            var poly = (S2TextFormat.MakePolygonOrDie(
+            var poly = (MakePolygonOrDie(
       "52.0909316:4.8673826, 52.0909317627574:4.86738262858533, " +
       "52.0911338452911:4.86248482549567, 52.0911337:4.8624848, " +
       "52.0910665:4.8641176, 52.090999:4.8657502"));
-            Assert.True(poly.IsValid);
-            S2Polygon poly_snapped = new S2Polygon();
+            Assert.True(poly.IsValid());
+            S2Polygon poly_snapped = new();
             poly_snapped.InitToSnapped(poly);
             Assert.False(poly_snapped.FindValidationError(out _));
         }
 
         [Fact]
         public void Test_S2Polygon_MultipleInit() {
-            var polygon = S2TextFormat.MakePolygonOrDie("0:0, 0:2, 2:0");
+            var polygon = MakePolygonOrDie("0:0, 0:2, 2:0");
             Assert.Equal(1, polygon.NumLoops());
             Assert.Equal(3, polygon.NumVertices);
             S2LatLngRect bound1 = polygon.GetRectBound();
 
             var loops = new List<S2Loop>
             {
-                S2TextFormat.MakeLoopOrDie("10:0, -10:-20, -10:20"),
-                S2TextFormat.MakeLoopOrDie("40:30, 20:10, 20:50")
+                MakeLoopOrDie("10:0, -10:-20, -10:20"),
+                MakeLoopOrDie("40:30, 20:10, 20:50")
             };
             polygon = new S2Polygon(loops);
-            Assert.True(polygon.IsValid);
+            Assert.True(polygon.IsValid());
             Assert.Equal(2, polygon.NumLoops());
             Assert.Equal(6, polygon.NumVertices);
             Assert.True(bound1 != polygon.GetRectBound());
@@ -1537,20 +1468,20 @@ namespace S2Geometry
 
         [Fact]
         public void Test_S2Polygon_InitSingleLoop() {
-            S2Polygon polygon = new S2Polygon(S2Loop.kEmpty);
-            Assert.True(polygon.IsEmpty);
+            S2Polygon polygon = new(S2Loop.kEmpty);
+            Assert.True(polygon.IsEmpty());
             polygon = new S2Polygon(S2Loop.kFull);
-            Assert.True(polygon.IsFull);
-            polygon = new S2Polygon(S2TextFormat.MakeLoopOrDie("0:0, 0:10, 10:0"));
+            Assert.True(polygon.IsFull());
+            polygon = new S2Polygon(MakeLoopOrDie("0:0, 0:10, 10:0"));
             Assert.Equal(3, polygon.NumVertices);
         }
 
         [Fact]
         public void Test_S2PolygonTestBase_TestSimpleEncodeDecode() {
-            Encoder encoder = new Encoder();
+            Encoder encoder = new();
             cross1_.Encode(encoder);
-            Decoder decoder = new Decoder(encoder.Buffer, 0, encoder.Length);
-            var (success, decoded_polygon) = S2Polygon.DecodeStatic(decoder);
+            var decoder = encoder.Decoder();
+            var (success, decoded_polygon) = S2Polygon.Decode(decoder);
             Assert.True(success);
             Assert.True(cross1_.BoundaryEquals(decoded_polygon));
             Assert.Equal(cross1_.GetRectBound(), decoded_polygon.GetRectBound());
@@ -1558,34 +1489,34 @@ namespace S2Geometry
 
         [Fact]
         public void Test_S2Polygon_TestEncodeDecodeDefaultPolygon() {
-            S2Polygon polygon = new S2Polygon();
+            S2Polygon polygon = new();
             Assert.True(TestEncodeDecode(polygon));
         }
 
         [Fact]
         public void Test_S2Polygon_CompressedEmptyPolygonRequires3Bytes() {
-            S2Polygon empty_polygon = new S2Polygon();
-            Encoder encoder = new Encoder();
+            S2Polygon empty_polygon = new();
+            Encoder encoder = new();
 
-            S2Polygon snapped_empty_polygon = new S2Polygon();
+            S2Polygon snapped_empty_polygon = new();
             snapped_empty_polygon.InitToSnapped(empty_polygon);
 
             snapped_empty_polygon.Encode(encoder);
             // 1 byte for version, 1 for the level, 1 for the length.
-            Assert.Equal(1 + 1 + 1, encoder.Length);
+            Assert.Equal(1 + 1 + 1, encoder.Length());
 
-            Assert.True(snapped_empty_polygon.IsEmpty);
+            Assert.True(snapped_empty_polygon.IsEmpty());
             Assert.Equal(S2LatLngRect.Empty, snapped_empty_polygon.GetRectBound());
         }
 
         [Fact]
         public void Test_S2Polygon_CompressedEncodedPolygonRequires69Bytes() {
-            var polygon = S2TextFormat.MakePolygonOrDie("0:0, 0:2, 2:0; 0:0, 0:-2, -2:-2, -2:0");
+            var polygon = MakePolygonOrDie("0:0, 0:2, 2:0; 0:0, 0:-2, -2:-2, -2:0");
 
-            S2Polygon snapped_polygon = new S2Polygon();
+            S2Polygon snapped_polygon = new();
             snapped_polygon.InitToSnapped(polygon);
 
-            Encoder encoder = new Encoder();
+            Encoder encoder = new();
             snapped_polygon.Encode(encoder);
 
             // 2 loops, one with 3 vertices, one with 4.
@@ -1596,26 +1527,26 @@ namespace S2Geometry
             // Loops:
             //   5 bytes overhead
             //   8 bytes per vertex
-            Assert.Equal(1 + 1 + 1 + 2 * 5 + 7 * 8, encoder.Length);
+            Assert.Equal(1 + 1 + 1 + 2 * 5 + 7 * 8, encoder.Length());
         }
 
         [Fact]
         public void Test_S2PolygonTestBase_CompressedEncodedPolygonDecodesApproxEqual() {
             // To compare the boundaries, etc we want to snap first.
-            S2Polygon snapped = new S2Polygon();
+            S2Polygon snapped = new();
             snapped.InitToSnapped(near_30_);
             Assert.Equal(2, snapped.NumLoops());
             Assert.Equal(0, snapped.Loop(0).Depth);
             Assert.Equal(1, snapped.Loop(1).Depth);
 
-            Encoder encoder = new Encoder();
+            Encoder encoder = new();
             snapped.Encode(encoder);
 
-            Decoder decoder = new Decoder(encoder.Buffer, 0, encoder.Length);
+            var decoder = encoder.Decoder();
 
-            var (success, decoded_polygon) = S2Polygon.DecodeStatic(decoder);
+            var (success, decoded_polygon) = S2Polygon.Decode(decoder);
             Assert.True(success);
-            Assert.True(decoded_polygon.IsValid);
+            Assert.True(decoded_polygon.IsValid());
             Assert.True(snapped.BoundaryEquals(decoded_polygon));
             Assert.Equal(snapped.GetRectBound(), decoded_polygon.GetRectBound());
             Assert.Equal(snapped.NumVertices, decoded_polygon.NumVertices);
@@ -1631,11 +1562,11 @@ namespace S2Geometry
         // copied the S2Cell bounds.
         [Fact]
         public void Test_S2Polygon_TestS2CellConstructorAndContains() {
-            S2LatLng latlng = new S2LatLng(S1Angle.FromE6(40565459), S1Angle.FromE6(-74645276));
-            S2Cell cell = new S2Cell(latlng);
-            S2Polygon cell_as_polygon = new S2Polygon(cell);
-            S2Polygon empty = new S2Polygon();
-            S2Polygon polygon_copy = new S2Polygon();
+            S2LatLng latlng = new(S1Angle.FromE6(40565459), S1Angle.FromE6(-74645276));
+            S2Cell cell = new(latlng);
+            S2Polygon cell_as_polygon = new(cell);
+            S2Polygon empty = new();
+            S2Polygon polygon_copy = new();
             polygon_copy.InitToUnion(cell_as_polygon, empty);
             Assert.True(polygon_copy.Contains(cell_as_polygon));
             Assert.True(cell_as_polygon.Contains(polygon_copy));
@@ -1648,24 +1579,24 @@ namespace S2Geometry
             S2Point projected;
 
             // The point inside the polygon should be projected into itself.
-            point = S2TextFormat.MakePointOrDie("1.1:0");
+            point = MakePointOrDie("1.1:0");
             projected = polygon.Project(point);
-            Assert.True(S2PointUtil.ApproxEquals(point, projected));
+            Assert.True(S2.ApproxEquals(point, projected));
 
             // The point is on the outside of the polygon.
-            point = S2TextFormat.MakePointOrDie("5.1:-2");
+            point = MakePointOrDie("5.1:-2");
             projected = polygon.Project(point);
-            Assert.True(S2PointUtil.ApproxEquals(S2TextFormat.MakePointOrDie("5:-2"), projected));
+            Assert.True(S2.ApproxEquals(MakePointOrDie("5:-2"), projected));
 
             // The point is inside the hole in the polygon.
-            point = S2TextFormat.MakePointOrDie("-0.49:-0.49");
+            point = MakePointOrDie("-0.49:-0.49");
             projected = polygon.Project(point);
-            Assert.True(S2PointUtil.ApproxEquals(S2TextFormat.MakePointOrDie("-0.5:-0.5"),
+            Assert.True(S2.ApproxEquals(MakePointOrDie("-0.5:-0.5"),
                                          projected, S1Angle.FromRadians(1e-6)));
 
-            point = S2TextFormat.MakePointOrDie("0:-3");
+            point = MakePointOrDie("0:-3");
             projected = polygon.Project(point);
-            Assert.True(S2PointUtil.ApproxEquals(S2TextFormat.MakePointOrDie("0:-2"), projected));
+            Assert.True(S2.ApproxEquals(MakePointOrDie("0:-2"), projected));
         }
 
         [Fact]
@@ -1679,7 +1610,7 @@ namespace S2Geometry
             // sphere, it is not straightforward to project points onto any edge except
             // along the equator.  (The equator is the only line of latitude that is
             // also a geodesic.)
-            var nested = (S2TextFormat.MakePolygonOrDie(
+            var nested = (MakePolygonOrDie(
       "3:1, 3:-1, -3:-1, -3:1; 4:2, 4:-2, -4:-2, -4:2;"));
 
             // All points on the boundary of the polygon should be at distance zero.
@@ -1689,7 +1620,7 @@ namespace S2Geometry
                     // A vertex.
                     TestDistanceMethods(nested, loop.Vertex(j), new S2Point());
                     // A point along an edge.
-                    TestDistanceMethods(nested, S2EdgeDistances.Interpolate(
+                    TestDistanceMethods(nested, S2.Interpolate(
                         S2Testing.Random.RandDouble(), loop.Vertex(j), loop.Vertex(j + 1)),
                                         new S2Point());
                 }
@@ -1714,25 +1645,25 @@ namespace S2Geometry
         [Fact]
         public void Test_S2PolygonTestBase_Area() {
             Assert2.Near(0.0, empty_.GetArea());
-            Assert2.Near(S2Constants.M_4_PI, full_.GetArea());
-            Assert2.Near(S2Constants.M_2_PI, south_H_.GetArea());
+            Assert2.Near(S2.M_4_PI, full_.GetArea());
+            Assert2.Near(S2.M_2_PI, south_H_.GetArea());
             Assert2.Near(Math.PI, far_H_south_H_.GetArea());
 
             var two_shells = MakePolygon(kCross1SideHole +kCrossCenterHole);
             Assert2.Near(
-                two_shells.Loop(0).GetArea() + two_shells.Loop(1).GetArea(),
+                two_shells.Loop(0).Area() + two_shells.Loop(1).Area(),
                 two_shells.GetArea());
 
             var holey_shell = MakePolygon(kCross1 +kCrossCenterHole);
             Assert2.Near(
-                holey_shell.Loop(0).GetArea() - holey_shell.Loop(1).GetArea(),
+                holey_shell.Loop(0).Area() - holey_shell.Loop(1).Area(),
                 holey_shell.GetArea());
         }
 
         [Fact]
         public void Test_S2Polygon_UninitializedIsValid() {
-            S2Polygon polygon = new S2Polygon();
-            Assert.True(polygon.IsValid);
+            S2Polygon polygon = new();
+            Assert.True(polygon.IsValid());
         }
 
         [Fact]
@@ -1800,7 +1731,7 @@ namespace S2Geometry
         public void Test_IsValidTest_EmptyLoop() {
             for (int iter = 0; iter < kIters; ++iter) {
                 AddConcentricLoops(S2Testing.Random.Uniform(5), 3 /*min_vertices*/);
-                AddLoop(S2Loop.kEmpty.VerticesSpan);
+                AddLoop(S2Loop.kEmpty.Vertices);
                 CheckInvalid("empty loop");
             }
         }
@@ -1810,7 +1741,7 @@ namespace S2Geometry
             for (int iter = 0; iter < kIters; ++iter) {
                 // This is only an error if there is at least one other loop.
                 AddConcentricLoops(1 + S2Testing.Random.Uniform(5), 3 /*min_vertices*/);
-                AddLoop(S2Loop.kFull.VerticesSpan);
+                AddLoop(S2Loop.kFull.Vertices);
                 CheckInvalid("full loop");
             }
         }
@@ -1980,7 +1911,7 @@ namespace S2Geometry
         [Fact]
         public void Test_S2PolygonSimplifierTest_TinyLoopDisappears() {
             SetInput("0:0, 0:1, 1:1, 1:0", 1.1);
-            Assert.True(simplified.IsEmpty);
+            Assert.True(simplified.IsEmpty());
         }
 
         [Fact]
@@ -2002,7 +1933,7 @@ namespace S2Geometry
                 "0:0, 0:7.9, 1:8.1, 10:8.1, 11:7.9, 11:0";
             SetInput(saw + ";" + near_square, 0.21);
 
-            Assert.True(simplified.IsValid);
+            Assert.True(simplified.IsValid());
             Assert.True(0.11 >= MaximumDistanceInDegrees(simplified, original, 0));
             Assert.True(0.11 >= MaximumDistanceInDegrees(original, simplified, 0));
             // The resulting polygon's 9 little teeth are very small and disappear
@@ -2016,19 +1947,19 @@ namespace S2Geometry
             // Two loops, One edge of the second one ([0:1 - 0:2]) is part of an
             // edge of the first one..
             SetInput("0:0, 0:3, 1:0; 0:1, -1:1, 0:2", 0.01);
-            var true_poly = S2TextFormat.MakePolygonOrDie("0:3, 1:0, 0:0, 0:1, -1:1, 0:2");
+            var true_poly = MakePolygonOrDie("0:3, 1:0, 0:0, 0:1, -1:1, 0:2");
             Assert.True(simplified.BoundaryApproxEquals(true_poly, S1Angle.FromRadians(1e-15)));
         }
 
         [Fact]
         public void Test_InitToSimplifiedInCell_PointsOnCellBoundaryKept() {
-            S2Cell cell = new S2Cell(S2CellId.FromToken("89c25c"));
+            S2Cell cell = new(S2CellId.FromToken("89c25c"));
             var polygon = MakeCellPolygon(cell, new[]{ "0.1:0, 0.2:0, 0.2:0.5"});
             S1Angle tolerance = new S1Angle(polygon.Loop(0).Vertex(0), polygon.Loop(0).Vertex(1)) * 1.1;
-            S2Polygon simplified = new S2Polygon();
+            S2Polygon simplified = new();
             simplified.InitToSimplified(polygon, new IdentitySnapFunction(tolerance));
-            Assert.True(simplified.IsEmpty);
-            S2Polygon simplified_in_cell = new S2Polygon();
+            Assert.True(simplified.IsEmpty());
+            S2Polygon simplified_in_cell = new();
             simplified_in_cell.InitToSimplifiedInCell(polygon, cell, tolerance);
             Assert.True(simplified_in_cell.BoundaryEquals(polygon));
             Assert.Equal(3, simplified_in_cell.NumVertices);
@@ -2038,11 +1969,11 @@ namespace S2Geometry
         [Fact]
         public void Test_InitToSimplifiedInCell_PointsInsideCellSimplified() {
             S2CellId cell_id = S2CellId.FromToken("89c25c");
-            S2Cell cell = new S2Cell(cell_id);
+            S2Cell cell = new(cell_id);
             var polygon = MakeCellPolygon(
                 cell, new[]{ "0.3:0, 0.4:0, 0.4:0.5, 0.4:0.8, 0.2:0.8"});
             S1Angle tolerance = new S1Angle(polygon.Loop(0).Vertex(0), polygon.Loop(0).Vertex(1)) * 1.1;
-            S2Polygon simplified = new S2Polygon();
+            S2Polygon simplified = new();
             simplified.InitToSimplifiedInCell(polygon, cell, tolerance);
             Assert.True(simplified.BoundaryNear(polygon, S1Angle.FromRadians(1e-15)));
             Assert.Equal(4, simplified.NumVertices);
@@ -2051,50 +1982,50 @@ namespace S2Geometry
 
         [Fact]
         public void Test_InitToSimplifiedInCell_CellCornerKept() {
-            S2Cell cell = new S2Cell(S2CellId.FromToken("00001"));
+            S2Cell cell = new(S2CellId.FromToken("00001"));
             var input = MakeCellPolygon(cell, new[]{ "1:0, 1:0.05, 0.99:0"});
-            S1Angle tolerance = 0.02 * new S1Angle(cell.GetVertex(0), cell.GetVertex(1));
-            S2Polygon simplified = new S2Polygon();
+            S1Angle tolerance = 0.02 * new S1Angle(cell.Vertex(0), cell.Vertex(1));
+            S2Polygon simplified = new();
             simplified.InitToSimplifiedInCell(input, cell, tolerance);
             Assert.True(simplified.BoundaryNear(input, S1Angle.FromRadians(1e-15)));
         }
 
         [Fact]
         public void Test_InitToSimplifiedInCell_NarrowStripRemoved() {
-            S2Cell cell = new S2Cell(S2CellId.FromToken("00001"));
+            S2Cell cell = new(S2CellId.FromToken("00001"));
             var input = MakeCellPolygon(cell, new[]{ "0.9:0, 0.91:0, 0.91:1, 0.9:1"});
-            S1Angle tolerance = 0.02 * new S1Angle(cell.GetVertex(0), cell.GetVertex(1));
-            S2Polygon simplified = new S2Polygon();
+            S1Angle tolerance = 0.02 * new S1Angle(cell.Vertex(0), cell.Vertex(1));
+            S2Polygon simplified = new();
             simplified.InitToSimplifiedInCell(input, cell, tolerance);
-            Assert.True(simplified.IsEmpty);
+            Assert.True(simplified.IsEmpty());
         }
 
         [Fact]
         public void Test_InitToSimplifiedInCell_NarrowGapRemoved() {
-            S2Cell cell = new S2Cell(S2CellId.FromToken("00001"));
+            S2Cell cell = new(S2CellId.FromToken("00001"));
             var input = MakeCellPolygon(
                 cell, new[] { "0.7:0, 0.75:0, 0.75:1, 0.7:1", "0.76:0, 0.8:0, 0.8:1, 0.76:1"});
             var expected = MakeCellPolygon(cell, new[] { "0.7:0, 0.8:0, 0.8:1, 0.7:1"});
-            S1Angle tolerance = 0.02 * new S1Angle(cell.GetVertex(0), cell.GetVertex(1));
-            S2Polygon simplified = new S2Polygon();
+            S1Angle tolerance = 0.02 * new S1Angle(cell.Vertex(0), cell.Vertex(1));
+            S2Polygon simplified = new();
             simplified.InitToSimplifiedInCell(input, cell, tolerance);
             Assert.True(simplified.BoundaryNear(expected, S1Angle.FromRadians(1e-15)));
         }
 
         [Fact]
         public void Test_InitToSimplifiedInCell_CloselySpacedEdgeVerticesKept() {
-            S2Cell cell = new S2Cell(S2CellId.FromToken("00001"));
+            S2Cell cell = new(S2CellId.FromToken("00001"));
             var input = MakeCellPolygon(
                 cell, new[]{ "0:0.303, 0:0.302, 0:0.301, 0:0.3, 0.1:0.3, 0.1:0.4"});
-            S1Angle tolerance = 0.02 * new S1Angle(cell.GetVertex(0), cell.GetVertex(1));
-            S2Polygon simplified = new S2Polygon();
+            S1Angle tolerance = 0.02 * new S1Angle(cell.Vertex(0), cell.Vertex(1));
+            S2Polygon simplified = new();
             simplified.InitToSimplifiedInCell(input, cell, tolerance);
             Assert.True(simplified.BoundaryApproxEquals(input, S1Angle.FromRadians(1e-15)));
         }
 
         [Fact]
         public void Test_InitToSimplifiedInCell_PolylineAssemblyBug() {
-            S2Cell cell = new S2Cell(S2CellId.FromToken("5701"));
+            S2Cell cell = new(S2CellId.FromToken("5701"));
             var polygon = MakePolygon(
                 "55.8699252:-163.9412145, " + // South-west corner of 5701
                 "54.7672352:-166.7579678, " + // North-east corner of 5701
@@ -2104,25 +2035,25 @@ namespace S2Geometry
                 "54.7113202:-164.6374015");  // forced vertex, on edge 4
             S1Angle tolerance = S1Angle.FromRadians(2.138358e-05);  // 136.235m
             S1Angle max_dist = S1Angle.FromRadians(2.821947e-09);  // 18mm
-            S2Polygon simplified_in_cell = new S2Polygon();
+            S2Polygon simplified_in_cell = new();
             simplified_in_cell.InitToSimplifiedInCell(polygon, cell, tolerance,
                                                       max_dist);
-            Assert.False(simplified_in_cell.IsEmpty);
+            Assert.False(simplified_in_cell.IsEmpty());
         }
 
         [Fact]
         public void Test_InitToSimplifiedInCell_InteriorEdgesSnappedToBoundary() {
-            var polygon = S2TextFormat.MakePolygonOrDie(
+            var polygon = MakePolygonOrDie(
                 "37.8011672:-122.3247322, 37.8011648:-122.3247399, " +
                 "37.8011647:-122.3247403, 37.8011646:-122.3247408, " +
                 "37.8011645:-122.3247411, 37.8011633:-122.3247449, " +
                 "37.8011621:-122.3247334");
-            S2Cell cell = new S2Cell(S2CellId.FromDebugString("4/001013300"));
+            S2Cell cell = new(S2CellId.FromDebugString("4/001013300"));
             S1Angle snap_radius = S2Testing.MetersToAngle(1.0);
             S1Angle boundary_tolerance =
-                S1Angle.FromRadians(0.5 * S2Metrics.kMaxWidth.GetValue(S2Constants.kMaxCellLevel - 1)) +
+                S1Angle.FromRadians(0.5 * S2.kMaxWidth.GetValue(S2.kMaxCellLevel - 1)) +
                 IntLatLngSnapFunction.MinSnapRadiusForExponent(7);
-            S2Polygon simplified_polygon = new S2Polygon();
+            S2Polygon simplified_polygon = new();
             simplified_polygon.InitToSimplifiedInCell(polygon, cell, snap_radius,
                                                       boundary_tolerance);
             Assert.False(simplified_polygon.FindValidationError(out _));
@@ -2187,10 +2118,10 @@ namespace S2Geometry
         [Fact]
         public void Test_S2PolygonTestBase_FullPolygonShape() {
             var shape = new S2Polygon.Shape(full_);
-            Assert.Equal(0, shape.NumEdges);
+            Assert.Equal(0, shape.NumEdges());
             Assert.Equal(2, shape.Dimension());
-            Assert.False(shape.IsEmpty);
-            Assert.True(shape.IsFull);
+            Assert.False(shape.IsEmpty());
+            Assert.True(shape.IsFull());
             Assert.Equal(1, shape.NumChains());
             Assert.Equal(0, shape.GetChain(0).Start);
             Assert.Equal(0, shape.GetChain(0).Length);
@@ -2200,10 +2131,10 @@ namespace S2Geometry
         [Fact]
         public void Test_S2PolygonTestBase_EmptyPolygonShape() {
             var shape = new S2Polygon.Shape(empty_);
-            Assert.Equal(0, shape.NumEdges);
+            Assert.Equal(0, shape.NumEdges());
             Assert.Equal(2, shape.Dimension());
-            Assert.True(shape.IsEmpty);
-            Assert.False(shape.IsFull);
+            Assert.True(shape.IsEmpty());
+            Assert.False(shape.IsFull());
             Assert.Equal(0, shape.NumChains());
             Assert.False(shape.GetReferencePoint().Contained);
         }
@@ -2240,7 +2171,7 @@ namespace S2Geometry
             // This code used to demonstrate a bug in S2ShapeIndex.
             S2LatLng center = S2LatLng.FromRadians(0.3, 2);
             S1Angle radius = S1Angle.FromDegrees(80);
-            S2Polygon poly = new S2Polygon(S2Loop.MakeRegularLoop(center.ToPoint(), radius, 10));
+            S2Polygon poly = new(S2Loop.MakeRegularLoop(center.ToPoint(), radius, 10));
             Assert.True(poly.MayIntersect(new S2Cell(new S2CellId(center))));
         }
 
@@ -2257,7 +2188,7 @@ namespace S2Geometry
             // Verify that the example code for S2Polygon.index() actually works.
             S2Polygon polygon1 = near_0_;
             S2Polygon polygon2 = far_10_;
-            S2ClosestEdgeQuery query = new S2ClosestEdgeQuery(polygon1.Index);
+            S2ClosestEdgeQuery query = new(polygon1.Index);
             var target = new S2ClosestEdgeQuery.ShapeIndexTarget(polygon2.Index);
             S1ChordAngle distance = query.GetDistance(target);
             Assert.True(distance > new S1ChordAngle(S1Angle.FromDegrees(175)));
@@ -2265,16 +2196,16 @@ namespace S2Geometry
 
         private static bool TestEncodeDecode(S2Polygon src)
         {
-            Encoder encoder = new Encoder();
+            Encoder encoder = new();
             src.Encode(encoder);
-            Decoder decoder = new Decoder(encoder.Buffer, 0, encoder.Length);
-            var (_, dst) = S2Polygon.DecodeStatic(decoder);
+            var decoder = encoder.Decoder();
+            var (_, dst) = S2Polygon.Decode(decoder);
             return src == dst;
         }
 
         private static S2Polygon MakePolygon(string str)
         {
-            var polygon = S2TextFormat.MakeVerbatimPolygonOrDie(str);
+            var polygon = MakeVerbatimPolygonOrDie(str);
 
             // Check that InitToSnapped() is idempotent.
             S2Polygon snapped1 = new(), snapped2 = new();
@@ -2298,8 +2229,8 @@ namespace S2Geometry
 
         private static void CheckContainsPoint(string a_str, string b_str)
         {
-            var a = S2TextFormat.MakePolygonOrDie(a_str);
-            Assert.True(a.Contains(S2TextFormat.MakePointOrDie(b_str)));
+            var a = MakePolygonOrDie(a_str);
+            Assert.True(a.Contains(MakePointOrDie(b_str)));
         }
 
         private static void CheckEqual(S2Polygon a, S2Polygon b) => CheckEqual(a, b, S1Angle.Zero);
@@ -2308,8 +2239,8 @@ namespace S2Geometry
         {
             if (a.BoundaryApproxEquals(b, max_error)) return;
 
-            S2Builder builder = new S2Builder(new S2Builder.Options());
-            S2Polygon a2 = new S2Polygon(), b2 = new S2Polygon();
+            S2Builder builder = new(new Options());
+            S2Polygon a2 = new(), b2 = new();
             builder.StartLayer(new S2PolygonLayer(a2));
             builder.AddPolygon(a);
             Assert.True(builder.Build(out _));
@@ -2325,7 +2256,7 @@ namespace S2Geometry
 
         private static void CheckComplementary(S2Polygon a, S2Polygon b)
         {
-            S2Polygon b1 = new S2Polygon();
+            S2Polygon b1 = new();
             b1.InitToComplement(b);
             CheckEqual(a, b1);
         }
@@ -2335,10 +2266,10 @@ namespace S2Geometry
         private static void TestOneNestedPair(S2Polygon a, S2Polygon b)
         {
             Assert.True(a.Contains(b));
-            Assert.Equal(!b.IsEmpty, a.Intersects(b));
-            Assert.Equal(!b.IsEmpty, b.Intersects(a));
+            Assert.Equal(!b.IsEmpty(), a.Intersects(b));
+            Assert.Equal(!b.IsEmpty(), b.Intersects(a));
 
-            S2Polygon c = new S2Polygon(), d = new S2Polygon(), e = new S2Polygon(), f = new S2Polygon(), g = new S2Polygon();
+            S2Polygon c = new(), d = new(), e = new(), f = new(), g = new();
             c.InitToUnion(a, b);
             CheckEqual(c, a);
 
@@ -2346,7 +2277,7 @@ namespace S2Geometry
             CheckEqual(d, b);
 
             e.InitToDifference(b, a);
-            Assert.True(e.IsEmpty);
+            Assert.True(e.IsEmpty());
 
             f.InitToDifference(a, b);
             g.InitToSymmetricDifference(a, b);
@@ -2359,11 +2290,11 @@ namespace S2Geometry
         {
             Assert.False(a.Intersects(b));
             Assert.False(b.Intersects(a));
-            Assert.Equal(b.IsEmpty, a.Contains(b));
-            Assert.Equal(a.IsEmpty, b.Contains(a));
+            Assert.Equal(b.IsEmpty(), a.Contains(b));
+            Assert.Equal(a.IsEmpty(), b.Contains(a));
 
-            S2Polygon ab = new S2Polygon(), c = new S2Polygon(), d = new S2Polygon(), e = new S2Polygon(), f = new S2Polygon(), g = new S2Polygon();
-            S2Builder builder = new S2Builder(new S2Builder.Options());
+            S2Polygon ab = new(), c = new(), d = new(), e = new(), f = new(), g = new();
+            S2Builder builder = new(new Options());
             builder.StartLayer(new S2PolygonLayer(ab));
             builder.AddPolygon(a);
             builder.AddPolygon(b);
@@ -2373,7 +2304,7 @@ namespace S2Geometry
             CheckEqual(c, ab);
 
             d.InitToIntersection(a, b);
-            Assert.True(d.IsEmpty);
+            Assert.True(d.IsEmpty());
 
             e.InitToDifference(a, b);
             CheckEqual(e, a);
@@ -2389,12 +2320,12 @@ namespace S2Geometry
         // identities involving union, intersection, and difference hold true.
         private static void TestOneCoveringPair(S2Polygon a, S2Polygon b)
         {
-            Assert.Equal(a.IsFull, a.Contains(b));
-            Assert.Equal(b.IsFull, b.Contains(a));
+            Assert.Equal(a.IsFull(), a.Contains(b));
+            Assert.Equal(b.IsFull(), b.Contains(a));
 
-            S2Polygon c = new S2Polygon();
+            S2Polygon c = new();
             c.InitToUnion(a, b);
-            Assert.True(c.IsFull);
+            Assert.True(c.IsFull());
         }
 
         // Given polygons A and B such that both A and its complement intersect both B
@@ -2406,15 +2337,15 @@ namespace S2Geometry
             Assert.False(b.Contains(a));
             Assert.True(a.Intersects(b));
 
-            S2Polygon c = new S2Polygon(), d = new S2Polygon(), e = new S2Polygon(), f = new S2Polygon(), g = new S2Polygon(), h = new S2Polygon();
+            S2Polygon c = new(), d = new(), e = new(), f = new(), g = new(), h = new();
             c.InitToUnion(a, b);
-            Assert.False(c.IsFull);
+            Assert.False(c.IsFull());
 
             d.InitToIntersection(a, b);
-            Assert.False(d.IsEmpty);
+            Assert.False(d.IsEmpty());
 
             e.InitToDifference(b, a);
-            Assert.False(e.IsEmpty);
+            Assert.False(e.IsEmpty());
 
             f.InitToDifference(a, b);
             g.InitToUnion(e, f);
@@ -2426,7 +2357,7 @@ namespace S2Geometry
         // involving A, B, and their complements.
         private static void TestNestedPair(S2Polygon a, S2Polygon b)
         {
-            S2Polygon a1 = new S2Polygon(), b1 = new S2Polygon();
+            S2Polygon a1 = new(), b1 = new();
             a1.InitToComplement(a);
             b1.InitToComplement(b);
 
@@ -2440,7 +2371,7 @@ namespace S2Geometry
         // involving A, B, and their complements.
         private static void TestDisjointPair(S2Polygon a, S2Polygon b)
         {
-            S2Polygon a1 = new S2Polygon(), b1 = new S2Polygon();
+            S2Polygon a1 = new(), b1 = new();
             a1.InitToComplement(a);
             b1.InitToComplement(b);
 
@@ -2454,7 +2385,7 @@ namespace S2Geometry
         // and its complement, test various identities involving these four polygons.
         private static void TestOverlappingPair(S2Polygon a, S2Polygon b)
         {
-            S2Polygon a1 = new S2Polygon(), b1 = new S2Polygon();
+            S2Polygon a1 = new(), b1 = new();
             a1.InitToComplement(a);
             b1.InitToComplement(b);
 
@@ -2471,7 +2402,7 @@ namespace S2Geometry
             // with the complement.  This function is called multiple times in order to
             // test the various combinations of complements.
 
-            S2Polygon a1_or_b = new S2Polygon(), a_and_b1 = new S2Polygon(), a_minus_b = new S2Polygon();
+            S2Polygon a1_or_b = new(), a_and_b1 = new(), a_minus_b = new();
             a_and_b1.InitToIntersection(a, b1);
             a1_or_b.InitToUnion(a1, b);
             a_minus_b.InitToDifference(a, b);
@@ -2484,7 +2415,7 @@ namespace S2Geometry
         // complements.
         private static void TestComplements(S2Polygon a, S2Polygon b)
         {
-            S2Polygon a1 = new S2Polygon(), b1 = new S2Polygon();
+            S2Polygon a1 = new(), b1 = new();
             a1.InitToComplement(a);
             b1.InitToComplement(b);
 
@@ -2495,7 +2426,7 @@ namespace S2Geometry
 
             // There is a lot of redundancy if we do this test for each complementary
             // pair, so we just do it once instead.
-            S2Polygon a_xor_b1 = new S2Polygon(), a1_xor_b = new S2Polygon();
+            S2Polygon a_xor_b1 = new(), a1_xor_b = new();
             a_xor_b1.InitToSymmetricDifference(a, b1);
             a1_xor_b.InitToSymmetricDifference(a1, b);
             CheckEqual(a_xor_b1, a1_xor_b);
@@ -2503,12 +2434,12 @@ namespace S2Geometry
 
         private static void TestDestructiveUnion(S2Polygon a, S2Polygon b)
         {
-            S2Polygon c = new S2Polygon();
+            S2Polygon c = new();
             c.InitToUnion(a, b);
             var polygons = new List<S2Polygon>
             {
-                (S2Polygon)a.Clone(),
-                (S2Polygon)b.Clone()
+                (S2Polygon)a.CustomClone(),
+                (S2Polygon)b.CustomClone()
             };
             var c_destructive = S2Polygon.DestructiveUnion(polygons);
             CheckEqual(c, c_destructive);
@@ -2547,14 +2478,14 @@ namespace S2Geometry
             _logger.WriteLine($@"Polyline intersection shared edge test start={start_vertex} direction=direction");
             S2Point[] points = {p.Loop(0).Vertex(start_vertex),
                             p.Loop(0).Vertex(start_vertex + direction)};
-            S2Polyline polyline = new S2Polyline(points);
+            S2Polyline polyline = new(points);
             if (direction < 0)
             {
                 var polylines = p.IntersectWithPolyline(polyline);
                 Assert.Empty(polylines);
                 polylines = p.SubtractFromPolyline(polyline);
                 Assert.Single(polylines);
-                Assert.Equal(2, polylines[0].NumVertices);
+                Assert.Equal(2, polylines[0].NumVertices());
                 Assert.Equal(points[0], polylines[0].Vertex(0));
                 Assert.Equal(points[1], polylines[0].Vertex(1));
                 Assert.False(p.Intersects(polyline));
@@ -2564,7 +2495,7 @@ namespace S2Geometry
             {
                 var polylines = p.IntersectWithPolyline(polyline);
                 Assert.Single(polylines);
-                Assert.Equal(2, polylines[0].NumVertices);
+                Assert.Equal(2, polylines[0].NumVertices());
                 Assert.Equal(points[0], polylines[0].Vertex(0));
                 Assert.Equal(points[1], polylines[0].Vertex(1));
                 polylines = p.SubtractFromPolyline(polyline);
@@ -2617,9 +2548,9 @@ namespace S2Geometry
         private static void SplitAndAssemble(S2Polygon polygon)
         {
             // Normalize the polygon's loop structure by rebuilding it with S2Builder.
-            S2Builder builder = new S2Builder(new S2Builder.Options());
-            S2Polygon expected = new S2Polygon();
-            builder.StartLayer(new S2BuilderUtil.S2PolygonLayer(expected));
+            S2Builder builder = new(new Options());
+            S2Polygon expected = new();
+            builder.StartLayer(new S2PolygonLayer(expected));
             builder.AddPolygon(polygon);
 
             Assert.True(builder.Build(out _));
@@ -2631,11 +2562,11 @@ namespace S2Geometry
 
             for (int iter = 0; iter < (debug ? 3 : 10); ++iter)
             {
-                S2RegionCoverer coverer = new S2RegionCoverer();
+                S2RegionCoverer coverer = new();
                 // Compute the minimum level such that the polygon's bounding
                 // cap is guaranteed to be cut.
-                double diameter = 2 * polygon.GetCapBound().Radius.Radians;
-                int min_level = S2Metrics.kMaxWidth.GetLevelForMaxValue(diameter);
+                double diameter = 2 * polygon.GetCapBound().Radius.Radians();
+                int min_level = S2.kMaxWidth.GetLevelForMaxValue(diameter);
 
                 // Now choose a level that has up to 500 cells in the covering.
                 int level = min_level + S2Testing.Random.Uniform(debug ? 4 : 6);
@@ -2650,8 +2581,8 @@ namespace S2Geometry
                 var pieces = new List<S2Polygon>();
                 foreach (var cell_id in cells)
                 {
-                    S2Cell cell = new S2Cell(cell_id);
-                    S2Polygon window = new S2Polygon(cell);
+                    S2Cell cell = new(cell_id);
+                    S2Polygon window = new(cell);
                     var piece = new S2Polygon();
                     piece.InitToIntersection(polygon, window);
                     pieces.Add(piece);
@@ -2682,11 +2613,11 @@ namespace S2Geometry
                 Assert.True(expected.BoundaryNear(result, S1Angle.FromRadians(2e-15)));
 
                 // Check that ApproxEquals produces the same result.
-                if (!expected.ApproxEquals(result, S2EdgeCrossings.kIntersectionMergeRadiusS1Angle))
+                if (!expected.ApproxEquals(result, S2.kIntersectionMergeRadiusS1Angle))
                 {
-                    S2Polygon symmetric_difference = new S2Polygon();
+                    S2Polygon symmetric_difference = new();
                     symmetric_difference.InitToApproxSymmetricDifference(
-                        expected, result, S2EdgeCrossings.kIntersectionMergeRadiusS1Angle);
+                        expected, result, S2.kIntersectionMergeRadiusS1Angle);
                     var ss = symmetric_difference.ToDebugString();
                     Assert.True(false);
                 }
@@ -2704,16 +2635,16 @@ namespace S2Geometry
             if (boundary_x == new S2Point()) boundary_x = x;
             Assert.True(new S1Angle(boundary_x, polygon.ProjectToBoundary(x)) <= kMaxError);
 
-            if (polygon.IsEmpty || polygon.IsFull)
+            if (polygon.IsEmpty() || polygon.IsFull())
             {
                 Assert.Equal(S1Angle.Infinity, polygon.GetDistanceToBoundary(x));
             }
             else
             {
                 // Debug.Assert.Near only works with doubles.
-                Assert2.Near(new S1Angle(x, boundary_x).Degrees,
-                            polygon.GetDistanceToBoundary(x).Degrees,
-                            kMaxError.Degrees);
+                Assert2.Near(new S1Angle(x, boundary_x).GetDegrees(),
+                            polygon.GetDistanceToBoundary(x).GetDegrees(),
+                            kMaxError.GetDegrees());
             }
             if (polygon.Contains(x))
             {
@@ -2757,7 +2688,7 @@ namespace S2Geometry
                 for (int j = i + 1; j < loop.NumVertices; ++j)
                 {
                     diameter = new[]{ diameter,
-                                   S2EdgeDistances.GetDistance(test_point, loop.Vertex(j),
+                                   S2.GetDistance(test_point, loop.Vertex(j),
                                                            loop.Vertex(j + 1))}.Max();
                 }
             }
@@ -2777,14 +2708,14 @@ namespace S2Geometry
             for (int l = 0; l < poly_a.NumLoops(); ++l)
             {
                 var a_loop = poly_a.Loop(l);
-                if (LoopDiameter(a_loop).Degrees <= min_diameter_in_degrees)
+                if (LoopDiameter(a_loop).GetDegrees() <= min_diameter_in_degrees)
                 {
                     continue;
                 }
                 has_big_loops = true;
                 for (int v = 0; v < a_loop.NumVertices; ++v)
                 {
-                    double distance = poly_b.GetDistance(a_loop.Vertex(v)).Degrees;
+                    double distance = poly_b.GetDistance(a_loop.Vertex(v)).GetDegrees();
                     if (distance < min_distance)
                     {
                         min_distance = distance;
@@ -2809,15 +2740,15 @@ namespace S2Geometry
             var loops = new List<S2Loop>();
             foreach (var str in strs)
             {
-                var points = S2TextFormat.ParseLatLngsOrDie(str);
+                var points = ParseLatLngsOrDie(str);
                 var loop_vertices = new List<S2Point>();
                 R2Rect uv = cell.BoundUV;
                 foreach (var p in points)
                 {
-                    double u = p.Lat.Degrees, v = p.Lng.Degrees;
-                    loop_vertices.Add(S2Coords.FaceUVtoXYZ(cell.Face,
+                    double u = p.Lat().GetDegrees(), v = p.Lng().GetDegrees();
+                    loop_vertices.Add(S2.FaceUVtoXYZ(cell.Face,
                         uv[0][0] * (1 - u) + uv[0][1] * u,
-                        uv[1][0] * (1 - v) + uv[1][1] * v).Normalized);
+                        uv[1][0] * (1 - v) + uv[1][1] * v).Normalize());
                 }
                 loops.Add(new S2Loop(loop_vertices));
             }
@@ -2827,7 +2758,7 @@ namespace S2Geometry
         private static S2Polygon MakeRegularPolygon(string center, int num_points, double radius_in_degrees)
         {
             S1Angle radius = S1Angle.FromDegrees(radius_in_degrees);
-            return new S2Polygon(S2Loop.MakeRegularLoop(S2TextFormat.MakePointOrDie(center), radius, num_points));
+            return new S2Polygon(S2Loop.MakeRegularLoop(MakePointOrDie(center), radius, num_points));
         }
 
         private record TestCase(string A, string B, string AAndB, string AOrB, string AMinusB, string AXorB);
@@ -2905,9 +2836,9 @@ namespace S2Geometry
 
             public bool Test()
             {
-                decoder_ = new Decoder(data_array_, 0, encoder_.Length);
+                decoder_ = new Decoder(data_array_, 0, encoder_.Length());
                 encoder_.Clear();
-                var (success, _) = S2Polygon.DecodeStatic(decoder_);
+                var (success, _) = S2Polygon.Decode(decoder_);
                 return success;
             }
 
@@ -2926,10 +2857,10 @@ namespace S2Geometry
 
         private static void TestPolygonShape(S2Polygon polygon)
         {
-            Assert.True(!polygon.IsFull);
+            Assert.True(!polygon.IsFull());
             var shape = new S2Polygon.Shape(polygon);
             Assert.Equal(polygon, shape.Polygon);
-            Assert.Equal(polygon.NumVertices, shape.NumEdges);
+            Assert.Equal(polygon.NumVertices, shape.NumEdges());
             Assert.Equal(polygon.NumLoops(), shape.NumChains());
             for (int e = 0, i = 0; i < polygon.NumLoops(); ++i)
             {
@@ -2944,9 +2875,9 @@ namespace S2Geometry
                 }
             }
             Assert.Equal(2, shape.Dimension());
-            Assert.False(shape.IsEmpty);
-            Assert.False(shape.IsFull);
-            Assert.Equal(polygon.Contains(S2PointUtil.Origin),
+            Assert.False(shape.IsEmpty());
+            Assert.False(shape.IsFull());
+            Assert.Equal(polygon.Contains(S2.Origin),
                       shape.GetReferencePoint().Contained);
         }
 
@@ -2962,7 +2893,7 @@ namespace S2Geometry
 
         private void SetInput(string poly, double tolerance_in_degrees)
         {
-            SetInput(S2TextFormat.MakePolygonOrDie(poly), tolerance_in_degrees);
+            SetInput(MakePolygonOrDie(poly), tolerance_in_degrees);
         }
 
         #endregion
@@ -3004,7 +2935,7 @@ namespace S2Geometry
 
         private void CheckInvalid(string snippet)
         {
-            var loops = vloops_.Select(vloop => new S2Loop(vloop, false)).ToList();
+            var loops = vloops_.Select(vloop => new S2Loop(vloop, S2Debug.DISABLE)).ToList();
             // Cannot replace with shuffle (b/65670707) since this uses an
             // incompatible random source which is also used as a source of randomness
             // in the surrounding code.

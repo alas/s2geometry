@@ -95,24 +95,24 @@ namespace S2Geometry
         [Fact]
         public void Test_GetCanonicalLoopOrder_AllDegeneracies()
         {
-            TestCanonicalLoopOrder("", new S2LoopMeasures.LoopOrder(0, 1));
-            TestCanonicalLoopOrder("a", new S2LoopMeasures.LoopOrder(0, 1));
-            TestCanonicalLoopOrder("aaaaa", new S2LoopMeasures.LoopOrder(0, 1));
-            TestCanonicalLoopOrder("ba", new S2LoopMeasures.LoopOrder(1, 1));
-            TestCanonicalLoopOrder("bab", new S2LoopMeasures.LoopOrder(1, 1));
-            TestCanonicalLoopOrder("cbab", new S2LoopMeasures.LoopOrder(2, 1));
-            TestCanonicalLoopOrder("bacbcab", new S2LoopMeasures.LoopOrder(8, -1));
+            TestCanonicalLoopOrder("", new S2.LoopOrder(0, 1));
+            TestCanonicalLoopOrder("a", new S2.LoopOrder(0, 1));
+            TestCanonicalLoopOrder("aaaaa", new S2.LoopOrder(0, 1));
+            TestCanonicalLoopOrder("ba", new S2.LoopOrder(1, 1));
+            TestCanonicalLoopOrder("bab", new S2.LoopOrder(1, 1));
+            TestCanonicalLoopOrder("cbab", new S2.LoopOrder(2, 1));
+            TestCanonicalLoopOrder("bacbcab", new S2.LoopOrder(8, -1));
         }
 
         [Fact]
         public void Test_GetPerimeter_Empty() {
-            Assert.Equal(S1Angle.Zero, S2LoopMeasures.GetPerimeter(Array.Empty<S2Point>()));
+            Assert.Equal(S1Angle.Zero, S2.GetPerimeter(Array.Empty<S2Point>()));
         }
 
         [Fact]
         public void Test_GetPerimeter_Octant() {
             var loop = ParsePointsOrDie("0:0, 0:90, 90:0");
-            Assert2.Near(3 * S2Constants.M_PI_2, S2LoopMeasures.GetPerimeter(loop.ToArray()).Radians);
+            Assert2.Near(3 * S2.M_PI_2, S2.GetPerimeter(loop.ToArray()).Radians);
         }
 
         [Fact]
@@ -120,7 +120,14 @@ namespace S2Geometry
             // Make sure that GetPerimeter doesn't use S1ChordAngle, which can only
             // represent distances up to 2*Pi.
             var loop = ParsePointsOrDie("0:0, 0:90, 0:180, 90:0, 0:-90").ToArray();
-            Assert2.Near(5 * S2Constants.M_PI_2, S2LoopMeasures.GetPerimeter(loop).Radians);
+            Assert2.Near(5 * S2.M_PI_2, S2.GetPerimeter(loop).Radians);
+        }
+
+        [Fact]
+        public void Test_GetSignedArea_Underflow()
+        {
+            var loop = ParsePointsOrDie("0:0, 0:1e-88, 1e-88:1e-88, 1e-88:0");
+            Assert.True(S2.GetSignedArea(loop.ToArray()) > 0);
         }
 
         [Fact]
@@ -135,6 +142,24 @@ namespace S2Geometry
             TestAreaConsistentWithCurvature(skinny_chevron_);
             TestAreaConsistentWithCurvature(three_leaf_clover_);
             TestAreaConsistentWithCurvature(tessellated_loop_);
+        }
+
+        [Fact]
+        public void Test_LoopTestBase_GetSurfaceIntegralGreaterThan4Pi()
+        {
+            // This test demonstrates that even when GetSurfaceIntegral() returns a an
+            // area greater than 4*Pi, GetSignedArea() still returns an accurate result.
+
+            // GetSurfaceIntegral() returns an area > 4 * Pi for this loop.  (Note that
+            // the result of GetSurfaceIntegral is only correct modulo 4 * Pi, and that
+            // S2::GetSignedArea() automatically corrects for this.)
+            var loop1 = new[]{
+    new(1, 0, 0), new(0, 1, 1e-150), new S2Point(-1, -2, 0).Normalize(),
+    new(-1, 0, 1e-50), new(0, 0, 1)
+  };
+            Assert.True(new S2Loop(loop1).IsValid());
+            Assert.True(S2.GetSurfaceIntegral(loop1, S2.SignedArea) > 4 * S2.M_PI + 0.1);
+            TestAreaConsistentWithCurvature(loop1);
         }
 
         [Fact]
@@ -154,14 +179,14 @@ namespace S2Geometry
                         // We limit longitude to the range [0, 90] to ensure that the loop is
                         // degenerate (as opposed to following the entire equator).
                         loopTmp.Add(
-                            S2LatLng.FromRadians(0, S2Testing.Random.RandDouble() * S2Constants.M_PI_2).ToPoint());
+                            S2LatLng.FromRadians(0, S2Testing.Random.RandDouble() * S2.M_PI_2).ToPoint());
                     }
-                } while (!new S2Loop(loopTmp, false).IsValid);
+                } while (!new S2Loop(loopTmp, S2Debug.DISABLE).IsValid());
                 var loop = loopTmp.ToArray();
-                bool ccw = S2LoopMeasures.IsNormalized(loop);
+                bool ccw = S2.IsNormalized(loop);
                 // The error bound is sufficient for current tests but not guaranteed.
                 _ = i + ": " + loop.ToDebugString();
-                Assert2.Near(ccw ? 0 : S2Constants.M_4_PI, S2LoopMeasures.GetArea(loop), 1e-14);
+                Assert2.Near(ccw ? 0 : S2.M_4_PI, S2.GetArea(loop), 1e-14);
                 Assert.Equal(!ccw, new S2Loop(loop).Contains(new S2Point(0, 0, 1)));
             }
         }
@@ -174,11 +199,11 @@ namespace S2Geometry
 
         [Fact]
         public void Test_LoopTestBase_GetAreaAndCentroid() {
-            Assert.Equal(S2Constants.M_4_PI, S2LoopMeasures.GetArea(full_));
-            Assert.Equal(S2Point.Empty, S2LoopMeasures.GetCentroid(full_));
+            Assert.Equal(S2.M_4_PI, S2.GetArea(full_));
+            Assert.Equal(S2Point.Empty, S2.GetCentroid(full_));
 
-            Assert2.Near(S2LoopMeasures.GetArea(north_hemi_), S2Constants.M_2_PI);
-            Assert2.Near(S2Constants.M_2_PI, S2LoopMeasures.GetArea(east_hemi_), 1e-12);
+            Assert2.Near(S2.GetArea(north_hemi_), S2.M_2_PI);
+            Assert2.Near(S2.M_2_PI, S2.GetArea(east_hemi_), 1e-12);
 
             // Construct spherical caps of random height, and approximate their boundary
             // with closely spaces vertices.  Then check that the area and centroid are
@@ -202,34 +227,34 @@ namespace S2Geometry
                 max_dtheta = Math.Min(Math.PI, max_dtheta);  // At least 3 vertices.
 
                 var loopTmp = new List<S2Point>();
-                for (double theta = 0; theta < S2Constants.M_2_PI;
+                for (double theta = 0; theta < S2.M_2_PI;
                      theta += S2Testing.Random.RandDouble() * max_dtheta) {
                     loopTmp.Add(Math.Cos(theta) * Math.Cos(phi) * x +
                                    Math.Sin(theta) * Math.Cos(phi) * y +
                                    Math.Sin(phi) * z);
                 }
                 var loop = loopTmp.ToArray();
-                double area = S2LoopMeasures.GetArea(loop);
-                S2Point centroid = S2LoopMeasures.GetCentroid(loop);
-                double expected_area = S2Constants.M_2_PI * height;
-                Assert.True(Math.Abs(area - expected_area) <= S2Constants.M_2_PI * kMaxDist);
+                double area = S2.GetArea(loop);
+                S2Point centroid = S2.GetCentroid(loop);
+                double expected_area = S2.M_2_PI * height;
+                Assert.True(Math.Abs(area - expected_area) <= S2.M_2_PI * kMaxDist);
                 S2Point expected_centroid = expected_area * (1 - 0.5 * height) * z;
-                Assert.True((centroid - expected_centroid).Norm <= 2 * kMaxDist);
+                Assert.True((centroid - expected_centroid).Norm() <= 2 * kMaxDist);
             }
         }
 
         [Fact]
         public void Test_LoopTestBase_GetCurvature() {
-            Assert.Equal(-S2Constants.M_2_PI, S2LoopMeasures.GetCurvature(full_));
+            Assert.Equal(-S2.M_2_PI, S2.GetCurvature(full_));
 
-            Assert.Equal(S2Constants.M_2_PI, S2LoopMeasures.GetCurvature(v_loop_));
+            Assert.Equal(S2.M_2_PI, S2.GetCurvature(v_loop_));
             CheckCurvatureInvariants(v_loop_);
 
             // This curvature should be computed exactly.
-            Assert.Equal(0, S2LoopMeasures.GetCurvature(north_hemi3_));
+            Assert.Equal(0, S2.GetCurvature(north_hemi3_));
             CheckCurvatureInvariants(north_hemi3_);
 
-            Assert2.Near(0, S2LoopMeasures.GetCurvature(west_hemi_), 1e-15);
+            Assert2.Near(0, S2.GetCurvature(west_hemi_), 1e-15);
             CheckCurvatureInvariants(west_hemi_);
 
             // We don't have an easy way to estimate the curvature of these loops, but
@@ -237,10 +262,10 @@ namespace S2Geometry
             CheckCurvatureInvariants(candy_cane_);
             CheckCurvatureInvariants(three_leaf_clover_);
 
-            Assert2.Near(S2Constants.M_2_PI, S2LoopMeasures.GetCurvature(line_triangle_));
+            Assert2.Near(S2.M_2_PI, S2.GetCurvature(line_triangle_));
             CheckCurvatureInvariants(line_triangle_);
 
-            Assert2.Near(S2Constants.M_2_PI, S2LoopMeasures.GetCurvature(skinny_chevron_));
+            Assert2.Near(S2.M_2_PI, S2.GetCurvature(skinny_chevron_));
             CheckCurvatureInvariants(skinny_chevron_);
 
             // Build a narrow spiral loop starting at the north pole.  This is designed
@@ -253,13 +278,13 @@ namespace S2Geometry
             var spiral = new S2Point[2 * kArmPoints];
             spiral[kArmPoints] = new S2Point(0, 0, 1);
             for (int i = 0; i < kArmPoints; ++i) {
-                double angle = (S2Constants.M_2_PI / 3) * i;
+                double angle = (S2.M_2_PI / 3) * i;
                 double x = Math.Cos(angle);
                 double y = Math.Sin(angle);
                 double r1 = i * kArmRadius / kArmPoints;
                 double r2 = (i + 1.5) * kArmRadius / kArmPoints;
-                spiral[kArmPoints - i - 1] = new S2Point(r1 * x, r1 * y, 1).Normalized;
-                spiral[kArmPoints + i] = new S2Point(r2 * x, r2 * y, 1).Normalized;
+                spiral[kArmPoints - i - 1] = new S2Point(r1 * x, r1 * y, 1).Normalize();
+                spiral[kArmPoints + i] = new S2Point(r2 * x, r2 * y, 1).Normalize();
             }
 
             // Check that GetCurvature() is consistent with GetArea() to within the
@@ -269,9 +294,9 @@ namespace S2Geometry
             // designed to achieve that.  The error in GetArea() can be ignored for the
             // purposes of this test since it is generally much smaller.
             Assert2.Near(
-                S2Constants.M_2_PI - S2LoopMeasures.GetArea(spiral),
-                S2LoopMeasures.GetCurvature(spiral),
-                0.01 * S2LoopMeasures.GetCurvatureMaxError(spiral));
+                S2.M_2_PI - S2.GetArea(spiral),
+                S2.GetCurvature(spiral),
+                0.01 * S2.GetCurvatureMaxError(spiral));
         }
 
         // Given a string where each character "ch" represents a vertex (such as
@@ -288,28 +313,28 @@ namespace S2Geometry
         private void TestPruneDegeneracies(string input_str, string expected_str)
         {
             var input = MakeTestLoop(input_str);
-            var actual_str = S2Testing.StrPoints.PointsToStr(S2LoopMeasures.PruneDegeneracies(input));
+            var actual_str = S2Testing.StrPoints.PointsToStr(S2.PruneDegeneracies(input));
             Assert.Equal(expected_str, actual_str);
         }
 
         // Given a loop whose vertices are represented as characters (such as "abcd" or
         // "abccb"), verify that S2.GetCanonicalLoopOrder returns the given result.
-        private void TestCanonicalLoopOrder(string input_str, S2LoopMeasures.LoopOrder expected_order) {
-            Assert.Equal(expected_order, S2LoopMeasures.GetCanonicalLoopOrder(MakeTestLoop(input_str)));
+        private void TestCanonicalLoopOrder(string input_str, S2.LoopOrder expected_order) {
+            Assert.Equal(expected_order, S2.GetCanonicalLoopOrder(MakeTestLoop(input_str)));
         }
 
         private static void TestAreaConsistentWithCurvature(S2Point[] loop) {
             // Check that the area computed using GetArea() is consistent with the loop
             // curvature.  According to the Gauss-Bonnet theorem, the area of the loop
             // equals 2*Pi minus its curvature.
-            double area = S2LoopMeasures.GetArea(loop);
-            double gauss_area = S2Constants.M_2_PI - S2LoopMeasures.GetCurvature(loop);
+            double area = S2.GetArea(loop);
+            double gauss_area = S2.M_2_PI - S2.GetCurvature(loop);
             // The error bound below is sufficient for current tests but not guaranteed.
             _ = loop.ToDebugString();
             Assert.True(Math.Abs(area - gauss_area) <= 1e-14);
         }
 
-        private static void ExpectSameOrder(S2Point[] loop1, S2LoopMeasures.LoopOrder order1, S2Point[] loop2, S2LoopMeasures.LoopOrder order2) {
+        private static void ExpectSameOrder(S2Point[] loop1, S2.LoopOrder order1, S2Point[] loop2, S2.LoopOrder order2) {
             Assert.Equal(loop1.Length, loop2.Length);
             int i1 = order1.first, i2 = order2.first;
             int dir1 = order1.dir, dir2 = order2.dir;
@@ -323,18 +348,18 @@ namespace S2Geometry
         // Check that the curvature is *identical* when the vertex order is
         // rotated, and that the sign is inverted when the vertices are reversed.
         private static void CheckCurvatureInvariants(S2Point[] loop_in) {
-            S2LoopMeasures.LoopOrder order_in = S2LoopMeasures.GetCanonicalLoopOrder(loop_in);
+            S2.LoopOrder order_in = S2.GetCanonicalLoopOrder(loop_in);
             var loop = loop_in;
-            double expected = S2LoopMeasures.GetCurvature(loop);
+            double expected = S2.GetCurvature(loop);
             for (int i = 0; i < loop.Length; ++i) {
                 loop.Reverse();
-                Assert.Equal((expected == S2Constants.M_2_PI) ? expected : -expected,
-                          S2LoopMeasures.GetCurvature(loop));
-                ExpectSameOrder(loop_in, order_in, loop, S2LoopMeasures.GetCanonicalLoopOrder(loop));
+                Assert.Equal((expected == S2.M_2_PI) ? expected : -expected,
+                          S2.GetCurvature(loop));
+                ExpectSameOrder(loop_in, order_in, loop, S2.GetCanonicalLoopOrder(loop));
                 loop.Reverse();
                 loop.RotateInPlace(1);
-                Assert.Equal(expected, S2LoopMeasures.GetCurvature(loop));
-                ExpectSameOrder(loop_in, order_in, loop, S2LoopMeasures.GetCanonicalLoopOrder(loop));
+                Assert.Equal(expected, S2.GetCurvature(loop));
+                ExpectSameOrder(loop_in, order_in, loop, S2.GetCanonicalLoopOrder(loop));
             }
         }
     }

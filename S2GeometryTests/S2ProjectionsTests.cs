@@ -7,7 +7,7 @@ namespace S2Geometry
         [Fact]
         public void Test_PlateCarreeProjection_Interpolate()
         {
-            PlateCarreeProjection proj = new PlateCarreeProjection(180);
+            PlateCarreeProjection proj = new(180);
 
             // Test that coordinates and/or arguments are not accidentally reversed.
             Assert.Equal(new R2Point(1.5, 6),
@@ -28,13 +28,13 @@ namespace S2Geometry
             // The arguments are chosen such that projection is exact, but
             // unprojection may not be.
             Assert.Equal(px, projection.Project(x));
-            Assert.True(S2PointUtil.ApproxEquals(x, projection.Unproject(px)));
+            Assert.True(S2.ApproxEquals(x, projection.Unproject(px)));
         }
 
         [Fact]
         public void Test_PlateCarreeProjection_ProjectUnproject()
         {
-            PlateCarreeProjection proj = new PlateCarreeProjection(180);
+            PlateCarreeProjection proj = new(180);
             TestProjectUnproject(proj, new R2Point(0, 0), new S2Point(1, 0, 0));
             TestProjectUnproject(proj, new R2Point(180, 0), new S2Point(-1, 0, 0));
             TestProjectUnproject(proj, new R2Point(90, 0), new S2Point(0, 1, 0));
@@ -46,7 +46,7 @@ namespace S2Geometry
         [Fact]
         public void Test_MercatorProjection_ProjectUnproject()
         {
-            MercatorProjection proj = new MercatorProjection(180);
+            MercatorProjection proj = new(180);
             double inf = double.PositiveInfinity;
             TestProjectUnproject(proj, new R2Point(0, 0), new S2Point(1, 0, 0));
             TestProjectUnproject(proj, new R2Point(180, 0), new S2Point(-1, 0, 0));

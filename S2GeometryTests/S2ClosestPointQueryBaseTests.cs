@@ -11,7 +11,7 @@ namespace S2Geometry
         public void Test_S2ClosestPointQueryBase_MaxDistance()
         {
             S2PointIndex<int> index = new();
-            var points = S2TextFormat.ParsePointsOrDie("0:0, 1:0, 2:0, 3:0");
+            var points = ParsePointsOrDie("0:0, 1:0, 2:0, 3:0");
             for (int i = 0; i < points.Count; ++i)
             {
                 index.Add(points[i], i);
@@ -19,12 +19,12 @@ namespace S2Geometry
             FurthestPointQuery<int> query = new(index);
             FurthestPointQuery<int>.Options options = new();
             options.MaxResults = (1);
-            FurthestPointTarget target = new(S2TextFormat.MakePointOrDie("4:0"));
+            FurthestPointTarget target = new(MakePointOrDie("4:0"));
             var results = query.FindClosestPoints(target, options);
             Assert.Single(results);
             Assert.Equal(points[0], results[0].Point);
             Assert.Equal(0, results[0].Data);
-            Assert2.Near(4, results[0].Distance.ToS1ChordAngle().ToAngle().Degrees, 1e-13);
+            Assert2.Near(4, results[0].Distance.ToS1ChordAngle().ToAngle().GetDegrees(), 1e-13);
         }
 
         public sealed class FurthestPointTarget : S2MaxDistancePointTarget

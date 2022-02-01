@@ -1,16 +1,5 @@
-using System.Collections.Generic;
-using Xunit;
-
 namespace S2Geometry
 {
-    using S2BuilderUtil;
-    using static S2Builder;
-    using static S2Builder.GraphOptions;
-    using PolylineType = S2Builder.Graph.PolylineType;
-
-    using LabelSet = List<int>;
-    using LabelSetIds = List<List<int>>;
-
     public class S2BuilderUtil_S2PolylineVectorLayerTests
     {
         [Fact]
@@ -66,7 +55,7 @@ namespace S2Geometry
             // polylines that share edges (and that even share loops).  The test
             // happens to pass for undirected edges as well.
             S2PolylineVectorLayer.Options layer_options = new();
-            layer_options.PolylineType_ = (PolylineType.WALK);
+            layer_options.PolylineType_ = (Graph.PolylineType.WALK);
             var input = new List<string>
   {
     "5:5, 5:6, 6:5, 5:5, 5:4, 5:3",
@@ -83,7 +72,7 @@ namespace S2Geometry
             // happen to terminate in the middle of later polylines.  This requires
             // building non-maximal polylines.
             S2PolylineVectorLayer.Options layer_options = new();
-            layer_options.PolylineType_ = (PolylineType.WALK);
+            layer_options.PolylineType_ = (Graph.PolylineType.WALK);
             var input = new List<string>
   {
     "0:1, 1:1",
@@ -100,9 +89,9 @@ namespace S2Geometry
             // A single input edge is split into several segments by removing portions
             // of it, and then each of those segments becomes one edge of a loop.
             S2PolylineVectorLayer.Options layer_options = new();
-            layer_options.PolylineType_ = (PolylineType.WALK);
-            layer_options.SiblingPairs = (SiblingPairs.DISCARD);
-            S2Builder.Options builder_options = new();
+            layer_options.PolylineType_ = (Graph.PolylineType.WALK);
+            layer_options.SiblingPairs = (GraphOptions.SiblingPairs.DISCARD);
+            Options builder_options = new();
             builder_options.SnapFunction = new IntLatLngSnapFunction(7);
             var input = new List<string>
                 {
@@ -125,23 +114,49 @@ namespace S2Geometry
         }
 
         [Fact]
+        public void Test_S2PolylineVectorLayer_ValidateFalse()
+        {
+            // Verifies that calling set_validate(false) does not turn off s2 debugging.
+            S2PolylineVectorLayer.Options layer_options=new();
+            layer_options.Validate = false;
+            Assert.Equal(layer_options.s2debug_override_, S2Debug.ALLOW);
+        }
+
+        [Fact]
+        public void Test_S2PolylineVectorLayer_ValidateTrue()
+        {
+            // Verifies that the validate() option works.
+            S2PolylineVectorLayer.Options layer_options=new();
+            layer_options.Validate = true;
+            Assert.Equal(layer_options.s2debug_override_, S2Debug.DISABLE);
+            S2Builder builder=new(new S2Builder.Options());
+            List<S2Polyline> output=new();
+            builder.StartLayer(
+                new S2PolylineVectorLayer(output, layer_options));
+            builder.AddEdge(new S2Point(1, 0, 0), new S2Point(-1, 0, 0));
+            S2Error error;
+            Assert.False(builder.Build(out error));
+            Assert.Equal(error.Code, S2ErrorCode.ANTIPODAL_VERTICES);
+        }
+
+        [Fact]
         public void Test_S2PolylineVectorLayer_SimpleEdgeLabels()
         {
-            S2Builder builder = new(new S2Builder.Options());
+            S2Builder builder = new(new Options());
             List<S2Polyline> output = new();
             LabelSetIds label_set_ids = new();
             IdSetLexicon label_set_lexicon = new();
             S2PolylineVectorLayer.Options layer_options = new();
             layer_options.EdgeType_ = (EdgeType.UNDIRECTED);
-            layer_options.DuplicateEdges_ = (DuplicateEdges.MERGE);
+            layer_options.DuplicateEdges_ = (GraphOptions.DuplicateEdges.MERGE);
             builder.StartLayer(new S2PolylineVectorLayer(
                 output, label_set_ids, label_set_lexicon, layer_options));
             builder.SetLabel(1);
-            builder.AddPolyline(S2TextFormat.MakePolylineOrDie("0:0, 0:1, 0:2"));
+            builder.AddPolyline(MakePolylineOrDie("0:0, 0:1, 0:2"));
             builder.SetLabel(2);
-            builder.AddPolyline(S2TextFormat.MakePolylineOrDie("0:3, 0:2, 0:1"));
+            builder.AddPolyline(MakePolylineOrDie("0:3, 0:2, 0:1"));
             builder.ClearLabels();
-            builder.AddPolyline(S2TextFormat.MakePolylineOrDie("0:4, 0:5"));
+            builder.AddPolyline(MakePolylineOrDie("0:4, 0:5"));
             Assert.True(builder.Build(out _));
             var expected = new List<LabelSetIds>
                 {
@@ -172,13 +187,13 @@ namespace S2Geometry
         [Fact]
         public void Test_IndexedS2PolylineVectorLayer_AddsShapes()
         {
-            S2Builder builder = new(new S2Builder.Options());
+            S2Builder builder = new(new Options());
             MutableS2ShapeIndex index = new();
             builder.StartLayer(new IndexedS2PolylineVectorLayer(index));
             string polyline0_str = "0:0, 1:1";
             string polyline1_str = "2:2, 3:3";
-            builder.AddPolyline(S2TextFormat.MakePolylineOrDie(polyline0_str));
-            builder.AddPolyline(S2TextFormat.MakePolylineOrDie(polyline1_str));
+            builder.AddPolyline(MakePolylineOrDie(polyline0_str));
+            builder.AddPolyline(MakePolylineOrDie(polyline1_str));
             Assert.True(builder.Build(out _));
             Assert.Equal(2, index.NumShapeIds());
             var polyline0 = ((S2Polyline.Shape)index.Shape(0)).Polyline;
@@ -191,11 +206,11 @@ namespace S2Geometry
         private static void TestS2PolylineVector(
             List<string> input_strs,
             List<string> expected_strs,
-            S2PolylineVectorLayer.Options layer_options = null,
-            S2Builder.Options builder_options = null)
+            S2PolylineVectorLayer.Options? layer_options = null,
+            Options? builder_options = null)
         {
             layer_options ??= new S2PolylineVectorLayer.Options();
-            builder_options ??= new S2Builder.Options();
+            builder_options ??= new Options();
             TestS2PolylineVector(input_strs, expected_strs, EdgeType.DIRECTED,
                                  layer_options, builder_options);
             TestS2PolylineVector(input_strs, expected_strs, EdgeType.UNDIRECTED,
@@ -211,18 +226,18 @@ namespace S2Geometry
             List<string> input_strs,
             List<string> expected_strs,
             EdgeType edge_type,
-            S2PolylineVectorLayer.Options layer_options = null, // by value
-            S2Builder.Options builder_options = null)
+            S2PolylineVectorLayer.Options? layer_options = null, // by value
+            Options? builder_options = null)
         {
             layer_options ??= new S2PolylineVectorLayer.Options();
-            builder_options ??= new S2Builder.Options();
+            builder_options ??= new Options();
             layer_options.EdgeType_ = (edge_type);
             S2Builder builder = new(builder_options);
             List<S2Polyline> output = new();
             builder.StartLayer(new S2PolylineVectorLayer(output, layer_options));
             foreach (var input_str in input_strs)
             {
-                builder.AddPolyline(S2TextFormat.MakePolylineOrDie(input_str));
+                builder.AddPolyline(MakePolylineOrDie(input_str));
             }
             Assert.True(builder.Build(out _));
             List<string> output_strs = new();

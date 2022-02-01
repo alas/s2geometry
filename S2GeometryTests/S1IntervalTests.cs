@@ -31,30 +31,30 @@ namespace S2Geometry
             full = S1Interval.Full;
             // Single-point intervals:
             zero = new S1Interval(0, 0);
-            pi2 = new S1Interval(S2Constants.M_PI_2, S2Constants.M_PI_2);
+            pi2 = new S1Interval(S2.M_PI_2, S2.M_PI_2);
             pi = new S1Interval(Math.PI, Math.PI);
             mipi = new S1Interval(-Math.PI, -Math.PI);  // Same as "pi" after normalization.
-            mipi2 = new S1Interval(-S2Constants.M_PI_2, -S2Constants.M_PI_2);
+            mipi2 = new S1Interval(-S2.M_PI_2, -S2.M_PI_2);
             // Single quadrants:
-            quad1 = new S1Interval(0, S2Constants.M_PI_2);
-            quad2 = new S1Interval(S2Constants.M_PI_2, -Math.PI);
-            quad3 = new S1Interval(Math.PI, -S2Constants.M_PI_2);
-            quad4 = new S1Interval(-S2Constants.M_PI_2, 0);
+            quad1 = new S1Interval(0, S2.M_PI_2);
+            quad2 = new S1Interval(S2.M_PI_2, -Math.PI);
+            quad3 = new S1Interval(Math.PI, -S2.M_PI_2);
+            quad4 = new S1Interval(-S2.M_PI_2, 0);
             // Quadrant pairs:
             quad12 = new S1Interval(0, -Math.PI);
-            quad23 = new S1Interval(S2Constants.M_PI_2, -S2Constants.M_PI_2);
+            quad23 = new S1Interval(S2.M_PI_2, -S2.M_PI_2);
             quad34 = new S1Interval(-Math.PI, 0);
-            quad41 = new S1Interval(-S2Constants.M_PI_2, S2Constants.M_PI_2);
+            quad41 = new S1Interval(-S2.M_PI_2, S2.M_PI_2);
             // Quadrant triples:
-            quad123 = new S1Interval(0, -S2Constants.M_PI_2);
-            quad234 = new S1Interval(S2Constants.M_PI_2, 0);
-            quad341 = new S1Interval(Math.PI, S2Constants.M_PI_2);
-            quad412 = new S1Interval(-S2Constants.M_PI_2, -Math.PI);
+            quad123 = new S1Interval(0, -S2.M_PI_2);
+            quad234 = new S1Interval(S2.M_PI_2, 0);
+            quad341 = new S1Interval(Math.PI, S2.M_PI_2);
+            quad412 = new S1Interval(-S2.M_PI_2, -Math.PI);
             // Small intervals around the midpoints between quadrants, such that
             // the center of each interval is offset slightly CCW from the midpoint.
-            mid12 = new S1Interval(S2Constants.M_PI_2 - 0.01, S2Constants.M_PI_2 + 0.02);
+            mid12 = new S1Interval(S2.M_PI_2 - 0.01, S2.M_PI_2 + 0.02);
             mid23 = new S1Interval(Math.PI - 0.01, -Math.PI + 0.02);
-            mid34 = new S1Interval(-S2Constants.M_PI_2 - 0.01, -S2Constants.M_PI_2 + 0.02);
+            mid34 = new S1Interval(-S2.M_PI_2 - 0.01, -S2.M_PI_2 + 0.02);
             mid41 = new S1Interval(-0.01, 0.02);
         }
 
@@ -67,20 +67,20 @@ namespace S2Geometry
             Assert.Equal(quad12.Hi, Math.PI);
             Assert.Equal(quad34[0], Math.PI);
             Assert.Equal(0, quad34[1]);
-            Assert.Equal(quad34.Bounds, new R2Point(Math.PI, 0).Bounds);
+            Assert.Equal(quad34.Bounds(), new R2Point(Math.PI, 0).Bounds());
             Assert.Equal(pi.Lo, Math.PI);
             Assert.Equal(pi.Hi, Math.PI);
 
             // Check that [-Pi, -Pi] is normalized to [Pi, Pi].
             Assert.Equal(mipi.Lo, Math.PI);
             Assert.Equal(mipi.Hi, Math.PI);
-            Assert.Equal(quad23.Lo, S2Constants.M_PI_2);
-            Assert.Equal(quad23.Hi, -S2Constants.M_PI_2);
+            Assert.Equal(quad23.Lo, S2.M_PI_2);
+            Assert.Equal(quad23.Hi, -S2.M_PI_2);
 
             // Check that the default S1Interval is identical to Empty().
             S1Interval default_empty = S1Interval.Empty;
-            Assert.True(default_empty.IsValid);
-            Assert.True(default_empty.IsEmpty);
+            Assert.True(default_empty.IsValid());
+            Assert.True(default_empty.IsEmpty());
             Assert.Equal(empty.Lo, default_empty.Lo);
             Assert.Equal(empty.Hi, default_empty.Hi);
         }
@@ -88,14 +88,14 @@ namespace S2Geometry
         [Fact]
         public void Test_S1IntervalTestBase_SimplePredicates() {
             // is_valid(), IsEmpty, IsFull, IsInverted
-            Assert.True(zero.IsValid && !zero.IsEmpty && !zero.IsFull);
-            Assert.True(empty.IsValid && empty.IsEmpty && !empty.IsFull);
-            Assert.True(empty.IsInverted);
-            Assert.True(full.IsValid && !full.IsEmpty && full.IsFull);
-            Assert.True(!quad12.IsEmpty && !quad12.IsFull && !quad12.IsInverted);
-            Assert.True(!quad23.IsEmpty && !quad23.IsFull && quad23.IsInverted);
-            Assert.True(pi.IsValid && !pi.IsEmpty && !pi.IsInverted);
-            Assert.True(mipi.IsValid && !mipi.IsEmpty && !mipi.IsInverted);
+            Assert.True(zero.IsValid() && !zero.IsEmpty() && !zero.IsFull());
+            Assert.True(empty.IsValid() && empty.IsEmpty() && !empty.IsFull());
+            Assert.True(empty.IsInverted());
+            Assert.True(full.IsValid() && !full.IsEmpty() && full.IsFull());
+            Assert.True(!quad12.IsEmpty() && !quad12.IsFull() && !quad12.IsInverted());
+            Assert.True(!quad23.IsEmpty() && !quad23.IsFull() && quad23.IsInverted());
+            Assert.True(pi.IsValid() && !pi.IsEmpty() && !pi.IsInverted());
+            Assert.True(mipi.IsValid() && !mipi.IsEmpty() && !mipi.IsInverted());
         }
 
         [Fact]
@@ -103,46 +103,46 @@ namespace S2Geometry
             // Test that rounding errors don't cause intervals that are almost empty or
             // full to be considered empty or full.  The following value is the greatest
             // representable value less than Pi.
-            double kAlmostPi = Math.PI - 2 * S2Constants.DoubleEpsilon;
-            Assert.False(new S1Interval(-kAlmostPi, Math.PI).IsFull);
-            Assert.False(new S1Interval(-Math.PI, kAlmostPi).IsFull);
-            Assert.False(new S1Interval(Math.PI, -kAlmostPi).IsEmpty);
-            Assert.False(new S1Interval(kAlmostPi, -Math.PI).IsEmpty);
+            double kAlmostPi = Math.PI - 2 * S2.DoubleEpsilon;
+            Assert.False(new S1Interval(-kAlmostPi, Math.PI).IsFull());
+            Assert.False(new S1Interval(-Math.PI, kAlmostPi).IsFull());
+            Assert.False(new S1Interval(Math.PI, -kAlmostPi).IsEmpty());
+            Assert.False(new S1Interval(kAlmostPi, -Math.PI).IsEmpty());
         }
 
         [Fact]
         public void Test_S1IntervalTestBase_GetCenter() {
-            Assert.Equal(quad12.Center, S2Constants.M_PI_2);
-            Assert2.Near(new S1Interval(3.1, 2.9).Center, 3.0 - Math.PI);
-            Assert2.Near(new S1Interval(-2.9, -3.1).Center, Math.PI - 3.0);
-            Assert2.Near(new S1Interval(2.1, -2.1).Center, Math.PI);
-            Assert.Equal(pi.Center, Math.PI);
-            Assert.Equal(mipi.Center, Math.PI);
-            Assert.Equal(Math.Abs(quad23.Center), Math.PI);
-            Assert2.Near(quad123.Center, 0.75 * Math.PI);
+            Assert.Equal(quad12.GetCenter(), S2.M_PI_2);
+            Assert2.Near(new S1Interval(3.1, 2.9).GetCenter(), 3.0 - Math.PI);
+            Assert2.Near(new S1Interval(-2.9, -3.1).GetCenter(), Math.PI - 3.0);
+            Assert2.Near(new S1Interval(2.1, -2.1).GetCenter(), Math.PI);
+            Assert.Equal(pi.GetCenter(), Math.PI);
+            Assert.Equal(mipi.GetCenter(), Math.PI);
+            Assert.Equal(Math.Abs(quad23.GetCenter()), Math.PI);
+            Assert2.Near(quad123.GetCenter(), 0.75 * Math.PI);
         }
 
         [Fact]
         public void Test_S1IntervalTestBase_GetLength() {
-            Assert.Equal(quad12.Length, Math.PI);
-            Assert.Equal(0, pi.Length);
-            Assert.Equal(0, mipi.Length);
-            Assert2.Near(quad123.Length, 1.5 * Math.PI);
-            Assert.Equal(Math.Abs(quad23.Length), Math.PI);
-            Assert.Equal(full.Length, S2Constants.M_2_PI);
-            Assert.True(empty.Length < 0);
+            Assert.Equal(quad12.GetLength(), Math.PI);
+            Assert.Equal(0, pi.GetLength());
+            Assert.Equal(0, mipi.GetLength());
+            Assert2.Near(quad123.GetLength(), 1.5 * Math.PI);
+            Assert.Equal(Math.Abs(quad23.GetLength()), Math.PI);
+            Assert.Equal(full.GetLength(), S2.M_2_PI);
+            Assert.True(empty.GetLength() < 0);
         }
 
         [Fact]
         public void Test_S1IntervalTestBase_Complement() {
-            Assert.True(empty.Complement.IsFull);
-            Assert.True(full.Complement.IsEmpty);
-            Assert.True(pi.Complement.IsFull);
-            Assert.True(mipi.Complement.IsFull);
-            Assert.True(zero.Complement.IsFull);
-            Assert.True(quad12.Complement.ApproxEquals(quad34));
-            Assert.True(quad34.Complement.ApproxEquals(quad12));
-            Assert.True(quad123.Complement.ApproxEquals(quad4));
+            Assert.True(empty.Complement().IsFull());
+            Assert.True(full.Complement().IsEmpty());
+            Assert.True(pi.Complement().IsFull());
+            Assert.True(mipi.Complement().IsFull());
+            Assert.True(zero.Complement().IsFull());
+            Assert.True(quad12.Complement().ApproxEquals(quad34));
+            Assert.True(quad34.Complement().ApproxEquals(quad12));
+            Assert.True(quad123.Complement().ApproxEquals(quad4));
         }
 
         [Fact]
@@ -155,14 +155,14 @@ namespace S2Geometry
             Assert.True(full.InteriorContains(Math.PI) && full.InteriorContains(-Math.PI));
             Assert.True(quad12.Contains(0) && quad12.Contains(Math.PI) &&
                         quad12.Contains(-Math.PI));
-            Assert.True(quad12.InteriorContains(S2Constants.M_PI_2) && !quad12.InteriorContains(0));
+            Assert.True(quad12.InteriorContains(S2.M_PI_2) && !quad12.InteriorContains(0));
             Assert.True(!quad12.InteriorContains(Math.PI) &&
                         !quad12.InteriorContains(-Math.PI));
-            Assert.True(quad23.Contains(S2Constants.M_PI_2) && quad23.Contains(-S2Constants.M_PI_2));
+            Assert.True(quad23.Contains(S2.M_PI_2) && quad23.Contains(-S2.M_PI_2));
             Assert.True(quad23.Contains(Math.PI) && quad23.Contains(-Math.PI));
             Assert.True(!quad23.Contains(0));
-            Assert.True(!quad23.InteriorContains(S2Constants.M_PI_2) &&
-                        !quad23.InteriorContains(-S2Constants.M_PI_2));
+            Assert.True(!quad23.InteriorContains(S2.M_PI_2) &&
+                        !quad23.InteriorContains(-S2.M_PI_2));
             Assert.True(quad23.InteriorContains(Math.PI) && quad23.InteriorContains(-Math.PI));
             Assert.True(!quad23.InteriorContains(0));
             Assert.True(pi.Contains(Math.PI) && pi.Contains(-Math.PI) && !pi.Contains(0));
@@ -203,7 +203,7 @@ namespace S2Geometry
             TestIntervalOps(pi2, empty, "TTFF", pi2, empty);
             TestIntervalOps(pi2, full, "FFTF", full, pi2);
             TestIntervalOps(pi2, zero, "FFFF", quad1, empty);
-            TestIntervalOps(pi2, pi, "FFFF", new S1Interval(S2Constants.M_PI_2, Math.PI), empty);
+            TestIntervalOps(pi2, pi, "FFFF", new S1Interval(S2.M_PI_2, Math.PI), empty);
             TestIntervalOps(pi2, pi2, "TFTF", pi2, pi2);
             TestIntervalOps(pi2, mipi, "FFFF", quad2, empty);
             TestIntervalOps(pi2, mipi2, "FFFF", quad23, empty);
@@ -214,7 +214,7 @@ namespace S2Geometry
             TestIntervalOps(pi, full, "FFTF", full, pi);
             TestIntervalOps(pi, zero, "FFFF", new S1Interval(Math.PI, 0), empty);
             TestIntervalOps(pi, pi, "TFTF", pi, pi);
-            TestIntervalOps(pi, pi2, "FFFF", new S1Interval(S2Constants.M_PI_2, Math.PI), empty);
+            TestIntervalOps(pi, pi2, "FFFF", new S1Interval(S2.M_PI_2, Math.PI), empty);
             TestIntervalOps(pi, mipi, "TFTF", pi, pi);
             TestIntervalOps(pi, mipi2, "FFFF", quad3, empty);
             TestIntervalOps(pi, quad12, "FFTF", new S1Interval(0, Math.PI), pi);
@@ -226,7 +226,7 @@ namespace S2Geometry
             TestIntervalOps(mipi, pi, "TFTF", mipi, mipi);
             TestIntervalOps(mipi, pi2, "FFFF", quad2, empty);
             TestIntervalOps(mipi, mipi, "TFTF", mipi, mipi);
-            TestIntervalOps(mipi, mipi2, "FFFF", new S1Interval(-Math.PI, -S2Constants.M_PI_2), empty);
+            TestIntervalOps(mipi, mipi2, "FFFF", new S1Interval(-Math.PI, -S2.M_PI_2), empty);
             TestIntervalOps(mipi, quad12, "FFTF", quad12, mipi);
             TestIntervalOps(mipi, quad23, "FFTF", quad23, mipi);
 
@@ -246,9 +246,9 @@ namespace S2Geometry
             TestIntervalOps(quad23, mipi, "TTTT", quad23, mipi);
             TestIntervalOps(quad23, quad12, "FFTT", quad123, quad2);
             TestIntervalOps(quad23, quad23, "TFTT", quad23, quad23);
-            TestIntervalOps(quad23, quad34, "FFTT", quad234, new S1Interval(-Math.PI, -S2Constants.M_PI_2));
+            TestIntervalOps(quad23, quad34, "FFTT", quad234, new S1Interval(-Math.PI, -S2.M_PI_2));
 
-            TestIntervalOps(quad1, quad23, "FFTF", quad123, new S1Interval(S2Constants.M_PI_2, S2Constants.M_PI_2));
+            TestIntervalOps(quad1, quad23, "FFTF", quad123, new S1Interval(S2.M_PI_2, S2.M_PI_2));
             TestIntervalOps(quad2, quad3, "FFTF", quad23, mipi);
             TestIntervalOps(quad3, quad2, "FFTF", quad23, pi);
             TestIntervalOps(quad2, pi, "TFTF", quad2, pi);
@@ -259,28 +259,28 @@ namespace S2Geometry
             TestIntervalOps(quad12, mid12, "TTTT", quad12, mid12);
             TestIntervalOps(mid12, quad12, "FFTT", quad12, mid12);
 
-            S1Interval quad12eps = new S1Interval(quad12.Lo, mid23.Hi);
-            S1Interval quad2hi = new S1Interval(mid23.Lo, quad12.Hi);
+            S1Interval quad12eps = new(quad12.Lo, mid23.Hi);
+            S1Interval quad2hi = new(mid23.Lo, quad12.Hi);
             TestIntervalOps(quad12, mid23, "FFTT", quad12eps, quad2hi);
             TestIntervalOps(mid23, quad12, "FFTT", quad12eps, quad2hi);
 
             // This test checks that the union of two disjoint intervals is the smallest
-            // interval that contains both of them.  Note that the center of "mid34"
+            // interval that contains both of them.  Note that the center of "mid34" is
             // slightly CCW of -Pi/2 so that there is no ambiguity about the result.
-            S1Interval quad412eps = new S1Interval(mid34.Lo, quad12.Hi);
+            S1Interval quad412eps = new(mid34.Lo, quad12.Hi);
             TestIntervalOps(quad12, mid34, "FFFF", quad412eps, empty);
             TestIntervalOps(mid34, quad12, "FFFF", quad412eps, empty);
 
-            S1Interval quadeps12 = new S1Interval(mid41.Lo, quad12.Hi);
-            S1Interval quad1lo = new S1Interval(quad12.Lo, mid41.Hi);
+            S1Interval quadeps12 = new(mid41.Lo, quad12.Hi);
+            S1Interval quad1lo = new(quad12.Lo, mid41.Hi);
             TestIntervalOps(quad12, mid41, "FFTT", quadeps12, quad1lo);
             TestIntervalOps(mid41, quad12, "FFTT", quadeps12, quad1lo);
 
-            S1Interval quad2lo = new S1Interval(quad23.Lo, mid12.Hi);
-            S1Interval quad3hi = new S1Interval(mid34.Lo, quad23.Hi);
-            S1Interval quadeps23 = new S1Interval(mid12.Lo, quad23.Hi);
-            S1Interval quad23eps = new S1Interval(quad23.Lo, mid34.Hi);
-            S1Interval quadeps123 = new S1Interval(mid41.Lo, quad23.Hi);
+            S1Interval quad2lo = new(quad23.Lo, mid12.Hi);
+            S1Interval quad3hi = new(mid34.Lo, quad23.Hi);
+            S1Interval quadeps23 = new(mid12.Lo, quad23.Hi);
+            S1Interval quad23eps = new(quad23.Lo, mid34.Hi);
+            S1Interval quadeps123 = new(mid41.Lo, quad23.Hi);
             TestIntervalOps(quad23, mid12, "FFTT", quadeps23, quad2lo);
             TestIntervalOps(mid12, quad23, "FFTT", quadeps23, quad2lo);
             TestIntervalOps(quad23, mid23, "TTTT", quad23, mid23);
@@ -301,25 +301,25 @@ namespace S2Geometry
             Assert.Equal(mipi, S1Interval.AddPoints(empty, -Math.PI, Math.PI));
             Assert.Equal(mid12, S1Interval.AddPoints(empty, mid12.Lo, mid12.Hi));
             Assert.Equal(mid23, S1Interval.AddPoints(empty, mid23.Lo, mid23.Hi));
-            Assert.Equal(quad123, S1Interval.AddPoints(quad1, -0.9 * Math.PI, -S2Constants.M_PI_2));
-            Assert.True(S1Interval.AddPoint(full, 0).IsFull);
-            Assert.True(S1Interval.AddPoint(full, Math.PI).IsFull);
-            Assert.True(S1Interval.AddPoint(full, -Math.PI).IsFull);
+            Assert.Equal(quad123, S1Interval.AddPoints(quad1, -0.9 * Math.PI, -S2.M_PI_2));
+            Assert.True(S1Interval.AddPoint(full, 0).IsFull());
+            Assert.True(S1Interval.AddPoint(full, Math.PI).IsFull());
+            Assert.True(S1Interval.AddPoint(full, -Math.PI).IsFull());
         }
 
         [Fact]
         public void Test_S1IntervalTestBase_Project() {
-            S1Interval r = new S1Interval(-Math.PI, -Math.PI);
+            S1Interval r = new(-Math.PI, -Math.PI);
             Assert.Equal(Math.PI, r.Project(-Math.PI));
             Assert.Equal(Math.PI, r.Project(0));
             r = new S1Interval(0, Math.PI);
             Assert.Equal(0.1, r.Project(0.1));
-            Assert.Equal(0, r.Project(-S2Constants.M_PI_2 + S2Constants.DoubleError));
-            Assert.Equal(Math.PI, r.Project(-S2Constants.M_PI_2 - S2Constants.DoubleError));
+            Assert.Equal(0, r.Project(-S2.M_PI_2 + S2.DoubleError));
+            Assert.Equal(Math.PI, r.Project(-S2.M_PI_2 - S2.DoubleError));
             r = new S1Interval(Math.PI - 0.1, -Math.PI + 0.1);
             Assert.Equal(Math.PI, r.Project(Math.PI));
-            Assert.Equal(Math.PI - 0.1, r.Project(S2Constants.DoubleError));
-            Assert.Equal(-Math.PI + 0.1, r.Project(-S2Constants.DoubleError));
+            Assert.Equal(Math.PI - 0.1, r.Project(S2.DoubleError));
+            Assert.Equal(-Math.PI + 0.1, r.Project(-S2.DoubleError));
             Assert.Equal(0, S1Interval.Full.Project(0));
             Assert.Equal(Math.PI, S1Interval.Full.Project(Math.PI));
             Assert.Equal(Math.PI, S1Interval.Full.Project(-Math.PI));
@@ -340,25 +340,25 @@ namespace S2Geometry
             Assert.Equal(zero.Expanded(1), new S1Interval(-1, 1));
             Assert.Equal(mipi.Expanded(0.01), new S1Interval(Math.PI - 0.01, -Math.PI + 0.01));
             Assert.Equal(pi.Expanded(27), full);
-            Assert.Equal(pi.Expanded(S2Constants.M_PI_2), quad23);
-            Assert.Equal(pi2.Expanded(S2Constants.M_PI_2), quad12);
-            Assert.Equal(mipi2.Expanded(S2Constants.M_PI_2), quad34);
+            Assert.Equal(pi.Expanded(S2.M_PI_2), quad23);
+            Assert.Equal(pi2.Expanded(S2.M_PI_2), quad12);
+            Assert.Equal(mipi2.Expanded(S2.M_PI_2), quad34);
 
             Assert.Equal(empty.Expanded(-1), empty);
             Assert.Equal(full.Expanded(-1), full);
             Assert.Equal(quad123.Expanded(-27), empty);
             Assert.Equal(quad234.Expanded(-27), empty);
-            Assert.Equal(quad123.Expanded(-S2Constants.M_PI_2), quad2);
-            Assert.Equal(quad341.Expanded(-S2Constants.M_PI_2), quad4);
-            Assert.Equal(quad412.Expanded(-S2Constants.M_PI_2), quad1);
+            Assert.Equal(quad123.Expanded(-S2.M_PI_2), quad2);
+            Assert.Equal(quad341.Expanded(-S2.M_PI_2), quad4);
+            Assert.Equal(quad412.Expanded(-S2.M_PI_2), quad1);
         }
 
         [Fact]
         public void Test_S1IntervalTestBase_ApproxEquals() {
             // Choose two values kLo and kHi such that it's okay to shift an endpoint by
             // kLo (i.e., the resulting interval is equivalent) but not by kHi.
-            const double kLo = 4 * S2Constants.DoubleEpsilon;  // < max_error default
-            const double kHi = 6 * S2Constants.DoubleEpsilon;  // > max_error default
+            const double kLo = 4 * S2.DoubleEpsilon;  // < max_error default
+            const double kHi = 6 * S2.DoubleEpsilon;  // > max_error default
 
             // Empty intervals.
             Assert.True(empty.ApproxEquals(empty));
@@ -413,13 +413,21 @@ namespace S2Geometry
         }
 
         [Fact]
+        public void Test_S1IntervalTestBase_OperatorEquals()
+        {
+            Assert.Equal(empty, empty);
+            Assert.Equal(full, full);
+            Assert.NotEqual(full, empty);
+        }
+
+        [Fact]
         public void Test_S1IntervalTestBase_GetDirectedHausdorffDistance() {
             Assert2.Near(0.0, empty.GetDirectedHausdorffDistance(empty));
             Assert2.Near(0.0, empty.GetDirectedHausdorffDistance(mid12));
             Assert2.Near(Math.PI, mid12.GetDirectedHausdorffDistance(empty));
 
             Assert.Equal(0.0, quad12.GetDirectedHausdorffDistance(quad123));
-            S1Interval in_ = new S1Interval(3.0, -3.0);  // an interval whose complement center is 0.
+            S1Interval in_ = new(3.0, -3.0);  // an interval whose complement center is 0.
             Assert2.Near(3.0, new S1Interval(-0.1, 0.2).GetDirectedHausdorffDistance(in_));
             Assert2.Near(3.0 - 0.1, new S1Interval(0.1, 0.2).GetDirectedHausdorffDistance(in_));
             Assert2.Near(3.0 - 0.1, new S1Interval(-0.2, -0.1).GetDirectedHausdorffDistance(in_));
@@ -427,7 +435,7 @@ namespace S2Geometry
 
         [Fact]
         public void Test_S1IntervalTestBase_Quad41() {
-            Assert.Equal(quad41, new S1Interval(-S2Constants.M_PI_2, S2Constants.M_PI_2));
+            Assert.Equal(quad41, new S1Interval(-S2.M_PI_2, S2.M_PI_2));
         }
 
         private static void TestIntervalOps(S1Interval x, S1Interval y, string expected_relation, S1Interval expected_union, S1Interval expected_intersection)
@@ -444,16 +452,16 @@ namespace S2Geometry
 
             // bounds() returns a reference to a member variable, so we need to
             // make a copy when invoking it on a temporary object.
-            Assert.Equal(new R2Point(x.Union(y).Bounds).Bounds, expected_union.Bounds);
-            Assert.Equal(new R2Point(x.Intersection(y).Bounds).Bounds,
-                      expected_intersection.Bounds);
+            Assert.Equal(R2Point.FromCoords(x.Union(y).Bounds()).Bounds(), expected_union.Bounds());
+            Assert.Equal(R2Point.FromCoords(x.Intersection(y).Bounds()).Bounds(),
+                      expected_intersection.Bounds());
 
             Assert.Equal(x.Contains(y), x.Union(y) == x);
-            Assert.Equal(x.Intersects(y), !x.Intersection(y).IsEmpty);
+            Assert.Equal(x.Intersects(y), !x.Intersection(y).IsEmpty());
 
             if (y.Lo == y.Hi) {
                 var r = S1Interval.AddPoint(x, y.Lo);
-                Assert.Equal(r.Bounds, expected_union.Bounds);
+                Assert.Equal(r.Bounds(), expected_union.Bounds());
             }
         }
     }

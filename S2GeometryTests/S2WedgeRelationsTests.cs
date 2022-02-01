@@ -67,11 +67,11 @@ namespace S2Geometry
 
         private static void TestWedge(S2Point a0, S2Point ab1, S2Point a2, S2Point b0, S2Point b2, bool contains, bool intersects, WedgeRelation wedgeRelation)
         {
-            a0 = a0.Normalized;
-            ab1 = ab1.Normalized;
-            a2 = a2.Normalized;
-            b0 = b0.Normalized;
-            b2 = b2.Normalized;
+            a0 = a0.Normalize();
+            ab1 = ab1.Normalize();
+            a2 = a2.Normalize();
+            b0 = b0.Normalize();
+            b2 = b2.Normalize();
             Assert.True(contains == S2WedgeRelations.WedgeContains(a0, ab1, a2, b0, b2));
             Assert.True(intersects == S2WedgeRelations.WedgeIntersects(a0, ab1, a2, b0, b2));
             Assert.True(wedgeRelation == S2WedgeRelations.GetWedgeRelation(a0, ab1, a2, b0, b2));

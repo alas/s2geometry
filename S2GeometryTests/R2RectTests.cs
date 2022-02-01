@@ -12,15 +12,16 @@ namespace S2Geometry
         {
             // Test basic properties of empty rectangles.
             R2Rect empty = R2Rect.Empty;
-            Assert.True(empty.IsValid);
-            Assert.True(empty.IsEmpty);
+            Assert.True(empty.IsValid());
+            Assert.True(empty.IsEmpty());
+            Assert.Equal(empty, empty);
         }
 
         [Fact]
         public void Test_R2Rect_ConstructorsAndAccessors()
         {
             // Check various constructors and accessor methods.
-            R2Rect r = new R2Rect(new R2Point(0.1, 0), new R2Point(0.25, 1));
+            R2Rect r = new(new R2Point(0.1, 0), new R2Point(0.25, 1));
             Assert.Equal(0.1, r.X.Lo);
             Assert.Equal(0.25, r.X.Hi);
             Assert.Equal(0.0, r.Y.Lo);
@@ -41,8 +42,12 @@ namespace S2Geometry
             Assert.Equal(new R1Interval(3, 4), r[0]);
             Assert.Equal(new R1Interval(5, 6), r[1]);
 
-            R2Rect r2 = R2Rect.Empty;
-            Assert.True(r2.IsEmpty);
+            Assert.Equal(r, r);
+            Assert.NotEqual(r, R2Rect.Empty);
+
+            R2Rect r2 = new();
+            Assert.True(r2.IsEmpty());
+            Assert.Equal(r2, R2Rect.Empty);
         }
 
         [Fact]
@@ -59,8 +64,8 @@ namespace S2Geometry
         public void Test_R2Rect_FromPoint()
         {
             // FromPoint(), FromPointPair()
-            R2Rect d1 = new R2Rect(new R2Point(0.1, 0), new R2Point(0.25, 1));
-            Assert.Equal(new R2Rect(d1.Lo, d1.Lo), R2Rect.FromPoint(d1.Lo));
+            R2Rect d1 = new(new R2Point(0.1, 0), new R2Point(0.25, 1));
+            Assert.Equal(new R2Rect(d1.Lo(), d1.Lo()), R2Rect.FromPoint(d1.Lo()));
             Assert.Equal(new R2Rect(new R2Point(0.15, 0.3), new R2Point(0.35, 0.9)),
                       R2Rect.FromPointPair(new R2Point(0.15, 0.9), new R2Point(0.35, 0.3)));
             Assert.Equal(new R2Rect(new R2Point(0.12, 0), new R2Point(0.83, 0.5)),
@@ -71,11 +76,11 @@ namespace S2Geometry
         public void Test_R2Rect_SimplePredicates()
         {
             // GetCenter(), GetVertex(), Contains(R2Point), InteriorContains(R2Point).
-            R2Point sw1 = new R2Point(0, 0.25);
-            R2Point ne1 = new R2Point(0.5, 0.75);
-            R2Rect r1 = new R2Rect(sw1, ne1);
+            R2Point sw1 = new(0, 0.25);
+            R2Point ne1 = new(0.5, 0.75);
+            R2Rect r1 = new(sw1, ne1);
 
-            Assert.Equal(new R2Point(0.25, 0.5), r1.Center);
+            Assert.Equal(new R2Point(0.25, 0.5), r1.GetCenter());
             Assert.Equal(new R2Point(0, 0.25), r1.GetVertex(0));
             Assert.Equal(new R2Point(0.5, 0.25), r1.GetVertex(1));
             Assert.Equal(new R2Point(0.5, 0.75), r1.GetVertex(2));
@@ -95,7 +100,7 @@ namespace S2Geometry
                 R2Point a = r1.GetVertex(k - 1);
                 R2Point b = r1.GetVertex(k);
                 R2Point c = r1.GetVertex(k + 1);
-                Assert.True((b - a).Ortho.DotProd(c - a) > 0);
+                Assert.True((b - a).GetOrtho().DotProd(c - a) > 0);
             }
         }
 
@@ -109,12 +114,12 @@ namespace S2Geometry
             // and r1interval_test.
 
             R2Rect empty = R2Rect.Empty;
-            R2Point sw1 = new R2Point(0, 0.25);
-            R2Point ne1 = new R2Point(0.5, 0.75);
-            R2Rect r1 = new R2Rect(sw1, ne1);
-            R2Rect r1_mid = new R2Rect(new R2Point(0.25, 0.5), new R2Point(0.25, 0.5));
-            R2Rect r_sw1 = new R2Rect(sw1, sw1);
-            R2Rect r_ne1 = new R2Rect(ne1, ne1);
+            R2Point sw1 = new(0, 0.25);
+            R2Point ne1 = new(0.5, 0.75);
+            R2Rect r1 = new(sw1, ne1);
+            R2Rect r1_mid = new(new R2Point(0.25, 0.5), new R2Point(0.25, 0.5));
+            R2Rect r_sw1 = new(sw1, sw1);
+            R2Rect r_ne1 = new(ne1, ne1);
 
             TestIntervalOps(r1, r1_mid, "TTTT", r1, r1_mid);
             TestIntervalOps(r1, r_sw1, "TFTF", r1, r_sw1);
@@ -150,9 +155,9 @@ namespace S2Geometry
         public void Test_R2Rect_AddPoint()
         {
             // AddPoint()
-            R2Point sw1 = new R2Point(0, 0.25);
-            R2Point ne1 = new R2Point(0.5, 0.75);
-            R2Rect r1 = new R2Rect(sw1, ne1);
+            R2Point sw1 = new(0, 0.25);
+            R2Point ne1 = new(0.5, 0.75);
+            R2Rect r1 = new(sw1, ne1);
 
             R2Rect r2 = R2Rect.Empty;
             r2 = r2.AddPoint(new R2Point(0, 0.25));
@@ -165,7 +170,7 @@ namespace S2Geometry
         [Fact]
         public void Test_R2Rect_Project()
         {
-            R2Rect r1 = new R2Rect(new R1Interval(0, 0.5), new R1Interval(0.25, 0.75));
+            R2Rect r1 = new(new R1Interval(0, 0.5), new R1Interval(0.25, 0.75));
 
             Assert.Equal(new R2Point(0, 0.25), r1.Project(new R2Point(-0.01, 0.24)));
             Assert.Equal(new R2Point(0, 0.48), r1.Project(new R2Point(-5.0, 0.48)));
@@ -182,15 +187,15 @@ namespace S2Geometry
         public void Test_R2Rect_Expanded()
         {
             // Expanded()
-            Assert.True(R2Rect.Empty.Expanded(new R2Point(0.1, 0.3)).IsEmpty);
-            Assert.True(R2Rect.Empty.Expanded(new R2Point(-0.1, -0.3)).IsEmpty);
+            Assert.True(R2Rect.Empty.Expanded(new R2Point(0.1, 0.3)).IsEmpty());
+            Assert.True(R2Rect.Empty.Expanded(new R2Point(-0.1, -0.3)).IsEmpty());
             Assert.True(new R2Rect(new R2Point(0.2, 0.4), new R2Point(0.3, 0.7)).
                         Expanded(new R2Point(0.1, 0.3)).
                         ApproxEquals(new R2Rect(new R2Point(0.1, 0.1), new R2Point(0.4, 1.0))));
             Assert.True(new R2Rect(new R2Point(0.2, 0.4), new R2Point(0.3, 0.7)).
-                        Expanded(new R2Point(-0.1, 0.3)).IsEmpty);
+                        Expanded(new R2Point(-0.1, 0.3)).IsEmpty());
             Assert.True(new R2Rect(new R2Point(0.2, 0.4), new R2Point(0.3, 0.7)).
-                        Expanded(new R2Point(0.1, -0.2)).IsEmpty);
+                        Expanded(new R2Point(0.1, -0.2)).IsEmpty());
             Assert.True(new R2Rect(new R2Point(0.2, 0.4), new R2Point(0.3, 0.7)).
                         Expanded(new R2Point(0.1, -0.1)).
                         ApproxEquals(new R2Rect(new R2Point(0.1, 0.5), new R2Point(0.4, 0.6))));
@@ -212,7 +217,7 @@ namespace S2Geometry
             Assert.Equal(expected_rexion[3] == 'T', x.InteriorIntersects(y));
 
             Assert.Equal(x.Union(y) == x, x.Contains(y));
-            Assert.Equal(!x.Intersection(y).IsEmpty, x.Intersects(y));
+            Assert.Equal(!x.Intersection(y).IsEmpty(), x.Intersects(y));
 
             Assert.Equal(expected_union, x.Union(y));
             Assert.Equal(expected_intersection, x.Intersection(y));
@@ -220,10 +225,10 @@ namespace S2Geometry
             R2Rect r = x;
             r = r.AddRect(y);
             Assert.Equal(expected_union, r);
-            if (y.Size == new R2Point(0, 0))
+            if (y.GetSize() == new R2Point(0, 0))
             {
                 r = x;
-                r = r.AddPoint(y.Lo);
+                r = r.AddPoint(y.Lo());
                 Assert.Equal(expected_union, r);
             }
         }

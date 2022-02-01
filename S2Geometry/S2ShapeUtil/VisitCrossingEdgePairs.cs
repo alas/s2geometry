@@ -1,7 +1,6 @@
-using System.Collections.Generic;
-using System.Linq;
+namespace S2Geometry;
 
-namespace S2Geometry.S2ShapeUtil
+public static partial class S2ShapeUtil
 {
     public static class EdgePairs
     {
@@ -76,7 +75,7 @@ namespace S2Geometry.S2ShapeUtil
                 // A common situation is that an edge AB is followed by an edge BC.  We
                 // only need to visit such crossings if "need_adjacent" is true (even if
                 // AB and BC belong to different edge chains).
-                if (!need_adjacent && a.V1== shape_edges[j].V0)
+                if (!need_adjacent && a.V1 == shape_edges[j].V0)
                 {
                     j++;
                     if (j >= num_edges) break;
@@ -138,7 +137,7 @@ namespace S2Geometry.S2ShapeUtil
         /// 
         /// CAVEAT: Crossings may be visited more than once.
         /// </summary>
-        public static bool VisitCrossingEdgePairs(this S2ShapeIndex index, CrossingType type, EdgePairVisitor visitor)
+        public static bool VisitCrossingEdgePairs(S2ShapeIndex index, CrossingType type, EdgePairVisitor visitor)
         {
             var needAdjacent = type == CrossingType.ALL;
             return VisitCrossings(index, type, needAdjacent, visitor);
@@ -150,7 +149,7 @@ namespace S2Geometry.S2ShapeUtil
         /// 
         /// CAVEAT: Crossings may be visited more than once.
         /// </summary>
-        public static bool VisitCrossingEdgePairs(this S2ShapeIndex a_index, S2ShapeIndex b_index, CrossingType type, EdgePairVisitor visitor)
+        public static bool VisitCrossingEdgePairs(S2ShapeIndex a_index, S2ShapeIndex b_index, CrossingType type, EdgePairVisitor visitor)
         {
             // We look for S2CellId ranges where the indexes of A and B overlap, and
             // then test those edges for crossings.
@@ -161,7 +160,7 @@ namespace S2Geometry.S2ShapeUtil
             var bi = new RangeEnumerator(b_index);
             var ab = new IndexCrosser(a_index, b_index, type, visitor, false);  // Tests A against B
             var ba = new IndexCrosser(b_index, a_index, type, visitor, true);   // Tests B against A
-            while (!ai.Done()|| !bi.Done())
+            while (!ai.Done() || !bi.Done())
             {
                 if (ai.RangeMax < bi.RangeMin)
                 {
@@ -176,7 +175,7 @@ namespace S2Geometry.S2ShapeUtil
                 else
                 {
                     // One cell contains the other.  Determine which cell is larger.
-                    var ab_relation = ai.Id.LowestOnBit - bi.Id.LowestOnBit;
+                    var ab_relation = ai.Id.LowestOnBit() - bi.Id.LowestOnBit();
                     if (ab_relation > 0)
                     {
                         // A's index cell is larger.
@@ -264,7 +263,7 @@ namespace S2Geometry.S2ShapeUtil
                             b_cells_.Add(bi.Cell);
                         }
                         bi.MoveNext();
-                    } while (bi.Id<= ai.RangeMax);
+                    } while (bi.Id <= ai.RangeMax);
                     if (b_cells_.Any())
                     {
                         // Test all the edge crossings directly.
@@ -320,7 +319,7 @@ namespace S2Geometry.S2ShapeUtil
                 var crosser = new S2EdgeCrosser(a.V0, a.V1);
                 foreach (var b in b_shape_edges_)
                 {
-                    if (crosser.C == S2Point.Empty || crosser.C!= b.V0)
+                    if (crosser.C == S2Point.Empty || crosser.C != b.V0)
                     {
                         crosser.RestartAt(b.V0);
                     }
@@ -363,7 +362,7 @@ namespace S2Geometry.S2ShapeUtil
                     var crosser = new S2EdgeCrosser(a.V0, a.V1);
                     foreach (var b in b_edges)
                     {
-                        if (crosser.C == S2Point.Empty || crosser.C!= b.V0)
+                        if (crosser.C == S2Point.Empty || crosser.C != b.V0)
                         {
                             crosser.RestartAt(b.V0);
                         }
@@ -385,9 +384,9 @@ namespace S2Geometry.S2ShapeUtil
 
             // Temporary data declared here to avoid repeated memory allocations.
             private readonly S2CrossingEdgeQuery b_query_;
-            private readonly List<S2ShapeIndexCell> b_cells_ = new List<S2ShapeIndexCell>();
-            private readonly ShapeEdgeVector a_shape_edges_ =  new ShapeEdgeVector();
-            private readonly ShapeEdgeVector b_shape_edges_ = new ShapeEdgeVector();
+            private readonly List<S2ShapeIndexCell> b_cells_ = new();
+            private readonly ShapeEdgeVector a_shape_edges_ = new();
+            private readonly ShapeEdgeVector b_shape_edges_ = new();
         }
 
         //////////////////////////////////////////////////////////////////////
@@ -428,7 +427,7 @@ namespace S2Geometry.S2ShapeUtil
             // are not allowed to share edges or cross at vertices.  We only need to
             // check a given vertex once, so we also require that the two edges have
             // the same end vertex.
-            if (a.V1!= b.V1)
+            if (a.V1 != b.V1)
             {
                 error = S2Error.OK;
                 return false;
@@ -446,7 +445,7 @@ namespace S2Geometry.S2ShapeUtil
             int b_next = (bp.Offset + 1 == b_len) ? 0 : bp.Offset + 1;
             S2Point a2 = shape.ChainEdge(ap.ChainId, a_next).V1;
             S2Point b2 = shape.ChainEdge(bp.ChainId, b_next).V1;
-            if (a.V0== b.V0|| a.V0== b2)
+            if (a.V0 == b.V0 || a.V0 == b2)
             {
                 // The second edge index is sometimes off by one, hence "near".
                 error = new(S2ErrorCode.POLYGON_LOOPS_SHARE_EDGE,

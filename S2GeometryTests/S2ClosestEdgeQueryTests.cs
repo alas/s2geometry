@@ -1,17 +1,11 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Xunit;
-
 namespace S2Geometry
 {
-    using S2ShapeUtil;
     using Distance = S1ChordAngle; // S2MinDistance
     using Result = S2ClosestEdgeQueryBase<S1ChordAngle>.Result;
     using Target = S2DistanceTarget<S1ChordAngle>; // S2MinDistanceTarget
 
-    using TestingResult = ValueTuple<S1ChordAngle, S2ShapeUtil.Edge>;
-    using TestingDistance = S2TestingCheckDistance<S2ShapeUtil.Edge, S1ChordAngle>;
+    using TestingResult = ValueTuple<S1ChordAngle, Edge>;
+    using TestingDistance = S2TestingCheckDistance<Edge, S1ChordAngle>;
 
     public class S2ClosestEdgeQueryTests
     {
@@ -19,7 +13,7 @@ namespace S2Geometry
         private static readonly S1Angle kTestCapRadius = S2Testing.KmToAngle(10);
         // An approximate bound on the distance measurement error for "reasonable"
         // distances (say, less than Pi/2) due to using S1ChordAngle.
-        private static readonly double kTestChordAngleError = S2Constants.DoubleError;
+        private static readonly double kTestChordAngleError = S2.DoubleError;
         private const int kNumIndexes = 50;
         private const int kNumEdges = 100;
         private const int kNumQueries = 200;
@@ -31,12 +25,12 @@ namespace S2Geometry
             S2ClosestEdgeQuery query = new(index);
             S2ClosestEdgeQuery.PointTarget target = new(new S2Point(1, 0, 0));
             var edge = query.FindClosestEdge(target);
-            Assert.Equal(S1ChordAngle.Infinity, edge.Distance);
+            Assert.Equal(Distance.Infinity, edge.Distance);
             Assert.Equal(-1, edge.ShapeId);
             Assert.Equal(-1, edge.EdgeId);
-            Assert.False(edge.IsInterior);
-            Assert.True(edge.IsEmpty);
-            Assert.Equal(S1ChordAngle.Infinity, query.GetDistance(target));
+            Assert.False(edge.IsInterior());
+            Assert.True(edge.IsEmpty());
+            Assert.Equal(Distance.Infinity, query.GetDistance(target));
         }
 
         [Fact]
@@ -47,14 +41,14 @@ namespace S2Geometry
             // specific options requirements.
             S2ClosestEdgeQuery.Options options = new();
             options.MaxResults = (3);
-            options.MaxDistance = (S1ChordAngle.FromDegrees(3));
-            options.MaxError = (S1ChordAngle.FromDegrees(0.001));
-            var index = S2TextFormat.MakeIndexOrDie("1:1 | 1:2 | 1:3 # #");
+            options.MaxDistance = (Distance.FromDegrees(3));
+            options.MaxError = (Distance.FromDegrees(0.001));
+            var index = MakeIndexOrDie("1:1 | 1:2 | 1:3 # #");
             S2ClosestEdgeQuery query = new(index, options);
-            S2ClosestEdgeQuery.PointTarget target = new(S2TextFormat.MakePointOrDie("2:2"));
+            S2ClosestEdgeQuery.PointTarget target = new(MakePointOrDie("2:2"));
             Assert.Equal(1, query.FindClosestEdge(target).EdgeId);
-            Assert2.Near(1.0, query.GetDistance(target).Degrees, S2Constants.DoubleError);
-            Assert.True(query.IsDistanceLess(target, S1ChordAngle.FromDegrees(1.5)));
+            Assert2.Near(1.0, query.GetDistance(target).Degrees(), S2.DoubleError);
+            Assert.True(query.IsDistanceLess(target, Distance.FromDegrees(1.5)));
 
             // Verify that none of the options above were modified.
             Assert.Equal(options.MaxResults, query.Options_.MaxResults);
@@ -68,7 +62,7 @@ namespace S2Geometry
             // Tests the behavior of IsDistanceLess, IsDistanceLessOrEqual, and
             // IsConservativeDistanceLessOrEqual (and the corresponding Options) when
             // the distance to the target exactly equals the chosen limit.
-            S2Point p0 = (S2TextFormat.MakePointOrDie("23:12")), p1 = (S2TextFormat.MakePointOrDie("47:11"));
+            S2Point p0 = (MakePointOrDie("23:12")), p1 = (MakePointOrDie("47:11"));
             var index_points = new[] { p0 };
             MutableS2ShapeIndex index = new();
             index.Add(new S2PointVectorShape(index_points));
@@ -76,14 +70,14 @@ namespace S2Geometry
 
             // Start with two identical points and a zero distance.
             S2ClosestEdgeQuery.PointTarget target0 = new(p0);
-            S1ChordAngle dist0 = S1ChordAngle.Zero;
+            Distance dist0 = Distance.Zero;
             Assert.False(query.IsDistanceLess(target0, dist0));
             Assert.True(query.IsDistanceLessOrEqual(target0, dist0));
             Assert.True(query.IsConservativeDistanceLessOrEqual(target0, dist0));
 
             // Now try two points separated by a non-zero distance.
             S2ClosestEdgeQuery.PointTarget target1 = new(p1);
-            S1ChordAngle dist1 = new(p0, p1);
+            Distance dist1 = new(p0, p1);
             Assert.False(query.IsDistanceLess(target1, dist1));
             Assert.True(query.IsDistanceLessOrEqual(target1, dist1));
             Assert.True(query.IsConservativeDistanceLessOrEqual(target1, dist1));
@@ -100,8 +94,8 @@ namespace S2Geometry
             S2Point p1 = new(0.78563011732429433, -0.50187655940493503, -0.36180828883938054);
 
             // The S1ChordAngle distance is ~4 ulps greater than the true distance.
-            S1ChordAngle dist1 = new(p0, p1);
-            var limit = dist1.Predecessor.Predecessor.Predecessor.Predecessor;
+            Distance dist1 = new(p0, p1);
+            var limit = dist1.Predecessor().Predecessor().Predecessor().Predecessor();
             Assert.True(S2Pred.CompareDistance(p0, p1, limit) < 0);
 
             // Verify that IsConservativeDistanceLessOrEqual() still returns "p1".
@@ -120,10 +114,10 @@ namespace S2Geometry
         {
             // Tests that between queries, the internal mechanism for de-duplicating
             // results is re-set.  See b/71646017.
-            var index = S2TextFormat.MakeIndexOrDie("2:2 # #");
+            var index = MakeIndexOrDie("2:2 # #");
             S2ClosestEdgeQuery query = new(index);
             query.Options_.MaxError = new(S1Angle.FromDegrees(1));
-            var target_index = S2TextFormat.MakeIndexOrDie("## 0:0, 0:5, 5:5, 5:0");
+            var target_index = MakeIndexOrDie("## 0:0, 0:5, 5:5, 5:0");
             S2ClosestEdgeQuery.ShapeIndexTarget target = new(target_index);
             var results1 = query.FindClosestEdges(target);
             var results2 = query.FindClosestEdges(target);
@@ -135,19 +129,19 @@ namespace S2Geometry
         {
             // Tests a target point in the interior of an indexed polygon.
             // (The index also includes a polyline loop with no interior.)
-            var index = S2TextFormat.MakeIndexOrDie("# 0:0, 0:5, 5:5, 5:0 # 0:10, 0:15, 5:15, 5:10");
+            var index = MakeIndexOrDie("# 0:0, 0:5, 5:5, 5:0 # 0:10, 0:15, 5:15, 5:10");
             S2ClosestEdgeQuery.Options options = new();
             options.IncludeInteriors = (true);
             options.MaxDistance = new(S1Angle.FromDegrees(1));
             S2ClosestEdgeQuery query = new(index, options);
-            S2ClosestEdgeQuery.PointTarget target = new(S2TextFormat.MakePointOrDie("2:12"));
+            S2ClosestEdgeQuery.PointTarget target = new(MakePointOrDie("2:12"));
             var results = query.FindClosestEdges(target);
             Assert.Single(results);
-            Assert.Equal(S1ChordAngle.Zero, results[0].Distance);
+            Assert.Equal(Distance.Zero, results[0].Distance);
             Assert.Equal(1, results[0].ShapeId);
             Assert.Equal(-1, results[0].EdgeId);
-            Assert.True(results[0].IsInterior);
-            Assert.False(results[0].IsEmpty);
+            Assert.True(results[0].IsInterior());
+            Assert.False(results[0].IsEmpty());
         }
 
         [Fact]
@@ -155,12 +149,12 @@ namespace S2Geometry
         {
             // Tests a target point in the interior of a polyline loop with no
             // interior.  (The index also includes a nearby polygon.)
-            var index = S2TextFormat.MakeIndexOrDie("# 0:0, 0:5, 5:5, 5:0 # 0:10, 0:15, 5:15, 5:10");
+            var index = MakeIndexOrDie("# 0:0, 0:5, 5:5, 5:0 # 0:10, 0:15, 5:15, 5:10");
             S2ClosestEdgeQuery.Options options = new();
             options.IncludeInteriors = (true);
             options.MaxDistance = new(S1Angle.FromDegrees(1));
             S2ClosestEdgeQuery query = new(index, options);
-            S2ClosestEdgeQuery.PointTarget target = new(S2TextFormat.MakePointOrDie("2:2"));
+            S2ClosestEdgeQuery.PointTarget target = new(MakePointOrDie("2:2"));
             var results = query.FindClosestEdges(target);
             Assert.Empty(results);
         }
@@ -170,19 +164,19 @@ namespace S2Geometry
         {
             // Two points are contained within a polyline loop (no interior) and two
             // points are contained within a polygon.
-            var index = S2TextFormat.MakeIndexOrDie("2:2 | 3:3 | 1:11 | 3:13 # #");
+            var index = MakeIndexOrDie("2:2 | 3:3 | 1:11 | 3:13 # #");
             S2ClosestEdgeQuery query = new(index);
             query.Options_.MaxDistance = new(S1Angle.FromDegrees(1));
-            var target_index = S2TextFormat.MakeIndexOrDie(
+            var target_index = MakeIndexOrDie(
                 "# 0:0, 0:5, 5:5, 5:0 # 0:10, 0:15, 5:15, 5:10");
             S2ClosestEdgeQuery.ShapeIndexTarget target = new(target_index);
             target.IncludeInteriors = (true);
             var results = query.FindClosestEdges(target);
             Assert.Equal(2, results.Count);
-            Assert.Equal(S1ChordAngle.Zero, results[0].Distance);
+            Assert.Equal(Distance.Zero, results[0].Distance);
             Assert.Equal(0, results[0].ShapeId);
             Assert.Equal(2, results[0].EdgeId);  // 1:11
-            Assert.Equal(S1ChordAngle.Zero, results[1].Distance);
+            Assert.Equal(Distance.Zero, results[1].Distance);
             Assert.Equal(0, results[1].ShapeId);
             Assert.Equal(3, results[1].EdgeId);  // 3:13
         }
@@ -206,46 +200,46 @@ namespace S2Geometry
         public void Test_S2ClosestEdgeQuery_EmptyPolygonTarget()
         {
             // Verifies that distances are measured correctly to empty polygon targets.
-            var empty_polygon_index = S2TextFormat.MakeIndexOrDie("# # empty");
-            var point_index = S2TextFormat.MakeIndexOrDie("1:1 # #");
-            var full_polygon_index = S2TextFormat.MakeIndexOrDie("# # full");
+            var empty_polygon_index = MakeIndexOrDie("# # empty");
+            var point_index = MakeIndexOrDie("1:1 # #");
+            var full_polygon_index = MakeIndexOrDie("# # full");
             S2ClosestEdgeQuery.ShapeIndexTarget target = new(empty_polygon_index);
             target.IncludeInteriors = (true);
 
             S2ClosestEdgeQuery empty_query = new(empty_polygon_index);
             empty_query.Options_.IncludeInteriors = (true);
-            Assert.Equal(S1ChordAngle.Infinity, empty_query.GetDistance(target));
+            Assert.Equal(Distance.Infinity, empty_query.GetDistance(target));
 
             S2ClosestEdgeQuery point_query = new(point_index);
             point_query.Options_.IncludeInteriors = (true);
-            Assert.Equal(S1ChordAngle.Infinity, point_query.GetDistance(target));
+            Assert.Equal(Distance.Infinity, point_query.GetDistance(target));
 
             S2ClosestEdgeQuery full_query = new(full_polygon_index);
             full_query.Options_.IncludeInteriors = (true);
-            Assert.Equal(S1ChordAngle.Infinity, full_query.GetDistance(target));
+            Assert.Equal(Distance.Infinity, full_query.GetDistance(target));
         }
 
         [Fact]
         public void Test_S2ClosestEdgeQuery_FullLaxPolygonTarget()
         {
             // Verifies that distances are measured correctly to full LaxPolygon targets.
-            var empty_polygon_index = S2TextFormat.MakeIndexOrDie("# # empty");
-            var point_index = S2TextFormat.MakeIndexOrDie("1:1 # #");
-            var full_polygon_index = S2TextFormat.MakeIndexOrDie("# # full");
+            var empty_polygon_index = MakeIndexOrDie("# # empty");
+            var point_index = MakeIndexOrDie("1:1 # #");
+            var full_polygon_index = MakeIndexOrDie("# # full");
             S2ClosestEdgeQuery.ShapeIndexTarget target = new(full_polygon_index);
             target.IncludeInteriors = (true);
 
             S2ClosestEdgeQuery empty_query = new(empty_polygon_index);
             empty_query.Options_.IncludeInteriors = (true);
-            Assert.Equal(S1ChordAngle.Infinity, empty_query.GetDistance(target));
+            Assert.Equal(Distance.Infinity, empty_query.GetDistance(target));
 
             S2ClosestEdgeQuery point_query = new(point_index);
             point_query.Options_.IncludeInteriors = (true);
-            Assert.Equal(S1ChordAngle.Zero, point_query.GetDistance(target));
+            Assert.Equal(Distance.Zero, point_query.GetDistance(target));
 
             S2ClosestEdgeQuery full_query = new(full_polygon_index);
             full_query.Options_.IncludeInteriors = (true);
-            Assert.Equal(S1ChordAngle.Zero, full_query.GetDistance(target));
+            Assert.Equal(Distance.Zero, full_query.GetDistance(target));
         }
 
         [Fact]
@@ -253,26 +247,26 @@ namespace S2Geometry
         {
             // Verifies that distances are measured correctly to full S2Polygon targets
             // (which use a different representation of "full" than LaxPolygon does).
-            var empty_polygon_index = S2TextFormat.MakeIndexOrDie("# # empty");
-            var point_index = S2TextFormat.MakeIndexOrDie("1:1 # #");
-            var full_polygon_index = S2TextFormat.MakeIndexOrDie("# #");
+            var empty_polygon_index = MakeIndexOrDie("# # empty");
+            var point_index = MakeIndexOrDie("1:1 # #");
+            var full_polygon_index = MakeIndexOrDie("# #");
             full_polygon_index.Add(new S2Polygon.OwningShape(
-                S2TextFormat.MakePolygonOrDie("full")));
+                MakePolygonOrDie("full")));
 
             S2ClosestEdgeQuery.ShapeIndexTarget target = new(full_polygon_index);
             target.IncludeInteriors = (true);
 
             S2ClosestEdgeQuery empty_query = new(empty_polygon_index);
             empty_query.Options_.IncludeInteriors = (true);
-            Assert.Equal(S1ChordAngle.Infinity, empty_query.GetDistance(target));
+            Assert.Equal(Distance.Infinity, empty_query.GetDistance(target));
 
             S2ClosestEdgeQuery point_query = new(point_index);
             point_query.Options_.IncludeInteriors = (true);
-            Assert.Equal(S1ChordAngle.Zero, point_query.GetDistance(target));
+            Assert.Equal(Distance.Zero, point_query.GetDistance(target));
 
             S2ClosestEdgeQuery full_query = new(full_polygon_index);
             full_query.Options_.IncludeInteriors = (true);
-            Assert.Equal(S1ChordAngle.Zero, full_query.GetDistance(target));
+            Assert.Equal(Distance.Zero, full_query.GetDistance(target));
         }
 
         [Fact]
@@ -287,8 +281,8 @@ namespace S2Geometry
                 S2Point x = S2Testing.RandomPoint();
                 S2Point dir = S2Testing.RandomPoint();
                 S1Angle r = S1Angle.FromRadians(Math.PI * Math.Pow(1e-30, S2Testing.Random.RandDouble()));
-                S2Point y = S2EdgeDistances.InterpolateAtDistance(r, x, dir);
-                S1ChordAngle limit = new(r);
+                S2Point y = S2.InterpolateAtDistance(r, x, dir);
+                Distance limit = new(r);
                 if (S2Pred.CompareDistance(x, y, limit) <= 0)
                 {
                     MutableS2ShapeIndex index = new();
@@ -332,7 +326,7 @@ namespace S2Geometry
         [Fact]
         public void Test_S2ClosestEdgeQuery_ConservativeCellDistanceIsUsed()
         {
-            // Don't use google.FlagSaver, so it works in opensource without gflags.
+            // Don't use absl::FlagSaver, so it works in opensource without gflags.
             int saved_seed = S2Testing.Random.RandomSeed;
             // These specific test cases happen to fail if max_error() is not properly
             // taken into account when measuring distances to S2ShapeIndex cells.
@@ -445,7 +439,7 @@ namespace S2Geometry
 
                 // Choose query points from an area approximately 4x larger than the
                 // geometry being tested.
-                var query_radius = 2 * index_cap.RadiusAngle;
+                var query_radius = 2 * index_cap.RadiusAngle();
                 S2Cap query_cap = new(index_cap.Center, query_radius);
                 S2ClosestEdgeQuery query = new(indexes[i_index]);
 
@@ -475,7 +469,7 @@ namespace S2Geometry
                     S2Point point = S2Testing.SamplePoint(query_cap);
                     S2ClosestEdgeQuery.PointTarget target = new(point);
                     var closest = TestFindClosestEdges(target, query);
-                    if (!closest.Distance.IsInfinity)
+                    if (!closest.Distance.IsInfinity())
                     {
                         // Also test the Project method.
                         Assert2.Near(
@@ -496,9 +490,9 @@ namespace S2Geometry
                 else if (target_type == 2)
                 {
                     // Find the edges closest to a given cell.
-                    int min_level = S2Metrics.kMaxDiag.GetLevelForMaxValue(query_radius.Radians);
+                    int min_level = S2.kMaxDiag.GetLevelForMaxValue(query_radius.Radians);
                     int level = min_level + S2Testing.Random.Uniform(
-                        S2Constants.kMaxCellLevel - min_level + 1);
+                        S2.kMaxCellLevel - min_level + 1);
                     S2Point a = S2Testing.SamplePoint(query_cap);
                     S2Cell cell = new(new S2CellId(a).Parent(level));
                     S2ClosestEdgeQuery.CellTarget target = new(cell);

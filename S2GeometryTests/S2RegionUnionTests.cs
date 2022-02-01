@@ -8,11 +8,11 @@ namespace S2Geometry
         [Fact]
         public void Test_S2RegionUnionTest_Basic()
         {
-            S2RegionUnion ru_empty = new S2RegionUnion(new List<IS2Region>());
-            Assert.Equal(0, ru_empty.Count);
+            S2RegionUnion ru_empty = new(new List<IS2Region>());
+            Assert.Equal(0, ru_empty.Count());
             Assert.Equal(S2Cap.Empty, ru_empty.GetCapBound());
             Assert.Equal(S2LatLngRect.Empty, ru_empty.GetRectBound());
-            var empty_clone = (IS2Region)ru_empty.Clone();
+            var empty_clone = (S2RegionUnion)ru_empty.CustomClone();
 
             var two_point_region = new List<IS2Region>
             {
@@ -24,10 +24,10 @@ namespace S2Geometry
             // two_point_region is in a valid, but unspecified, state.
 
             // Check that Clone() returns a deep copy.
-            var two_points = (S2RegionUnion)two_points_orig.Clone();
+            var two_points = (S2RegionUnion)two_points_orig.CustomClone();
             // The bounds below may not be exactly equal because the S2PointRegion
             // version converts each S2LatLng value to an S2Point and back.
-            Assert.True(S2TextFormat.MakeLatLngRectOrDie("-35:-40,35:40")
+            Assert.True(MakeLatLngRectOrDie("-35:-40,35:40")!.Value
                 .ApproxEquals(two_points.GetRectBound()));
 
             S2Cell face0 = S2Cell.FromFace(0);
@@ -39,7 +39,7 @@ namespace S2Geometry
             Assert.False(two_points.Contains(S2LatLng.FromDegrees(0, 0).ToPoint()));
 
             // Check that we can Add() another region.
-            var three_points = (S2RegionUnion)two_points.Clone();
+            var three_points = (S2RegionUnion)two_points.CustomClone();
             Assert.False(three_points.Contains(S2LatLng.FromDegrees(10, 10).ToPoint()));
             three_points.Add(new S2RegionUnion(new List<IS2Region> { new S2PointRegion(S2LatLng.FromDegrees(10, 10).ToPoint()) }));
             Assert.True(three_points.Contains(S2LatLng.FromDegrees(10, 10).ToPoint()));

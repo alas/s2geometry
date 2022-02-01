@@ -1,0 +1,10 @@
+﻿[*.cs]
+
+# IDE0051: Remove unused private members
+dotnet_diagnostic.IDE0051.severity = suggestion
+
+# IDE0055: Fix formatting
+dotnet_diagnostic.IDE0055.severity = none
+
+# xUnit2000: Constants and literals should be the expected argument
+dotnet_diagnostic.xUnit2000.severity = none

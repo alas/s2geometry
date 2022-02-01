@@ -1,20 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using Xunit;
-using Xunit.Abstractions;
+
 
 namespace S2Geometry
 {
     using S2BuilderUtil;
     using static S2Builder;
     using static S2Builder.GraphOptions;
-
-    // A set of (edge string, Int32[]) pairs representing the
-    // InputEdgeIds attached to the edges of a graph.  Edges are in
-    // S2TextFormat.ToDebugString() format, such as "1:3, 4:5".
-    using EdgeInputEdgeIds = List<(string, int[])>;
+    using static S2TextFormat;
 
     public class S2BuilderTests
     {
@@ -27,10 +19,10 @@ namespace S2Geometry
         [Fact]
         public void Test_S2Builder_AddShape()
         {
-            S2Builder builder = new(new S2Builder.Options());
+            S2Builder builder = new(new Options());
             S2Polygon output = new();
             builder.StartLayer(new S2PolygonLayer(output));
-            var input = S2TextFormat.MakePolygonOrDie("0:0, 0:5, 5:5, 5:0; 1:1, 1:4, 4:4, 4:1");
+            var input = MakePolygonOrDie("0:0, 0:5, 5:5, 5:0; 1:1, 1:4, 4:4, 4:1");
             builder.AddShape(input.Index.Shape(0));
             Assert.True(builder.Build(out _));
             ExpectPolygonsEqual(input, output);
@@ -44,14 +36,14 @@ namespace S2Geometry
             // radius are merged together.
 
             S1Angle snap_radius = S1Angle.FromDegrees(0.5);
-            S2Builder builder = new(new S2Builder.Options(new IdentitySnapFunction(snap_radius)));
+            S2Builder builder = new(new Options(new IdentitySnapFunction(snap_radius)));
             S2Polygon output = new();
             builder.StartLayer(new S2PolygonLayer(output));
-            var input = S2TextFormat.MakePolygonOrDie(
+            var input = MakePolygonOrDie(
                 "0:0, 0.2:0.2, 0.1:0.2, 0.1:0.9, 0:1, 0.1:1.1, 0.9:1, 1:1, 1:0.9");
             builder.AddPolygon(input);
             Assert.True(builder.Build(out _));
-            var expected = S2TextFormat.MakePolygonOrDie("0:0, 0:1, 1:0.9");
+            var expected = MakePolygonOrDie("0:0, 0:1, 1:0.9");
             ExpectPolygonsApproxEqual(expected, output, snap_radius);
         }
 
@@ -63,10 +55,10 @@ namespace S2Geometry
 
             int level = S2CellIdSnapFunction.LevelForMaxSnapRadius(S1Angle.FromDegrees(1));
             S2CellIdSnapFunction snap_function = new(level);
-            S2Builder builder = new(new S2Builder.Options(snap_function));
+            S2Builder builder = new(new Options(snap_function));
             S2Polygon output = new();
             builder.StartLayer(new S2PolygonLayer(output));
-            var input = S2TextFormat.MakePolygonOrDie(
+            var input = MakePolygonOrDie(
                 "2:2, 3:4, 2:6, 4:5, 6:6, 5:4, 6:2, 4:3");
             builder.AddPolygon(input);
             Assert.True(builder.Build(out _));
@@ -83,13 +75,13 @@ namespace S2Geometry
         [Fact]
         public void Test_S2Builder_SimpleIntLatLngSnapping()
         {
-            S2Builder builder = new(new S2Builder.Options(new IntLatLngSnapFunction(0)));  // E0 coords
+            S2Builder builder = new(new Options(new IntLatLngSnapFunction(0)));  // E0 coords
             S2Polygon output = new();
             builder.StartLayer(new S2PolygonLayer(output));
-            var input = S2TextFormat.MakePolygonOrDie(
+            var input = MakePolygonOrDie(
                 "2.01:2.09, 3.24:4.49, 1.78:6.25, 3.51:5.49, 6.11:6.11, " +
                 "5.22:3.88, 5.55:2.49, 4.49:2.51");
-            var expected = S2TextFormat.MakePolygonOrDie(
+            var expected = MakePolygonOrDie(
                 "2:2, 3:4, 2:6, 4:5, 6:6, 5:4, 6:2, 4:3");
             builder.AddPolygon(input);
             Assert.True(builder.Build(out _));
@@ -104,7 +96,7 @@ namespace S2Geometry
             // single vertex.
 
             S1Angle snap_radius = S1Angle.FromDegrees(1);
-            S2Builder builder = new(new S2Builder.Options(new IdentitySnapFunction(snap_radius)));
+            S2Builder builder = new(new Options(new IdentitySnapFunction(snap_radius)));
             S2Polygon output = new();
             builder.StartLayer(new S2PolygonLayer(output));
             // The spacing between input vertices is about 2*pi*20/1000 = 0.125 degrees.
@@ -136,17 +128,82 @@ namespace S2Geometry
             // edge-vertex separation guarantee.  S2Builder handles this by creating at
             // least one vertex along the original long leg, to keep the snapped edge
             // far enough away from the diagonal.
-            var input = S2TextFormat.MakePolygonOrDie(
+            var input = MakePolygonOrDie(
                 "0:0, 0:1, 1:.9, 2:.8, 3:.7, 4:.6, 5:.5, 6:.4, 7:.3, 8:.2, 9:.1, 10:0");
-            var expected = S2TextFormat.MakePolygonOrDie(
+            var expected = MakePolygonOrDie(
                 "0:0, 0:1, 1:.9, 2:.8, 3:.7, 4:.6, 5:.5, 4.00021862252687:0");
-            S2Builder.Options options = new(new IdentitySnapFunction(S1Angle.FromDegrees(0.5)));
+            Options options = new(new IdentitySnapFunction(S1Angle.FromDegrees(0.5)));
             S2Builder builder = new(options);
             S2Polygon output = new();
             builder.StartLayer(new S2PolygonLayer(output));
             builder.AddPolygon(input);
             Assert.True(builder.Build(out _));
-            ExpectPolygonsApproxEqual(expected, output, S1Angle.FromRadians(S2Constants.DoubleError));
+            ExpectPolygonsApproxEqual(expected, output, S1Angle.FromRadians(S2.DoubleError));
+        }
+
+        [Fact]
+        public void Test_S2Builder_MaxEdgeDeviation()
+        {
+            // Test that when long edges are snapped to nearby sites, appropriate extra
+            // vertices are added so that the snapped edge chain stays within
+            // options.max_edge_deviation() of the original edge.
+            //
+            // We do this by constructing an edge AB with two nearly antipodal vertices,
+            // then adding another vertex C slightly perturbed from A.  Frequently AB
+            // will snap to C producing the edge chain ACB, however edge CB diverges
+            // very far from the original edge AB.  This requires S2Builder to add a new
+            // vertex M near the middle of AB so that ACMB stays close everywhere to AB.
+            S2Builder.Options options=new();
+            options.SplitCrossingEdges = true;
+            options.Idempotent = false;
+            S2Builder builder=new(options);
+
+            // Even though we are using the default snap radius of zero, the edge snap
+            // radius is S2::kIntersectionError because split_crossing_edges() is true.
+            Assert.Equal(builder.Options_.edge_snap_radius(), S2.kIntersectionErrorS1Angle);
+            S1Angle max_deviation = builder.Options_.MaxEdgeDeviation();
+            const int kIters = 50 * iteration_multiplier;
+
+            // Test cases are constructed randomly not all tests are effective (i.e., AB
+            // might not snap to the perturbed vertex C).  Here we keep track of the
+            // number of effective tests.
+            int num_effective = 0;
+            for (int iter = 0; iter < kIters; ++iter)
+            {
+                S2Testing.Random.Reset(iter + 1);  // Easier to reproduce a specific case.
+                S2LaxPolylineShape output=new();
+                builder.StartLayer(new LaxPolylineLayer(output));
+                S2Point a = S2Testing.RandomPoint();
+
+                // B is slightly perturbed from -A, and C is slightly perturbed from A.
+                // The perturbation amount is not critical except that it should not be
+                // too much larger than edge_snap_radius() (otherwise AB will rarely snap
+                // to C) and it should also not be so small that A and C are likely to be
+                // the same point.
+                S2Point b = (-a + 5e-16 * S2Testing.RandomPoint()).Normalize();
+                S2Point c = (a + 5e-16 * S2Testing.RandomPoint()).Normalize();
+                builder.AddEdge(a, b);
+                builder.ForceVertex(c);
+                S2Error error;
+                Assert.True(builder.Build(out error));// << error;
+                int n = output.NumVertices();
+                Assert.Equal(a, output.Vertex(0));
+                Assert.Equal(b, output.Vertex(n - 1));
+                for (int i = 0; i + 1 < n; ++i)
+                {
+                    Assert.True(S2.IsEdgeBNearEdgeA(
+                        a, b, output.Vertex(i), output.Vertex(i + 1), max_deviation));
+                    System.Diagnostics.Debug.WriteLine(String.Format(
+                        "Iteration {0}: ({1}, {2}), {3}",
+                        iter,
+                        S2TextFormat.ToDebugString(a),
+                        S2TextFormat.ToDebugString(S2.Interpolate(0.5, a, b)),
+                        S2TextFormat.ToDebugString(output)));
+                }
+                if (n > 2) ++num_effective;
+            }
+            // We require at least 20% of the test cases to be successful.
+            Assert.True(num_effective >= 10 * iteration_multiplier);
         }
 
         [Fact]
@@ -155,11 +212,11 @@ namespace S2Geometry
             // This test checks that when vertices are closer together than
             // min_vertex_separation() then they are snapped together even when
             // options.idempotent() is true.
-            S2Builder.Options options = new(new IdentitySnapFunction(S1Angle.FromDegrees(1.0)));
+            Options options = new(new IdentitySnapFunction(S1Angle.FromDegrees(1.0)));
             S2Builder builder = new(options);
             S2Polyline output = new();
             builder.StartLayer(new S2PolylineLayer(output));
-            builder.AddPolyline(S2TextFormat.MakePolylineOrDie("0:0, 0:0.9, 0:2"));
+            builder.AddPolyline(MakePolylineOrDie("0:0, 0:0.9, 0:2"));
             Assert.True(builder.Build(out _));
             string expected = "0:0, 0:2";
             Assert.Equal(expected, output.ToDebugString());
@@ -170,13 +227,13 @@ namespace S2Geometry
         {
             // This test checks that even when the snap radius is zero, identical
             // vertices are snapped together.
-            S2Builder builder = new(new S2Builder.Options());
+            S2Builder builder = new(new Options());
             S2Polygon output = new();
             builder.StartLayer(new S2PolygonLayer(output));
-            builder.AddPolyline(S2TextFormat.MakePolylineOrDie("0:1, 1:0"));
-            builder.AddPolyline(S2TextFormat.MakePolylineOrDie("0:0, 0:1"));
-            builder.AddEdge(S2TextFormat.MakePointOrDie("0:1"), S2TextFormat.MakePointOrDie("0:1"));
-            builder.AddPolyline(S2TextFormat.MakePolylineOrDie("1:0, 0:0"));
+            builder.AddPolyline(MakePolylineOrDie("0:1, 1:0"));
+            builder.AddPolyline(MakePolylineOrDie("0:0, 0:1"));
+            builder.AddEdge(MakePointOrDie("0:1"), MakePointOrDie("0:1"));
+            builder.AddPolyline(MakePolylineOrDie("1:0, 0:0"));
             Assert.True(builder.Build(out _));
             string expected = "0:0, 0:1, 1:0";
             Assert.Equal(expected, output.ToDebugString());
@@ -187,15 +244,15 @@ namespace S2Geometry
         {
             // This test checks that identical vertices are snapped together even when
             // the snap radius is zero and options.split_crossing_edges() is true.
-            S2Builder.Options options = new();
+            Options options = new();
             options.SplitCrossingEdges = (true);
             S2Builder builder = new(options);
             S2Polygon output = new();
             builder.StartLayer(new S2PolygonLayer(output));
-            builder.AddPolyline(S2TextFormat.MakePolylineOrDie("0:1, 1:0"));
-            builder.AddPolyline(S2TextFormat.MakePolylineOrDie("0:0, 0:1"));
-            builder.AddEdge(S2TextFormat.MakePointOrDie("0:1"), S2TextFormat.MakePointOrDie("0:1"));
-            builder.AddPolyline(S2TextFormat.MakePolylineOrDie("1:0, 0:0"));
+            builder.AddPolyline(MakePolylineOrDie("0:1, 1:0"));
+            builder.AddPolyline(MakePolylineOrDie("0:0, 0:1"));
+            builder.AddEdge(MakePointOrDie("0:1"), MakePointOrDie("0:1"));
+            builder.AddPolyline(MakePolylineOrDie("1:0, 0:0"));
             Assert.True(builder.Build(out _));
             string expected = "0:0, 0:1, 1:0";
             Assert.Equal(expected, output.ToDebugString());
@@ -220,7 +277,7 @@ namespace S2Geometry
             IntLatLngSnapFunction snap_function = new(0);
             Assert.True(snap_function.SnapRadius>= S1Angle.FromDegrees(0.7));
             Assert.True(snap_function.MinVertexSeparation() <= S1Angle.FromDegrees(0.35));
-            S2Builder builder = new(new S2Builder.Options(snap_function));
+            S2Builder builder = new(new Options(snap_function));
 
             // In this example, the snapped vertex (0, 0) is processed first and is
             // selected as a Voronoi site (i.e., output vertex).  The second vertex is
@@ -266,17 +323,15 @@ namespace S2Geometry
             // this situation correctly (i.e., that an edge separated from a
             // non-incident vertex by a distance of zero cannot be the output of a
             // previous snapping operation).
-            S2Builder.Options options = new();
-            options.SnapFunction = (
-                new IdentitySnapFunction(S2EdgeCrossings.kIntersectionErrorS1Angle));
+            Options options = new(new IdentitySnapFunction(S2.kIntersectionErrorS1Angle));
             S2PolylineVectorLayer.Options layer_options = new();
             layer_options.DuplicateEdges_ = (DuplicateEdges.MERGE);
             S2Builder builder = new(options);
             List<S2Polyline> output = new();
             builder.StartLayer(
                 new S2PolylineVectorLayer(output, layer_options));
-            builder.AddPolyline(S2TextFormat.MakePolylineOrDie("0:0, 0:10"));
-            builder.AddPolyline(S2TextFormat.MakePolylineOrDie("0:5, 0:7"));
+            builder.AddPolyline(MakePolylineOrDie("0:0, 0:10"));
+            builder.AddPolyline(MakePolylineOrDie("0:5, 0:7"));
             Assert.True(builder.Build(out _));
             Assert.Single(output);
             Assert.Equal("0:0, 0:5, 0:7, 0:10", output[0].ToDebugString());
@@ -289,12 +344,12 @@ namespace S2Geometry
             // at least one vertex or edge that could not be the output of a previous
             // snapping operation.  This test checks that when an edge is further away
             // than min_edge_vertex_separation() then no snapping is done.
-            S2Builder.Options options = new(new IntLatLngSnapFunction(0));
+            Options options = new(new IntLatLngSnapFunction(0));
             options.Idempotent = (true);  // Test fails if this is "false".
             S2Builder builder = new(options);
             S2Polygon output1 = new(), output2 = new();
             builder.StartLayer(new S2PolygonLayer(output1));
-            builder.AddPolygon(S2TextFormat.MakePolygonOrDie("1.49:0, 0:2, 0.49:3"));
+            builder.AddPolygon(MakePolygonOrDie("1.49:0, 0:2, 0.49:3"));
             Assert.True(builder.Build(out _));
             string expected = "1:0, 0:2, 0:3";
             Assert.Equal(expected, output1.ToDebugString());
@@ -302,6 +357,162 @@ namespace S2Geometry
             builder.AddPolygon(output1);
             Assert.True(builder.Build(out _));
             Assert.Equal(expected, output2.ToDebugString());
+        }
+
+        [Fact]
+        public void Test_S2Builder_NearbyVerticesSnappedWithZeroSnapRadiusEdgeSplitting()
+        {
+            // Verify that even when the split_crossing_edges() option is used with a snap
+            // radius of zero, edges are snapped to nearby vertices (those within a
+            // distance of S2::kIntersectionError).  This is necessary for correctness
+            // whenever new intersection vertices are created (since such vertices are
+            // only within S2::kIntersectionError of the true intersection point), and it
+            // is necessary for consistency even when they are not.
+            S2Builder.Options options=new();
+            options.SplitCrossingEdges = true;
+            S2Builder builder=new(options);
+            S2PolylineVectorLayer.Options layer_options=new();
+            layer_options.PolylineType_ = Graph.PolylineType.WALK;
+            List<S2Polyline> output=new();
+            builder.StartLayer(
+                new S2PolylineVectorLayer(output, layer_options));
+            builder.AddPolyline(MakePolylineOrDie("0:180, 0:3"));
+            // The second value below produces an S2Point that is distinct from 0:180
+            // and yet is so close that 0:180 is the nearest representable value when
+            // it is converted back to an S2LatLng.
+            builder.AddPolyline(MakePolylineOrDie("90:180, 0:179.9999999999999"));
+            builder.AddPolyline(MakePolylineOrDie("10:10, 1e-15:10"));
+            S2Error error;
+            Assert.True(builder.Build(out error));
+            Assert.Equal(3, output.Count);
+            // The first two points below are not duplicates (see above).
+            Assert.Equal("0:180, 0:180, 1e-15:10, 0:3", S2TextFormat.ToDebugString(output[0]));
+            Assert.Equal("90:180, 0:180", S2TextFormat.ToDebugString(output[1]));
+            Assert.Equal("10:10, 1e-15:10", S2TextFormat.ToDebugString(output[2]));
+        }
+
+        [Fact]
+        public void Test_S2Builder_NearbyIntersectionSnappedWithZeroSnapRadius()
+        {
+            // A simpler version of the test above that uses AddIntersection() rather
+            // than split_crossing_edges().
+            S2Builder.Options options=new();
+            options.intersection_tolerance = S2.kIntersectionErrorS1Angle;
+            S2Builder builder=new(options);
+            S2Polyline output=new();
+            builder.StartLayer(new S2PolylineLayer(output));
+            builder.AddPolyline(MakePolylineOrDie("0:0, 0:10"));
+            builder.AddIntersection(MakePointOrDie("1e-16:5"));
+            S2Error error;
+            Assert.True(builder.Build(out error));
+            Assert.Equal("0:0, 1e-16:5, 0:10", S2TextFormat.ToDebugString(output));
+        }
+
+        [Fact]
+        public void Test_S2Builder_TopologyPreservedWithZeroSnapRadiusEdgeSplitting()
+        {
+            // Verify that even when the split_crossing_edges() option is used with a snap
+            // radius of zero, snapped edges do not cross vertices (i.e., the input
+            // topology is preserved up the creation of degeneracies).  In this situation
+            // the snap radius for vertices is zero (i.e. vertices are never merged) but
+            // the snap radius for edges is S2::kIntersectionError (i.e., edges are
+            // snapped to vertices up to this distance away).
+            //
+            // For this test, we create an edge AB that is 47 degrees long.  We then add
+            // two vertices X,Y that are 1 degree away from the endpoints of A,B and
+            // offset from AB by a distance of 0.99 * S2::kIntersectionError.  This will
+            // cause AB to be snapped to AXYB, where the segment XY is 45 degrees long.
+            // Because all edges are geodesics, the distance from the midpoint M of XY to
+            // the original edge AB is approximately 1.07 * S2::kIntersectionError (see
+            // the comments in S2Builder::Options::max_edge_deviation()).  Let vertex C be
+            // offset from the midpoint of AB by 1.03 * S2::kIntersectionError.  Then C is
+            // too far away from AB to be snapped to it, but it is closer to AB than M.
+            // Therefore if nothing is done about it, the input topology would change.
+            //
+            // This test checks that the algorithm detects this situation and adds another
+            // vertex Z near the projection of C onto AB.  This causes AB to be snapped to
+            // AXZYB so that the snapped edge passes on the correct side of C.
+            //
+            // Vertex C is represented in the form of an edge CD perpendicular to AB so
+            // that we don't need to use more than one output layer.  We also need to turn
+            // off the idempotent() option to ensure that AB is snapped to X and Y, since
+            // otherwise the algorithm correctly determines that there is no need for
+            // snapping (since there are no crossing edges in this test case).
+            S2Builder.Options options=new();
+            options.SplitCrossingEdges = true;
+            options.Idempotent = false;
+            S2Builder builder=new(options);
+            S2PolylineVectorLayer.Options layer_options=new();
+            layer_options.PolylineType_ = Graph.PolylineType.WALK;
+            List<S2Polyline> output=new();
+            builder.StartLayer(
+                new S2PolylineVectorLayer(output, layer_options));
+            var kEdgeSnapRadDegrees = S2.kIntersectionErrorS1Angle.GetDegrees();
+            var a = S2LatLng.FromDegrees(0, -1).ToPoint();
+            var b = S2LatLng.FromDegrees(0, 46).ToPoint();
+            var x = S2LatLng.FromDegrees(0.99 * kEdgeSnapRadDegrees, 0).ToPoint();
+            var y = S2LatLng.FromDegrees(0.99 * kEdgeSnapRadDegrees, 45).ToPoint();
+            var c = S2LatLng.FromDegrees(1.03 * kEdgeSnapRadDegrees, 22.5).ToPoint();
+            var d = S2LatLng.FromDegrees(10, 22.5).ToPoint();
+            builder.AddEdge(a, b);
+            builder.ForceVertex(x);
+            builder.ForceVertex(y);
+            builder.AddEdge(c, d);
+            S2Error error;
+            Assert.True(builder.Build(out error));
+            Assert.Equal(2, output.Count);
+            Assert.Equal(  // The snapped edge AXZYB described above.
+                "0:-1, 5.03799861543821e-14:0, 0:22.5, 5.03799861543821e-14:45, 0:46",
+                S2TextFormat.ToDebugString(output[0]));
+            Assert.Equal(  // The input edge CD.
+                "5.24155411505188e-14:22.5, 10:22.5",
+                S2TextFormat.ToDebugString(output[1]));
+            Assert.True(S2.CrossingSign(output[0].Vertex(1), output[0].Vertex(2),
+                                       output[1].Vertex(0), output[1].Vertex(1)) < 0);
+        }
+
+        [Fact]
+        public void Test_S2Builder_TopologyPreservedWithForcedVertices()
+        {
+            // Verify that the input topology is preserved around vertices added using
+            // ForceVertex (even though there are no minimum separation guarantees for
+            // such vertices).
+            //
+            // This test is the same as the one above except for the following:
+            //  - split_crossing_edges() is false
+            //  - we use a snap raidus of S2::kIntersectionError rather than zero
+            //  - vertex C is added using ForceVertex().
+            S2Builder.Options options=new(new IdentitySnapFunction(S2.kIntersectionErrorS1Angle));
+            options.Idempotent = false;
+            S2Builder builder = new(options);
+            S2PolylineVectorLayer.Options layer_options=new();
+            layer_options.PolylineType_ = Graph.PolylineType.WALK;
+            List<S2Polyline> output=new();
+            builder.StartLayer(
+                new S2PolylineVectorLayer(output, layer_options));
+            var kEdgeSnapRadDegrees = S2.kIntersectionErrorS1Angle.GetDegrees();
+            var a = S2LatLng.FromDegrees(0, -1).ToPoint();
+            var b = S2LatLng.FromDegrees(0, 46).ToPoint();
+            var x = S2LatLng.FromDegrees(0.99 * kEdgeSnapRadDegrees, 0).ToPoint();
+            var y = S2LatLng.FromDegrees(0.99 * kEdgeSnapRadDegrees, 45).ToPoint();
+            var c = S2LatLng.FromDegrees(1.03 * kEdgeSnapRadDegrees, 22.5).ToPoint();
+            var d = S2LatLng.FromDegrees(10, 22.5).ToPoint();
+            builder.AddEdge(a, b);
+            builder.ForceVertex(x);
+            builder.ForceVertex(y);
+            builder.ForceVertex(c);
+            builder.AddEdge(c, d);
+            S2Error error;
+            Assert.True(builder.Build(out error));
+            Assert.Equal(2, output.Count);
+            Assert.Equal(  // The snapped edge AXZYB described above.
+                "0:-1, 5.03799861543821e-14:0, 0:22.5, 5.03799861543821e-14:45, 0:46",
+                S2TextFormat.ToDebugString(output[0]));
+            Assert.Equal(  // The input edge CD.
+                "5.24155411505188e-14:22.5, 10:22.5",
+                S2TextFormat.ToDebugString(output[1]));
+            Assert.True(S2.CrossingSign(output[0].Vertex(1), output[0].Vertex(2),
+                                       output[1].Vertex(0), output[1].Vertex(1)) < 0);
         }
 
         [Fact]
@@ -315,17 +526,17 @@ namespace S2Geometry
         [Fact]
         public void Test_S2Builder_S2CellIdSnappingAtAllLevels()
         {
-            S2Polygon input = S2TextFormat.MakePolygonOrDie(
+            S2Polygon input = MakePolygonOrDie(
                 "0:0, 0:2, 2:0; 0:0, 0:-2, -2:-2, -2:0");
-            for (int level = 0; level <= S2Constants.kMaxCellLevel; ++level)
+            for (int level = 0; level <= S2.kMaxCellLevel; ++level)
             {
                 S2CellIdSnapFunction snap_function = new(level);
-                S2Builder builder = new(new S2Builder.Options(snap_function));
+                S2Builder builder = new(new Options(snap_function));
                 S2Polygon output = new();
                 builder.StartLayer(new S2PolygonLayer(output));
                 builder.AddPolygon(input);
                 Assert.True(builder.Build(out _));
-                Assert.True(output.IsValid);
+                Assert.True(output.IsValid());
                 // The ApproxContains calls below are not guaranteed to succeed in general
                 // because ApproxContains works by snapping both polygons together using
                 // the given tolerance and then checking for containment.  Since
@@ -338,7 +549,7 @@ namespace S2Geometry
                 // (To guarantee correctness we would need to use S2CellIdSnapFunction
                 // within the ApproxContains implementation.)
                 S1Angle tolerance = new[]{ 2 * snap_function.SnapRadius,
-                            S2CellIdSnapFunction.kMaxSnapRadius }.Min();
+                            SnapFunction.kMaxSnapRadius }.Min();
                 Assert.True(output.ApproxContains(input, tolerance));
                 Assert.True(input.ApproxContains(output, tolerance));
             }
@@ -348,12 +559,12 @@ namespace S2Geometry
         public void Test_S2Builder_SnappingDoesNotRotateVertices()
         {
             // This is already tested extensively elsewhere.
-            var input = S2TextFormat.MakePolygonOrDie(
+            var input = MakePolygonOrDie(
                 "49.9305505:-124.8345463, 49.9307448:-124.8299657, " +
                 "49.9332101:-124.8301996, 49.9331224:-124.8341368; " +
                 "49.9311087:-124.8327042, 49.9318176:-124.8312621, " +
                 "49.9318866:-124.8334451");
-            S2Builder.Options options = new(new S2CellIdSnapFunction());
+            Options options = new(new S2CellIdSnapFunction());
             S2Builder builder = new(options);
             S2Polygon output1 = new(), output2 = new();
             builder.StartLayer(new S2PolygonLayer(output1));
@@ -378,15 +589,15 @@ namespace S2Geometry
             // Check that when two edges of a polyline cross, the intersection point is
             // added to both edges.
 
-            S2Builder.Options options = new();
+            Options options = new();
             IntLatLngSnapFunction snap_function = new(1);  // Snap to E1 coordinates
             options.SnapFunction = (snap_function);
             options.SplitCrossingEdges = (true);
             S2Builder builder = new(options);
             S2Polyline output = new();
             builder.StartLayer(new S2PolylineLayer(output));
-            var input = S2TextFormat.MakePolylineOrDie("3:1, 1:3, 1:1, 3:3");
-            var expected = S2TextFormat.MakePolylineOrDie("3:1, 2:2, 1:3, 1:1, 2:2, 3:3");
+            var input = MakePolylineOrDie("3:1, 1:3, 1:1, 3:3");
+            var expected = MakePolylineOrDie("3:1, 2:2, 1:3, 1:1, 2:2, 3:3");
             builder.AddPolyline(input);
             Assert.True(builder.Build(out _));
             ExpectPolylinesEqual(expected, output);
@@ -400,15 +611,15 @@ namespace S2Geometry
             // assembled into a valid polygon.
 
             IntLatLngSnapFunction snap_function = new(1);  // Snap to E1 coordinates
-            S2Builder.Options options = new();
+            Options options = new();
             options.SnapFunction = (snap_function);
             options.SplitCrossingEdges = (true);
             S2Builder builder = new(options);
             S2Polygon output = new();
             builder.StartLayer(new S2PolygonLayer(
                 output, new S2PolygonLayer.Options(EdgeType.UNDIRECTED)));
-            var input = S2TextFormat.MakePolylineOrDie("3:1, 1:3, 1:1, 3:3, 3:1");
-            var expected = S2TextFormat.MakePolygonOrDie("1:1, 1:3, 2:2; 3:3, 3:1, 2:2");
+            var input = MakePolylineOrDie("3:1, 1:3, 1:1, 3:3, 3:1");
+            var expected = MakePolygonOrDie("1:1, 1:3, 2:2; 3:3, 3:1, 2:2");
             builder.AddPolyline(input);
             Assert.True(builder.Build(out _));
             ExpectPolygonsEqual(expected, output);
@@ -420,19 +631,19 @@ namespace S2Geometry
             // Check that when an edge passes between two equally distant vertices, that
             // the choice of which one to snap to does not depend on the edge direction.
 
-            S2Builder.Options options = new(new IdentitySnapFunction(S1Angle.FromDegrees(2)));
+            Options options = new(new IdentitySnapFunction(S1Angle.FromDegrees(2)));
             options.Idempotent = (false);
             S2Builder builder = new(options);
             builder.ForceVertex(S2LatLng.FromDegrees(1, 0).ToPoint());
             builder.ForceVertex(S2LatLng.FromDegrees(-1, 0).ToPoint());
             S2Polyline output1 = new(), output2 = new();
             builder.StartLayer(new S2PolylineLayer(output1));
-            builder.AddPolyline(S2TextFormat.MakePolylineOrDie("0:-5, 0:5"));
+            builder.AddPolyline(MakePolylineOrDie("0:-5, 0:5"));
             builder.StartLayer(new S2PolylineLayer(output2));
-            builder.AddPolyline(S2TextFormat.MakePolylineOrDie("0:5, 0:-5"));
+            builder.AddPolyline(MakePolylineOrDie("0:5, 0:-5"));
             Assert.True(builder.Build(out _));
-            Assert.Equal(3, output1.NumVertices);
-            Assert.Equal(3, output2.NumVertices);
+            Assert.Equal(3, output1.NumVertices());
+            Assert.Equal(3, output2.NumVertices());
             for (int i = 0; i < 3; ++i)
             {
                 Assert.Equal(output1.Vertex(i), output2.Vertex(2 - i));
@@ -446,7 +657,7 @@ namespace S2Geometry
             // remain valid until all layers have been built.
             List<Graph> graphs = new();
             List<GraphClone> clones = new();
-            S2Builder builder = new(new S2Builder.Options());
+            S2Builder builder = new(new Options());
             for (int i = 0; i < 20; ++i)
             {
                 builder.StartLayer(new GraphPersistenceLayer(
@@ -464,11 +675,24 @@ namespace S2Geometry
         {
             // Simplify a perturbed edge chain into a single edge.
 
-            S2Builder.Options options = new(new IdentitySnapFunction(S1Angle.FromDegrees(1)));
+            Options options = new(new IdentitySnapFunction(S1Angle.FromDegrees(1)));
             options.SimplifyEdgeChains = (true);
             TestPolylineLayersBothEdgeTypes(new List<string> { "0:0, 1:0.5, 2:-0.5, 3:0.5, 4:-0.5, 5:0" },
                                             new List<string> { "0:0, 5:0" },
                                             new S2PolylineLayer.Options(), options);
+        }
+
+        [Fact]
+        public void Test_S2Builder_SimplifyNearlyAntipodal()
+        {
+            // Verify that nothing goes wrong when attempting to simplify a nearly
+            // antipodal edge.
+
+            S2Builder.Options options = new(new IdentitySnapFunction(S1Angle.FromDegrees(1)));
+            options.SimplifyEdgeChains = true;
+            TestPolylineLayersBothEdgeTypes(new List<string>{ "0:180, 0:1e-09, 32:32"},
+                                  new List<string>{ "0:180, 0:1e-09, 32:32"},
+                                  new S2PolylineLayer.Options(), options);
         }
 
         [Fact]
@@ -478,7 +702,7 @@ namespace S2Geometry
             // to a single edge on its own.  However the two polylines actually cross,
             // so make sure that the output still contains the intersection vertex.
 
-            S2Builder.Options options = new(new IdentitySnapFunction(S1Angle.FromDegrees(0.5)));
+            Options options = new(new IdentitySnapFunction(S1Angle.FromDegrees(0.5)));
             options.SplitCrossingEdges = (true);
             options.SimplifyEdgeChains = (true);
             TestPolylineLayersBothEdgeTypes(
@@ -501,7 +725,7 @@ namespace S2Geometry
             {
                 EdgeType edge_type = (EdgeType)(i);
                 S1Angle snap_radius = S1Angle.FromDegrees(1);
-                S2Builder.Options options = new(new IdentitySnapFunction(snap_radius));
+                Options options = new(new IdentitySnapFunction(snap_radius));
                 options.SimplifyEdgeChains = (true);
                 S2Builder builder = new(options);
                 S2Polygon output = new();
@@ -528,7 +752,7 @@ namespace S2Geometry
             // edge and a short edge, and therefore we would get a different result if
             // the two layers followed the edge chain in different directions.)
 
-            S2Builder.Options options = new(new IdentitySnapFunction(S1Angle.FromDegrees(0.5)));
+            Options options = new(new IdentitySnapFunction(S1Angle.FromDegrees(0.5)));
             options.SimplifyEdgeChains = (true);
             TestPolylineLayersBothEdgeTypes(
                 new List<string>{"-4:0.83, -3:0.46, -2:0.2, -1:0.05, 0:0, 1:0.5, 2:0.2, 3:0.46, 4:0.83",
@@ -542,9 +766,9 @@ namespace S2Geometry
         {
             // We build two layers each containing a polyline, such that the polyline in
             // the first layer could be simplified to a straight line except that then
-            // it would create an intersection with the second polyline.
+            // it would approach the second polyline too closely.
 
-            S2Builder.Options options = new(new IdentitySnapFunction(S1Angle.FromDegrees(1.0)));
+            Options options = new(new IdentitySnapFunction(S1Angle.FromDegrees(1.0)));
             options.SimplifyEdgeChains = (true);
             TestPolylineLayersBothEdgeTypes(
                 new List<string> { "0:-10, 0.99:0, 0:10", "-5:-5, -0.2:0, -5:5" },
@@ -555,14 +779,42 @@ namespace S2Geometry
         [Fact]
         public void Test_S2Builder_SimplifyBacktrackingEdgeChain()
         {
-            // Test simplifying an edge chain that backtracks on itself.
-            S2Builder.Options options = new(new IdentitySnapFunction(S1Angle.FromDegrees(0.5)));
+            // Test simplifying an edge chain that backtracks on itself.  (This should
+            // prevent simplification, since edge chains are approximated parametrically
+            // rather than geometrically.)
+
+            Options options = new(new IdentitySnapFunction(S1Angle.FromDegrees(0.5)));
             options.SimplifyEdgeChains = (true);
             TestPolylineLayersBothEdgeTypes(
                 new List<string> {"0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 4:0, 3:0, "+
             "2:0, 3:0, 4:0, 5:0, 6:0, 7:0"},
                 new List<string> { "0:0, 2:0, 5:0, 2:0, 5:0, 7:0" },
                 new S2PolylineLayer.Options(), options);
+        }
+
+        [Fact]
+        public void Test_S2Builder_SimplifyAvoidsBacktrackingVertices()
+        {
+            // As noted above, edge chains must proceed monotonically away from the
+            // source vertex in order to be simplified.  However in rare cases, adding a
+            // new vertex to the chain (e.g. extending ABC with a vertex D) can require
+            // us to avoid a nearby vertex (E) that is closer than the previous endpoint
+            // of the chain (C).  A previous version of the algorithm did not handle
+            // this case correctly.
+            //
+            // The first polyline (ABC) below cannot be simplified to AC that edge would
+            // pass too close to the first vertex of the second polyline DE.  Vertex D
+            // is not avoided while processing the edge AB because AD > AB; instead it
+            // should be processed when edge BC is added to the simplified chain.
+            S2Builder.Options options=new(new IdentitySnapFunction(S1Angle.FromDegrees(1.0)));
+            options.SimplifyEdgeChains = true;
+            Assert.True(S2.GetDistance(MakePointOrDie("0:1.05"),
+                                     MakePointOrDie("0:0"), MakePointOrDie("1:2")) <
+                     options.SnapFunction.MinEdgeVertexSeparation());
+            TestPolylineLayersBothEdgeTypes(
+              new List<string>{ "0:0, 1:0.1, 1:2", "0:1.05, -10:1.05"},
+      new List<string>{ "0:0, 1:0.1, 1:2", "0:1.05, -10:1.05"},
+      new S2PolylineLayer.Options(), options);
         }
 
         [Fact]
@@ -583,7 +835,7 @@ namespace S2Geometry
             // explicit check in S2Builder that prevents this.  (If the check is removed
             // then this test fails.)
 
-            S2Builder.Options options = new(new IntLatLngSnapFunction(0));  // E0 coordinates
+            Options options = new(new IntLatLngSnapFunction(0));  // E0 coordinates
             options.SimplifyEdgeChains = (true);
             TestPolylineLayersBothEdgeTypes(
                 new List<string> { "-30.49:-29.51, 29.51:30.49" }, new List<string> { "-30:-30, -1:1, 30:30" },
@@ -600,7 +852,7 @@ namespace S2Geometry
             int kNumVerticesPerLoop = 1000;
             S1Angle kBaseRadius = S1Angle.FromDegrees(5);
             S1Angle kSnapRadius = S1Angle.FromDegrees(0.1);
-            S2Builder.Options options = new(new IdentitySnapFunction(kSnapRadius));
+            Options options = new(new IdentitySnapFunction(kSnapRadius));
             options.SimplifyEdgeChains = (true);
             S2Builder builder = new(options);
             List<S2Polygon> input = new(), output = new();
@@ -625,9 +877,9 @@ namespace S2Geometry
         [Fact]
         public void Test_S2Builder_SimplifyRemovesSiblingPairs()
         {
-            S2Builder.Options options = new(new IntLatLngSnapFunction(0));  // E0 coords
+            Options options = new(new IntLatLngSnapFunction(0));  // E0 coords
             S2PolylineVectorLayer.Options layer_options = new();
-            layer_options.SiblingPairs = (GraphOptions.SiblingPairs.DISCARD);
+            layer_options.SiblingPairs = (SiblingPairs.DISCARD);
 
             // Check that there is no sibling pair without simplification.
             TestPolylineVector(
@@ -645,7 +897,7 @@ namespace S2Geometry
         [Fact]
         public void Test_S2Builder_SimplifyMergesDuplicateEdges()
         {
-            S2Builder.Options options = new(new IntLatLngSnapFunction(0));  // E0 coords
+            Options options = new(new IntLatLngSnapFunction(0));  // E0 coords
             S2PolylineVectorLayer.Options layer_options = new();
             layer_options.DuplicateEdges_ = (DuplicateEdges.MERGE);
 
@@ -665,13 +917,13 @@ namespace S2Geometry
         [Fact]
         public void Test_S2Builder_SimplifyKeepsForcedVertices()
         {
-            S2Builder.Options options = new(new IdentitySnapFunction(S1Angle.FromRadians(S2Constants.DoubleError)));
+            Options options = new(new IdentitySnapFunction(S1Angle.FromRadians(S2.DoubleError)));
             options.SimplifyEdgeChains = (true);
             S2Builder builder = new(options);
             S2Polyline output = new();
             builder.StartLayer(new S2PolylineLayer(output));
-            builder.AddPolyline(S2TextFormat.MakePolylineOrDie("0:0, 0:1, 0:2, 0:3"));
-            builder.ForceVertex(S2TextFormat.MakePointOrDie("0:1"));
+            builder.AddPolyline(MakePolylineOrDie("0:0, 0:1, 0:2, 0:3"));
+            builder.ForceVertex(MakePointOrDie("0:1"));
             Assert.True(builder.Build(out _));
             Assert.Equal("0:0, 0:1, 0:3", output.ToDebugString());
         }
@@ -682,7 +934,7 @@ namespace S2Geometry
             // Check that input edge ids are assigned in order.
             TestInputEdgeIds(new List<string> { "0:0, 0:1, 0:2" }, new EdgeInputEdgeIds {
       ("0:0, 0:1", new[]{ 0 }), ("0:1, 0:2", new[]{ 1 })},
-      new GraphOptions(), new S2Builder.Options());
+      new GraphOptions(), new Options());
         }
 
         [Fact]
@@ -694,7 +946,7 @@ namespace S2Geometry
             TestInputEdgeIds(new List<string> { "0:0, 0:1, 0:2" }, new EdgeInputEdgeIds {
       ("0:0, 0:1", new[]{0}), ("0:1, 0:2", new[]{1}),
       ("0:1, 0:0", Array.Empty<int>()), ("0:2, 0:1", Array.Empty<int>())},
-                   graph_options, new S2Builder.Options());
+                   graph_options, new Options());
         }
 
         [Fact]
@@ -706,7 +958,7 @@ namespace S2Geometry
             graph_options.SiblingPairs_ = SiblingPairs.CREATE;
             TestInputEdgeIds(new List<string> { "0:0, 0:1, 0:2" }, new EdgeInputEdgeIds {
       ("0:0, 0:1", new[]{0}), ("0:1, 0:2", new[]{1})},
-      new GraphOptions(), new S2Builder.Options());
+      new GraphOptions(), new Options());
         }
 
         [Fact]
@@ -716,7 +968,7 @@ namespace S2Geometry
             GraphOptions graph_options = new();
             graph_options.DuplicateEdges_ = (DuplicateEdges.MERGE);
             TestInputEdgeIds(new List<string> { "0:0, 0:1", "0:0, 0:1" }, new EdgeInputEdgeIds { ("0:0, 0:1", new[] { 0, 1 }) },
-                   graph_options, new S2Builder.Options());
+                   graph_options, new Options());
         }
 
         [Fact]
@@ -724,11 +976,11 @@ namespace S2Geometry
         {
             // Tests that input edge ids are merged when undirected edges are merged.
             GraphOptions graph_options = new();
-            graph_options.DuplicateEdges_ = (GraphOptions.DuplicateEdges.MERGE);
-            graph_options.SiblingPairs_ = (GraphOptions.SiblingPairs.KEEP);
+            graph_options.DuplicateEdges_ = (DuplicateEdges.MERGE);
+            graph_options.SiblingPairs_ = (SiblingPairs.KEEP);
             TestInputEdgeIds(new List<string> { "0:0, 0:1, 0:2", "0:0, 0:1", "0:2, 0:1" }, new EdgeInputEdgeIds{
       ("0:0, 0:1", new[]{0, 2}), ("0:1, 0:2", new[]{1}), ("0:2, 0:1", new[]{3})
-    }, graph_options, new S2Builder.Options());
+    }, graph_options, new Options());
         }
 
         [Fact]
@@ -748,8 +1000,8 @@ namespace S2Geometry
             // edges in the interior of the interior of the simplified edge is because
             // those edges are being removed from the graph.)
             GraphOptions graph_options = new();
-            graph_options.DegenerateEdges_ = (GraphOptions.DegenerateEdges.KEEP);
-            S2Builder.Options options = new(new IntLatLngSnapFunction(0));
+            graph_options.DegenerateEdges_ = (DegenerateEdges.KEEP);
+            Options options = new(new IntLatLngSnapFunction(0));
             options.SimplifyEdgeChains = (true);
             TestInputEdgeIds(new List<string> { "0:0, 0:0.1, 0:1.1, 0:1, 0:0.9, 0:2, 0:2.1" }, new EdgeInputEdgeIds{
       ("0:0, 0:0", new[]{0}), ("0:0, 0:2", new[]{1, 2, 3, 4}), ("0:2, 0:2", new[]{5})
@@ -766,7 +1018,7 @@ namespace S2Geometry
             // AB, BB, BC), then the degenerate edge is assigned to that edge chain.
             // Otherwise the edge is assigned to an arbitrary chain.
             GraphOptions graph_options = new();  // Default options keep everything.
-            S2Builder.Options options = new(new IntLatLngSnapFunction(0));
+            Options options = new(new IntLatLngSnapFunction(0));
             options.SimplifyEdgeChains = (true);
             var input = new List<string>{
     "0:1, 0:1.1", "0:0, 0:1, 0:2",  // Degenerate edge defined before chain
@@ -797,7 +1049,7 @@ namespace S2Geometry
             // way (i.e., yielding a set of identical or reversed edges in different
             // layers).
             GraphOptions graph_options = new();  // Default options keep everything.
-            S2Builder.Options options = new(new IntLatLngSnapFunction(0));
+            Options options = new(new IntLatLngSnapFunction(0));
             options.SimplifyEdgeChains = (true);
 
             // Note below that the edge chains in different layers have different vertex
@@ -829,7 +1081,7 @@ namespace S2Geometry
                 builder.StartLayer(new InputEdgeIdCheckingLayer(expected[i], graph_options));
                 foreach (var input_str in input[i])
                 {
-                    builder.AddPolyline(S2TextFormat.MakePolylineOrDie(input_str));
+                    builder.AddPolyline(MakePolylineOrDie(input_str));
                 }
             }
             Assert.True(builder.Build(out _));
@@ -847,8 +1099,8 @@ namespace S2Geometry
     new S2Point(-0.10531192039116592, -0.80522217309701472, 0.58354661457028933),
   };
             S2Polyline input = new(vertices);
-            S1Angle snap_radius = S2EdgeCrossings.kIntersectionMergeRadiusS1Angle;
-            S2Builder.Options options = new(new IdentitySnapFunction(snap_radius));
+            S1Angle snap_radius = S2.kIntersectionMergeRadiusS1Angle;
+            Options options = new(new IdentitySnapFunction(snap_radius));
             options.Idempotent = (false);
             S2Builder builder = new(options);
             S2Polyline output = new();
@@ -865,21 +1117,19 @@ namespace S2Geometry
             // This testructs many small, random inputs such that the output is
             // likely to be inconsistent unless high-precision predicates are used.
 
-            S1Angle snap_radius = S2EdgeCrossings.kIntersectionMergeRadiusS1Angle;
+            S1Angle snap_radius = S2.kIntersectionMergeRadiusS1Angle;
             // Some S2Builder calculations use an upper bound that takes into account
             // S1ChordAngle errors.  We sometimes try perturbing points by very close to
             // that distance in an attempt to expose errors.
             S1ChordAngle ca = new(snap_radius);
             S1Angle snap_radius_with_error = ca.PlusError(
                 ca.S1AngleConstructorMaxError +
-                S2EdgeDistances.GetUpdateMinDistanceMaxError(ca)).ToAngle();
+                S2.GetUpdateMinDistanceMaxError(ca)).ToAngle();
 
             int non_degenerate = 0;
             int kIters = 8000 * iteration_multiplier;
             for (int iter = 0; iter < kIters; ++iter)
             {
-                // TODO(ericv): This test fails with a random seed of 96.  Change this
-                // back to "iter + 1" once all the exact predicates are implemented.
                 S2Testing.Random.Reset(iter + 1);  // Easier to reproduce a specific case.
 
                 // We construct a nearly degenerate triangle where one of the edges is
@@ -892,9 +1142,9 @@ namespace S2Geometry
                 // v2 is located along (v0,v1) but is perturbed by up to 2 * snap_radius.
                 S2Point v1 = ChoosePoint(), v0_dir = ChoosePoint();
                 double d0 = Math.Pow(1e-16, S2Testing.Random.RandDouble());
-                S2Point v0 = S2EdgeDistances.InterpolateAtDistance(S1Angle.FromRadians(d0), v1, v0_dir);
+                S2Point v0 = S2.InterpolateAtDistance(S1Angle.FromRadians(d0), v1, v0_dir);
                 double d2 = 0.5 * d0 * Math.Pow(1e-16, Math.Pow(S2Testing.Random.RandDouble(), 2));
-                S2Point v2 = S2EdgeDistances.InterpolateAtDistance(S1Angle.FromRadians(d2), v1, v0_dir);
+                S2Point v2 = S2.InterpolateAtDistance(S1Angle.FromRadians(d2), v1, v0_dir);
                 v2 = S2Testing.SamplePoint(new S2Cap(v2, 2 * snap_radius));
                 // Vary the edge directions by randomly swapping v0 and v2.
                 if (S2Testing.Random.OneIn(2)) { var tmp = v0; v0 = v2; v2 = tmp; }
@@ -908,30 +1158,30 @@ namespace S2Geometry
                 if (S2Testing.Random.OneIn(5))
                 {
                     v3 = S2Testing.Random.OneIn(2) ? v1 : v2;
-                    v3 = S2EdgeDistances.InterpolateAtDistance(d3, v3, ChoosePoint());
+                    v3 = S2.InterpolateAtDistance(d3, v3, ChoosePoint());
                 }
                 else
                 {
-                    v3 = S2EdgeDistances.Interpolate(Math.Pow(1e-16, S2Testing.Random.RandDouble()), v1, v2);
-                    v3 = S2EdgeDistances.InterpolateAtDistance(d3, v3, v1.CrossProd(v2).Normalized);
+                    v3 = S2.Interpolate(Math.Pow(1e-16, S2Testing.Random.RandDouble()), v1, v2);
+                    v3 = S2.InterpolateAtDistance(d3, v3, v1.CrossProd(v2).Normalize());
                 }
-                S2Builder.Options options = new(new IdentitySnapFunction(snap_radius));
+                Options options = new(new IdentitySnapFunction(snap_radius));
                 options.Idempotent = (false);
                 S2Builder builder = new(options);
                 S2Polygon output = new();
-                //output.set_s2debug_override(S2Debug.DISABLE);
+                output.s2debug_override_ = S2Debug.DISABLE;
                 builder.StartLayer(new S2PolygonLayer(output));
                 builder.ForceVertex(v3);
                 builder.AddEdge(v0, v1);
                 builder.AddEdge(v1, v2);
                 builder.AddEdge(v2, v0);
                 Assert.False(builder.Build(out var error));
-                if (error.IsOk && !output.IsEmpty)
+                if (error.IsOk() && !output.IsEmpty())
                 {
                     Assert.Equal(1, output.NumLoops());
                     if (output.NumLoops() == 1)
                     {
-                        Assert.True(output.IsValid);
+                        Assert.True(output.IsValid());
                         Assert.Equal(S2Pred.Sign(v0, v1, v2) > 0, output.Loop(0).IsNormalized());
                         // "d0=" << d0 << ", d2=" << d2 << ", d3=" << d3;
                         ++non_degenerate;
@@ -955,11 +1205,11 @@ namespace S2Geometry
                 // S2ShapeIndex only indexes regions down to about 1cm across.
                 S2Cap cap = S2Testing.GetRandomCap(1e-14, 1e-2);
 
-                S2Builder.Options options = new();
+                Options options = new();
                 options.SplitCrossingEdges = (true);
                 if (S2Testing.Random.OneIn(2))
                 {
-                    S1Angle radius = cap.RadiusAngle;
+                    S1Angle radius = cap.RadiusAngle();
                     int min_exp = IntLatLngSnapFunction.ExponentForMaxSnapRadius(radius);
                     int exponent = Math.Min(IntLatLngSnapFunction.kMaxExponent,
                                        min_exp + S2Testing.Random.Uniform(5));
@@ -995,7 +1245,7 @@ namespace S2Geometry
                 if (iter < 50)
                 {
                     var dif = DateTime.UtcNow.Subtract(dt).TotalMilliseconds;
-                    _logger.WriteLine($"iter={iter:d4}: ms={dif:d5}, radius={cap.RadiusAngle.Radians:g8.3}, loops={output.NumLoops()}, vertices={output.NumVertices}");
+                    _logger.WriteLine($"iter={iter:d4}: ms={dif:d5}, radius={cap.RadiusAngle().Radians:g8.3}, loops={output.NumLoops()}, vertices={output.NumVertices}");
                 }
             }
         }
@@ -1019,7 +1269,7 @@ namespace S2Geometry
                 fractal.FractalDimension = (1.5 + 0.5 * S2Testing.Random.RandDouble());
                 S2Polygon input = new(fractal.MakeLoop(S2Testing.GetRandomFrame(),
                                                  S1Angle.FromDegrees(20)));
-                S2Builder.Options options = new();
+                Options options = new();
                 if (S2Testing.Random.OneIn(3))
                 {
                     int exponent = S2Testing.Random.Uniform(11);
@@ -1103,26 +1353,53 @@ namespace S2Geometry
             static void TestSnappingWithForcedVertices(string input_str,
                 S1Angle snap_radius, string vertices_str, string expected_str)
             {
-                S2Builder builder = new(new S2Builder.Options(new IdentitySnapFunction(snap_radius)));
-                var vertices = S2TextFormat.ParsePointsOrDie(vertices_str);
+                S2Builder builder = new(new Options(new IdentitySnapFunction(snap_radius)));
+                var vertices = ParsePointsOrDie(vertices_str);
                 foreach (var vertex in vertices)
                 {
                     builder.ForceVertex(vertex);
                 }
                 S2Polyline output = new();
                 builder.StartLayer(new S2PolylineLayer(output));
-                builder.AddPolyline(S2TextFormat.MakePolylineOrDie(input_str));
+                builder.AddPolyline(MakePolylineOrDie(input_str));
                 Assert.True(builder.Build(out _));
                 Assert.Equal(expected_str, output.ToDebugString());
             }
         }
+
+        // The following test requires internal debugging checks to be skipped.
+#if true///NDEBUG
+
+        [Fact]
+        public void Test_S2Builder_NaNVertices()
+        {
+            // Test that S2Builder operations don't crash when some vertices are NaN.
+            List<List<S2Point>> loops = new(){
+    new(){ new(double.NaN, double.NaN, double.NaN), new(double.NaN, double.NaN, double.NaN), new(double.NaN, double.NaN, double.NaN) }
+  };
+            S2LaxPolygonShape output = new();
+            S2Builder builder = new(
+                new Options(new IdentitySnapFunction(S1Angle.FromRadians(1e-15)))
+            );
+            builder.StartLayer(new LaxPolygonLayer(output));
+            builder.AddShape(new S2LaxPolygonShape(loops));
+
+            // The operation fails with S2Error::BUILDER_SNAP_RADIUS_TOO_SMALL because
+            // the distance between two NaN vertices happens to be computed as Pi.  We
+            // aren't concerned about the actual error (or even whether there is an
+            // error), we simply don't want to crash in this case.
+            S2Error error;
+            Assert.False(builder.Build(out error));
+            Assert.Equal(output.NumLoops, 0);
+        }
+#endif
 
         [Fact]
         public void Test_S2Builder_OldS2PolygonBuilderBug()
         {
             // This is a polygon that caused the obsolete S2PolygonBuilder class to
             // generate an invalid output polygon (duplicate edges).
-            S2Polygon input = S2TextFormat.MakePolygonOrDie(
+            S2Polygon input = MakePolygonOrDie(
                 "32.2983095:72.3416582, 32.2986281:72.3423059, " +
                 "32.2985238:72.3423743, 32.2987176:72.3427807, " +
                 "32.2988174:72.3427056, 32.2991269:72.3433480, " +
@@ -1132,22 +1409,147 @@ namespace S2Geometry
                 "32.2984558:72.3414530, 32.2988015:72.3421839, " +
                 "32.2991552:72.3429416, 32.2990498:72.3430073, " +
                 "32.2983764:72.3416059");
-            Assert.True(input.IsValid);
+            Assert.True(input.IsValid());
 
             S1Angle snap_radius = S2Testing.MetersToAngle(20 / 0.866);
-            S2Builder builder = new(new S2Builder.Options(new IdentitySnapFunction(snap_radius)));
+            S2Builder builder = new(new Options(new IdentitySnapFunction(snap_radius)));
             S2Polygon output = new();
             builder.StartLayer(new S2PolygonLayer(output));
             builder.AddPolygon(input);
             Assert.True(builder.Build(out _));
-            Assert.True(output.IsValid);
-            S2Polygon expected = S2TextFormat.MakePolygonOrDie(
+            Assert.True(output.IsValid());
+            S2Polygon expected = MakePolygonOrDie(
                 "32.2991552:72.3429416, 32.2991881:72.3433077, 32.2996075:72.3436269; " +
                 "32.2988015:72.3421839, 32.2985465:72.3413832, 32.2983764:72.3416059, " +
                 "32.2985238:72.3423743, 32.2987176:72.3427807");
             ExpectPolygonsEqual(expected, output);
         }
 
+        [Fact]
+        public void Test_S2Builder_SeparationSitesRegressionBug()
+        {
+            // This test uses a snap radius of zero with edge splitting, and has some very
+            // closely spaced vertices (much smaller than S2::kIntersectionError).  It
+            // used to fail (on the PPC architecture only) because there was a missing
+            // test in S2Builder::MaybeAddExtraSites().
+            S2Builder.Options options = new();
+            options.SplitCrossingEdges = true;
+            S2Builder builder = new(options);
+            S2PolylineVectorLayer.Options layer_options = new();
+            layer_options.PolylineType_ = Graph.PolylineType.WALK;
+            List<S2Polyline> output = new();
+            builder.StartLayer(
+                new S2PolylineVectorLayer(output, layer_options));
+            List<List<S2Point>> input_polylines = new (){
+                new(){new(0.99482894039096326, 0.087057485575229562, 0.05231035811301657),
+                      new(0.19008255728509718, 0.016634125542513145, 0.98162718344766398)},
+                new(){new(0.99802098666373784, 0.052325259429907504, 0.034873735164620751),
+                      new(0.99585181570926085, 0.087146997393412709, 0.026164135641767797),
+                      new(0.99939172130835197, 6.9770704216017258e-20, 0.034873878194564757),
+                      new(0.99939172130835197, 1.7442676054004314e-202, 0.034873878194564757),
+                      new(0.99939172130835197, 2.4185105853059967e-57, 0.034873878194564757),
+                      new(0.99939091697091686, 0, 0.034896920724182809),
+                      new(0.99543519482327569, 0.088840224357046416, 0.034873879097925588)},
+                new(){new(-0.86549861898490243, 0.49969586065415578, 0.034873878194564757),
+                      new(0.99939172130835197, 1.542605867912342e-181, 0.034873878194564757),
+                      new(0.99939172130835197, 1.5426058679123417e-281, 0.034873878194564757),
+                      new(0.99939172130835197, 1.5426058504696658e-231, 0.034873878194564757),
+                      new(0.19080899537654492, 3.3302452117433465e-113, 0.98162718344766398)},
+                new(){new(0.99802098660295513, 0.052325259426720727, 0.034873736908888363),
+                      new(0.99558688908226523, 0.08712381366290145, 0.034873878194564757),
+                      new(0.99939172130835197, 1.0221039496805218e-23, 0.034873878194564757),
+                      new(0.99939172127682907, 3.4885352106908273e-20, 0.034873879097925602),
+                      new(0.99391473614090387, 0.10448593114531293, 0.03487387954694085)}
+            };
+            foreach (var polyline in input_polylines) {
+                for (int i = 0; i + 1 < polyline.Count; ++i)
+                {
+                    builder.AddEdge(polyline[i], polyline[i + 1]);
+                }
+            }
+            S2Error error;
+            Assert.True(builder.Build(out error));
+        }
+
+        [Fact]
+        public void Test_S2Builder_VoronoiSiteExclusionBug1()
+        {
+            // This reproduces a former bug where the input edge could sometimes snap
+            // incorrectly to an extra vertex.  This could only happen when the sum of
+            // the edge length and the snap radius is more than 180 degrees.
+            S2Builder.Options options = new(new IdentitySnapFunction(S1Angle.FromDegrees(64.83)));
+            S2Builder builder = new(options);
+            S2Polyline output = new();
+            builder.StartLayer(new S2PolylineLayer(output));
+            // The first vertex of this edge snaps to the first forced vertex below.
+            // The edge should not snap to the second forced vertex.
+            builder.AddPolyline(MakePolylineOrDie("29.40:173.03, -18.02:-5.83"));
+            builder.ForceVertex(MakePointOrDie("25.84:131.46"));
+            builder.ForceVertex(MakePointOrDie("-29.23:-166.58"));
+            S2Error error;
+            Assert.True(builder.Build(out error));
+            var expected = "25.84:131.46, -18.02:-5.83";
+            Assert.Equal(expected, S2TextFormat.ToDebugString(output));
+        }
+
+        [Fact]
+        public void Test_S2Builder_VoronoiSiteExclusionBug2()
+        {
+            // This reproduces a former bug where the input edge could sometimes snap
+            // incorrectly to an extra vertex.  This could only happen when the sum of
+            // the edge length and the snap radius is more than 180 degrees.
+            S2Builder.Options options = new(new IdentitySnapFunction(S1Angle.FromDegrees(67.75)));
+            S2Builder builder = new(options);
+            S2Polyline output=new();
+            builder.StartLayer(new S2PolylineLayer(output));
+            builder.AddPolyline(MakePolylineOrDie("47.06:-175.17, -47.59:10.57"));
+            builder.ForceVertex(MakePointOrDie("36.36:47.63"));
+            builder.ForceVertex(MakePointOrDie("-28.34:-72.46"));
+            S2Error error;
+            Assert.True(builder.Build(out error));
+            // Snapping to the given vertices would cause the snapped edge to deviate
+            // too far from the input edge, so S2Builder adds an extra site.  Given the
+            // new site, snapping to the
+            var expected = "47.06:-175.17, -34.4968065428191:69.7125289482374";
+            Assert.Equal(expected, S2TextFormat.ToDebugString(output));
+        }
+
+        [Fact]
+        public void Test_S2Builder_HausdorffDistanceBug()
+        {
+            // This reproduces a former bug where a very long edge (close to 180
+            // degrees) could sometimes snap incorrectly due to a bug in
+            // S2::IsEdgeBNearEdgeA().
+            S2Builder.Options options = new(new IdentitySnapFunction(S1Angle.FromDegrees(70)));
+            S2Builder builder= new(options);
+            S2Polygon output=new();
+            builder.StartLayer(new S2PolygonLayer(output));
+            builder.AddShape(MakeLaxPolygonOrDie(
+                "35:17; -40:88, 68:-161, 48:-156, -45:-10, -40:88"));
+            S2Error error;
+            Assert.True(builder.Build(out error));
+            Assert.Equal(output.NumLoops(), 1);
+        }
+
+        [Fact]
+        public void Test_S2Builder_IncorrectSeparationSiteBug()
+        {
+            // This reproduces a bug that used to attempt to create a separation site
+            // where none was necessary.
+            S2Builder.Options options=new();
+            options.Idempotent = false;
+            options.SplitCrossingEdges = true;
+            S2Builder builder= new (options);
+            S2Polyline output = new();
+            builder.StartLayer(new S2PolylineLayer(output));
+            builder.AddEdge(new S2Point(-0.50094438964076704, -0.86547947317509455, 0),
+                            new S2Point(1, 1.7786363250284876e-322, 4.7729929394856611e-65));
+            builder.ForceVertex(new S2Point(1, 0, -4.7729929394856611e-65));
+            builder.ForceVertex(
+                new S2Point(1, 2.2603503297237029e-320, 4.7729929394856619e-65));
+            S2Error error;
+            Assert.True(builder.Build(out error));
+        }
 
         private static void ExpectPolygonsEqual(S2Polygon expected, S2Polygon actual)
         {
@@ -1168,7 +1570,7 @@ namespace S2Geometry
         }
 
         // Verifies that two graphs have the same vertices and edges.
-        private static void ExpectGraphsEqual(S2Builder.Graph expected, S2Builder.Graph actual)
+        private static void ExpectGraphsEqual(Graph expected, Graph actual)
         {
             Assert.Equal(expected.Vertices, actual.Vertices);
             Assert.Equal(expected.Edges, actual.Edges);
@@ -1176,15 +1578,15 @@ namespace S2Geometry
         }
 
         private static void TestPolylineLayers(List<string> input_strs, List<string> expected_strs,
-            S2PolylineLayer.Options layer_options, S2Builder.Options builder_options = null)
+            S2PolylineLayer.Options layer_options, Options builder_options = null)
         {
-            S2Builder builder = new(builder_options ?? new S2Builder.Options());
+            S2Builder builder = new(builder_options ?? new Options());
             List<S2Polyline> output = new();
             foreach (var input_str in input_strs)
             {
                 output.Add(new S2Polyline());
                 builder.StartLayer(new S2PolylineLayer(output.Last(), layer_options));
-                builder.AddPolyline(S2TextFormat.MakePolylineOrDie(input_str));
+                builder.AddPolyline(MakePolylineOrDie(input_str));
             }
             Assert.True(builder.Build(out _));
             List<string> output_strs = new();
@@ -1197,15 +1599,15 @@ namespace S2Geometry
         }
 
         private static void TestPolylineVector(List<string> input_strs, List<string> expected_strs,
-            S2PolylineVectorLayer.Options layer_options, S2Builder.Options builder_options = null)
+            S2PolylineVectorLayer.Options layer_options, Options builder_options = null)
         {
-            S2Builder builder = new(builder_options ?? new S2Builder.Options());
+            S2Builder builder = new(builder_options ?? new Options());
             List<S2Polyline> output = new();
             builder.StartLayer(
                 new S2PolylineVectorLayer(output, layer_options));
             foreach (var input_str in input_strs)
             {
-                builder.AddPolyline(S2TextFormat.MakePolylineOrDie(input_str));
+                builder.AddPolyline(MakePolylineOrDie(input_str));
             }
             Assert.True(builder.Build(out _));
             List<string> output_strs = new();
@@ -1218,9 +1620,9 @@ namespace S2Geometry
         }
 
         private static void TestPolylineLayersBothEdgeTypes(List<string> input_strs,
-            List<string> expected_strs, S2PolylineLayer.Options layer_options, S2Builder.Options builder_options = null)
+            List<string> expected_strs, S2PolylineLayer.Options layer_options, Options builder_options = null)
         {
-            builder_options ??= new S2Builder.Options();
+            builder_options ??= new Options();
             layer_options.EdgeType = (EdgeType.DIRECTED);
             TestPolylineLayers(input_strs, expected_strs, layer_options, builder_options);
             layer_options.EdgeType = (EdgeType.UNDIRECTED);
@@ -1228,13 +1630,13 @@ namespace S2Geometry
         }
 
         private static void TestInputEdgeIds(List<string> input_strs,
-            EdgeInputEdgeIds expected, GraphOptions graph_options, S2Builder.Options options)
+            EdgeInputEdgeIds expected, GraphOptions graph_options, Options options)
         {
             S2Builder builder = new(options);
             builder.StartLayer(new InputEdgeIdCheckingLayer(expected, graph_options));
             foreach (var input_str in input_strs)
             {
-                builder.AddPolyline(S2TextFormat.MakePolylineOrDie(input_str));
+                builder.AddPolyline(MakePolylineOrDie(input_str));
             }
             Assert.True(builder.Build(out _));
         }
@@ -1252,10 +1654,10 @@ namespace S2Geometry
                     x.SetAxis(i, x[i] * Math.Pow(1e-50, S2Testing.Random.RandDouble()));
                 }
             }
-            return x.Normalized;
+            return x.Normalize();
         }
 
-        private class InputEdgeIdCheckingLayer : S2Builder.Layer
+        private class InputEdgeIdCheckingLayer : Layer
         {
             public InputEdgeIdCheckingLayer(EdgeInputEdgeIds expected, GraphOptions graph_options)
             { expected_ = expected; graph_options_ = graph_options; }
@@ -1271,11 +1673,11 @@ namespace S2Geometry
                 for (var e = 0; e < g.NumEdges; ++e)
                 {
                     vertices.Clear();
-                    vertices.Add(g.Vertex(g.GetEdge(e).Item1));
-                    vertices.Add(g.Vertex(g.GetEdge(e).Item2));
+                    vertices.Add(g.Vertex(g.GetEdge(e).ShapeId));
+                    vertices.Add(g.Vertex(g.GetEdge(e).EdgeId));
                     string edge = new S2Point[]{
-                    g.Vertex(g.GetEdge(e).Item1),
-                        g.Vertex(g.GetEdge(e).Item2)}.ToDebugString();
+                    g.Vertex(g.GetEdge(e).ShapeId),
+                        g.Vertex(g.GetEdge(e).EdgeId)}.ToDebugString();
                     var ids = g.InputEdgeIds(e).ToArray();
                     actual.Add((edge, ids));
                 }
@@ -1323,7 +1725,7 @@ namespace S2Geometry
         // to its Build() method and appends them to two vectors.  Furthermore, it
         // verifies that the shallow and deep copies of any graphs previously appended
         // to those vectors are still identical.
-        private class GraphPersistenceLayer : S2Builder.Layer
+        private class GraphPersistenceLayer : Layer
         {
             public GraphPersistenceLayer(GraphOptions graph_options, List<Graph> graphs, List<GraphClone> clones)
             { graph_options_ = graph_options; graphs_ = graphs; clones_ = clones; }

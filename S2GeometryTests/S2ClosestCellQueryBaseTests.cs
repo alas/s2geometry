@@ -1,6 +1,3 @@
-using Xunit;
-using static S2Geometry.S2TextFormat;
-
 // This is a proof-of-concept prototype of a possible S2FurthestCellQuery
 // class.  The purpose of this test is just to make sure that the code
 // compiles and does something reasonable.

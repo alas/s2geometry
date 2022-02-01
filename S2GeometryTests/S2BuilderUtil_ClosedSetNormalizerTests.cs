@@ -10,7 +10,7 @@ namespace S2Geometry
 
     public class S2BuilderUtil_ClosedSetNormalizerTests
     {
-        private readonly NormalizeTest normalizeTest = new NormalizeTest();
+        private readonly NormalizeTest normalizeTest = new();
 
         [Fact]
         public void Test_NormalizeTest_EmptyGraphs()
@@ -129,11 +129,11 @@ namespace S2Geometry
             //  - Degenerate polygon holes are removed
             //  - Points coincident with polyline or polygon edges are removed
             //  - Polyline edges coincident with polygon edges are removed
-            var a = S2TextFormat.MakeIndexOrDie(
+            var a = MakeIndexOrDie(
                 "0:0 | 10:10 | 20:20 # " +
                 "0:0, 0:10 | 0:0, 10:0 | 15:15, 16:16 # " +
                 "0:0, 0:10, 10:10, 10:0; 0:0, 1:1; 2:2; 10:10, 11:11; 12:12");
-            var b = S2TextFormat.MakeIndexOrDie(
+            var b = MakeIndexOrDie(
                 "0:10 | 10:0 | 3:3 | 16:16 # " +
                 "10:10, 0:10 | 10:10, 10:0 | 5:5, 6:6 # " +
                 "19:19, 19:21, 21:21, 21:19");
@@ -180,7 +180,7 @@ namespace S2Geometry
                 options.SuppressLowerDimensions = (SuppressLowerDimensions_);
                 ClosedSetNormalizer normalizer = new(options, GraphOptionsOut_);
 
-                S2Builder builder = new(new S2Builder.Options());
+                S2Builder builder = new(new Options());
                 List<Graph> input = new(), expected = new();
                 AddLayers(input_str, normalizer.GraphOptions_, input, builder);
                 AddLayers(expected_str, GraphOptionsOut_, expected, builder);
@@ -191,20 +191,20 @@ namespace S2Geometry
                 for (int dim = 0; dim < 3; ++dim)
                 {
                     Assert.True(expected[dim].Options == actual[dim].Options);
-                    Assert.Equal(expected[dim].ToString(), actual[dim].ToString());
+                    Assert.Equal(S2TextFormat.ToDebugString(expected[dim]), S2TextFormat.ToDebugString(actual[dim]));
                 }
             }
 
             private void AddLayers(string str, List<GraphOptions> graph_options, List<Graph> graphs_out, S2Builder builder)
             {
-                var index = S2TextFormat.MakeIndexOrDie(str);
+                var index = MakeIndexOrDie(str);
                 for (int dim = 0; dim < 3; ++dim)
                 {
                     builder.StartLayer(new GraphAppendingLayer(graph_options[dim], graphs_out, GraphClones));
                     foreach (S2Shape shape in index)
                     {
                         if (shape.Dimension() != dim) continue;
-                        int n = shape.NumEdges;
+                        int n = shape.NumEdges();
                         for (int e = 0; e < n; ++e)
                         {
                             S2Shape.Edge edge = shape.GetEdge(e);

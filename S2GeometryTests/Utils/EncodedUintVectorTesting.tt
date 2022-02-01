@@ -4,15 +4,12 @@
 <#@ import namespace="System.Text" #>
 <#@ import namespace="System.Collections.Generic" #>
 <#@ output extension=".cs" #>
-using System;
-using System.Collections.Generic;
 using Xunit;
 
 namespace S2Geometry
 {
     public class EncodedUintVectorTesting
-    {
-<#
+    {<#
 var types = new List<(Type typename, int typesize, int typebitsize)>
 {
     (typeof(UInt16), sizeof(UInt16), 16),
@@ -32,7 +29,7 @@ foreach (var tuple in types) {
             Encoder encoder = new();
             EncodedUintVector.EncodeUintVector(expected, encoder);
             Assert.Equal(expected_bytes, encoder.Length);
-            Decoder decoder = new(encoder.buf_, 0, encoder.Length);
+            Decoder decoder = new(encoder.Buffer, 0, encoder.Length);
             EncodedUintVector_UInt<#= bitsize #> actual = new();
             Assert.True(actual.Init(decoder));
             Assert.Equal(actual.Decode(), expected);
@@ -70,15 +67,14 @@ foreach (var tuple in types) {
             return values.ToArray();
         }
 
-        private static EncodedUintVector_UInt<#= bitsize #> MakeEncodedVector_<#= bitsize #>(<#= type.Name #>[] values, Encoder encoder)
+        public static EncodedUintVector_UInt<#= bitsize #> MakeEncodedVector_<#= bitsize #>(<#= type.Name #>[] values, Encoder encoder)
         {
             EncodedUintVector.EncodeUintVector(values, encoder);
-            Decoder decoder = new(encoder.buf_, 0, encoder.Length);
+            Decoder decoder = new(encoder.Buffer, 0, encoder.Length);
             EncodedUintVector_UInt<#= bitsize #> actual = new();
             Assert.True(actual.Init(decoder));
             return actual;
         }
-
 <# } #>
     }
 }

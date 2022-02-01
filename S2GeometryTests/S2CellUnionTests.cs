@@ -1,10 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Xunit;
-using Xunit.Abstractions;
 using rnd = S2Geometry.S2Testing.Random;
-
 
 namespace S2Geometry
 {
@@ -19,7 +13,7 @@ namespace S2Geometry
         {
             var ids = new List<S2CellId>();
             var empty = new S2CellUnion(ids);
-            Assert.True(empty.IsEmpty);
+            Assert.True(empty.IsEmpty());
         }
 
         [Fact]
@@ -27,17 +21,17 @@ namespace S2Geometry
         {
             var face1_id = S2CellId.FromFace(1);
             var face1_union = new S2CellUnion(new List<S2CellId> { face1_id });
-            Assert.Equal(1, face1_union.NumCells);
+            Assert.Equal(1, face1_union.Size());
             Assert.Equal(face1_id, face1_union.CellId(0));
         }
 
         [Fact]
         public void Test_S2CellUnion_WholeSphere()
         {
-            var whole_sphere = S2CellUnion.WholeSphere;
+            var whole_sphere = S2CellUnion.WholeSphere();
             Assert.Equal(whole_sphere.LeafCellsCovered(), 6 * (1UL << 60));
             whole_sphere.Expand(0);
-            Assert.Equal(whole_sphere, S2CellUnion.WholeSphere);
+            Assert.Equal(whole_sphere, S2CellUnion.WholeSphere());
         }
 
         [Fact]
@@ -45,23 +39,23 @@ namespace S2Geometry
         {
             var id = new S2CellId(new S2Point(1, 0, 0));
             var cell_union = FromVerbatimNoChecks(new List<S2CellId> { id, id });
-            Assert.False(cell_union.IsValid);
+            Assert.False(cell_union.IsValid());
         }
 
         [Fact]
         public void Test_S2CellUnion_UnsortedCellsNotValid()
         {
             var id = new S2CellId(new S2Point(1, 0, 0)).Parent(10);
-            var cell_union = FromVerbatimNoChecks(new List<S2CellId> { id, id.Prev });
-            Assert.False(cell_union.IsValid);
+            var cell_union = FromVerbatimNoChecks(new List<S2CellId> { id, id.Prev() });
+            Assert.False(cell_union.IsValid());
         }
 
         [Fact]
         public void Test_S2CellUnion_InvalidCellIdNotValid()
         {
-            Assert.False(S2CellId.None.IsValid);
+            Assert.False(S2CellId.None.IsValid());
             var cell_union = FromVerbatimNoChecks(new List<S2CellId> { S2CellId.None });
-            Assert.False(cell_union.IsValid);
+            Assert.False(cell_union.IsValid());
         }
 
         [Fact]
@@ -69,9 +63,9 @@ namespace S2Geometry
         {
             // Manually save and restore flag, to preserve test state in opensource
             // without gflags.
-            Assert.False(S2CellId.None.IsValid);
+            Assert.False(S2CellId.None.IsValid());
             var cell_union = S2CellUnion.FromVerbatimNoCheck(new List<S2CellId> { S2CellId.None });
-            Assert.False(cell_union.IsValid);
+            Assert.False(cell_union.IsValid());
         }
 
         [Fact]
@@ -80,7 +74,7 @@ namespace S2Geometry
             var id = new S2CellId(new S2Point(1, 0, 0)).Parent(10);
             var cell_union = S2CellUnion.FromVerbatim(
                 new List<S2CellId> { id.Child(0), id.Child(1), id.Child(2), id.Child(3) });
-            Assert.True(cell_union.IsValid);
+            Assert.True(cell_union.IsValid());
             Assert.False(cell_union.IsNormalized());
         }
 
@@ -100,10 +94,10 @@ namespace S2Geometry
                 in_sum += input.Count;
                 out_sum += expected.Count;
                 var cellunion = new S2CellUnion(input);
-                Assert.Equal(expected.Count, cellunion.Size);
+                Assert.Equal(expected.Count, cellunion.Size());
                 for (var j = 0; j < expected.Count; ++j)
                 {
-                    Assert.Equal(expected[j], cellunion[j]);
+                    Assert.Equal(expected[j], cellunion.CellId(j));
                 }
 
                 // Test GetCapBound().
@@ -119,28 +113,28 @@ namespace S2Geometry
                     Assert.True(cellunion.Contains(input_id));
                     Assert.True(cellunion.Contains(input_id.ToPoint()));
                     Assert.True(cellunion.Intersects(input_id));
-                    if (!input_id.IsFace)
+                    if (!input_id.IsFace())
                     {
                         Assert.True(cellunion.Intersects(input_id.Parent()));
-                        if (input_id.Level > 1)
+                        if (input_id.Level() > 1)
                         {
                             Assert.True(cellunion.Intersects(input_id.Parent().Parent()));
                             Assert.True(cellunion.Intersects(input_id.Parent(0)));
                         }
                     }
-                    if (!input_id.IsLeaf)
+                    if (!input_id.IsLeaf())
                     {
                         Assert.True(cellunion.Contains(input_id.ChildBegin()));
                         Assert.True(cellunion.Intersects(input_id.ChildBegin()));
-                        Assert.True(cellunion.Contains(input_id.ChildEnd().Prev));
-                        Assert.True(cellunion.Intersects(input_id.ChildEnd().Prev));
-                        Assert.True(cellunion.Contains(input_id.ChildBegin(S2Constants.kMaxCellLevel)));
-                        Assert.True(cellunion.Intersects(input_id.ChildBegin(S2Constants.kMaxCellLevel)));
+                        Assert.True(cellunion.Contains(input_id.ChildEnd().Prev()));
+                        Assert.True(cellunion.Intersects(input_id.ChildEnd().Prev()));
+                        Assert.True(cellunion.Contains(input_id.ChildBegin(S2.kMaxCellLevel)));
+                        Assert.True(cellunion.Intersects(input_id.ChildBegin(S2.kMaxCellLevel)));
                     }
                 }
                 foreach (var expected_id in expected)
                 {
-                    if (!expected_id.IsFace)
+                    if (!expected_id.IsFace())
                     {
                         Assert.True(!cellunion.Contains(expected_id.Parent()));
                         Assert.True(!cellunion.Contains(expected_id.Parent(0)));
@@ -177,7 +171,7 @@ namespace S2Geometry
                     {
                         if (xid.Contains(yid))
                         {
-                            Assert.True(ucells.Size == 1 && ucells[0] == yid);
+                            Assert.True(ucells.Size() == 1 && ucells.CellId(0) == yid);
                         }
                         else if (yid.Contains(xid))
                         {
@@ -238,14 +232,14 @@ namespace S2Geometry
             {
                 _logger.WriteLine($"Iteration {i}");
                 var cap = S2Testing.GetRandomCap(
-                    S2Cell.AverageArea(S2Constants.kMaxCellLevel), S2Constants.M_4_PI);
+                    S2Cell.AverageArea(S2.kMaxCellLevel), S2.M_4_PI);
 
                 // Expand the cap area by a random factor whose log is uniformly
                 // distributed between 0 and log(1e2).
                 var expanded_cap = S2Cap.FromCenterHeight(
-                    cap.Center, Math.Min(2.0, Math.Pow(1e2, rnd.RandDouble()) * cap.Height));
+                    cap.Center, Math.Min(2.0, Math.Pow(1e2, rnd.RandDouble()) * cap.Height()));
 
-                var radius = (expanded_cap.Radius - cap.Radius).Radians;
+                var radius = (expanded_cap.Radius - cap.Radius).Radians();
                 var max_level_diff = rnd.Uniform(8);
 
                 // Generate a covering for the original cap, and measure the maximum
@@ -257,13 +251,13 @@ namespace S2Geometry
 
                 // This code duplicates the logic in Expand(min_radius, max_level_diff)
                 // that figures out an appropriate cell level to use for the expansion.
-                int min_level = S2Constants.kMaxCellLevel;
+                int min_level = S2.kMaxCellLevel;
                 foreach (var id in covering)
                 {
-                    min_level = Math.Min(min_level, id.Level);
+                    min_level = Math.Min(min_level, id.Level());
                 }
                 var expand_level = Math.Min(min_level + max_level_diff,
-                    S2Metrics.kMinWidth.GetLevelForMinValue(radius));
+                    S2.kMinWidth.GetLevelForMinValue(radius));
 
                 // Generate a covering for the expanded cap, and measure the new maximum
                 // distance from the cap center to any point in the covering.
@@ -275,7 +269,7 @@ namespace S2Geometry
                 // maximum angle of the covering from the cap center can increase by up to
                 // twice the maximum length of a cell diagonal.
                 Assert.True(expanded_covering_radius - covering_radius <=
-                          2 * S2Metrics.kMaxDiag.GetValue(expand_level));
+                          2 * S2.kMaxDiag.GetValue(expand_level));
             }
         }
 
@@ -287,10 +281,10 @@ namespace S2Geometry
                                new S2CellId(0x91230abcdef83427)};
             var cell_union = S2CellUnion.FromVerbatim(cell_ids);
 
-            Encoder encoder = new Encoder();
+            Encoder encoder = new();
             cell_union.Encode(encoder);
-            Decoder decoder = new Decoder(encoder.Buffer, 0, encoder.Length);
-            var (success, decoded_cell_union) = S2CellUnion.DecodeStatic(decoder);
+            var decoder = encoder.Decoder();
+            var (success, decoded_cell_union) = S2CellUnion.Decode(decoder);
             Assert.True(success);
             Assert.Equal(cell_union, decoded_cell_union);
         }
@@ -298,12 +292,12 @@ namespace S2Geometry
         [Fact]
         public void Test_S2CellUnion_EncodeDecodeEmpty()
         {
-            S2CellUnion empty_cell_union = new S2CellUnion();
+            S2CellUnion empty_cell_union = new();
 
-            Encoder encoder = new Encoder();
+            Encoder encoder = new();
             empty_cell_union.Encode(encoder);
-            Decoder decoder = new Decoder(encoder.Buffer, 0, encoder.Length);
-            var (success, decoded_cell_union) = S2CellUnion.DecodeStatic(decoder);
+            var decoder = encoder.Decoder();
+            var (success, decoded_cell_union) = S2CellUnion.Decode(decoder);
             Assert.True(success);
             Assert.Equal(empty_cell_union, decoded_cell_union);
         }
@@ -313,19 +307,19 @@ namespace S2Geometry
         {
             // Check the very first leaf cell and face cell.
             S2CellId face1_id = S2CellId.FromFace(0);
-            TestFromMinMax(face1_id.RangeMin, face1_id.RangeMin);
-            TestFromMinMax(face1_id.RangeMin, face1_id.RangeMax);
+            TestFromMinMax(face1_id.RangeMin(), face1_id.RangeMin());
+            TestFromMinMax(face1_id.RangeMin(), face1_id.RangeMax());
 
             // Check the very last leaf cell and face cell.
             S2CellId face5_id = S2CellId.FromFace(5);
-            TestFromMinMax(face5_id.RangeMin, face5_id.RangeMax);
-            TestFromMinMax(face5_id.RangeMax, face5_id.RangeMax);
+            TestFromMinMax(face5_id.RangeMin(), face5_id.RangeMax());
+            TestFromMinMax(face5_id.RangeMax(), face5_id.RangeMax());
 
             // Check random ranges of leaf cells.
             for (int iter = 0; iter < 100; ++iter)
             {
-                S2CellId x = S2Testing.GetRandomCellId(S2Constants.kMaxCellLevel);
-                S2CellId y = S2Testing.GetRandomCellId(S2Constants.kMaxCellLevel);
+                S2CellId x = S2Testing.GetRandomCellId(S2.kMaxCellLevel);
+                S2CellId y = S2Testing.GetRandomCellId(S2.kMaxCellLevel);
                 if (x > y) { var tmp = x; x = y; y = tmp; }
                 TestFromMinMax(x, y);
             }
@@ -339,85 +333,114 @@ namespace S2Geometry
             S2CellId initial_id = S2CellId.FromFace(3);
 
             // Test an empty range before the minimum S2CellId.
-            S2CellUnion cell_union = new S2CellUnion(new List<S2CellId> { initial_id });
-            S2CellId id_begin = S2CellId.Begin(S2Constants.kMaxCellLevel);
+            S2CellUnion cell_union = new(new List<S2CellId> { initial_id });
+            S2CellId id_begin = S2CellId.Begin(S2.kMaxCellLevel);
             cell_union.InitFromBeginEnd(id_begin, id_begin);
-            Assert.True(cell_union.IsEmpty);
+            Assert.True(cell_union.IsEmpty());
 
             // Test an empty range after the maximum S2CellId.
             cell_union = new S2CellUnion(new List<S2CellId> { initial_id });
-            S2CellId id_end = S2CellId.End(S2Constants.kMaxCellLevel);
+            S2CellId id_end = S2CellId.End(S2.kMaxCellLevel);
             cell_union.InitFromBeginEnd(id_end, id_end);
-            Assert.True(cell_union.IsEmpty);
+            Assert.True(cell_union.IsEmpty());
 
             // Test the full sphere.
             cell_union = S2CellUnion.FromBeginEnd(id_begin, id_end);
-            Assert.Equal(6, cell_union.NumCells);
+            Assert.Equal(6, cell_union.Size());
             foreach (S2CellId id in cell_union)
             {
-                Assert.True(id.IsFace);
+                Assert.True(id.IsFace());
             }
         }
 
         [Fact]
-        public void Test_S2CellUnion_Empty()
+        public void Test_S2CellUnion_EmptyMutableOps()
         {
-            S2CellUnion empty_cell_union = new S2CellUnion();
-            S2CellId face1_id = S2CellId.FromFace(1);
+            S2CellUnion empty_cell_union = new();
 
             // Normalize()
             empty_cell_union.Normalize();
-            Assert.True(empty_cell_union.IsEmpty);
+            Assert.True(empty_cell_union.IsEmpty());
 
             // Denormalize(...)
-            var output = new List<S2CellId>();
+            List<S2CellId> output=new();
             empty_cell_union.Denormalize(0, 2, output);
-            Assert.True(empty_cell_union.IsEmpty);
+            Assert.True(empty_cell_union.IsEmpty());
 
             // Pack(...)
             empty_cell_union.Pack();
-
-            // Contains(...)
-            Assert.False(empty_cell_union.Contains(face1_id));
-            Assert.True(empty_cell_union.Contains(empty_cell_union));
-
-            // Intersects(...)
-            Assert.False(empty_cell_union.Intersects(face1_id));
-            Assert.False(empty_cell_union.Intersects(empty_cell_union));
-
-            // Union(...)
-            S2CellUnion cell_union = empty_cell_union.Union(empty_cell_union);
-            Assert.True(cell_union.IsEmpty);
-
-            // Intersection(...)
-            S2CellUnion intersection = empty_cell_union.Intersection(face1_id);
-            Assert.True(intersection.IsEmpty);
-            intersection = empty_cell_union.Intersection(empty_cell_union);
-            Assert.True(intersection.IsEmpty);
-
-            // Difference(...)
-            S2CellUnion difference = empty_cell_union.Difference(empty_cell_union);
-            Assert.Equal(0, difference.NumCells);
+            Assert.True(empty_cell_union.IsEmpty());
 
             // Expand(...)
             empty_cell_union.Expand(S1Angle.FromRadians(1), 20);
-            Assert.True(empty_cell_union.IsEmpty);
+            Assert.True(empty_cell_union.IsEmpty());
             empty_cell_union.Expand(10);
-            Assert.True(empty_cell_union.IsEmpty);
+            Assert.True(empty_cell_union.IsEmpty());
+        }
+
+        [Fact]
+        public void Test_S2CellUnion_EmptyAndNonEmptyBooleanOps()
+        {
+            S2CellUnion empty_cell_union = new();
+            S2CellId face1_id = S2CellId.FromFace(1);
+            S2CellUnion non_empty_cell_union = new(new() { face1_id });
+
+            // Contains(...)
+            Assert.False(empty_cell_union.Contains(face1_id));
+            Assert.True(non_empty_cell_union.Contains(face1_id));
+            Assert.True(empty_cell_union.Contains(empty_cell_union));
+            Assert.True(non_empty_cell_union.Contains(empty_cell_union));
+            Assert.False(empty_cell_union.Contains(non_empty_cell_union));
+            Assert.True(non_empty_cell_union.Contains(non_empty_cell_union));
+
+            // Intersects(...)
+            Assert.False(empty_cell_union.Intersects(face1_id));
+            Assert.True(non_empty_cell_union.Intersects(face1_id));
+            Assert.False(empty_cell_union.Intersects(empty_cell_union));
+            Assert.False(non_empty_cell_union.Intersects(empty_cell_union));
+            Assert.False(empty_cell_union.Intersects(non_empty_cell_union));
+            Assert.True(non_empty_cell_union.Intersects(non_empty_cell_union));
+
+            // Union(...)
+            Assert.Equal(empty_cell_union, empty_cell_union.Union(empty_cell_union));
+            Assert.Equal(non_empty_cell_union, non_empty_cell_union.Union(empty_cell_union));
+            Assert.Equal(non_empty_cell_union, empty_cell_union.Union(non_empty_cell_union));
+            Assert.Equal(non_empty_cell_union,
+                      non_empty_cell_union.Union(non_empty_cell_union));
+
+            // Intersection(...)
+            Assert.Equal(empty_cell_union, empty_cell_union.Intersection(face1_id));
+            Assert.Equal(non_empty_cell_union, non_empty_cell_union.Intersection(face1_id));
+            Assert.Equal(empty_cell_union, empty_cell_union.Intersection(empty_cell_union));
+            Assert.Equal(empty_cell_union,
+                      non_empty_cell_union.Intersection(empty_cell_union));
+            Assert.Equal(empty_cell_union,
+                      empty_cell_union.Intersection(non_empty_cell_union));
+            Assert.Equal(non_empty_cell_union,
+                      non_empty_cell_union.Intersection(non_empty_cell_union));
+
+            // Difference(...)
+            Assert.Equal(empty_cell_union, empty_cell_union.Difference(empty_cell_union));
+            Assert.Equal(non_empty_cell_union,
+                      non_empty_cell_union.Difference(empty_cell_union));
+            Assert.Equal(empty_cell_union,
+                      empty_cell_union.Difference(non_empty_cell_union));
+            Assert.Equal(new S2CellUnion(),
+                      non_empty_cell_union.Difference(non_empty_cell_union));
         }
 
         [Fact]
         public void Test_S2CellUnion_Clear()
         {
             S2CellId face1_id = S2CellId.FromFace(1);
-            S2CellUnion face1_union = new S2CellUnion(new List<S2CellId> { face1_id });
+            S2CellUnion face1_union = new(new List<S2CellId> { face1_id });
 
-            Assert.Equal(1, face1_union.NumCells);
+            Assert.Equal(1, face1_union.Size());
             Assert.True(1 == face1_union.CellIds.Count);
             Assert.True(1 <= face1_union.CellIds.Capacity);
 
             face1_union.Clear();
-            Assert.Equal(0, face1_union.NumCells);
+            Assert.Equal(0, face1_union.Size());
             Assert.True(0 == face1_union.CellIds.Count);
             Assert.Equal(0, face1_union.CellIds.Capacity);
         }
@@ -426,17 +449,17 @@ namespace S2Geometry
         public void Test_S2CellUnion_RefuseToDecode()
         {
             List<S2CellId> cellids = new();
-            S2CellId id = S2CellId.Begin(S2Constants.kMaxCellLevel);
+            S2CellId id = S2CellId.Begin(S2.kMaxCellLevel);
             for (int i = 0; i <= S2CellUnion.Union_decode_max_num_cells; ++i)
             {
                 cellids.Add(id);
-                id = id.Next;
+                id = id.Next();
             }
             S2CellUnion cell_union = S2CellUnion.FromVerbatim(cellids);
             Encoder encoder = new();
             cell_union.Encode(encoder);
-            Decoder decoder = new(encoder.Buffer, 0, encoder.Length);
-            var (success, _) = S2CellUnion.DecodeStatic(decoder);
+            var decoder = encoder.Decoder();
+            var (success, _) = S2CellUnion.Decode(decoder);
             Assert.False(success);
         }
 
@@ -444,26 +467,26 @@ namespace S2Geometry
         public void Test_S2CellUnion_Release()
         {
             S2CellId face1_id = S2CellId.FromFace(1);
-            S2CellUnion face1_union = new S2CellUnion(new List<S2CellId> { face1_id });
-            Assert.Equal(1, face1_union.NumCells);
+            S2CellUnion face1_union = new(new List<S2CellId> { face1_id });
+            Assert.Equal(1, face1_union.Size());
             Assert.Equal(face1_id, face1_union.CellId(0));
 
-            var released = face1_union.Release();
+            var released = face1_union.CellIds;//Release();
             Assert.True(1 == released.Count);
             Assert.Equal(face1_id, released[0]);
-            Assert.Equal(0, face1_union.NumCells);
+            Assert.Equal(0, face1_union.Size());
         }
 
         [Fact]
         public void Test_S2CellUnion_LeafCellsCovered()
         {
-            S2CellUnion cell_union = new S2CellUnion();
+            S2CellUnion cell_union = new();
             Assert.Equal(0UL, cell_union.LeafCellsCovered());
 
             var ids = new List<S2CellId>
             {
                 // One leaf cell on face 0.
-                S2CellId.FromFace(0).ChildBegin(S2Constants.kMaxCellLevel)
+                S2CellId.FromFace(0).ChildBegin(S2.kMaxCellLevel)
             };
             cell_union = new S2CellUnion(ids);
             Assert.Equal(1UL, cell_union.LeafCellsCovered());
@@ -482,10 +505,10 @@ namespace S2Geometry
             // Add some disjoint cells.
             ids.Add(S2CellId.FromFace(1).ChildBegin(1));
             ids.Add(S2CellId.FromFace(2).ChildBegin(2));
-            ids.Add(S2CellId.FromFace(2).ChildEnd(2).Prev);
+            ids.Add(S2CellId.FromFace(2).ChildEnd(2).Prev());
             ids.Add(S2CellId.FromFace(3).ChildBegin(14));
             ids.Add(S2CellId.FromFace(4).ChildBegin(27));
-            ids.Add(S2CellId.FromFace(4).ChildEnd(15).Prev);
+            ids.Add(S2CellId.FromFace(4).ChildEnd(15).Prev());
             ids.Add(S2CellId.FromFace(5).ChildBegin(30));
             cell_union = new S2CellUnion(ids);
             UInt64 expected = 1UL + (1UL << 6) + (1UL << 30) + (1UL << 32) +
@@ -501,6 +524,48 @@ namespace S2Geometry
             Assert.Equal(ids, union_vector.Last().CellIds);
         }
 
+        [Fact]
+        public void Test_S2CellUnion_ToStringEmpty()
+        {
+            Assert.Equal(new S2CellUnion().ToString(), "Size:0 S2CellIds:");
+        }
+
+        [Fact]
+        public void Test_S2CellUnion_ToStringOneCell()
+        {
+            Assert.Equal(new S2CellUnion(new(){ S2CellId.FromFace(1)}).ToString(),
+                "Size:1 S2CellIds:3");
+        }
+
+        [Fact]
+        public void Test_S2CellUnion_ToStringTwoCells()
+        {
+            Assert.Equal(
+                new S2CellUnion(new(){ S2CellId.FromFace(1), S2CellId.FromFace(2)}).ToString(),
+                "Size:2 S2CellIds:3,5");
+        }
+
+        [Fact]
+        public void Test_S2CellUnion_ToStringOver500Cells()
+        {
+            List<S2CellId> ids=new();
+            new S2CellUnion(new(){ S2CellId.FromFace(1)}).Denormalize(6, 1, ids);  // 4096 cells
+            var result = S2CellUnion.FromVerbatim(ids).ToString();
+            Assert.Equal(result.Count(t => t == ','), 500);
+            Assert.Equal(result[^4..], ",...");
+        }
+
+        [Fact]
+        public void Test_S2CellUnion_IntersectionOneInputNormalized()
+        {
+            S2CellId id = S2CellId.FromFace(3);  // arbitrary
+            S2CellUnion parent=new(new(){ id});
+            S2CellUnion children = S2CellUnion.FromVerbatim(
+              new(){ id.Child(0), id.Child(1), id.Child(2), id.Child(3)});
+            S2CellUnion intersection = parent.Intersection(children);
+            Assert.Equal(intersection, children);
+        }
+
         // Return the maximum geodesic distance from "axis" to any point of
         // "covering".
         private static double GetRadius(S2CellUnion covering, S2Point axis)
@@ -508,11 +573,11 @@ namespace S2Geometry
             double max_dist = 0;
             foreach (S2CellId id in covering)
             {
-                S2Cell cell = new S2Cell(id);
+                S2Cell cell = new(id);
                 for (int j = 0; j < 4; ++j)
                 {
-                    S2Point a = cell.GetVertex(j);
-                    S2Point b = cell.GetVertex(j + 1);
+                    S2Point a = cell.Vertex(j);
+                    S2Point b = cell.Vertex(j + 1);
                     double dist;
                     // The maximum distance is not always attained at a cell vertex: if at
                     // least one vertex is in the opposite hemisphere from "axis" then the
@@ -522,9 +587,9 @@ namespace S2Geometry
                     // poor accuracy when the result is close to Pi.
                     //
                     // TODO(ericv): Improve S2EdgeDistances.GetDistance() accuracy near Pi.
-                    if (a.Angle(axis) > S2Constants.M_PI_2 || b.Angle(axis) > S2Constants.M_PI_2)
+                    if (a.Angle(axis) > S2.M_PI_2 || b.Angle(axis) > S2.M_PI_2)
                     {
-                        dist = Math.PI - S2EdgeDistances.GetDistance(-axis, a, b).Radians;
+                        dist = Math.PI - S2.GetDistance(-axis, a, b).Radians;
                     }
                     else
                     {
@@ -554,7 +619,7 @@ namespace S2Geometry
                 }
                 return;
             }
-            if (id.IsLeaf)
+            if (id.IsLeaf())
             {
                 // The rnd.OneIn() call below ensures that the parent of a leaf cell
                 // will always be selected (if we make it that far down the hierarchy).
@@ -565,7 +630,7 @@ namespace S2Geometry
             // The following code ensures that the probability of selecting a cell
             // at each level is approximately the same, i.e. we test normalization
             // of cells at all levels.
-            if (!selected && rnd.OneIn(S2Constants.kMaxCellLevel - id.Level))
+            if (!selected && rnd.OneIn(S2.kMaxCellLevel - id.Level()))
             {
                 // Once a cell has been selected, the expected output is predetermined.
                 // We then make sure that cells are selected that will normalize to
@@ -589,7 +654,7 @@ namespace S2Geometry
             }
             int num_children = 0;
             S2CellId child = id.ChildBegin();
-            for (int pos = 0; pos < 4; ++pos, child = child.Next)
+            for (int pos = 0; pos < 4; ++pos, child = child.Next())
             {
                 // If the cell is selected, on average we recurse on 4/12 = 1/3 child.
                 // This intentionally may result in a cell and some of its children
@@ -623,11 +688,11 @@ namespace S2Geometry
             var cell_ids = cell_union.CellIds;
 
             Assert.True(cell_ids.Count > 0);
-            Assert.Equal(min_id, cell_ids.First().RangeMin);
-            Assert.Equal(max_id, cell_ids.Last().RangeMax);
+            Assert.Equal(min_id, cell_ids.First().RangeMin());
+            Assert.Equal(max_id, cell_ids.Last().RangeMax());
             for (int i = 1; i < cell_ids.Count; ++i)
             {
-                Assert.Equal(cell_ids[i].RangeMin, cell_ids[i - 1].RangeMax.Next);
+                Assert.Equal(cell_ids[i].RangeMin(), cell_ids[i - 1].RangeMax().Next());
             }
             Assert.True(cell_union.IsNormalized());
         }

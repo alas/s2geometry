@@ -21,7 +21,7 @@ namespace S2Geometry
 
                 var lineList = new List<S2Point>();
                 double theta = 0;
-                while (theta < S2Constants.M_2_PI)
+                while (theta < S2.M_2_PI)
                 {
                     lineList.Add(Math.Cos(theta) * x + Math.Sin(theta) * y);
                     theta += S2Testing.Random.RandDouble();
@@ -30,9 +30,9 @@ namespace S2Geometry
                 lineList.Add(lineList[0]);
                 var line = lineList.ToArray();
                 S1Angle length = S2PolylineMeasures.GetLength(line);
-                Assert.True(Math.Abs(length.Radians - S2Constants.M_2_PI) <= 2e-14);
+                Assert.True(Math.Abs(length.Radians - S2.M_2_PI) <= 2e-14);
                 S2Point centroid = S2PolylineMeasures.GetCentroid(line);
-                Assert.True(centroid.Norm <= 2e-14);
+                Assert.True(centroid.Norm() <= 2e-14);
             }
         }
     }

@@ -19,29 +19,29 @@ namespace S2Geometry
             for (int face = 0; face < 6; ++face)
             {
                 S2CellId id = S2CellId.FromFace(face);
-                S2Cell cell = new S2Cell(id);
+                S2Cell cell = new(id);
                 Assert.Equal(id, cell.Id);
                 Assert.Equal(face, cell.Face);
                 Assert.Equal(0, cell.Level);
                 // Top-level faces have alternating orientations to get RHS coordinates.
-                Assert.Equal(face & S2Constants.kSwapMask, cell.Orientation);
-                Assert.False(cell.IsLeaf);
+                Assert.Equal(face & S2.kSwapMask, cell.Orientation);
+                Assert.False(cell.IsLeaf());
                 for (int k = 0; k < 4; ++k)
                 {
-                    var key = cell.GetEdgeRaw(k);
+                    var key = cell.EdgeRaw(k);
                     if (edge_counts.ContainsKey(key))
                         edge_counts[key] += 1;
                     else
                         edge_counts[key] = 1;
-                    var key2 = cell.GetVertexRaw(k);
+                    var key2 = cell.VertexRaw(k);
                     if (vertex_counts.ContainsKey(key2))
                         vertex_counts[key2] += 1;
                     else
                         vertex_counts[key2] = 1;
-                    Assert2.Near(0.0, cell.GetVertexRaw(k).DotProd(key));
-                    Assert2.Near(0.0, cell.GetVertexRaw(k + 1).DotProd(key));
-                    Assert2.Near(1.0, cell.GetVertexRaw(k).CrossProd(cell.GetVertexRaw(k + 1))
-                        .Normalized.DotProd(cell.GetEdge(k)));
+                    Assert2.Near(0.0, cell.VertexRaw(k).DotProd(key));
+                    Assert2.Near(0.0, cell.VertexRaw(k + 1).DotProd(key));
+                    Assert2.Near(1.0, cell.VertexRaw(k).CrossProd(cell.VertexRaw(k + 1))
+                        .Normalize().DotProd(cell.Edge(k)));
                 }
             }
             // Check that edges have multiplicity 2 and vertices have multiplicity 3.
@@ -77,7 +77,7 @@ namespace S2Geometry
                 };
             }
         }
-        private static readonly LevelStats[] level_stats = new LevelStats[S2Constants.kMaxCellLevel + 1];
+        private static readonly LevelStats[] level_stats = new LevelStats[S2.kMaxCellLevel + 1];
 
         private static void GatherStats(S2Cell cell)
         {
@@ -90,20 +90,20 @@ namespace S2Geometry
             double min_angle_span = 100, max_angle_span = 0;
             for (int i = 0; i < 4; ++i)
             {
-                double edge = cell.GetVertexRaw(i).Angle(cell.GetVertexRaw(i + 1));
+                double edge = cell.VertexRaw(i).Angle(cell.VertexRaw(i + 1));
                 min_edge = Math.Min(edge, min_edge);
                 max_edge = Math.Max(edge, max_edge);
                 avg_edge += 0.25 * edge;
-                S2Point mid = cell.GetVertexRaw(i) + cell.GetVertexRaw(i + 1);
-                double width = S2Constants.M_PI_2 - mid.Angle(cell.GetEdgeRaw(i + 2));
+                S2Point mid = cell.VertexRaw(i) + cell.VertexRaw(i + 1);
+                double width = S2.M_PI_2 - mid.Angle(cell.EdgeRaw(i + 2));
                 min_width = Math.Min(width, min_width);
                 max_width = Math.Max(width, max_width);
                 if (i < 2)
                 {
-                    double diag = cell.GetVertexRaw(i).Angle(cell.GetVertexRaw(i + 2));
+                    double diag = cell.VertexRaw(i).Angle(cell.VertexRaw(i + 2));
                     min_diag = Math.Min(diag, min_diag);
                     max_diag = Math.Max(diag, max_diag);
-                    double angle_span = cell.GetEdgeRaw(i).Angle(-cell.GetEdgeRaw(i + 2));
+                    double angle_span = cell.EdgeRaw(i).Angle(-cell.EdgeRaw(i + 2));
                     min_angle_span = Math.Min(angle_span, min_angle_span);
                     max_angle_span = Math.Max(angle_span, max_angle_span);
                 }
@@ -134,7 +134,7 @@ namespace S2Geometry
         static void TestSubdivide(S2Cell cell)
         {
             GatherStats(cell);
-            if (cell.IsLeaf) return;
+            if (cell.IsLeaf()) return;
 
             var children = new S2Cell[4];
             Assert.True(cell.Subdivide(children));
@@ -142,7 +142,7 @@ namespace S2Geometry
             double exact_area = 0;
             double approx_area = 0;
             double average_area = 0;
-            for (int i = 0; i < 4; ++i, child_id = child_id.Next)
+            for (int i = 0; i < 4; ++i, child_id = child_id.Next())
             {
                 exact_area += children[i].ExactArea();
                 approx_area += children[i].ApproxArea();
@@ -150,29 +150,29 @@ namespace S2Geometry
 
                 // Check that the child geometry is consistent with its cell ID.
                 Assert.Equal(child_id, children[i].Id);
-                Assert.True(S2PointUtil.ApproxEquals(children[i].GetCenter(), child_id.ToPoint()));
-                S2Cell direct = new S2Cell(child_id);
+                Assert.True(S2.ApproxEquals(children[i].Center(), child_id.ToPoint()));
+                S2Cell direct = new(child_id);
                 Assert.Equal(direct.Face, children[i].Face);
                 Assert.Equal(direct.Level, children[i].Level);
                 Assert.Equal(direct.Orientation, children[i].Orientation);
-                Assert.Equal(direct.GetCenterRaw(), children[i].GetCenterRaw());
+                Assert.Equal(direct.CenterRaw(), children[i].CenterRaw());
                 for (int k = 0; k < 4; ++k)
                 {
-                    Assert.Equal(direct.GetVertexRaw(k), children[i].GetVertexRaw(k));
-                    Assert.Equal(direct.GetEdgeRaw(k), children[i].GetEdgeRaw(k));
+                    Assert.Equal(direct.VertexRaw(k), children[i].VertexRaw(k));
+                    Assert.Equal(direct.EdgeRaw(k), children[i].EdgeRaw(k));
                 }
 
                 // Test Contains() and MayIntersect().
                 Assert.True(cell.Contains(children[i]));
                 Assert.True(cell.MayIntersect(children[i]));
                 Assert.False(children[i].Contains(cell));
-                Assert.True(cell.Contains(children[i].GetCenterRaw()));
+                Assert.True(cell.Contains(children[i].CenterRaw()));
                 for (int j = 0; j < 4; ++j)
                 {
-                    Assert.True(cell.Contains(children[i].GetVertexRaw(j)));
+                    Assert.True(cell.Contains(children[i].VertexRaw(j)));
                     if (j != i)
                     {
-                        Assert.False(children[i].Contains(children[j].GetCenterRaw()));
+                        Assert.False(children[i].Contains(children[j].CenterRaw()));
                         Assert.False(children[i].MayIntersect(children[j]));
                     }
                 }
@@ -182,22 +182,22 @@ namespace S2Geometry
                 S2LatLngRect parent_rect = cell.GetRectBound();
                 if (cell.Contains(new S2Point(0, 0, 1)) || cell.Contains(new S2Point(0, 0, -1)))
                 {
-                    Assert.True(parent_rect.Lng.IsFull);
+                    Assert.True(parent_rect.Lng.IsFull());
                 }
                 S2Cap child_cap = children[i].GetCapBound();
                 S2LatLngRect child_rect = children[i].GetRectBound();
-                Assert.True(child_cap.Contains(children[i].GetCenter()));
-                Assert.True(child_rect.Contains(children[i].GetCenterRaw()));
-                Assert.True(parent_cap.Contains(children[i].GetCenter()));
-                Assert.True(parent_rect.Contains(children[i].GetCenterRaw()));
+                Assert.True(child_cap.Contains(children[i].Center()));
+                Assert.True(child_rect.Contains(children[i].CenterRaw()));
+                Assert.True(parent_cap.Contains(children[i].Center()));
+                Assert.True(parent_rect.Contains(children[i].CenterRaw()));
                 for (int j = 0; j < 4; ++j)
                 {
-                    Assert.True(child_cap.Contains(children[i].GetVertex(j)));
-                    Assert.True(child_rect.Contains(children[i].GetVertex(j)));
-                    Assert.True(child_rect.Contains(children[i].GetVertexRaw(j)));
-                    Assert.True(parent_cap.Contains(children[i].GetVertex(j)));
-                    Assert.True(parent_rect.Contains(children[i].GetVertex(j)));
-                    Assert.True(parent_rect.Contains(children[i].GetVertexRaw(j)));
+                    Assert.True(child_cap.Contains(children[i].Vertex(j)));
+                    Assert.True(child_rect.Contains(children[i].Vertex(j)));
+                    Assert.True(child_rect.Contains(children[i].VertexRaw(j)));
+                    Assert.True(parent_cap.Contains(children[i].Vertex(j)));
+                    Assert.True(parent_rect.Contains(children[i].Vertex(j)));
+                    Assert.True(parent_rect.Contains(children[i].VertexRaw(j)));
                     if (j != i)
                     {
                         // The bounding caps and rectangles should be tight enough so that
@@ -206,14 +206,14 @@ namespace S2Geometry
                         int rect_count = 0;
                         for (int k = 0; k < 4; ++k)
                         {
-                            if (child_cap.Contains(children[j].GetVertex(k)))
+                            if (child_cap.Contains(children[j].Vertex(k)))
                                 ++cap_count;
-                            if (child_rect.Contains(children[j].GetVertexRaw(k)))
+                            if (child_rect.Contains(children[j].VertexRaw(k)))
                                 ++rect_count;
                         }
                         Assert.True(cap_count <= 2);
-                        if (child_rect.LatLo.Radians > -S2Constants.M_PI_2 &&
-                            child_rect.LatHi.Radians < S2Constants.M_PI_2)
+                        if (child_rect.LatLo().Radians > -S2.M_PI_2 &&
+                            child_rect.LatHi().Radians < S2.M_PI_2)
                         {
                             // Bounding rectangles may be too large at the poles because the
                             // pole itself has an arbitrary fixed longitude.
@@ -229,11 +229,11 @@ namespace S2Geometry
                 // where the cell size at a given level is maximal.
                 double kMaxSizeUV = 0.3964182625366691;
                 R2Point[] special_uv = {
-     new R2Point(S2Constants.DoubleEpsilon, S2Constants.DoubleEpsilon),  // Face center
-     new R2Point(S2Constants.DoubleEpsilon, 1),            // Edge midpoint
+     new R2Point(S2.DoubleEpsilon, S2.DoubleEpsilon),  // Face center
+     new R2Point(S2.DoubleEpsilon, 1),            // Edge midpoint
      new R2Point(1, 1),                      // Face corner
      new R2Point(kMaxSizeUV, kMaxSizeUV),    // Largest cell area
-     new R2Point(S2Constants.DoubleEpsilon, kMaxSizeUV),   // Longest edge/diagonal
+     new R2Point(S2.DoubleEpsilon, kMaxSizeUV),   // Longest edge/diagonal
     };
                 bool force_subdivide = false;
                 foreach (R2Point uv in special_uv)
@@ -276,9 +276,9 @@ namespace S2Geometry
         private void CheckMinMaxAvg(
             string label, int level, double count, double abs_error,
             double min_value, double max_value, double avg_value,
-            S2Metrics.Metric min_metric,
-            S2Metrics.Metric max_metric,
-            S2Metrics.Metric avg_metric)
+            S2.Metric min_metric,
+            S2.Metric max_metric,
+            S2.Metric avg_metric)
         {
 
             // All metrics are minimums, maximums, or averages of differential
@@ -346,7 +346,7 @@ Level   Ratio  Ratio Aspect  Ratio Aspect    Min    Max    Min    Max
 
             #endregion
 
-            for (int i = 0; i <= S2Constants.kMaxCellLevel; ++i)
+            for (int i = 0; i <= S2.kMaxCellLevel; ++i)
             {
                 var s = level_stats[i];
                 if (s.Count > 0)
@@ -361,7 +361,7 @@ Level   Ratio  Ratio Aspect  Ratio Aspect    Min    Max    Min    Max
             }
 
             // Now check the validity of the S2 length and area metrics.
-            for (int i = 0; i <= S2Constants.kMaxCellLevel; ++i)
+            for (int i = 0; i <= S2.kMaxCellLevel; ++i)
             {
                 var s = level_stats[i];
                 if (s.Count == 0) continue;
@@ -374,24 +374,24 @@ Level   Ratio  Ratio Aspect  Ratio Aspect    Min    Max    Min    Max
                 // times the cell width.
                 CheckMinMaxAvg("area", i, s.Count, 1e-15 * s.Min_width,
                                s.Min_area, s.Max_area, s.Avg_area,
-                               S2Metrics.kMinArea, S2Metrics.kMaxArea, S2Metrics.kAvgArea);
+                               S2.kMinArea, S2.kMaxArea, S2.kAvgArea);
                 CheckMinMaxAvg("width", i, s.Count, 1e-15,
                                s.Min_width, s.Max_width, s.Avg_width,
-                               S2Metrics.kMinWidth, S2Metrics.kMaxWidth, S2Metrics.kAvgWidth);
+                               S2.kMinWidth, S2.kMaxWidth, S2.kAvgWidth);
                 CheckMinMaxAvg("edge", i, s.Count, 1e-15,
                                s.Min_edge, s.Max_edge, s.Avg_edge,
-                               S2Metrics.kMinEdge, S2Metrics.kMaxEdge, S2Metrics.kAvgEdge);
+                               S2.kMinEdge, S2.kMaxEdge, S2.kAvgEdge);
                 CheckMinMaxAvg("diagonal", i, s.Count, 1e-15,
                                s.Min_diag, s.Max_diag, s.Avg_diag,
-                               S2Metrics.kMinDiag, S2Metrics.kMaxDiag, S2Metrics.kAvgDiag);
+                               S2.kMinDiag, S2.kMaxDiag, S2.kAvgDiag);
                 CheckMinMaxAvg("angle span", i, s.Count, 1e-15,
                                s.Min_angle_span, s.Max_angle_span, s.Avg_angle_span,
-                               S2Metrics.kMinAngleSpan, S2Metrics.kMaxAngleSpan, S2Metrics.kAvgAngleSpan);
+                               S2.kMinAngleSpan, S2.kMaxAngleSpan, S2.kAvgAngleSpan);
 
                 // The aspect ratio calculations are ratios of lengths and are therefore
                 // less accurate at higher subdivision levels.
-                Assert.True(s.Max_edge_aspect <= S2Metrics.kMaxEdgeAspect + 1e-15 * (1 << i));
-                Assert.True(s.Max_diag_aspect <= S2Metrics.kMaxDiagAspect + 1e-15 * (1 << i));
+                Assert.True(s.Max_edge_aspect <= S2.kMaxEdgeAspect + 1e-15 * (1 << i));
+                Assert.True(s.Max_diag_aspect <= S2.kMaxDiagAspect + 1e-15 * (1 << i));
             }
         }
 
@@ -411,8 +411,8 @@ Level   Ratio  Ratio Aspect  Ratio Aspect    Min    Max    Min    Max
 
             for (int iter = 0; iter < 1000; ++iter)
             {
-                S2Cell cell = new S2Cell(S2Testing.GetRandomCellId());
-                S2Loop loop = new S2Loop(cell);
+                S2Cell cell = new(S2Testing.GetRandomCellId());
+                S2Loop loop = new(cell);
                 S2LatLngRect cell_bound = cell.GetRectBound();
                 S2LatLngRect loop_bound = loop.GetRectBound();
                 Assert.True(loop_bound.Expanded(kCellError).Contains(cell_bound));
@@ -420,7 +420,7 @@ Level   Ratio  Ratio Aspect  Ratio Aspect    Min    Max    Min    Max
             }
         }
         // Possible additional S2Cell error compared to S2Loop error:
-        private static readonly S2LatLng kCellError = S2LatLng.FromRadians(2 * S2Constants.DoubleEpsilon, 4 * S2Constants.DoubleEpsilon);
+        private static readonly S2LatLng kCellError = S2LatLng.FromRadians(2 * S2.DoubleEpsilon, 4 * S2.DoubleEpsilon);
         // Possible additional S2Loop error compared to S2Cell error:
         private static readonly S2LatLng kLoopError = S2LatLngRectBounder.MaxErrorForTests();
 
@@ -432,12 +432,12 @@ Level   Ratio  Ratio Aspect  Ratio Aspect    Min    Max    Min    Max
 
             for (int iter = 0; iter < 1000; /* advanced in loop below */)
             {
-                S2Cell cell = new S2Cell(S2Testing.GetRandomCellId());
+                S2Cell cell = new(S2Testing.GetRandomCellId());
                 int i = S2Testing.Random.Uniform(4);
-                S2Point v1 = cell.GetVertex(i);
+                S2Point v1 = cell.Vertex(i);
                 S2Point v2 = S2Testing.SamplePoint(
-                    new S2Cap(cell.GetVertex(i + 1), S1Angle.FromRadians(1e-15)));
-                S2Point p = S2EdgeDistances.Interpolate(S2Testing.Random.RandDouble(), v1, v2);
+                    new S2Cap(cell.Vertex(i + 1), S1Angle.FromRadians(1e-15)));
+                S2Point p = S2.Interpolate(S2Testing.Random.RandDouble(), v1, v2);
                 if (new S2Loop(cell).Contains(p))
                 {
                     Assert.True(cell.GetRectBound().Contains(new S2LatLng(p)));
@@ -454,12 +454,12 @@ Level   Ratio  Ratio Aspect  Ratio Aspect    Min    Max    Min    Max
 
             for (int iter = 0; iter < 1000; ++iter)
             {
-                S2Cell cell = new S2Cell(S2Testing.GetRandomCellId());
+                S2Cell cell = new(S2Testing.GetRandomCellId());
                 int i = S2Testing.Random.Uniform(4);
-                S2Point v1 = cell.GetVertex(i);
+                S2Point v1 = cell.Vertex(i);
                 S2Point v2 = S2Testing.SamplePoint(
-                    new S2Cap(cell.GetVertex(i + 1), S1Angle.FromRadians(1e-15)));
-                S2Point p = S2EdgeDistances.Interpolate(S2Testing.Random.RandDouble(), v1, v2);
+                    new S2Cap(cell.Vertex(i + 1), S1Angle.FromRadians(1e-15)));
+                S2Point p = S2.Interpolate(S2Testing.Random.RandDouble(), v1, v2);
                 Assert.True(new S2Cell(new S2CellId(p)).Contains(p));
             }
         }
@@ -481,7 +481,7 @@ Level   Ratio  Ratio Aspect  Ratio Aspect    Min    Max    Min    Max
             // so that the returned cell is still considered to contain "p".
             S2Point p = S2LatLng.FromDegrees(-2, 90).ToPoint();
             S2CellId cell_id = new S2CellId(p).Parent(1);
-            S2Cell cell = new S2Cell(cell_id);
+            S2Cell cell = new(cell_id);
             Assert.True(cell.Contains(p));
         }
 
@@ -490,8 +490,8 @@ Level   Ratio  Ratio Aspect  Ratio Aspect    Min    Max    Min    Max
             S1ChordAngle min_distance = S1ChordAngle.Infinity;
             for (int i = 0; i < 4; ++i)
             {
-                S2EdgeDistances.UpdateMinDistance(target, cell.GetVertex(i),
-                                              cell.GetVertex(i + 1), ref min_distance);
+                S2.UpdateMinDistance(target, cell.Vertex(i),
+                                              cell.Vertex(i + 1), ref min_distance);
             }
             return min_distance;
         }
@@ -505,8 +505,8 @@ Level   Ratio  Ratio Aspect  Ratio Aspect    Min    Max    Min    Max
             S1ChordAngle max_distance = S1ChordAngle.Negative;
             for (int i = 0; i < 4; ++i)
             {
-                S2EdgeDistances.UpdateMaxDistance(target, cell.GetVertex(i),
-                                          cell.GetVertex(i + 1), ref max_distance);
+                S2.UpdateMaxDistance(target, cell.Vertex(i),
+                                          cell.Vertex(i + 1), ref max_distance);
             }
             return max_distance;
         }
@@ -518,7 +518,7 @@ Level   Ratio  Ratio Aspect  Ratio Aspect    Min    Max    Min    Max
             for (int iter = 0; iter < 1000; ++iter)
             {
                 _logger.WriteLine($"Iteration {iter}");
-                S2Cell cell = new S2Cell(S2Testing.GetRandomCellId());
+                S2Cell cell = new(S2Testing.GetRandomCellId());
                 S2Point target = S2Testing.RandomPoint();
                 S1Angle expected_to_boundary =
                     GetDistanceToPointBruteForce(cell, target).ToAngle();
@@ -526,9 +526,9 @@ Level   Ratio  Ratio Aspect  Ratio Aspect    Min    Max    Min    Max
                     cell.Contains(target) ? S1Angle.Zero : expected_to_boundary;
                 S1Angle expected_max =
                     GetMaxDistanceToPointBruteForce(cell, target).ToAngle();
-                S1Angle actual_to_boundary = cell.GetBoundaryDistance(target).ToAngle();
-                S1Angle actual_to_interior = cell.GetDistance(target).ToAngle();
-                S1Angle actual_max = cell.GetMaxDistance(target).ToAngle();
+                S1Angle actual_to_boundary = cell.BoundaryDistance(target).ToAngle();
+                S1Angle actual_to_interior = cell.Distance(target).ToAngle();
+                S1Angle actual_max = cell.MaxDistance(target).ToAngle();
                 // The error has a peak near Pi/2 for edge distance, and another peak near
                 // Pi for vertex distance.
                 Assert2.Near(expected_to_boundary.Radians,
@@ -540,13 +540,13 @@ Level   Ratio  Ratio Aspect  Ratio Aspect    Min    Max    Min    Max
                 if (expected_to_boundary.Radians <= Math.PI / 3)
                 {
                     Assert2.Near(expected_to_boundary.Radians,
-                                actual_to_boundary.Radians, S2Constants.DoubleError);
+                                actual_to_boundary.Radians, S2.DoubleError);
                     Assert2.Near(expected_to_interior.Radians,
-                                actual_to_interior.Radians, S2Constants.DoubleError);
+                                actual_to_interior.Radians, S2.DoubleError);
                 }
                 if (expected_max.Radians <= Math.PI / 3)
                 {
-                    Assert2.Near(expected_max.Radians, actual_max.Radians, S2Constants.DoubleError);
+                    Assert2.Near(expected_max.Radians, actual_max.Radians, S2.DoubleError);
                 }
             }
         }
@@ -562,12 +562,12 @@ Level   Ratio  Ratio Aspect  Ratio Aspect    Min    Max    Min    Max
             else
             {
                 // Choose a point inside or somewhere near the cell.
-                a = S2Testing.SamplePoint(new S2Cap(cap.Center, 1.5 * cap.RadiusAngle));
+                a = S2Testing.SamplePoint(new S2Cap(cap.Center, 1.5 * cap.RadiusAngle()));
             }
             // Now choose a maximum edge length ranging from very short to very long
             // relative to the cell size, and choose the other endpoint.
             double max_length = Math.Min(100 * Math.Pow(1e-4, S2Testing.Random.RandDouble()) *
-                                    cap.Radius.Radians, S2Constants.M_PI_2);
+                                    cap.Radius.Radians(), S2.M_PI_2);
             b = S2Testing.SamplePoint(new S2Cap(a, S1Angle.FromRadians(max_length)));
 
             if (S2Testing.Random.OneIn(20))
@@ -588,16 +588,16 @@ Level   Ratio  Ratio Aspect  Ratio Aspect    Min    Max    Min    Max
             S1ChordAngle min_dist = S1ChordAngle.Infinity;
             for (int i = 0; i < 4; ++i)
             {
-                S2Point v0 = cell.GetVertex(i);
-                S2Point v1 = cell.GetVertex(i + 1);
+                S2Point v0 = cell.Vertex(i);
+                S2Point v1 = cell.Vertex(i + 1);
                 // If the edge crosses through the cell, max distance is 0.
-                if (S2EdgeCrossings.CrossingSign(a, b, v0, v1) >= 0)
+                if (S2.CrossingSign(a, b, v0, v1) >= 0)
                 {
                     return S1ChordAngle.Zero;
                 }
-                S2EdgeDistances.UpdateMinDistance(a, v0, v1, ref min_dist);
-                S2EdgeDistances.UpdateMinDistance(b, v0, v1, ref min_dist);
-                S2EdgeDistances.UpdateMinDistance(v0, a, b, ref min_dist);
+                S2.UpdateMinDistance(a, v0, v1, ref min_dist);
+                S2.UpdateMinDistance(b, v0, v1, ref min_dist);
+                S2.UpdateMinDistance(v0, a, b, ref min_dist);
             }
             return min_dist;
         }
@@ -613,16 +613,16 @@ Level   Ratio  Ratio Aspect  Ratio Aspect    Min    Max    Min    Max
             S1ChordAngle max_dist = S1ChordAngle.Negative;
             for (int i = 0; i < 4; ++i)
             {
-                S2Point v0 = cell.GetVertex(i);
-                S2Point v1 = cell.GetVertex(i + 1);
+                S2Point v0 = cell.Vertex(i);
+                S2Point v1 = cell.Vertex(i + 1);
                 // If the antipodal edge crosses through the cell, max distance is Pi.
-                if (S2EdgeCrossings.CrossingSign(-a, -b, v0, v1) >= 0)
+                if (S2.CrossingSign(-a, -b, v0, v1) >= 0)
                 {
                     return S1ChordAngle.Straight;
                 }
-                S2EdgeDistances.UpdateMaxDistance(a, v0, v1, ref max_dist);
-                S2EdgeDistances.UpdateMaxDistance(b, v0, v1, ref max_dist);
-                S2EdgeDistances.UpdateMaxDistance(v0, a, b, ref max_dist);
+                S2.UpdateMaxDistance(a, v0, v1, ref max_dist);
+                S2.UpdateMaxDistance(b, v0, v1, ref max_dist);
+                S2.UpdateMaxDistance(v0, a, b, ref max_dist);
             }
             return max_dist;
         }
@@ -634,23 +634,23 @@ Level   Ratio  Ratio Aspect  Ratio Aspect    Min    Max    Min    Max
             for (int iter = 0; iter < 1000; ++iter)
             {
                 _logger.WriteLine($"Iteration {iter}");
-                S2Cell cell = new S2Cell(S2Testing.GetRandomCellId());
+                S2Cell cell = new(S2Testing.GetRandomCellId());
                 ChooseEdgeNearCell(cell, out var a, out var b);
                 S1Angle expected_min = GetDistanceToEdgeBruteForce(cell, a, b).ToAngle();
                 S1Angle expected_max =
                     GetMaxDistanceToEdgeBruteForce(cell, a, b).ToAngle();
-                S1Angle actual_min = cell.GetDistance(a, b).ToAngle();
-                S1Angle actual_max = cell.GetMaxDistance(a, b).ToAngle();
+                S1Angle actual_min = cell.Distance(a, b).ToAngle();
+                S1Angle actual_max = cell.MaxDistance(a, b).ToAngle();
                 // The error has a peak near Pi/2 for edge distance, and another peak near
                 // Pi for vertex distance.
-                if (expected_min.Radians > S2Constants.M_PI_2)
+                if (expected_min.Radians > S2.M_PI_2)
                 {
                     // Max error for S1ChordAngle as it approaches Pi is about 2e-8.
                     Assert2.Near(expected_min.Radians, actual_min.Radians, 2e-8);
                 }
                 else if (expected_min.Radians <= Math.PI / 3)
                 {
-                    Assert2.Near(expected_min.Radians, actual_min.Radians, S2Constants.DoubleError);
+                    Assert2.Near(expected_min.Radians, actual_min.Radians, S2.DoubleError);
                 }
                 else
                 {
@@ -660,7 +660,7 @@ Level   Ratio  Ratio Aspect  Ratio Aspect    Min    Max    Min    Max
                 Assert2.Near(expected_max.Radians, actual_max.Radians, 1e-12);
                 if (expected_max.Radians <= Math.PI / 3)
                 {
-                    Assert2.Near(expected_max.Radians, actual_max.Radians, S2Constants.DoubleError);
+                    Assert2.Near(expected_max.Radians, actual_max.Radians, S2.DoubleError);
                 }
             }
         }
@@ -671,23 +671,23 @@ Level   Ratio  Ratio Aspect  Ratio Aspect    Min    Max    Min    Max
             // Test an edge for which its antipode crosses the cell. Validates both the
             // standard and brute force implementations for this case.
             S2Cell cell = S2Cell.FromFacePosLevel(0, 0, 20);
-            S2Point a = -S2EdgeDistances.Interpolate(2.0, cell.GetCenter(), cell.GetVertex(0));
-            S2Point b = -S2EdgeDistances.Interpolate(2.0, cell.GetCenter(), cell.GetVertex(2));
+            S2Point a = -S2.Interpolate(2.0, cell.Center(), cell.Vertex(0));
+            S2Point b = -S2.Interpolate(2.0, cell.Center(), cell.Vertex(2));
 
-            S1ChordAngle actual = cell.GetMaxDistance(a, b);
+            S1ChordAngle actual = cell.MaxDistance(a, b);
             S1ChordAngle expected = GetMaxDistanceToEdgeBruteForce(cell, a, b);
 
-            Assert2.Near(expected.Radians, S1ChordAngle.Straight.Radians, S2Constants.DoubleError);
-            Assert2.Near(actual.Radians, S1ChordAngle.Straight.Radians, S2Constants.DoubleError);
+            Assert2.Near(expected.Radians(), S1ChordAngle.Straight.Radians(), S2.DoubleError);
+            Assert2.Near(actual.Radians(), S1ChordAngle.Straight.Radians(), S2.DoubleError);
         }
 
         [Fact]
         public void Test_S2Cell_GetMaxDistanceToCellAntipodal()
         {
-            S2Point p = S2TextFormat.MakePointOrDie("0:0");
-            S2Cell cell = new S2Cell(p);
-            S2Cell antipodal_cell = new S2Cell(-p);
-            S1ChordAngle dist = cell.GetMaxDistance(antipodal_cell);
+            S2Point p = MakePointOrDie("0:0");
+            S2Cell cell = new(p);
+            S2Cell antipodal_cell = new(-p);
+            S1ChordAngle dist = cell.MaxDistance(antipodal_cell);
             Assert.Equal(S1ChordAngle.Straight, dist);
         }
 
@@ -696,26 +696,27 @@ Level   Ratio  Ratio Aspect  Ratio Aspect    Min    Max    Min    Max
         {
             for (int i = 0; i < 1000; i++)
             {
-                S2Cell cell = new S2Cell(S2Testing.GetRandomCellId());
-                S2Cell test_cell = new S2Cell(S2Testing.GetRandomCellId());
-                S2CellId antipodal_leaf_id = new S2CellId(-test_cell.GetCenter());
-                S2Cell antipodal_test_cell = new S2Cell(antipodal_leaf_id.Parent(test_cell.Level));
+                S2Cell cell = new(S2Testing.GetRandomCellId());
+                S2Cell test_cell = new(S2Testing.GetRandomCellId());
+                S2CellId antipodal_leaf_id = new(-test_cell.Center());
+                S2Cell antipodal_test_cell = new(antipodal_leaf_id.Parent(test_cell.Level));
 
                 S1ChordAngle dist_from_min = S1ChordAngle.Straight -
-                    cell.GetDistance(antipodal_test_cell);
-                S1ChordAngle dist_from_max = cell.GetMaxDistance(test_cell);
-                Assert2.Near(dist_from_min.Radians, dist_from_max.Radians, 1e-8);
+                    cell.Distance(antipodal_test_cell);
+                S1ChordAngle dist_from_max = cell.MaxDistance(test_cell);
+                Assert2.Near(dist_from_min.Radians(), dist_from_max.Radians(), 1e-8);
             }
         }
 
         [Fact]
         public void Test_S2Cell_EncodeDecode()
         {
-            S2Cell orig_cell = new S2Cell(S2LatLng.FromDegrees(40.7406264, -74.0029963));
-            Encoder encoder = new Encoder();
+            S2Cell orig_cell = new(S2LatLng.FromDegrees(40.7406264, -74.0029963));
+            Encoder encoder = new();
             orig_cell.Encode(encoder);
-            Decoder decoder = new Decoder(encoder.Buffer, 0, encoder.Length);
-            var (_, decoded_cell) = S2Cell.DecodeStatic(decoder);
+            var decoder = encoder.Decoder();
+            var (_, decoded_cellNull) = S2Cell.Decode(decoder);
+            var decoded_cell = decoded_cellNull!.Value;
 
             Assert.Equal(orig_cell, decoded_cell);
             Assert.Equal(orig_cell.Face, decoded_cell.Face);

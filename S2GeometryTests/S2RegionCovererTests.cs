@@ -20,18 +20,18 @@ namespace S2Geometry
         [Fact]
         public void Test_S2RegionCoverer_RandomCells()
         {
-            S2RegionCoverer.Options options = new S2RegionCoverer.Options
+            S2RegionCoverer.Options options = new()
             {
                 MaxCells = 1
             };
-            S2RegionCoverer coverer = new S2RegionCoverer(options);
+            S2RegionCoverer coverer = new(options);
 
             // Test random cell ids at all levels.
             for (int i = 0; i < 10000; ++i)
             {
                 S2CellId id = S2Testing.GetRandomCellId();
                 // var info = $"Iteration {i}, cell ID token {id.ToToken()}";
-                var covering = coverer.GetCovering(new S2Cell(id)).Release();
+                var covering = coverer.GetCovering(new S2Cell(id)).CellIds;//.Release();
                 Assert.Single(covering);
                 Assert.Equal(id, covering[0]);
             }
@@ -43,7 +43,7 @@ namespace S2Geometry
             var min_level_cells = new Dictionary<S2CellId, int>();
             foreach (var cell_id in covering)
             {
-                int level = cell_id.Level;
+                int level = cell_id.Level();
                 Assert.True(level >= options.MinLevel);
                 Assert.False(level <= options.MaxLevel);
                 Assert.Equal(0, (level - options.MinLevel) % options.LevelMod);
@@ -75,7 +75,7 @@ namespace S2Geometry
         [Fact]
         public void Test_S2RegionCoverer_RandomCaps()
         {
-            const int kMaxLevel = S2Constants.kMaxCellLevel;
+            const int kMaxLevel = S2.kMaxCellLevel;
             S2RegionCoverer.Options options = new();
             for (int i = 0; i < 1000; ++i)
             {
@@ -86,11 +86,11 @@ namespace S2Geometry
                 } while (options.MinLevel> options.MaxLevel);
                 options.MaxCells = S2Testing.Random.Skewed(10);
                 options.LevelMod = (1 + S2Testing.Random.Uniform(3));
-                double max_area = Math.Min(S2Constants.M_4_PI, (3 * options.MaxCells + 1) *
+                double max_area = Math.Min(S2.M_4_PI, (3 * options.MaxCells + 1) *
                                        S2Cell.AverageArea(options.MinLevel));
                 S2Cap cap = S2Testing.GetRandomCap(0.1 * S2Cell.AverageArea(kMaxLevel),
                                                     max_area);
-                S2RegionCoverer coverer = new S2RegionCoverer(options);
+                S2RegionCoverer coverer = new(options);
                 coverer.GetCovering(cap, out var covering);
                 CheckCovering(options, cap, covering, false);
                 coverer.GetInteriorCovering(cap, out var interior);
@@ -104,7 +104,7 @@ namespace S2Geometry
                 // may still be different and smaller than "covering" because
                 // S2RegionCoverer does not guarantee that it will not output all four
                 // children of the same parent.
-                S2CellUnion cells = new S2CellUnion(covering);
+                S2CellUnion cells = new(covering);
                 var denormalized = new List<S2CellId>();
                 cells.Denormalize(options.MinLevel, options.LevelMod, denormalized);
                 CheckCovering(options, cap, denormalized, false);
@@ -116,7 +116,7 @@ namespace S2Geometry
         {
             Assert.True(false); //TODO
 
-            const int kMaxLevel = S2Constants.kMaxCellLevel;
+            const int kMaxLevel = S2.kMaxCellLevel;
             var options = new S2RegionCoverer.Options
             {
                 MaxCells = Int32.MaxValue
@@ -126,7 +126,7 @@ namespace S2Geometry
                 int level = S2Testing.Random.Uniform(kMaxLevel + 1);
                 options.MinLevel = (level);
                 options.MaxLevel = (level);
-                double max_area = Math.Min(S2Constants.M_4_PI, 1000 * S2Cell.AverageArea(level));
+                double max_area = Math.Min(S2.M_4_PI, 1000 * S2Cell.AverageArea(level));
                 S2Cap cap = S2Testing.GetRandomCap(0.1 * S2Cell.AverageArea(kMaxLevel), max_area);
                 var covering = new List<S2CellId>();
                 S2RegionCoverer.GetSimpleCovering(cap, cap.Center, level, covering);
@@ -178,10 +178,10 @@ namespace S2Geometry
                 // Choose the log of the cap area to be uniformly distributed over
                 // the allowable range.  Don't try to approximate regions that are so
                 // small they can't use the given maximum number of cells efficiently.
-                double min_cap_area = S2Cell.AverageArea(S2Constants.kMaxCellLevel) * max_cells * max_cells;
+                double min_cap_area = S2Cell.AverageArea(S2.kMaxCellLevel) * max_cells * max_cells;
                 // Coverings for huge caps are not interesting, so limit the max area too.
                 S2Cap cap = S2Testing.GetRandomCap(min_cap_area, 0.1 * Math.PI);
-                double cap_area = cap.Area;
+                double cap_area = cap.Area();
 
                 double min_area = 1e30;
                 int min_cells = 1 << 30;
@@ -246,8 +246,8 @@ namespace S2Geometry
                 for (; worst_caps[method].Any(); worst_caps[method].Remove(worst_caps[method].First()))
                 {
                     var w = worst_caps[method].First();
-                    S2LatLng ll = new S2LatLng(w.Cap.Center);
-                    _logger.WriteLine($"    Ratio {w.Ratio:4f}, Cells {w.NumCells}, Center ({ll.LatDegrees:8f}, {ll.LngDegrees:8f}), Km {w.Cap.Radius.Radians * 6367.0:6f}");
+                    S2LatLng ll = new(w.Cap.Center);
+                    _logger.WriteLine($"    Ratio {w.Ratio:4f}, Cells {w.NumCells}, Center ({ll.LatDegrees():8f}, {ll.LngDegrees():8f}), Km {w.Cap.Radius.Radians() * 6367.0:6f}");
                 }
             }
         }
@@ -277,18 +277,18 @@ namespace S2Geometry
             S2CellId large_cell = small_cell.Parent(level);
             S2CellUnion diff =
                 new S2CellUnion(new List<S2CellId> { large_cell }).Difference(new S2CellUnion(new List<S2CellId> { small_cell }));
-            S2RegionCoverer.Options options = new S2RegionCoverer.Options
+            S2RegionCoverer.Options options = new()
             {
                 MaxCells = 3
             };
             options.MaxLevel = (level + 3);
             options.MinLevel = (level);
-            S2RegionCoverer coverer = new S2RegionCoverer(options);
+            S2RegionCoverer coverer = new(options);
             coverer.GetInteriorCovering(diff, out var interior);
             Assert.Equal(3, interior.Count);
             for (int i = 0; i < 3; ++i)
             {
-                Assert.Equal(interior[i].Level, level + 1);
+                Assert.Equal(interior[i].Level(), level + 1);
             }
         }
 
@@ -298,9 +298,9 @@ namespace S2Geometry
             // Test a "fast covering" with a huge number of cells due to min_level().
             var options = new S2RegionCoverer.Options();
             options.MinLevel = (10);
-            S2RegionCoverer coverer = new S2RegionCoverer(options);
+            S2RegionCoverer coverer = new(options);
             var covering = new List<S2CellId>();
-            S2Cell region = new S2Cell(S2CellId.FromDebugString("1/23"));
+            S2Cell region = new(S2CellId.FromDebugString("1/23"));
             coverer.GetFastCovering(region, covering);
             Assert.True(covering.Count >= 1 << 16);
         }
@@ -312,7 +312,7 @@ namespace S2Geometry
             {
                 input.Add(S2CellId.FromDebugString(str));
             }
-            S2RegionCoverer coverer = new S2RegionCoverer(options);
+            S2RegionCoverer coverer = new(options);
             return coverer.IsCanonical(input);
         }
 
@@ -340,7 +340,7 @@ namespace S2Geometry
         [Fact]
         public void Test_IsCanonical_MinLevel()
         {
-            S2RegionCoverer.Options options = new S2RegionCoverer.Options();
+            S2RegionCoverer.Options options = new();
             options.MinLevel = (2);
             Assert.True(IsCanonical(new[] { "1/31" }, options));
             Assert.False(IsCanonical(new[] { "1/3" }, options));
@@ -349,7 +349,7 @@ namespace S2Geometry
         [Fact]
         public void Test_IsCanonical_MaxLevel()
         {
-            S2RegionCoverer.Options options = new S2RegionCoverer.Options();
+            S2RegionCoverer.Options options = new();
             options.MaxLevel = (2);
             Assert.True(IsCanonical(new[] { "1/31" }, options));
             Assert.False(IsCanonical(new[] { "1/312" }, options));
@@ -358,7 +358,7 @@ namespace S2Geometry
         [Fact]
         public void Test_IsCanonical_LevelMod()
         {
-            S2RegionCoverer.Options options = new S2RegionCoverer.Options();
+            S2RegionCoverer.Options options = new();
             options.LevelMod = (2);
             Assert.True(IsCanonical(new[] { "1/31" }, options));
             Assert.False(IsCanonical(new[] { "1/312" }, options));
@@ -367,7 +367,7 @@ namespace S2Geometry
         [Fact]
         public void Test_IsCanonical_MaxCells()
         {
-            S2RegionCoverer.Options options = new S2RegionCoverer.Options
+            S2RegionCoverer.Options options = new()
             {
                 MaxCells = 2
             };
@@ -380,7 +380,7 @@ namespace S2Geometry
         public void Test_IsCanonical_Normalized()
         {
             // Test that no sequence of cells could be replaced by an ancestor.
-            S2RegionCoverer.Options options = new S2RegionCoverer.Options();
+            S2RegionCoverer.Options options = new();
             Assert.True(IsCanonical(new[] { "1/01", "1/02", "1/03", "1/10", "1/11" }, options));
             Assert.False(IsCanonical(new[] { "1/00", "1/01", "1/02", "1/03", "1/10" }, options));
 
@@ -403,8 +403,8 @@ namespace S2Geometry
 
         private static void TestCanonicalizeCovering(string[] input_str, string[] expected_str, S2RegionCoverer.Options options)
         {
-            List<S2CellId> actual = new List<S2CellId>();
-            List<S2CellId> expected = new List<S2CellId>();
+            List<S2CellId> actual = new();
+            List<S2CellId> expected = new();
             foreach (var str in input_str)
             {
                 actual.Add(S2CellId.FromDebugString(str));
@@ -413,7 +413,7 @@ namespace S2Geometry
             {
                 expected.Add(S2CellId.FromDebugString(str));
             }
-            S2RegionCoverer coverer = new S2RegionCoverer(options);
+            S2RegionCoverer coverer = new(options);
             Assert.False(coverer.IsCanonical(actual));
             coverer.CanonicalizeCovering(actual);
             Assert.True(coverer.IsCanonical(actual));
@@ -423,7 +423,7 @@ namespace S2Geometry
         [Fact]
         public void Test_CanonicalizeCovering_UnsortedDuplicateCells()
         {
-            S2RegionCoverer.Options options = new S2RegionCoverer.Options();
+            S2RegionCoverer.Options options = new();
             TestCanonicalizeCovering(new[] { "1/200", "1/13122", "1/20", "1/131", "1/13100" },
                                      new[] { "1/131", "1/20" }, options);
         }
@@ -431,7 +431,7 @@ namespace S2Geometry
         [Fact]
         public void Test_CanonicalizeCovering_MaxLevelExceeded()
         {
-            S2RegionCoverer.Options options = new S2RegionCoverer.Options();
+            S2RegionCoverer.Options options = new();
             options.MaxLevel = (2);
             TestCanonicalizeCovering(new[] { "0/3001", "0/3002", "4/012301230123" },
                                      new[] { "0/30", "4/01" }, options);
@@ -440,7 +440,7 @@ namespace S2Geometry
         [Fact]
         public void Test_CanonicalizeCovering_WrongLevelMod()
         {
-            S2RegionCoverer.Options options = new S2RegionCoverer.Options();
+            S2RegionCoverer.Options options = new();
             options.MinLevel = (1);
             options.LevelMod = (3);
             TestCanonicalizeCovering(new[] { "0/0", "1/11", "2/222", "3/3333" },
@@ -451,7 +451,7 @@ namespace S2Geometry
         public void Test_CanonicalizeCovering_ReplacedByParent()
         {
             // Test that 16 children are replaced by their parent when level_mod == 2.
-            S2RegionCoverer.Options options = new S2RegionCoverer.Options();
+            S2RegionCoverer.Options options = new();
             options.LevelMod = (2);
             TestCanonicalizeCovering(new[]{
                 "0/00", "0/01", "0/02", "0/03", "0/10", "0/11", "0/12", "0/13",
@@ -464,7 +464,7 @@ namespace S2Geometry
         {
             // Test that all 4 children of a cell may be used when this is necessary to
             // satisfy min_level() or level_mod();
-            S2RegionCoverer.Options options = new S2RegionCoverer.Options();
+            S2RegionCoverer.Options options = new();
             options.MinLevel = (1);
             options.LevelMod = (2);
             TestCanonicalizeCovering(
@@ -477,7 +477,7 @@ namespace S2Geometry
         public void Test_CanonicalizeCovering_MaxCellsMergesSmallest()
         {
             // When there are too many cells, the smallest cells should be merged first.
-            S2RegionCoverer.Options options = new S2RegionCoverer.Options
+            S2RegionCoverer.Options options = new()
             {
                 MaxCells = 3
             };
@@ -491,7 +491,7 @@ namespace S2Geometry
         {
             // Check that when merging creates a cell when all 4 children are present,
             // those cells are merged into their parent (repeatedly if necessary).
-            S2RegionCoverer.Options options = new S2RegionCoverer.Options
+            S2RegionCoverer.Options options = new()
             {
                 MaxCells = 8
             };
@@ -501,18 +501,28 @@ namespace S2Geometry
                 new[] { "0/0121", "0/0123", "1/" }, options);
         }
 
-        [Fact]
+        private static List<string> ToTokens(S2CellUnion cell_union)
+        {
+            List<string> tokens=new();
+            foreach (var cell_id in cell_union)
+            {
+                tokens.Add(cell_id.ToToken());
+            }
+            return tokens;
+        }
+
+[Fact]
         public void Test_JavaCcConsistency_CheckCovering()
         {
             S2Point[] points = {
                 S2LatLng.FromDegrees(-33.8663457, 151.1960891).ToPoint(),
                 S2LatLng.FromDegrees(-33.866094000000004, 151.19517439999998).ToPoint()};
             var polyline = new S2Polyline(points);
-            S2RegionCoverer coverer = new S2RegionCoverer();
+            S2RegionCoverer coverer = new();
             coverer.Options_.MinLevel = (0);
             coverer.Options_.MaxLevel = (22);
             coverer.Options_.MaxCells = Int32.MaxValue;
-            S2CellUnion ret = coverer.GetCovering(polyline);
+            S2CellUnion covering = coverer.GetCovering(polyline);
             string[] expected = {
                "6b12ae36313d", "6b12ae36313f", "6b12ae363141", "6b12ae363143",
                "6b12ae363145", "6b12ae363159", "6b12ae36315b", "6b12ae363343",
@@ -525,12 +535,8 @@ namespace S2Geometry
                "6b12ae37cc8f", "6b12ae37cc91", "6b12ae37cc97", "6b12ae37ccb1",
                "6b12ae37ccb3", "6b12ae37ccbb", "6b12ae37ccbd", "6b12ae37cea5",
                "6b12ae37cea7", "6b12ae37cebb" };
-            var actual = new List<string>();
-            foreach (var cell_id in ret)
-            {
-                actual.Add(cell_id.ToToken());
-            }
-            Assert.Equal(expected, actual);
+
+            Assert.Equal(expected, ToTokens(covering));
         }
     }
 }

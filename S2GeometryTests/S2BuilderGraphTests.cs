@@ -1,9 +1,6 @@
 // Most of S2Builder.Graph is tested by the S2Builder.Layer implementations
 // rather than here.
 
-using System;
-using System.Collections.Generic;
-using Xunit;
 
 namespace S2Geometry
 {
@@ -11,24 +8,43 @@ namespace S2Geometry
     using static S2Builder.GraphOptions;
     using static S2Builder.Graph;
 
-    using Edge = KeyKey<int, int>;
-    using DirectedComponent = List<List<int>>;
-    using UndirectedComponent = Array2<List<List<int>>>;
-
     public class S2BuilderGraphTests
     {
+        [Fact]
+        public void Test_Graph_LabelsRequestedButNotProvided()
+        {
+            // Tests the situation where labels are requested but none were provided.
+            GraphOptions options=new(EdgeType.DIRECTED, DegenerateEdges.KEEP,
+                                 DuplicateEdges.KEEP, SiblingPairs.KEEP);
+            List<S2Point> vertices=new(){ new S2Point(1, 0, 0)};
+            List<Edge> edges=new(){ new(0, 0) };
+            List<InputEdgeIdSetId> input_edge_id_set_ids=new(){ 0 };
+            IdSetLexicon input_edge_id_set_lexicon=new(), label_set_lexicon=new();
+            List<LabelSetId> label_set_ids=new();  // Empty means no labels are present.
+            Graph g = new(
+                options, vertices, edges, input_edge_id_set_ids,
+                input_edge_id_set_lexicon, label_set_ids, label_set_lexicon, null);
+            Assert.True(!g.LabelSetIds.Any());
+            Assert.Equal(g.LabelSetId(0), IdSetLexicon.kEmptySetId);
+            Assert.Equal(g.Labels(0).Count, 0);  // Labels for input edge 0.
+            LabelFetcher fetcher = new(g, EdgeType.DIRECTED);
+            List<Label> labels=new();
+            fetcher.Fetch(0, labels);         // Labels for graph edge 0.
+            Assert.True(!labels.Any());
+        }
+
         [Fact]
         public void Test_GetDirectedLoops_DegenerateEdges()
         {
             GraphClone gc = new();
-            S2Builder builder = new(new S2Builder.Options());
+            S2Builder builder = new(new Options());
             GraphOptions graph_options = new(
                 EdgeType.DIRECTED, DegenerateEdges.DISCARD_EXCESS,
                 DuplicateEdges.KEEP, SiblingPairs.KEEP);
             builder.StartLayer(new GraphCloningLayer(graph_options, gc));
-            builder.AddShape(S2TextFormat.MakeLaxPolylineOrDie("1:1, 1:1"));
-            builder.AddShape(S2TextFormat.MakeLaxPolylineOrDie("0:0, 0:2, 2:2, 2:0, 0:0"));
-            builder.AddShape(S2TextFormat.MakeLaxPolylineOrDie("0:3, 3:3, 0:3"));
+            builder.AddShape(MakeLaxPolylineOrDie("1:1, 1:1"));
+            builder.AddShape(MakeLaxPolylineOrDie("0:0, 0:2, 2:2, 2:0, 0:0"));
+            builder.AddShape(MakeLaxPolylineOrDie("0:3, 3:3, 0:3"));
             Assert.True(builder.Build(out _));
             Graph g = gc.Graph();
             DirectedComponent loops = new();
@@ -43,13 +59,13 @@ namespace S2Geometry
         public void Test_GetDirectedComponents_DegenerateEdges()
         {
             GraphClone gc = new();
-            S2Builder builder = new(new S2Builder.Options());
+            S2Builder builder = new(new Options());
             GraphOptions graph_options = new(
                 EdgeType.DIRECTED, DegenerateEdges.DISCARD_EXCESS,
-                DuplicateEdges.MERGE, SiblingPairs.CREATE);
+                DuplicateEdges.KEEP, SiblingPairs.CREATE);
             builder.StartLayer(new GraphCloningLayer(graph_options, gc));
-            builder.AddShape(S2TextFormat.MakeLaxPolylineOrDie("1:1, 1:1"));
-            builder.AddShape(S2TextFormat.MakeLaxPolylineOrDie("0:0, 0:2, 2:2, 2:0, 0:0"));
+            builder.AddShape(MakeLaxPolylineOrDie("1:1, 1:1"));
+            builder.AddShape(MakeLaxPolylineOrDie("0:0, 0:2, 2:2, 2:0, 0:0"));
             Assert.True(builder.Build(out _));
             Graph g = gc.Graph();
             List<DirectedComponent> components = new();
@@ -66,13 +82,13 @@ namespace S2Geometry
         public void Test_GetUndirectedComponents_DegenerateEdges()
         {
             GraphClone gc = new();
-            S2Builder builder = new(new S2Builder.Options());
+            S2Builder builder = new(new Options());
             GraphOptions graph_options = new(
                 EdgeType.UNDIRECTED, DegenerateEdges.DISCARD_EXCESS,
                 DuplicateEdges.KEEP, SiblingPairs.DISCARD_EXCESS);
             builder.StartLayer(new GraphCloningLayer(graph_options, gc));
-            builder.AddShape(S2TextFormat.MakeLaxPolylineOrDie("1:1, 1:1"));
-            builder.AddShape(S2TextFormat.MakeLaxPolylineOrDie("0:0, 0:2, 2:2, 2:0, 0:0"));
+            builder.AddShape(MakeLaxPolylineOrDie("1:1, 1:1"));
+            builder.AddShape(MakeLaxPolylineOrDie("0:0, 0:2, 2:2, 2:0, 0:0"));
             Assert.True(builder.Build(out _));
             Graph g = gc.Graph();
             List<UndirectedComponent> components = new();
@@ -96,14 +112,14 @@ namespace S2Geometry
         public void Test_GetPolylines_UndirectedDegeneratePaths()
         {
             GraphClone gc = new();
-            S2Builder builder = new(new S2Builder.Options());
+            S2Builder builder = new(new Options());
             GraphOptions graph_options = new(
                 EdgeType.UNDIRECTED, DegenerateEdges.KEEP,
                 DuplicateEdges.KEEP, SiblingPairs.KEEP);
             builder.StartLayer(new GraphCloningLayer(graph_options, gc));
-            builder.AddShape(S2TextFormat.MakeLaxPolylineOrDie("1:1, 1:1"));
-            builder.AddShape(S2TextFormat.MakeLaxPolylineOrDie("0:0, 0:0, 0:1, 0:1, 0:2, 0:2"));
-            builder.AddShape(S2TextFormat.MakeLaxPolylineOrDie("1:1, 1:1"));
+            builder.AddShape(MakeLaxPolylineOrDie("1:1, 1:1"));
+            builder.AddShape(MakeLaxPolylineOrDie("0:0, 0:0, 0:1, 0:1, 0:2, 0:2"));
+            builder.AddShape(MakeLaxPolylineOrDie("1:1, 1:1"));
             Assert.True(builder.Build(out _));
             Graph g = gc.Graph();
             var polylines = g.GetPolylines(PolylineType.PATH);
@@ -114,14 +130,14 @@ namespace S2Geometry
         public void Test_GetPolylines_UndirectedDegenerateWalks()
         {
             GraphClone gc = new();
-            S2Builder builder = new(new S2Builder.Options());
+            S2Builder builder = new(new Options());
             GraphOptions graph_options = new(
                 EdgeType.UNDIRECTED, DegenerateEdges.KEEP,
                 DuplicateEdges.KEEP, SiblingPairs.KEEP);
             builder.StartLayer(new GraphCloningLayer(graph_options, gc));
-            builder.AddShape(S2TextFormat.MakeLaxPolylineOrDie("1:1, 1:1"));
-            builder.AddShape(S2TextFormat.MakeLaxPolylineOrDie("0:0, 0:0, 0:1, 0:1, 0:2, 0:2"));
-            builder.AddShape(S2TextFormat.MakeLaxPolylineOrDie("1:1, 1:1"));
+            builder.AddShape(MakeLaxPolylineOrDie("1:1, 1:1"));
+            builder.AddShape(MakeLaxPolylineOrDie("0:0, 0:0, 0:1, 0:1, 0:2, 0:2"));
+            builder.AddShape(MakeLaxPolylineOrDie("1:1, 1:1"));
             Assert.True(builder.Build(out _));
             Graph g = gc.Graph();
             var polylines = g.GetPolylines(PolylineType.WALK);
@@ -151,8 +167,8 @@ namespace S2Geometry
         {
             GraphOptions options = new(EdgeType.DIRECTED, DegenerateEdges.KEEP,
                                  DuplicateEdges.MERGE, SiblingPairs.KEEP);
-            TestProcessEdges(new TestEdge[] { new(0, 0, new List<int> { 1 }), new(0, 0, new List<int> { 2 }) },
-                new TestEdge[] { new(0, 0, new List<int>{ 1, 2 }) }, options);
+            TestProcessEdges(new TestEdge[] { new(0, 0, new() { 1 }), new(0, 0, new() { 2 }) },
+                new TestEdge[] { new(0, 0, new(){ 1, 2 }) }, options);
         }
 
         [Fact]
@@ -162,8 +178,8 @@ namespace S2Geometry
             // labels should be merged.
             GraphOptions options = new(EdgeType.UNDIRECTED, DegenerateEdges.KEEP,
                                  DuplicateEdges.MERGE, SiblingPairs.KEEP);
-            TestProcessEdges(new TestEdge[] { new(0, 0, new List<int>{ 1 }), new(0, 0), new(0, 0), new(0, 0, new List<int>{ 2 }) },
-                   new TestEdge[] { new(0, 0, new List<int>{ 1, 2 }), new(0, 0, new List<int>{ 1, 2 }) }, options);
+            TestProcessEdges(new TestEdge[] { new(0, 0, new(){ 1 }), new(0, 0), new(0, 0), new(0, 0, new(){ 2 }) },
+                   new TestEdge[] { new(0, 0, new(){ 1, 2 }), new(0, 0, new(){ 1, 2 }) }, options);
         }
 
         [Fact]
@@ -173,8 +189,9 @@ namespace S2Geometry
             // merges any edge labels.
             GraphOptions options = new(EdgeType.UNDIRECTED, DegenerateEdges.KEEP,
                                  DuplicateEdges.KEEP, SiblingPairs.REQUIRE);
-            TestProcessEdges(new TestEdge[] { new(0, 0, new List<int> { 1 }), new(0, 0), new(0, 0), new(0, 0, new List<int> { 2 }) },
-                   new TestEdge[] { new(0, 0, new List<int> { 1, 2 }), new(0, 0, new List<int> { 1, 2 }) }, options);
+            TestProcessEdges(
+                new TestEdge[] { new(0, 0, new() { 1 }), new(0, 0), new(0, 0), new(0, 0, new() { 2 }) },
+                new TestEdge[] { new(0, 0, new() { 1, 2 }), new(0, 0, new() { 1, 2 }) }, options);
             Assert.Equal(EdgeType.DIRECTED, options.EdgeType_);
         }
 
@@ -184,8 +201,8 @@ namespace S2Geometry
             // Like the test above, except that we also merge duplicates.
             GraphOptions options = new(EdgeType.UNDIRECTED, DegenerateEdges.KEEP,
                                  DuplicateEdges.MERGE, SiblingPairs.REQUIRE);
-            TestProcessEdges(new TestEdge[] { new(0, 0, new List<int>{ 1 }), new(0, 0), new(0, 0), new(0, 0, new List<int>{ 2 }) },
-                   new TestEdge[] { new(0, 0, new List<int>{ 1, 2 }) }, options);
+            TestProcessEdges(new TestEdge[] { new(0, 0, new(){ 1 }), new(0, 0), new(0, 0), new(0, 0, new(){ 2 }) },
+                   new TestEdge[] { new(0, 0, new(){ 1, 2 }) }, options);
             Assert.Equal(EdgeType.DIRECTED, options.EdgeType_);
         }
 
@@ -208,10 +225,10 @@ namespace S2Geometry
         {
             GraphOptions options = new(EdgeType.DIRECTED, DegenerateEdges.DISCARD_EXCESS,
                                  DuplicateEdges.KEEP, SiblingPairs.KEEP);
-            // Test that DISCARD_EXCESS does not merge any remaining duplicate
-            // degenerate edges together.
-            TestProcessEdges(new TestEdge[] { new(0, 0, new List<int>{ 1 }), new(0, 0, new List<int>{ 2 }) },
-                   new TestEdge[] { new(0, 0, new List<int>{ 1 }), new(0, 0, new List<int>{ 2 }) }, options);
+            // Test that DISCARD_EXCESS merges any duplicate degenerate edges together.
+            TestProcessEdges(
+                new TestEdge[] { new(0, 0, new(){ 1 }), new(0, 0, new(){ 2 }) },
+                new TestEdge[] { new(0, 0, new(){ 1, 2 })}, options);
         }
 
         [Fact]
@@ -219,10 +236,11 @@ namespace S2Geometry
         {
             GraphOptions options = new(EdgeType.UNDIRECTED, DegenerateEdges.DISCARD_EXCESS,
                                  DuplicateEdges.KEEP, SiblingPairs.KEEP);
-            // Test that DISCARD_EXCESS does not merge any remaining duplicate
-            // undirected degenerate edges together.
-            TestProcessEdges(new TestEdge[] { new(0, 0, new List<int>{ 1 }), new(0, 0), new(0, 0, new List<int>{ 2 }), new(0, 0) },
-                   new TestEdge[] { new(0, 0, new List<int>{ 1 }), new(0, 0), new(0, 0, new List<int>{ 2 }), new(0, 0) }, options);
+            // Test that DISCARD_EXCESS merges any duplicate undirected degenerate edges
+            // together.
+            TestProcessEdges(
+                new TestEdge[] { new(0, 0, new(){ 1 }), new(0, 0), new(0, 0, new(){ 2 }), new(0, 0) },
+                new TestEdge[] { new(0, 0, new(){ 1, 2 }), new(0, 0, new(){ 1, 2 }) }, options);
         }
 
         [Fact]
@@ -230,10 +248,11 @@ namespace S2Geometry
         {
             GraphOptions options = new(EdgeType.UNDIRECTED, DegenerateEdges.DISCARD_EXCESS,
                                  DuplicateEdges.KEEP, SiblingPairs.REQUIRE);
-            // Converting from UNDIRECTED to DIRECTED cuts the edge count in half and
-            // merges edge labels.
-            TestProcessEdges(new TestEdge[] { new(0, 0, new List<int>{ 1 }), new(0, 0, new List<int>{ 2 }), new(0, 0, new List<int>{ 3 }), new(0, 0) },
-                   new TestEdge[] { new(0, 0, new List<int>{ 1, 2, 3 }), new(0, 0, new List<int>{ 1, 2, 3 }) }, options);
+            // Test that DISCARD_EXCESS with SiblingPairs::REQUIRE merges any duplicate
+            // edges together and converts the edges from UNDIRECTED to DIRECTED.
+            TestProcessEdges(
+                new TestEdge[] { new(0, 0, new(){ 1 }), new(0, 0, new(){ 2 }), new(0, 0, new(){ 3 }), new(0, 0) },
+                new TestEdge[] { new(0, 0, new(){ 1, 2, 3 }) }, options);
             Assert.Equal(EdgeType.DIRECTED, options.EdgeType_);
         }
 
@@ -246,12 +265,12 @@ namespace S2Geometry
             // non-degenerate edges as well).
             GraphOptions options = new(EdgeType.DIRECTED, DegenerateEdges.KEEP,
                                  DuplicateEdges.KEEP, SiblingPairs.DISCARD);
-            TestProcessEdges(new TestEdge[] { new(0, 0, new List<int>{ 1 }), new(0, 0, new List<int>{ 2 }), new(0, 0, new List<int>{ 3 }) },
-                   new TestEdge[] { new(0, 0, new List<int>{ 1, 2, 3 }), new(0, 0, new List<int>{ 1, 2, 3 }), new(0, 0, new List<int>{ 1, 2, 3 }) },
+            TestProcessEdges(new TestEdge[] { new(0, 0, new(){ 1 }), new(0, 0, new(){ 2 }), new(0, 0, new(){ 3 }) },
+                   new TestEdge[] { new(0, 0, new(){ 1, 2, 3 }), new(0, 0, new(){ 1, 2, 3 }), new(0, 0, new(){ 1, 2, 3 }) },
                    options);
             options.SiblingPairs_ = (SiblingPairs.DISCARD_EXCESS);
-            TestProcessEdges(new TestEdge[] { new(0, 0, new List<int>{ 1 }), new(0, 0, new List<int>{ 2 }), new(0, 0, new List<int>{ 3 }) },
-                   new TestEdge[] { new(0, 0, new List<int>{ 1, 2, 3 }), new(0, 0, new List<int>{ 1, 2, 3 }), new(0, 0, new List<int>{ 1, 2, 3 }) },
+            TestProcessEdges(new TestEdge[] { new(0, 0, new(){ 1 }), new(0, 0, new(){ 2 }), new(0, 0, new(){ 3 }) },
+                   new TestEdge[] { new(0, 0, new(){ 1, 2, 3 }), new(0, 0, new(){ 1, 2, 3 }), new(0, 0, new(){ 1, 2, 3 }) },
                    options);
         }
 
@@ -445,11 +464,114 @@ namespace S2Geometry
                 Assert.Equal(new Edge(e.Item1, e.Item2), edges[i]); // $"(edge {i})";
                 var id_set = id_set_lexicon.IdSet_(input_id_set_ids[i]);
                 List<Int32> actual_ids = new(id_set);
-                Assert.Equal(e.InputIds ?? new List<int>(), actual_ids); // $"(edge {i})";
+                Assert.Equal(e.InputIds ?? new(), actual_ids); // $"(edge {i})";
             }
             Assert.Equal(expected.Length, edges.Count); // "Too many output edges";
         }
 
-        private record TestEdge(int Item1, int Item2, List<int> InputIds = null);
+        private void TestMakeSubgraph(
+            Graph g,
+            IdSetLexicon new_input_edge_id_set_lexicon,
+            GraphOptions new_options,
+            List<Edge> new_edges,
+            List<InputEdgeIdSetId> new_input_edge_id_set_ids,
+            GraphOptions expected_options,
+            List<Edge> expected_edges,
+            List<InputEdgeIdSetId> expected_input_edge_id_set_ids)
+        {
+            S2Error error;
+            Graph new_g = g.MakeSubgraph(
+                new_options, new_edges, new_input_edge_id_set_ids,
+                new_input_edge_id_set_lexicon, null, out error)!;
+
+            // Some parts of the graph should be the same.
+            Assert.True(new_g.Vertices == g.Vertices);
+            Assert.Equal(new_g.LabelSetIds, g.LabelSetIds);
+            Assert.Equal(new_g.LabelSetLexicon, g.LabelSetLexicon);
+
+            // Some parts of the graph should use the provided underlying storage.
+            Assert.True(new_g.Edges == new_edges);
+            Assert.True(new_g.InputEdgeIdSetIds == new_input_edge_id_set_ids);
+            Assert.True(new_g.InputEdgeIdSetLexicon ==
+              new_input_edge_id_set_lexicon);
+
+            // The new graph should have the expected options.
+            Assert.Equal(new_g.Options.EdgeType_, expected_options.EdgeType_);
+            Assert.Equal(new_g.Options.DegenerateEdges_,
+                  expected_options.DegenerateEdges_);
+            Assert.Equal(new_g.Options.DuplicateEdges_,
+                  expected_options.DuplicateEdges_);
+            Assert.Equal(new_g.Options.SiblingPairs_, expected_options.SiblingPairs_);
+
+            // The edges should be updated according to the requested options.
+            Assert.Equal(new_g.Edges, expected_edges);
+            Assert.Equal(new_g.InputEdgeIdSetIds, expected_input_edge_id_set_ids);
+            Assert.Equal(new_g.InputEdgeIdSetLexicon,
+                  new_input_edge_id_set_lexicon);
+        }
+
+        [Fact]
+        public void Test_MakeSubgraph_UndirectedToUndirected()
+    {
+        // Test that MakeSubgraph() doesn't transform edges into edge pairs when
+        // creating an undirected subgraph of an undirected graph.
+        GraphOptions options=new(EdgeType.UNDIRECTED, DegenerateEdges.KEEP,
+                             DuplicateEdges.KEEP, SiblingPairs.KEEP);
+        var vertices = ParsePointsOrDie("0:0, 0:1, 1:1");
+        List<Edge> edges=new() { new(0, 0), new(0, 0), new(1, 2), new(2, 1) };
+            List<InputEdgeIdSetId> input_edge_id_set_ids=new(){ 0, 0, 1, 1};
+            List<LabelSetId> label_set_ids=new();
+        IdSetLexicon input_edge_id_set_lexicon=new(), label_set_lexicon=new();
+        Graph graph=new(
+            options, vertices, edges, input_edge_id_set_ids,
+            input_edge_id_set_lexicon, label_set_ids, label_set_lexicon, null);
+
+        // Now create a subgraph with undirected edges but different options.
+        GraphOptions new_options=new(EdgeType.UNDIRECTED, DegenerateEdges.DISCARD,
+                                 DuplicateEdges.KEEP, SiblingPairs.KEEP);
+            List<Edge> expected_edges=new() { new(1, 2), new(2, 1) };
+            List<InputEdgeIdSetId> expected_input_edge_id_set_ids=new() { 1, 1};
+        TestMakeSubgraph(
+            graph, input_edge_id_set_lexicon,
+            new_options, edges, input_edge_id_set_ids,
+            new_options, expected_edges, expected_input_edge_id_set_ids);
+        }
+
+        [Fact]
+        public void Test_MakeSubgraph_DirectedToUndirected()
+    {
+        // Test transforming directed edges into undirected edges (which doubles the
+        // number of edges).
+        GraphOptions options=new(EdgeType.DIRECTED, DegenerateEdges.KEEP,
+                             DuplicateEdges.KEEP, SiblingPairs.KEEP);
+        var vertices = ParsePointsOrDie("0:0, 0:1, 1:1");
+            List<Edge> edges = new() { new(0, 0), new(0, 1), new(1, 2), new(1, 2), new(2, 1) };
+            List<InputEdgeIdSetId> input_edge_id_set_ids = new() { 1, 2, 3, 3, 3};
+            List<LabelSetId> label_set_ids = new();
+        IdSetLexicon input_edge_id_set_lexicon = new(), label_set_lexicon = new();
+        Graph graph = new(
+            options, vertices, edges, input_edge_id_set_ids,
+            input_edge_id_set_lexicon, label_set_ids, label_set_lexicon, null);
+
+        // Now create a subgraph with undirected edges and different options.
+        GraphOptions new_options=new(EdgeType.UNDIRECTED, DegenerateEdges.KEEP,
+                                 DuplicateEdges.KEEP, SiblingPairs.DISCARD_EXCESS);
+            List<Edge> expected_edges = new(){
+                new(0, 0), new(0, 0),  // Undirected degenerate edge.
+    new (0, 1), new (1, 0),  // Undirected edge.
+    new(1, 2), new(2, 1)   // Undirected edge after discarding sibling pair.
+        };
+        List<InputEdgeIdSetId> expected_input_edge_id_set_ids = new()
+        {
+            1, 1, 2, IdSetLexicon.kEmptySetId, 3, 3
+        };
+        TestMakeSubgraph(
+            graph, input_edge_id_set_lexicon,
+            new_options, edges, input_edge_id_set_ids,
+            new_options, expected_edges, expected_input_edge_id_set_ids);
+    }
+
+
+    private record TestEdge(int Item1, int Item2, List<int>? InputIds = null);
     }
 }

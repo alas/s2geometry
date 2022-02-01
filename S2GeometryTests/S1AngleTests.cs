@@ -8,7 +8,7 @@ namespace S2Geometry
         [Fact]
         public void Test_S1Angle_DefaultConstructor()
         {
-            // Check that the defaultructor returns an angle of 0.
+            // Check that the default constructor returns an angle of 0.
             S1Angle a = S1Angle.FromRadians(0);
             Assert.Equal(0, a.Radians);
         }
@@ -32,15 +32,15 @@ namespace S2Geometry
         {
             // Check that the conversion between Pi radians and 180 degrees is exact.
             Assert.Equal(Math.PI, S1Angle.FromRadians(Math.PI).Radians);
-            Assert.Equal(180.0, S1Angle.FromRadians(Math.PI).Degrees);
+            Assert.Equal(180.0, S1Angle.FromRadians(Math.PI).GetDegrees());
             Assert.Equal(Math.PI, S1Angle.FromDegrees(180).Radians);
-            Assert.Equal(180.0, S1Angle.FromDegrees(180).Degrees);
+            Assert.Equal(180.0, S1Angle.FromDegrees(180).GetDegrees());
 
-            Assert.Equal(90.0, S1Angle.FromRadians(S2Constants.M_PI_2).Degrees);
+            Assert.Equal(90.0, S1Angle.FromRadians(S2.M_PI_2).GetDegrees());
 
             // Check negative angles.
-            Assert.Equal(-90.0, S1Angle.FromRadians(-S2Constants.M_PI_2).Degrees);
-            Assert.Equal(-S2Constants.M_PI_4, S1Angle.FromDegrees(-45).Radians);
+            Assert.Equal(-90.0, S1Angle.FromRadians(-S2.M_PI_2).GetDegrees());
+            Assert.Equal(-S2.M_PI_4, S1Angle.FromDegrees(-45).Radians);
         }
 
         [Fact]
@@ -53,9 +53,9 @@ namespace S2Geometry
                              S1Angle.FromE6(-60000000).Radians);
             Assert2.Near(S1Angle.FromDegrees(75).Radians,
                    S1Angle.FromE7(750000000).Radians);
-            Assert.Equal(-17256123, S1Angle.FromDegrees(-172.56123).E5);
-            Assert.Equal(12345678, S1Angle.FromDegrees(12.345678).E6);
-            Assert.Equal(-123456789, S1Angle.FromDegrees(-12.3456789).E7);
+            Assert.Equal(-17256123, S1Angle.FromDegrees(-172.56123).E5());
+            Assert.Equal(12345678, S1Angle.FromDegrees(12.345678).E6());
+            Assert.Equal(-123456789, S1Angle.FromDegrees(-12.3456789).E7());
         }
 
         [Fact]
@@ -79,18 +79,18 @@ namespace S2Geometry
         [Fact]
         public void Test_S1Angle_NormalizeCorrectlyCanonicalizesAngles()
         {
-            Assert2.Near(0.0, S1Angle.FromDegrees(360.0).Normalize().Degrees);
-            Assert2.Near(-90.0, S1Angle.FromDegrees(-90.0).Normalize().Degrees);
-            Assert2.Near(180.0, S1Angle.FromDegrees(-180.0).Normalize().Degrees);
-            Assert2.Near(180.0, S1Angle.FromDegrees(180.0).Normalize().Degrees);
-            Assert2.Near(180.0, S1Angle.FromDegrees(540.0).Normalize().Degrees);
-            Assert2.Near(90.0, S1Angle.FromDegrees(-270.0).Normalize().Degrees);
+            Assert2.Near(0.0, S1Angle.FromDegrees(360.0).Normalize().GetDegrees());
+            Assert2.Near(-90.0, S1Angle.FromDegrees(-90.0).Normalize().GetDegrees());
+            Assert2.Near(180.0, S1Angle.FromDegrees(-180.0).Normalize().GetDegrees());
+            Assert2.Near(180.0, S1Angle.FromDegrees(180.0).Normalize().GetDegrees());
+            Assert2.Near(180.0, S1Angle.FromDegrees(540.0).Normalize().GetDegrees());
+            Assert2.Near(90.0, S1Angle.FromDegrees(-270.0).Normalize().GetDegrees());
         }
 
         [Fact]
         public void Test_S1Angle_ArithmeticOperationsOnAngles()
         {
-            Assert2.Near(0.3, S1Angle.FromRadians(-0.3).Abs);
+            Assert2.Near(0.3, S1Angle.FromRadians(-0.3).Abs());
             Assert2.Near(-0.1, (-S1Angle.FromRadians(0.1)).Radians);
             Assert2.Near(0.4, (S1Angle.FromRadians(0.1) + S1Angle.FromRadians(0.3)).Radians);
             Assert2.Near(-0.2, (S1Angle.FromRadians(0.1) - S1Angle.FromRadians(0.3)).Radians);
@@ -114,17 +114,17 @@ namespace S2Geometry
         public void Test_S1Angle_Trigonometry()
         {
             // Spot check a few angles to ensure that the correct function is called.
-            Assert2.Near(1, S1Angle.FromDegrees(0).Cos);
-            Assert2.Near(1, S1Angle.FromDegrees(90).Sin);
-            Assert2.Near(1, S1Angle.FromDegrees(45).Tan);
+            Assert2.Near(1, S1Angle.FromDegrees(0).Cos());
+            Assert2.Near(1, S1Angle.FromDegrees(90).Sin());
+            Assert2.Near(1, S1Angle.FromDegrees(45).Tan());
         }
 
         [Fact]
         public void Test_S1Angle_ConstructorsThatMeasureAngles()
         {
-            Assert2.Near(S2Constants.M_PI_2, new S1Angle(new S2Point(1, 0, 0), new S2Point(0, 0, 2)).Radians);
+            Assert2.Near(S2.M_PI_2, new S1Angle(new S2Point(1, 0, 0), new S2Point(0, 0, 2)).Radians);
             Assert2.Near(0.0, new S1Angle(new S2Point(1, 0, 0), new S2Point(1, 0, 0)).Radians);
-            Assert2.Near(50.0, new S1Angle(S2LatLng.FromDegrees(20, 20), S2LatLng.FromDegrees(70, 20)).Degrees, 1e-13);
+            Assert2.Near(50.0, new S1Angle(S2LatLng.FromDegrees(20, 20), S2LatLng.FromDegrees(70, 20)).GetDegrees(), 1e-13);
         }
 
         [Fact]
@@ -175,8 +175,8 @@ namespace S2Geometry
         {
             for (int k = -8; k <= 8; ++k)
             {
-                Assert.Equal(S1Angle.FromDegrees(45 * k), S1Angle.FromRadians(k * S2Constants.M_PI_4));
-                Assert.Equal(45 * k, S1Angle.FromDegrees(45 * k).Degrees);
+                Assert.Equal(S1Angle.FromDegrees(45 * k), S1Angle.FromRadians(k * S2.M_PI_4));
+                Assert.Equal(45 * k, S1Angle.FromDegrees(45 * k).GetDegrees());
             }
             for (int k = 0; k <= 30; ++k)
             {
@@ -189,7 +189,7 @@ namespace S2Geometry
             }
             // We also spot check a couple of non-identities.
             Assert.NotEqual(S1Angle.FromDegrees(3), S1Angle.FromRadians(Math.PI / 60));
-            Assert.NotEqual(60, S1Angle.FromDegrees(60).Degrees);
+            Assert.NotEqual(60, S1Angle.FromDegrees(60).GetDegrees());
         }
     }
 }

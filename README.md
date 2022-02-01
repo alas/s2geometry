@@ -1,5 +1,24 @@
 # s2geometry
 
-Ported to from: [google / s2geometry](https://github.com/google/s2geometry/commit/cae6519ef34fc5ac79e5a69a50717864549d1cd4)
+Copyright 2018 Google Inc. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS-IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+Author: ericv@google.com (Eric Veach)
+
+Ported to from: [google / s2geometry](https://github.com/google/s2geometry/commit/174e2e44ff5de6845e47201e4a7295b3fd256edd)
+
+[Previous version](https://github.com/alas/s2geometry/commit/ec5adeffeeb6af4bf416ed40a1d7ae3b8856b511) ported to from: [google / s2geometry](https://github.com/google/s2geometry/commit/cae6519ef34fc5ac79e5a69a50717864549d1cd4)
 
 Also Based on: [novotnyllc / s2-geometry-library-csharp](https://github.com/novotnyllc/s2-geometry-library-csharp/commit/880deeff88f8b8b0fe67ed888efeffbbdc460a7b)
+

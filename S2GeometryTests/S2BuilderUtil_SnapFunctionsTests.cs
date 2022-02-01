@@ -24,17 +24,17 @@ namespace S2Geometry
         [Fact]
         public void Test_S2CellIdSnapFunction_LevelToFromSnapRadius()
         {
-            for (int level = 0; level <= S2Constants.kMaxCellLevel; ++level)
+            for (int level = 0; level <= S2.kMaxCellLevel; ++level)
             {
                 S1Angle radius = S2CellIdSnapFunction.MinSnapRadiusForLevel(level);
                 Assert.Equal(level, S2CellIdSnapFunction.LevelForMaxSnapRadius(radius));
-                Assert.Equal(Math.Min(level + 1, S2Constants.kMaxCellLevel),
+                Assert.Equal(Math.Min(level + 1, S2.kMaxCellLevel),
                           S2CellIdSnapFunction.LevelForMaxSnapRadius(0.999 * radius));
             }
             Assert.Equal(0,
                       S2CellIdSnapFunction.LevelForMaxSnapRadius(
                           S1Angle.FromRadians(5)));
-            Assert.Equal(S2Constants.kMaxCellLevel,
+            Assert.Equal(S2.kMaxCellLevel,
                       S2CellIdSnapFunction.LevelForMaxSnapRadius(
                           S1Angle.FromRadians(1e-30)));
         }
@@ -44,7 +44,7 @@ namespace S2Geometry
         {
             for (int iter = 0; iter < 1000; ++iter)
             {
-                for (int level = 0; level <= S2Constants.kMaxCellLevel; ++level)
+                for (int level = 0; level <= S2.kMaxCellLevel; ++level)
                 {
                     // This checks that points are snapped to the correct level, since
                     // S2CellId centers at different levels are always different.
@@ -85,16 +85,16 @@ namespace S2Geometry
                 // that both functions are using bitwise-compatible conversion methods.
                 S2Point p = S2Testing.RandomPoint();
                 S2LatLng ll = new(p);
-                S2Point p5 = S2LatLng.FromE5(ll.Lat.E5, ll.Lng.E5).ToPoint();
+                S2Point p5 = S2LatLng.FromE5(ll.Lat().E5(), ll.Lng().E5()).ToPoint();
                 Assert.Equal(p5, new IntLatLngSnapFunction(5).SnapPoint(p5));
-                S2Point p6 = S2LatLng.FromE6(ll.Lat.E6, ll.Lng.E6).ToPoint();
+                S2Point p6 = S2LatLng.FromE6(ll.Lat().E6(), ll.Lng().E6()).ToPoint();
                 Assert.Equal(p6, new IntLatLngSnapFunction(6).SnapPoint(p6));
-                S2Point p7 = S2LatLng.FromE7(ll.Lat.E7, ll.Lng.E7).ToPoint();
+                S2Point p7 = S2LatLng.FromE7(ll.Lat().E7(), ll.Lng().E7()).ToPoint();
                 Assert.Equal(p7, new IntLatLngSnapFunction(7).SnapPoint(p7));
 
                 // Make sure that we're not snapping using some lower exponent.
-                S2Point p7not6 = S2LatLng.FromE7(10 * ll.Lat.E6 + 1,
-                                                  10 * ll.Lng.E6 + 1).ToPoint();
+                S2Point p7not6 = S2LatLng.FromE7(10 * ll.Lat().E6() + 1,
+                                                  10 * ll.Lng().E6() + 1).ToPoint();
                 Assert.NotEqual(p7not6, new IntLatLngSnapFunction(6).SnapPoint(p7not6));
             }
         }
@@ -123,7 +123,7 @@ namespace S2Geometry
             // keeping all the neighbors of the optimal cell as well.
             double best_score = 1e10;
             List<S2CellId> best_cells = new();
-            for (int level = 0; level <= S2Constants.kMaxCellLevel; ++level)
+            for (int level = 0; level <= S2.kMaxCellLevel; ++level)
             {
                 double score = GetS2CellIdMinVertexSeparation(level, best_cells);
                 best_score = Math.Min(best_score, score);
@@ -138,7 +138,7 @@ namespace S2Geometry
             // snap radius at each level.
             double score = GetS2CellIdMinEdgeSeparation("min_sep_for_level",
                 (int level, S1Angle edge_sep, S1Angle min_snap_radius, S1Angle max_snap_radius)
-                => edge_sep.Radians / S2Metrics.kMinDiag.GetValue(level));
+                => edge_sep.Radians / S2.kMinDiag.GetValue(level));
             _logger.WriteLine($"min_edge_vertex_sep / kMinDiag ratio: {score:f15}");
         }
         
@@ -150,9 +150,9 @@ namespace S2Geometry
             double score = GetS2CellIdMinEdgeSeparation("min_sep_at_min_radius",
                 (int level, S1Angle edge_sep, S1Angle min_snap_radius, S1Angle max_snap_radius) =>
                 {
-                    double min_radius_at_level = S2Metrics.kMaxDiag.GetValue(level) / 2;
+                    double min_radius_at_level = S2.kMaxDiag.GetValue(level) / 2;
                     return (min_snap_radius.Radians <= (1 + 1e-10) * min_radius_at_level) ?
-                      (edge_sep.Radians / S2Metrics.kMinDiag.GetValue(level)) : 100.0;
+                      (edge_sep.Radians / S2.kMinDiag.GetValue(level)) : 100.0;
                 });
             _logger.WriteLine($"min_edge_vertex_sep / kMinDiag at MinSnapRadiusForLevel: {score:f15}");
         }
@@ -220,10 +220,10 @@ namespace S2Geometry
             S2Cell cell = new(id);
             return new[]
             {
-        new S1Angle(p, cell.GetVertex(0)),
-        new S1Angle(p, cell.GetVertex(1)),
-        new S1Angle(p, cell.GetVertex(2)),
-        new S1Angle(p, cell.GetVertex(3)),
+        new S1Angle(p, cell.Vertex(0)),
+        new S1Angle(p, cell.Vertex(1)),
+        new S1Angle(p, cell.Vertex(2)),
+        new S1Angle(p, cell.Vertex(3)),
     }.Max();
         }
 
@@ -233,14 +233,14 @@ namespace S2Geometry
         {
             S2Point site0 = id0.ToPoint();
             List<S2CellId> nbrs = new();
-            id0.AppendAllNeighbors(id0.Level, nbrs);
+            id0.AppendAllNeighbors(id0.Level(), nbrs);
             foreach (S2CellId id1 in nbrs)
             {
                 S2Point site1 = id1.ToPoint();
                 S1Angle vertex_sep = new(site0, site1);
                 S1Angle max_snap_radius = GetMaxVertexDistance(site0, id1);
                 Assert.True(max_snap_radius >=
-                          S2CellIdSnapFunction.MinSnapRadiusForLevel(id0.Level));
+                          S2CellIdSnapFunction.MinSnapRadiusForLevel(id0.Level()));
                 double r = vertex_sep / max_snap_radius;
                 scores.Add((r, id0));
             }
@@ -266,7 +266,7 @@ namespace S2Geometry
                 foreach (var parent in best_cells)
                 {
                     for (var id0 = parent.ChildBegin();
-                         id0 != parent.ChildEnd(); id0 = id0.Next)
+                         id0 != parent.ChildEnd(); id0 = id0.Next())
                     {
                         UpdateS2CellIdMinVertexSeparation(id0, scores);
                     }
@@ -282,7 +282,7 @@ namespace S2Geometry
             {
                 if (--num_to_print >= 0)
                 {
-                    R2Point uv = id.GetCenterUV();
+                    R2Point uv = id.CenterUV();
                     _logger.WriteLine($"Level {level:d2}: min_vertex_sep_ratio = {ratio:f15} u={uv[0]:f6} v={uv[1]:f6} {id.ToToken()}");
                 }
                 if (kSearchFocusId.Contains(id) || id.Contains(kSearchFocusId))
@@ -298,12 +298,12 @@ namespace S2Geometry
         {
             // We return this value is the circumradius is very large.
             S1Angle kTooBig = S1Angle.FromRadians(Math.PI);
-            double turn_angle = S2Measures.TurnAngle(a, b, c);
+            double turn_angle = S2.TurnAngle(a, b, c);
             if (Math.Abs(Math.IEEERemainder(turn_angle, Math.PI)) < 1e-2) return kTooBig;
 
-            double a2 = (b - c).Norm2;
-            double b2 = (c - a).Norm2;
-            double c2 = (a - b).Norm2;
+            double a2 = (b - c).Norm2();
+            double b2 = (c - a).Norm2();
+            double c2 = (a - b).Norm2();
             if (a2 > 2 || b2 > 2 || c2 > 2) return kTooBig;
             double ma = a2 * (b2 + c2 - a2);
             double mb = b2 * (c2 + a2 - b2);
@@ -322,7 +322,7 @@ namespace S2Geometry
                 List<S2CellId> new_nbrs = new();
                 foreach (var nbr in nbrs)
                 {
-                    nbr.AppendAllNeighbors(id.Level, new_nbrs);
+                    nbr.AppendAllNeighbors(id.Level(), new_nbrs);
                 }
                 nbrs.AddRange(new_nbrs);
                 nbrs.Remove(id);
@@ -383,7 +383,7 @@ namespace S2Geometry
             foreach (var parent in best_cells)
             {
                 for (var id0 = parent.ChildBegin(level);
-                     id0 != parent.ChildEnd(level); id0 = id0.Next)
+                     id0 != parent.ChildEnd(level); id0 = id0.Next())
                 {
                     S2Point site0 = id0.ToPoint();
                     var nbrs = GetNeighbors(id0);
@@ -409,7 +409,7 @@ namespace S2Geometry
                             Assert.True(max_snap_radius >= S2CellIdSnapFunction.MinSnapRadiusForLevel(level));
 
                             // This is a valid configuration, so evaluate it.
-                            S1Angle edge_sep = S2EdgeDistances.GetDistance(site0, site1, site2);
+                            S1Angle edge_sep = S2.GetDistance(site0, site1, site2);
                             double score = objective(level, edge_sep, min_snap_radius, max_snap_radius);
                             var best_score = best_scores[id0];
                             if (best_score == 0 || best_score > score)
@@ -444,13 +444,13 @@ namespace S2Geometry
             {
                 if (--num_to_print >= 0)
                 {
-                    R2Point uv = id.GetCenterUV();
+                    R2Point uv = id.CenterUV();
                     var (c1, c2) = best_configs[id];
                     _logger.WriteLine($"  {label} = {ratio:f15} u={uv[0]:f7.4} v={uv[1]:f7.4} {id.ToToken()} {c1.ToToken()} {c2.ToToken()}");
                 }
                 List<S2CellId> nbrs = new(1);
                 nbrs.Add(id);
-                id.AppendAllNeighbors(id.Level, nbrs);
+                id.AppendAllNeighbors(id.Level(), nbrs);
                 foreach (var nbr in nbrs)
                 {
                     // The S2Cell hierarchy has many regions that are symmetrical.  We can
@@ -475,7 +475,7 @@ namespace S2Geometry
             double best_score = 1e10;
             List<S2CellId> best_cells = new();
             best_cells.Add(kSearchRootId);
-            for (int level = 0; level <= S2Constants.kMaxCellLevel; ++level)
+            for (int level = 0; level <= S2.kMaxCellLevel; ++level)
             {
                 double score = GetS2CellIdMinEdgeSeparation(label, objective, level, best_cells);
                 best_score = Math.Min(best_score, score);
@@ -539,7 +539,7 @@ namespace S2Geometry
             // 8-way neighbors, then look at the ratio of the distance to the center of
             // that neighbor to the distance to the furthest corner of that neighbor
             // (which is the largest possible snap radius for this configuration).
-            S1Angle min_snap_radius_at_scale = S1Angle.FromRadians(S2Constants.M_SQRT1_2 * Math.PI / scale);
+            S1Angle min_snap_radius_at_scale = S1Angle.FromRadians(S2.M_SQRT1_2 * Math.PI / scale);
             List<(double ratio, IntLatLng ll)> scores = new();
             double scale_factor = (double)scale / old_scale;
             foreach (var parent in best_configs)
@@ -589,7 +589,7 @@ namespace S2Geometry
             string label, LatLngMinEdgeSeparationFunction objective,
             Int64 scale, List<LatLngConfig> best_configs)
         {
-            var min_snap_radius_at_scale = S1Angle.FromRadians(S2Constants.M_SQRT1_2 * Math.PI / scale);
+            var min_snap_radius_at_scale = S1Angle.FromRadians(S2.M_SQRT1_2 * Math.PI / scale);
             List<LatLngConfigScore> scores = new();
             for (var i = 0; i < best_configs.Count; i++)
             {
@@ -647,7 +647,7 @@ namespace S2Geometry
                                     if (max_snap_radius < min_snap_radius_at_scale) continue;
 
                                     // This is a valid configuration, so evaluate it.
-                                    S1Angle edge_sep = S2EdgeDistances.GetDistance(site0, site1, site2);
+                                    S1Angle edge_sep = S2.GetDistance(site0, site1, site2);
                                     double score = objective(scale, edge_sep, max_snap_radius);
                                     LatLngConfig config = new(scale, ll0, ll1, ll2);
                                     scores.Add(new(score, config));

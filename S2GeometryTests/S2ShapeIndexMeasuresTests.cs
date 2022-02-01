@@ -19,7 +19,7 @@ namespace S2Geometry
             Assert.Equal(0, S2ShapeIndexMeasures.GetDimension(MakeIndexOrDie("0:0 # #")));
 
             // Create an index with an empty point set.
-            MutableS2ShapeIndex index = new MutableS2ShapeIndex();
+            MutableS2ShapeIndex index = new();
             index.Add(new S2PointVectorShape());
             Assert.Equal(0, S2ShapeIndexMeasures.GetDimension(index));
         }
@@ -76,7 +76,7 @@ namespace S2Geometry
         [Fact]
         public void Test_GetPerimeter_DegeneratePolygon() {
             Assert2.Near(4.0, S2ShapeIndexMeasures.GetPerimeter(MakeIndexOrDie(
-                "4:4 # 0:0, 1:0 | 2:0, 3:0 # 0:1, 0:2, 0:3")).Degrees);
+                "4:4 # 0:0, 1:0 | 2:0, 3:0 # 0:1, 0:2, 0:3")).GetDegrees());
         }
 
         [Fact]
@@ -113,7 +113,7 @@ namespace S2Geometry
         [Fact]
         public void Test_GetCentroid_Polyline() {
             // Checks that points are ignored when computing the centroid.
-            Assert.True(S2PointUtil.ApproxEquals(
+            Assert.True(S2.ApproxEquals(
                 new S2Point(1, 1, 0),
                 S2ShapeIndexMeasures.GetCentroid(MakeIndexOrDie("5:5 | 6:6 # 0:0, 0:90 #"))));
         }
@@ -121,8 +121,8 @@ namespace S2Geometry
         [Fact]
         public void Test_GetCentroid_Polygon() {
             // Checks that points and polylines are ignored when computing the centroid.
-            Assert.True(S2PointUtil.ApproxEquals(
-                new S2Point(S2Constants.M_PI_4, S2Constants.M_PI_4, S2Constants.M_PI_4),
+            Assert.True(S2.ApproxEquals(
+                new S2Point(S2.M_PI_4, S2.M_PI_4, S2.M_PI_4),
                 S2ShapeIndexMeasures.GetCentroid(MakeIndexOrDie("5:5 # 6:6, 7:7 # 0:0, 0:90, 90:0"))));
         }
     }

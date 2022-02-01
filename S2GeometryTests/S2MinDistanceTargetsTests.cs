@@ -26,7 +26,7 @@ namespace S2Geometry
             // is less than the old distance (not less than or equal to).
             var target = new S2MinDistancePointTarget(MakePointOrDie("1:0"));
             var dist = S1ChordAngle.Infinity;
-            S2Cell cell = new S2Cell(new S2CellId(MakePointOrDie("0:0")));
+            S2Cell cell = new(new S2CellId(MakePointOrDie("0:0")));
             Assert.True(target.UpdateMinDistance(cell, ref dist));
             Assert.False(target.UpdateMinDistance(cell, ref dist));
         }

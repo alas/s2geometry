@@ -14,10 +14,10 @@ namespace S2Geometry
             {
                 S2CellId id = S2Testing.GetRandomCellId();
                 double padding = Math.Pow(1e-15, S2Testing.Random.RandDouble());
-                S2Cell cell = new S2Cell(id);
-                S2PaddedCell pcell = new S2PaddedCell(id, padding);
+                S2Cell cell = new(id);
+                S2PaddedCell pcell = new(id, padding);
                 CompareS2CellToPadded(cell, pcell, padding);
-                if (!id.IsLeaf)
+                if (!id.IsLeaf())
                 {
                     var children = new S2Cell[4];
                     Assert.True(cell.Subdivide(children));
@@ -51,7 +51,7 @@ namespace S2Geometry
 
                 // Check that the entry vertex of a cell is the same as the entry vertex
                 // of its first child, and similarly for the exit vertex.
-                if (!id.IsLeaf)
+                if (!id.IsLeaf())
                 {
                     Assert.Equal(new S2PaddedCell(id, 0).GetEntryVertex(),
                               new S2PaddedCell(id.Child(0), 0).GetEntryVertex());
@@ -69,8 +69,8 @@ namespace S2Geometry
             {
                 // Start with the desired result and work backwards.
                 S2CellId result = S2Testing.GetRandomCellId();
-                R2Rect result_uv = result.GetBoundUV();
-                R2Point size_uv = result_uv.Size;
+                R2Rect result_uv = result.BoundUV();
+                R2Point size_uv = result_uv.GetSize();
 
                 // Find the biggest rectangle that fits in "result" after padding.
                 // (These calculations ignore numerical errors.)
@@ -79,20 +79,20 @@ namespace S2Geometry
                 R2Rect max_rect = result_uv.Expanded(-padding);
 
                 // Start with a random subset of the maximum rectangle.
-                R2Point a = new R2Point(SampleInterval(max_rect[0]), SampleInterval(max_rect[1]));
-                R2Point b = new R2Point(SampleInterval(max_rect[0]), SampleInterval(max_rect[1]));
-                if (!result.IsLeaf)
+                R2Point a = new(SampleInterval(max_rect[0]), SampleInterval(max_rect[1]));
+                R2Point b = new(SampleInterval(max_rect[0]), SampleInterval(max_rect[1]));
+                if (!result.IsLeaf())
                 {
                     // If the result is not a leaf cell, we must ensure that no child of
                     // "result" also satisfies the conditions of ShrinkToFit().  We do this
                     // by ensuring that "rect" intersects at least two children of "result"
                     // (after padding).
                     int axis = S2Testing.Random.Uniform(2);
-                    double center = result.GetCenterUV()[axis];
+                    double center = result.CenterUV()[axis];
 
                     // Find the range of coordinates that are shared between child cells
                     // along that axis.
-                    R1Interval shared = new R1Interval(center - padding, center + padding);
+                    R1Interval shared = new(center - padding, center + padding);
                     double mid = SampleInterval(shared.Intersection(max_rect[axis]));
                     a = a.SetAxis(axis, SampleInterval(new R1Interval(max_rect[axis].Lo, mid)));
                     b = b.SetAxis(axis, SampleInterval(new R1Interval(mid, max_rect[axis].Hi)));
@@ -100,7 +100,7 @@ namespace S2Geometry
                 R2Rect rect = R2Rect.FromPointPair(a, b);
 
                 // Choose an arbitrary ancestor as the S2PaddedCell.
-                S2CellId initial_id = result.Parent(S2Testing.Random.Uniform(result.Level + 1));
+                S2CellId initial_id = result.Parent(S2Testing.Random.Uniform(result.Level() + 1));
                 Assert.Equal(result, new S2PaddedCell(initial_id, padding).ShrinkToFit(rect));
             }
         }
@@ -111,9 +111,9 @@ namespace S2Geometry
             Assert.Equal(cell.Level, pcell.Level);
             Assert.Equal(padding, pcell.Padding);
             Assert.Equal(cell.BoundUV.Expanded(padding), pcell.Bound);
-            var center_uv = cell.Id.GetCenterUV();
+            var center_uv = cell.Id.CenterUV();
             Assert.Equal(R2Rect.FromPoint(center_uv).Expanded(padding), pcell.Middle);
-            Assert.Equal(cell.GetCenter(), pcell.GetCenter());
+            Assert.Equal(cell.Center(), pcell.GetCenter());
         }
 
         private static double SampleInterval(R1Interval x)

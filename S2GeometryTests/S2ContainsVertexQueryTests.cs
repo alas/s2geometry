@@ -17,7 +17,7 @@ namespace S2Geometry
         [Fact]
         public void Test_S2ContainsVertexQuery_ContainedWithDuplicates()
         {
-            // The S2.Ortho reference direction points approximately due west.
+            // The S2::RefDir reference direction points approximately due west.
             // Containment is determined by the unmatched edge immediately clockwise.
             S2ContainsVertexQuery q = new(MakePointOrDie("0:0"));
             q.AddEdge(MakePointOrDie("3:-3"), -1);
@@ -30,7 +30,7 @@ namespace S2Geometry
         [Fact]
         public void Test_S2ContainsVertexQuery_NotContainedWithDuplicates()
         {
-            // The S2.Ortho reference direction points approximately due west.
+            // The S2::RefDir reference direction points approximately due west.
             // Containment is determined by the unmatched edge immediately clockwise.
             S2ContainsVertexQuery q = new(MakePointOrDie("1:1"));
             q.AddEdge(MakePointOrDie("1:-5"), 1);
@@ -40,20 +40,34 @@ namespace S2Geometry
             Assert.Equal(-1, q.ContainsSign());
         }
 
+        // Tests that S2ContainsVertexQuery is compatible with S2::AngleContainsVertex.
         [Fact]
-        public void Test_S2ContainsVertexQuery_MatchesLoopContainment()
+        public void Test_S2ContainsVertexQuery_CompatibleWithAngleContainsVertex()
         {
-            // Check that the containment function defined is compatible with S2Loop
-            // (which at least currently does not use this class).
-            var loop = S2Loop.MakeRegularLoop(MakePointOrDie("89:-179"),
-                                                S1Angle.FromDegrees(10), 1000);
-            for (int i = 1; i <= loop.NumVertices; ++i)
+            var points = S2Testing.MakeRegularPoints(MakePointOrDie("89:1"),
+                S1Angle.FromDegrees(5), 10);
+            S2PointLoopSpan loop=new(points);
+            for (int i = 0; i < loop.Count; ++i)
             {
-                S2ContainsVertexQuery q = new(loop.Vertex(i));
-                q.AddEdge(loop.Vertex(i - 1), -1);
-                q.AddEdge(loop.Vertex(i + 1), 1);
-                Assert.Equal(q.ContainsSign() > 0, loop.Contains(loop.Vertex(i)));
+                S2Point a = loop[i];
+                S2Point b = loop[i + 1];
+                S2Point c = loop[i + 2];
+                S2ContainsVertexQuery q=new(b);
+                q.AddEdge(a, -1);
+                q.AddEdge(c, 1);
+                Assert.Equal(q.ContainsSign() > 0, S2.AngleContainsVertex(a, b, c));
             }
+        }
+
+        // Tests compatibility with S2::AngleContainsVertex() for a degenerate edge.
+        [Fact]
+        public void Test_S2ContainsVertexQuery_CompatibleWithAngleContainsVertexDegenerate()
+        {
+            S2Point a=new(1, 0, 0), b=new(0, 1, 0);
+            S2ContainsVertexQuery q=new(b);
+            q.AddEdge(a, -1);
+            q.AddEdge(a, 1);
+            Assert.Equal(q.ContainsSign() > 0, S2.AngleContainsVertex(a, b, a));
         }
     }
 }

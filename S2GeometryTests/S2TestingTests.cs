@@ -45,7 +45,7 @@ namespace S2Geometry
             fractal.FractalDimension = (dimension);
             var frame = S2Testing.GetRandomFrame();
             var loop = fractal.MakeLoop(frame, S1Angle.FromRadians(nominal_radius));
-            Assert.True(loop.IsValid);
+            Assert.True(loop.IsValid());
 
             // If min_level and max_level are not equal, then the number of vertices and
             // the total length of the curve are subject to random variation.  Here we
@@ -89,7 +89,7 @@ namespace S2Geometry
                         relative_error * (expected_num_vertices - min_vertices));
 
             var center = frame.Col(2);
-            var min_radius = S2Constants.M_2_PI;
+            var min_radius = S2.M_2_PI;
             double max_radius = 0;
             double length_sum = 0;
             for (int i = 0; i < loop.NumVertices; ++i)

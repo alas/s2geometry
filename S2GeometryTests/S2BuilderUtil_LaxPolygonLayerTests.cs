@@ -1,17 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Xunit.Abstractions;
-using Xunit;
-
 namespace S2Geometry
 {
-    using S2BuilderUtil;
-    using static S2Builder;
-    using DegenerateBoundaries = S2BuilderUtil.LaxPolygonLayer.Options.DegenerateBoundaries;
-
-    using LabelSetIds = List<List<int>>;
-    using EdgeLabelMap = Dictionary<S2Shape.Edge, List<int>>;
+    using DegenerateBoundaries = LaxPolygonLayer.Options.DegenerateBoundaries;
+    using EdgeLabelMap = Dictionary<S2Shape.Edge, LabelSet>;
 
     public class S2BuilderUtil_LaxPolygonLayerTests
     {
@@ -57,16 +47,16 @@ namespace S2Geometry
             // non-degenerate loop is present.
             foreach (var degenerate_boundaries in kAllDegenerateBoundaries)
             {
-                S2Builder builder = new(new S2Builder.Options());
+                S2Builder builder = new(new Options());
                 S2LaxPolygonShape output = new();
                 LaxPolygonLayer.Options options = new();
                 options.EdgeType = (EdgeType.DIRECTED);
                 options.DegenerateBoundaries_ = (degenerate_boundaries);
                 builder.StartLayer(new LaxPolygonLayer(output, options));
-                var polygon = S2TextFormat.MakeLaxPolygonOrDie("0:0, 0:1, 1:1");
+                var polygon = MakeLaxPolygonOrDie("0:0, 0:1, 1:1");
                 builder.AddShape(polygon);
                 // If the predicate is called, it will return an error.
-                builder.AddIsFullPolygonPredicate((S2Builder.Graph g, out S2Error error) => S2Builder.IsFullPolygonUnspecified(out error));
+                builder.AddIsFullPolygonPredicate((Graph g, out S2Error error) => IsFullPolygonUnspecified(out error));
                 Assert.True(builder.Build(out var error));
             }
         }
@@ -169,13 +159,13 @@ namespace S2Geometry
         [Fact]
         public void Test_LaxPolygonLayer_PartialLoop()
         {
-            S2Builder builder = new(new S2Builder.Options());
+            S2Builder builder = new(new Options());
             S2LaxPolygonShape output = new();
             builder.StartLayer(new LaxPolygonLayer(output));
-            builder.AddPolyline(S2TextFormat.MakePolylineOrDie("0:1, 2:3, 4:5"));
+            builder.AddPolyline(MakePolylineOrDie("0:1, 2:3, 4:5"));
             Assert.False(builder.Build(out var error));
             Assert.Equal(S2ErrorCode.BUILDER_EDGES_DO_NOT_FORM_LOOPS, error.Code);
-            Assert.True(output.IsEmpty);
+            Assert.True(output.IsEmpty());
         }
 
 #if false
@@ -198,17 +188,17 @@ namespace S2Geometry
         {
             // Check that LaxPolygonLayer removes duplicate edges in such a way that
             // degeneracies are not lost.
-            S2Builder builder = new(new S2Builder.Options());
+            S2Builder builder = new(new Options());
             S2LaxPolygonShape output = new();
             LaxPolygonLayer.Options options = new();
             options.DegenerateBoundaries_ = (DegenerateBoundaries.KEEP);
             builder.StartLayer(new LaxPolygonLayer(output, options));
-            builder.AddShape(S2TextFormat.MakeLaxPolygonOrDie("0:0, 0:5, 5:5, 5:0"));
-            builder.AddPoint(S2TextFormat.MakePointOrDie("0:0"));
-            builder.AddPoint(S2TextFormat.MakePointOrDie("1:1"));
-            builder.AddPoint(S2TextFormat.MakePointOrDie("1:1"));
-            builder.AddShape(S2TextFormat.MakeLaxPolygonOrDie("2:2, 2:3"));
-            builder.AddShape(S2TextFormat.MakeLaxPolygonOrDie("2:2, 2:3"));
+            builder.AddShape(MakeLaxPolygonOrDie("0:0, 0:5, 5:5, 5:0"));
+            builder.AddPoint(MakePointOrDie("0:0"));
+            builder.AddPoint(MakePointOrDie("1:1"));
+            builder.AddPoint(MakePointOrDie("1:1"));
+            builder.AddShape(MakeLaxPolygonOrDie("2:2, 2:3"));
+            builder.AddShape(MakeLaxPolygonOrDie("2:2, 2:3"));
             Assert.True(builder.Build(out _));
             Assert.Equal("0:0, 0:5, 5:5, 5:0; 1:1; 2:2, 2:3",
             output.ToDebugString("; "));
@@ -234,11 +224,11 @@ namespace S2Geometry
         [Fact]
         public void Test_IndexedLaxPolygonLayer_AddsShape()
         {
-            S2Builder builder = new(new S2Builder.Options());
+            S2Builder builder = new(new Options());
             MutableS2ShapeIndex index = new();
             builder.StartLayer(new IndexedLaxPolygonLayer(index));
             string polygon_str = "0:0, 0:10, 10:0";
-            builder.AddPolygon(S2TextFormat.MakePolygonOrDie(polygon_str));
+            builder.AddPolygon(MakePolygonOrDie(polygon_str));
             Assert.True(builder.Build(out _));
             Assert.Equal(1, index.NumShapeIds());
             var polygon = (S2LaxPolygonShape)index.Shape(0);
@@ -248,7 +238,7 @@ namespace S2Geometry
         [Fact]
         public void Test_IndexedLaxPolygonLayer_IgnoresEmptyShape()
         {
-            S2Builder builder = new(new S2Builder.Options());
+            S2Builder builder = new(new Options());
             MutableS2ShapeIndex index = new();
             builder.StartLayer(new IndexedLaxPolygonLayer(index));
             Assert.True(builder.Build(out _));
@@ -259,14 +249,14 @@ namespace S2Geometry
             EdgeType edge_type, DegenerateBoundaries degenerate_boundaries)
         {
             _logger.WriteLine(degenerate_boundaries.ToString());
-            S2Builder builder = new(new S2Builder.Options());
+            S2Builder builder = new(new Options());
             S2LaxPolygonShape output = new();
             LaxPolygonLayer.Options options = new();
             options.EdgeType = (edge_type);
             options.DegenerateBoundaries_ = (degenerate_boundaries);
             builder.StartLayer(new LaxPolygonLayer(output, options));
 
-            var polygon = S2TextFormat.MakeLaxPolygonOrDie(input_str);
+            var polygon = MakeLaxPolygonOrDie(input_str);
             builder.AddShape(polygon);
 
             // In order to construct polygons that are full except possibly for a
@@ -277,7 +267,7 @@ namespace S2Geometry
             {
                 if (polygon.NumLoopVertices(i) == 0) has_full_loop = true;
             }
-            builder.AddIsFullPolygonPredicate(S2Builder.IsFullPolygon(has_full_loop));
+            builder.AddIsFullPolygonPredicate(IsFullPolygon(has_full_loop));
             Assert.True(builder.Build(out _));
             string actual_str = output.ToDebugString("; ");
             Assert.Equal(expected_str, actual_str);
@@ -317,7 +307,7 @@ namespace S2Geometry
             S2Builder builder, EdgeLabelMap edge_label_map)
         {
             const int kLabelBegin = 1234;  // Arbitrary.
-            for (int e = 0; e < shape.NumEdges; ++e)
+            for (int e = 0; e < shape.NumEdges(); ++e)
             {
                 Int32 label = kLabelBegin + e;
                 builder.SetLabel(label);
@@ -339,7 +329,7 @@ namespace S2Geometry
         private static void TestEdgeLabels(string input_str, EdgeType edge_type,
             DegenerateBoundaries degenerate_boundaries)
         {
-            S2Builder builder = new(new S2Builder.Options());
+            S2Builder builder = new(new Options());
             S2LaxPolygonShape output = new();
             LabelSetIds label_set_ids = new();
             IdSetLexicon label_set_lexicon = new();
@@ -350,7 +340,7 @@ namespace S2Geometry
                 output, label_set_ids, label_set_lexicon, options));
 
             EdgeLabelMap edge_label_map = new();
-            AddShapeWithLabels(S2TextFormat.MakeLaxPolygonOrDie(input_str), edge_type,
+            AddShapeWithLabels(MakeLaxPolygonOrDie(input_str), edge_type,
                                builder, edge_label_map);
             Assert.True(builder.Build(out _));
             for (int i = 0; i < output.NumChains(); ++i)
