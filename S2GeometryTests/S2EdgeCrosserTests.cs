@@ -165,60 +165,60 @@ public class S2EdgeCrosserTests
         // but we do a few simple tests here.
 
         // Two regular edges that cross.
-        TestCrossings(new S2Point(1, 2, 1), new S2Point(1, -3, 0.5),
-                      new S2Point(1, -0.5, -3), new S2Point(0.1, 0.5, 3), 1, 1);
+        TestCrossings(new(1, 2, 1), new(1, -3, 0.5),
+                      new(1, -0.5, -3), new(0.1, 0.5, 3), 1, 1);
 
         // Two regular edges that intersect antipodal points.
-        TestCrossings(new S2Point(1, 2, 1), new S2Point(1, -3, 0.5),
-                      new S2Point(-1, 0.5, 3), new S2Point(-0.1, -0.5, -3), -1, 0);
+        TestCrossings(new(1, 2, 1), new(1, -3, 0.5),
+                      new(-1, 0.5, 3), new(-0.1, -0.5, -3), -1, 0);
 
         // Two edges on the same great circle that start at antipodal points.
-        TestCrossings(new S2Point(0, 0, -1), new S2Point(0, 1, 0),
-                      new S2Point(0, 0, 1), new S2Point(0, 1, 1), -1, 0);
+        TestCrossings(new(0, 0, -1), new(0, 1, 0),
+                      new(0, 0, 1), new(0, 1, 1), -1, 0);
 
         // Two edges that cross where one vertex is S2.Origin.
-        TestCrossings(new S2Point(1, 0, 0), S2.Origin,
-                      new S2Point(1, -0.1, 1), new S2Point(1, 1, -0.1), 1, 1);
+        TestCrossings(new(1, 0, 0), S2.Origin,
+                      new(1, -0.1, 1), new(1, 1, -0.1), 1, 1);
 
         // Two edges that intersect antipodal points where one vertex is
         // S2.Origin.
-        TestCrossings(new S2Point(1, 0, 0), S2.Origin,
-                      new S2Point(-1, 0.1, -1), new S2Point(-1, -1, 0.1), -1, 0);
+        TestCrossings(new(1, 0, 0), S2.Origin,
+                      new(-1, 0.1, -1), new(-1, -1, 0.1), -1, 0);
 
         // Two edges that share an endpoint.  The Ortho() direction is (-4,0,2),
         // and edge AB is further CCW around (2,3,4) than CD.
-        TestCrossings(new S2Point(7, -2, 3), new S2Point(2, 3, 4),
-                      new S2Point(2, 3, 4), new S2Point(-1, 2, 5), 0, -1);
+        TestCrossings(new(7, -2, 3), new(2, 3, 4),
+                      new(2, 3, 4), new(-1, 2, 5), 0, -1);
 
         // Two edges that barely cross each other near the middle of one edge.  The
         // edge AB is approximately in the x=y plane, while CD is approximately
         // perpendicular to it and ends exactly at the x=y plane.
-        TestCrossings(new S2Point(1, 1, 1), new S2Point(1, MathUtils.NextAfter(1, 0), -1),
-                      new S2Point(11, -12, -1), new S2Point(10, 10, 1), 1, -1);
+        TestCrossings(new(1, 1, 1), new(1, MathUtils.NextAfter(1, 0), -1),
+                      new(11, -12, -1), new(10, 10, 1), 1, -1);
 
         // In this version, the edges are separated by a distance of about 1e-15 (S2Constants.DoubleError).
-        TestCrossings(new S2Point(1, 1, 1), new S2Point(1, MathUtils.NextAfter(1, 2), -1),
-                      new S2Point(1, -1, 0), new S2Point(1, 1, 0), -1, 0);
+        TestCrossings(new(1, 1, 1), new(1, MathUtils.NextAfter(1, 2), -1),
+                      new(1, -1, 0), new(1, 1, 0), -1, 0);
 
         // Two edges that barely cross each other near the end of both edges.  This
         // example cannot be handled using regular double-precision arithmetic due
         // to floating-point underflow.
-        TestCrossings(new S2Point(0, 0, 1), new S2Point(2, -1e-323, 1),
-                      new S2Point(1, -1, 1), new S2Point(1e-323, 0, 1), 1, -1);
+        TestCrossings(new(0, 0, 1), new(2, -1e-323, 1),
+                      new(1, -1, 1), new(1e-323, 0, 1), 1, -1);
 
         // In this version, the edges are separated by a distance of about 1e-640.
-        TestCrossings(new S2Point(0, 0, 1), new S2Point(2, 1e-323, 1),
-                      new S2Point(1, -1, 1), new S2Point(1e-323, 0, 1), -1, 0);
+        TestCrossings(new(0, 0, 1), new(2, 1e-323, 1),
+                      new(1, -1, 1), new(1e-323, 0, 1), -1, 0);
 
         // Two edges that barely cross each other near the middle of one edge.
         // Computing the exact determinant of some of the triangles in this test
         // requires more than 2000 bits of precision.
-        TestCrossings(new S2Point(1, -1e-323, -1e-323), new S2Point(1e-323, 1, 1e-323),
-                      new S2Point(1, -1, 1e-323), new S2Point(1, 1, 0), 1, 1);
+        TestCrossings(new(1, -1e-323, -1e-323), new(1e-323, 1, 1e-323),
+                      new(1, -1, 1e-323), new(1, 1, 0), 1, 1);
 
         // In this version, the edges are separated by a distance of about 1e-640.
-        TestCrossings(new S2Point(1, 1e-323, -1e-323), new S2Point(-1e-323, 1, 1e-323),
-                      new S2Point(1, -1, 1e-323), new S2Point(1, 1, 0), -1, 0);
+        TestCrossings(new(1, 1e-323, -1e-323), new(-1e-323, 1, 1e-323),
+                      new(1, -1, 1e-323), new(1, 1, 0), -1, 0);
     }
 
     [Fact]

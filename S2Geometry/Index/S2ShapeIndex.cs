@@ -382,9 +382,9 @@ public class S2ShapeIndexCell
         {
             // If the entire S2ShapeIndex contains just one shape, then we don't need
             // to encode any shape ids.  This is a very important and common case.
-            Assert.True(NumClipped() == 1);  // Index invariant: no empty cells.
+            System.Diagnostics.Debug.Assert(NumClipped() == 1);  // Index invariant: no empty cells.
             S2ClippedShape clipped = Clipped(0);
-            Assert.True(clipped.ShapeId == 0);
+            System.Diagnostics.Debug.Assert(clipped.ShapeId == 0);
             int n = clipped.NumEdges;
             encoder.Ensure(Encoder.kVarintMax64 + n * Encoder.kVarintMax32);
             var ccc = clipped.ContainsCenter ? 2 : 0;
@@ -437,7 +437,7 @@ public class S2ShapeIndexCell
             for (int j = 0; j < NumClipped(); ++j)
             {
                 var clipped = Clipped(j);
-                Assert.True(clipped.ShapeId >= shape_id_base);
+                System.Diagnostics.Debug.Assert(clipped.ShapeId >= shape_id_base);
                 int shape_delta = clipped.ShapeId - shape_id_base;
                 shape_id_base = clipped.ShapeId + 1;
 
@@ -569,7 +569,7 @@ public class S2ShapeIndexCell
             else
             {
                 // The clipped shape contains some other combination of edges.
-                Assert.True((header32 & 3U) == 1U);
+                System.Diagnostics.Debug.Assert((header32 & 3U) == 1U);
                 if (!decoder.TryGetVarUInt32(out var shape_delta)) return false;
                 shape_id += (int)shape_delta;
                 int num_edges = (int)((header32 >> 3) + 1);
@@ -599,7 +599,7 @@ public class S2ShapeIndexCell
         for (int i = 0; i < num_edges; ++i)
         {
             int edge_id = clipped.Edge(i);
-            Assert.True(edge_id >= edge_id_base);
+            System.Diagnostics.Debug.Assert(edge_id >= edge_id_base);
             int delta = edge_id - edge_id_base;
             if (i + 1 == num_edges)
             {

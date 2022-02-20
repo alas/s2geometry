@@ -38,9 +38,9 @@ namespace S2Geometry
                         vertex_counts[key2] += 1;
                     else
                         vertex_counts[key2] = 1;
-                    Assert2.Near(0.0, cell.VertexRaw(k).DotProd(key));
-                    Assert2.Near(0.0, cell.VertexRaw(k + 1).DotProd(key));
-                    Assert2.Near(1.0, cell.VertexRaw(k).CrossProd(cell.VertexRaw(k + 1))
+                    Assert2.DoubleEqual(0.0, cell.VertexRaw(k).DotProd(key));
+                    Assert2.DoubleEqual(0.0, cell.VertexRaw(k + 1).DotProd(key));
+                    Assert2.DoubleEqual(1.0, cell.VertexRaw(k).CrossProd(cell.VertexRaw(k + 1))
                         .Normalize().DotProd(cell.Edge(k)));
                 }
             }

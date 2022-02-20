@@ -25,7 +25,7 @@ public class IdentitySnapFunction : SnapFunction
         get => snap_radius_;
         set
         {
-            Assert.True(value <= kMaxSnapRadius);
+            System.Diagnostics.Debug.Assert(value <= kMaxSnapRadius);
             snap_radius_ = value;
         }
     }
@@ -96,8 +96,8 @@ public class S2CellIdSnapFunction : SnapFunction
         get => level_;
         set
         {
-            Assert.True(value >= 0);
-            Assert.True(value <= S2.kMaxCellLevel);
+            System.Diagnostics.Debug.Assert(value >= 0);
+            System.Diagnostics.Debug.Assert(value <= S2.kMaxCellLevel);
             level_ = value;
             SnapRadius = (MinSnapRadiusForLevel(value));
         }
@@ -115,8 +115,8 @@ public class S2CellIdSnapFunction : SnapFunction
         get => snap_radius_;
         set
         {
-            Assert.True(value >= MinSnapRadiusForLevel(Level));
-            Assert.True(value <= kMaxSnapRadius);
+            System.Diagnostics.Debug.Assert(value >= MinSnapRadiusForLevel(Level));
+            System.Diagnostics.Debug.Assert(value <= kMaxSnapRadius);
             snap_radius_ = value;
         }
     }
@@ -305,8 +305,8 @@ public class IntLatLngSnapFunction : SnapFunction
         get => _exponent;
         set
         {
-            Assert.True(value >= kMinExponent);
-            Assert.True(value <= kMaxExponent);
+            System.Diagnostics.Debug.Assert(value >= kMinExponent);
+            System.Diagnostics.Debug.Assert(value <= kMaxExponent);
             _exponent = value;
             SnapRadius = (MinSnapRadiusForExponent(value));
 
@@ -331,8 +331,8 @@ public class IntLatLngSnapFunction : SnapFunction
     {
         get => snap_radius_; set
         {
-            Assert.True(value >= MinSnapRadiusForExponent(Exponent));
-            Assert.True(value <= kMaxSnapRadius);
+            System.Diagnostics.Debug.Assert(value >= MinSnapRadiusForExponent(Exponent));
+            System.Diagnostics.Debug.Assert(value <= kMaxSnapRadius);
             snap_radius_ = value;
         }
     }
@@ -458,7 +458,7 @@ public class IntLatLngSnapFunction : SnapFunction
     }
     public override S2Point SnapPoint(S2Point point)
     {
-        Assert.True(Exponent >= 0);  // Make sure the snap function was initialized.
+        System.Diagnostics.Debug.Assert(Exponent >= 0);  // Make sure the snap function was initialized.
         var input = new S2LatLng(point);
         var lat = Math.Round(input.LatDegrees() * from_degrees_);
         var lng = Math.Round(input.LngDegrees() * from_degrees_);

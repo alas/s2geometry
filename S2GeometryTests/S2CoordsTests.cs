@@ -167,12 +167,12 @@ namespace S2Geometry
             {
                 for (double x = -1; x <= 1; x += 1 / 1024.0)
                 {
-                    Assert2.Near(S2.FaceUVtoXYZ(face, x, -1)
-                                     .CrossProd(S2.FaceUVtoXYZ(face, x, 1))
-                                     .Angle(S2.GetUNorm(face, x)), 0);
-                    Assert2.Near(S2.FaceUVtoXYZ(face, -1, x)
-                                     .CrossProd(S2.FaceUVtoXYZ(face, 1, x))
-                                     .Angle(S2.GetVNorm(face, x)), 0);
+                    Assert2.DoubleEqual(S2.FaceUVtoXYZ(face, x, -1)
+                        .CrossProd(S2.FaceUVtoXYZ(face, x, 1))
+                        .Angle(S2.GetUNorm(face, x)), 0);
+                    Assert2.DoubleEqual(S2.FaceUVtoXYZ(face, -1, x)
+                        .CrossProd(S2.FaceUVtoXYZ(face, 1, x))
+                        .Angle(S2.GetVNorm(face, x)), 0);
                 }
             }
         }

@@ -140,7 +140,7 @@ public class LaxPolygonLayer : Layer
 
     private void Init(S2LaxPolygonShape polygon, LabelSetIds? label_set_ids, IdSetLexicon? label_set_lexicon, Options options)
     {
-        Assert.True((label_set_ids == null) == (label_set_lexicon == null));
+        System.Diagnostics.Debug.Assert((label_set_ids == null) == (label_set_lexicon == null));
         polygon_ = polygon;
         label_set_ids_ = label_set_ids;
         label_set_lexicon_ = label_set_lexicon;
@@ -256,7 +256,7 @@ public class LaxPolygonLayer : Layer
     // Returns all edges of "g" except for those identified by "edges_to_discard".
     private static void DiscardEdges(Graph g, List<Int32> edges_to_discard, List<Edge> new_edges, List<Int32> new_input_edge_id_set_ids)
     {
-        Assert.True(edges_to_discard.IsSorted());
+        System.Diagnostics.Debug.Assert(edges_to_discard.IsSorted());
         new_edges.Clear();
         new_input_edge_id_set_ids.Clear();
         new_edges.Capacity = g.NumEdges;
@@ -274,7 +274,7 @@ public class LaxPolygonLayer : Layer
                 new_input_edge_id_set_ids.Add(g.InputEdgeIdSetId(e));
             }
         }
-        Assert.True(it == edges_to_discard.Count);
+        System.Diagnostics.Debug.Assert(it == edges_to_discard.Count);
     }
 
     private static void MaybeAddFullLoop(Graph g, List<List<S2Point>> loops, out S2Error error)

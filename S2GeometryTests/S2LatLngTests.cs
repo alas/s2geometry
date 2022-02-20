@@ -24,14 +24,14 @@ public class S2LatLngTests
         S2LatLng better = bad.Normalized();
         Assert.True(better.IsValid());
         Assert.Equal(S1Angle.FromDegrees(90), better.Lat());
-        Assert2.Near(S1Angle.FromDegrees(-160).Radians, better.LngRadians);
+        Assert2.DoubleEqual(S1Angle.FromDegrees(-160).Radians, better.LngRadians);
 
         bad = S2LatLng.FromDegrees(-100, -360);
         Assert.False(bad.IsValid());
         better = bad.Normalized();
         Assert.True(better.IsValid());
         Assert.Equal(S1Angle.FromDegrees(-90), better.Lat());
-        Assert2.Near(0.0, better.LngRadians);
+        Assert2.DoubleEqual(0.0, better.LngRadians);
 
         Assert.True((S2LatLng.FromDegrees(10, 20) + S2LatLng.FromDegrees(20, 30)).
                     ApproxEquals(S2LatLng.FromDegrees(30, 50)));
@@ -55,9 +55,9 @@ public class S2LatLngTests
     public void Test_S2LatLng_TestConversion()
     {
         // Test special cases: poles, "date line"
-        Assert2.Near(90.0, new S2LatLng(S2LatLng.FromDegrees(90.0, 65.0).ToPoint()).Lat().GetDegrees());
+        Assert2.DoubleEqual(90.0, new S2LatLng(S2LatLng.FromDegrees(90.0, 65.0).ToPoint()).Lat().GetDegrees());
         Assert.Equal(-S2.M_PI_2, new S2LatLng(S2LatLng.FromRadians(-S2.M_PI_2, 1).ToPoint()).LatRadians);
-        Assert2.Near(180.0, Math.Abs(new S2LatLng(S2LatLng.FromDegrees(12.2, 180.0).ToPoint()).Lng().GetDegrees()));
+        Assert2.DoubleEqual(180.0, Math.Abs(new S2LatLng(S2LatLng.FromDegrees(12.2, 180.0).ToPoint()).Lng().GetDegrees()));
         Assert.Equal(Math.PI, Math.Abs(new S2LatLng(S2LatLng.FromRadians(0.1, -Math.PI).ToPoint()).LngRadians));
 
         // Test a bunch of random points.

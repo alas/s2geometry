@@ -172,7 +172,7 @@ public class S2ConvexHullQuery
         }
 
         // Verify that all points lie within a 180 degree span around the origin.
-        Assert.True(S2Pred.Sign(origin, points_.First(), points_.Last()) >= 0);
+        System.Diagnostics.Debug.Assert(S2Pred.Sign(origin, points_.First(), points_.Last()) >= 0);
 
         // Generate the lower and upper halves of the convex hull.  Each half
         // consists of the maximal subset of vertices such that the edge chain makes
@@ -184,8 +184,8 @@ public class S2ConvexHullQuery
         GetMonotoneChain(upper);
 
         // Remove the duplicate vertices and combine the chains.
-        Assert.True(lower.First() == upper.Last());
-        Assert.True(lower.Last() == upper.First());
+        System.Diagnostics.Debug.Assert(lower.First() == upper.Last());
+        System.Diagnostics.Debug.Assert(lower.Last() == upper.First());
         lower.RemoveAt(lower.Count - 1);
         upper.RemoveAt(lower.Count - 1);
         lower.AddRange(upper);
@@ -196,7 +196,7 @@ public class S2ConvexHullQuery
     // such that the edge chain makes only left (CCW) turns.
     private void GetMonotoneChain(List<S2Point> output)
     {
-        Assert.True(!output.Any());
+        System.Diagnostics.Debug.Assert(!output.Any());
         foreach (S2Point p in points_)
         {
             // Remove any points that would cause the chain to make a clockwise turn.

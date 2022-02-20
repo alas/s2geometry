@@ -84,14 +84,14 @@ public static partial class S2
         for (int chain_id = 0; chain_id < num_chains; ++chain_id)
         {
             GetChainVertices(shape, chain_id, out var vertices);
-            area += S2.GetSignedArea(vertices);
+            area += S2.GetSignedArea(vertices.ToList());
 #if DEBUG
-            max_error += S2.GetCurvatureMaxError(new S2PointLoopSpan(vertices).ToArray());
+            max_error += S2.GetCurvatureMaxError(new(vertices));
 #endif
         }
         // Note that S2.GetSignedArea() guarantees that the full loop (containing
         // all points on the sphere) has a very small negative area.
-        Assert.True(Math.Abs(area) <= S2.M_4_PI + max_error);
+        System.Diagnostics.Debug.Assert(Math.Abs(area) <= S2.M_4_PI + max_error);
         if (area < 0.0) area += S2.M_4_PI;
         return area;
     }
@@ -110,7 +110,7 @@ public static partial class S2
         for (int chain_id = 0; chain_id < num_chains; ++chain_id)
         {
             GetChainVertices(shape, chain_id, out var vertices);
-            area += S2.GetApproxArea(vertices); //todo
+            area += S2.GetApproxArea(vertices.ToList()); //todo
         }
         // Special case to ensure that full polygons are handled correctly.
         if (area <= S2.M_4_PI) return area;
@@ -150,7 +150,7 @@ public static partial class S2
                     break;
                 default:
                     GetChainVertices(shape, chain_id, out vertices);
-                    centroid += S2.GetCentroid(vertices);
+                    centroid += S2.GetCentroid(vertices.ToList());
                     break;
             }
         }

@@ -51,7 +51,7 @@ public class S2ClosestCellQueryBase<Distance> where Distance : IEquatable<Distan
             get => maxResults;
             set
             {
-                Assert.True(value >= 1);
+                System.Diagnostics.Debug.Assert(value >= 1);
                 maxResults = value;
             }
         }
@@ -235,7 +235,7 @@ public class S2ClosestCellQueryBase<Distance> where Distance : IEquatable<Distan
     // REQUIRES: options.max_results() == 1
     public Result FindClosestCell(S2DistanceTarget<Distance> target, Options options)
     {
-        Assert.True(options.MaxResults == 1);
+        System.Diagnostics.Debug.Assert(options.MaxResults == 1);
         FindClosestCellsInternal(target, options);
         return result_singleton_;
     }
@@ -250,9 +250,9 @@ public class S2ClosestCellQueryBase<Distance> where Distance : IEquatable<Distan
         contents_it_.Reset();
         distance_limit_ = options.MaxDistance;
         result_singleton_ = new Result();
-        Assert.True(!result_vector_.Any());
-        Assert.True(!result_set_.Any());
-        Assert.True(target.MaxBruteForceIndexSize >= 0);
+        System.Diagnostics.Debug.Assert(!result_vector_.Any());
+        System.Diagnostics.Debug.Assert(!result_set_.Any());
+        System.Diagnostics.Debug.Assert(target.MaxBruteForceIndexSize >= 0);
         if (Equals(distance_limit_, Zero)) return;
 
         // If max_error() > 0 and the target takes advantage of this, then we may
@@ -340,7 +340,7 @@ public class S2ClosestCellQueryBase<Distance> where Distance : IEquatable<Distan
     }
     private void InitQueue()
     {
-        Assert.True(!queue_.Any());
+        System.Diagnostics.Debug.Assert(!queue_.Any());
 
         // Optimization: rather than starting with the entire index, see if we can
         // limit the search region to a small disc.  Then we can find a covering for
@@ -468,7 +468,7 @@ public class S2ClosestCellQueryBase<Distance> where Distance : IEquatable<Distan
     {
         // Add the lowest common ancestor of the given range.
         int level = first_id.CommonAncestorLevel(last_id);
-        Assert.True(level >= 0);
+        System.Diagnostics.Debug.Assert(level >= 0);
         index_covering_.Add(first_id.Parent(level));
     }
     private void MaybeAddResult(S2CellId cell_id, Int32 label)

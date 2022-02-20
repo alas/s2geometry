@@ -26,7 +26,7 @@ namespace S2Geometry
             Assert.True(full.IsFull());
             Assert.True(full.Complement().IsEmpty());
             Assert.Equal(2, full.Height());
-            Assert2.Near(180.0, full.Radius.Degrees());
+            Assert2.DoubleEqual(180.0, full.Radius.Degrees());
 
             // Test ==/!=.
             Assert.Equal(full, full);

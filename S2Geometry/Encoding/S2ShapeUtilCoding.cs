@@ -55,7 +55,7 @@ public static class S2ShapeUtilCoding
             return false;
         }
         // Update the following constant when adding new S2Shape encodings.
-        Assert.True(tag < S2Shape.TypeTag.kNextAvailableTypeTag);
+        System.Diagnostics.Debug.Assert(tag < S2Shape.TypeTag.kNextAvailableTypeTag);
         shape.Encode(encoder, CodingHint.FAST);
         return true;
     }
@@ -75,7 +75,7 @@ public static class S2ShapeUtilCoding
             return false;
         }
         // Update the following constant when adding new S2Shape encodings.
-        Assert.True(tag < S2Shape.TypeTag.kNextAvailableTypeTag);
+        System.Diagnostics.Debug.Assert(tag < S2Shape.TypeTag.kNextAvailableTypeTag);
         shape.Encode(encoder, CodingHint.COMPACT);
         return true;
     }
@@ -314,7 +314,7 @@ public static class S2ShapeUtilCoding
         var shape_vector = new StringVectorEncoder();
         foreach (var shape in index)
         {
-            Assert.True(shape != null);
+            System.Diagnostics.Debug.Assert(shape != null);
             (shape as IEncoder)!.Encode(shape_vector.AddViaEncoder(), hint);
         }
         shape_vector.Encode(encoder);

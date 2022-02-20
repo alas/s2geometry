@@ -193,7 +193,7 @@ public partial class S2Builder
         Options_ = options;
         var snap_function = options.SnapFunction;
         var snap_radius = snap_function.SnapRadius;
-        Assert.True(snap_radius <= SnapFunction.kMaxSnapRadius);
+        System.Diagnostics.Debug.Assert(snap_radius <= SnapFunction.kMaxSnapRadius);
 
         // Convert the snap radius to an S1ChordAngle.  This is the "true snap
         // radius" used when evaluating exact predicates (s2predicates.h).
@@ -262,7 +262,7 @@ public partial class S2Builder
                                      snap_function.MinEdgeVertexSeparation());
         if (options.intersection_tolerance <= S1Angle.Zero)
         {
-            Assert.True(!check_all_site_crossings_);
+            System.Diagnostics.Debug.Assert(!check_all_site_crossings_);
         }
 
         // To implement idempotency, we check whether the input geometry could
@@ -330,7 +330,7 @@ public partial class S2Builder
     // builder.StartLayer(new s2builderutil.S2PolylineLayer(line2)));
     // ... Add edges using builder.AddEdge(), etc ...
     // S2Error error;
-    // Assert.True(builder.Build(out error)) << error;  // Builds "line1" & "line2"
+    // System.Diagnostics.Debug.Assert(builder.Build(out error)) << error;  // Builds "line1" & "line2"
     public void StartLayer(Layer layer)
     {
         layer_options_.Add(layer.GraphOptions_());
@@ -348,7 +348,7 @@ public partial class S2Builder
     // Adds the given edge to the current layer.
     public void AddEdge(S2Point v0, S2Point v1)
     {
-        Assert.True(layers_.Any()); // Call StartLayer before adding any edges
+        System.Diagnostics.Debug.Assert(layers_.Any()); // Call StartLayer before adding any edges
         if (v0 == v1 && (layer_options_.Last().DegenerateEdges_ ==
                          GraphOptions.DegenerateEdges.DISCARD))
         {
@@ -470,7 +470,7 @@ public partial class S2Builder
     {
         // It is an error to call this method without first setting
         // intersection_tolerance() to a non-zero value.
-        Assert.True(Options_.intersection_tolerance > S1Angle.Zero);
+        System.Diagnostics.Debug.Assert(Options_.intersection_tolerance > S1Angle.Zero);
 
         // Calling this method also overrides the idempotent() option.
         snapping_needed_ = true;
@@ -598,7 +598,7 @@ public partial class S2Builder
     // REQUIRES: label >= 0.
     public void PushLabel(int label)
     {
-        Assert.True(label >= 0);
+        System.Diagnostics.Debug.Assert(label >= 0);
         label_set_.Add(label);
         label_set_modified_ = true;
     }
@@ -614,7 +614,7 @@ public partial class S2Builder
     // REQUIRES: label >= 0.
     public void SetLabel(int label)
     {
-        Assert.True(label >= 0);
+        System.Diagnostics.Debug.Assert(label >= 0);
         label_set_.Capacity = 1;
         label_set_[0] = label;
         label_set_modified_ = true;
@@ -1233,7 +1233,7 @@ public partial class S2Builder
                     // Then we find all the edges near the new site (including this one) and
                     // add them to the snap queue.
                     var new_site = GetSeparationSite(site_to_avoid, v0, v1, edge_id);
-                    Assert.True(site_to_avoid != new_site);
+                    System.Diagnostics.Debug.Assert(site_to_avoid != new_site);
                     AddExtraSite(new_site, input_edge_index, edges_to_resnap);
 
                     // Skip the remaining sites near this chain edge, and then continue
@@ -1251,7 +1251,7 @@ public partial class S2Builder
         MutableS2ShapeIndex input_edge_index,
         Dictionary<InputEdgeId, InputEdgeId> edges_to_resnap)
     {
-        if (sites_.Any()) Assert.True(new_site != sites_.Last());
+        if (sites_.Any()) System.Diagnostics.Debug.Assert(new_site != sites_.Last());
         if (!tracker_.AddSpace(sites_, 1)) return;
         var new_site_id = sites_.Count;
         sites_.Add(new_site);
@@ -1312,8 +1312,8 @@ public partial class S2Builder
             new_site = gap_max;
         }
         new_site = SnapSite(new_site);
-        Assert.True(v0 != new_site);
-        Assert.True(v1 != new_site);
+        System.Diagnostics.Debug.Assert(v0 != new_site);
+        System.Diagnostics.Debug.Assert(v1 != new_site);
         return new_site;
     }
 
@@ -1410,7 +1410,7 @@ public partial class S2Builder
                     add_site_c = false;  // Site C is excluded by B.
                     break;
                 }
-                Assert.True(S2Pred.Excluded.NEITHER == result);
+                System.Diagnostics.Debug.Assert(S2Pred.Excluded.NEITHER == result);
 
                 // Otherwise check whether the previous site A is close enough to B and
                 // C that it might further clip the Voronoi region of B.
@@ -1439,7 +1439,7 @@ public partial class S2Builder
                 chain.Add(site_id);
             }
         }
-        Assert.True(chain.Any());
+        System.Diagnostics.Debug.Assert(chain.Any());
 #if s2builder_verbose
         System.Text.StringBuilder sb = new($"({edge.Item1},{edge.Item2}): ");
         foreach (var id in chain) sb.Append(id + " ");
@@ -1993,7 +1993,7 @@ public partial class S2Builder
             }
             set
             {
-                Assert.True(value >= S1Angle.Zero);
+                System.Diagnostics.Debug.Assert(value >= S1Angle.Zero);
                 intersection_tolerance_ = value;
             }
         }
@@ -2126,7 +2126,7 @@ public partial class S2Builder
             // actual edge deviation exceeds the limit; in practice, splitting is rare
             // even with long edges.)  Note that it is always possible to split edges
             // when max_edge_deviation() is exceeded; see MaybeAddExtraSites().
-            Assert.True(SnapFunction.SnapRadius <= SnapFunction.kMaxSnapRadius);
+            System.Diagnostics.Debug.Assert(SnapFunction.SnapRadius <= SnapFunction.kMaxSnapRadius);
             double kMaxEdgeDeviationRatio = 1.1;
             return kMaxEdgeDeviationRatio * edge_snap_radius();
         }
@@ -2359,7 +2359,7 @@ public partial class S2Builder
         {
             // NOTE(ericv): If this method shows up in profiling, the result could be
             // stored with each edge (i.e., edge_layers_ and new_edge_layers_).
-            Assert.True(id >= 0);
+            System.Diagnostics.Debug.Assert(id >= 0);
             return layer_begins_.GetUpperBound(id) - 1;
         }
         // Returns true if VertexId "v" can be an interior vertex of a simplified edge
@@ -2459,7 +2459,7 @@ public partial class S2Builder
         // next vertex in the edge chain.
         private int FollowChain(int v0, int v1)
         {
-            Assert.True(is_interior_[v1]);
+            System.Diagnostics.Debug.Assert(is_interior_[v1]);
             foreach (var e in out_.EdgeIds(v1))
             {
                 var v = g_.GetEdge(e).EdgeId;
@@ -2540,7 +2540,7 @@ public partial class S2Builder
                         best = id;
                 }
             }
-            Assert.True(best >= 0);  // Because there is at least one outgoing edge.
+            System.Diagnostics.Debug.Assert(best >= 0);  // Because there is at least one outgoing edge.
 
             foreach (var v in edge_sites[best])
             {
@@ -2607,7 +2607,7 @@ public partial class S2Builder
                     // associated with degenerate edges.  Each input edge ids will be
                     // assigned to one of the output edges later.  (Normally there are no
                     // degenerate edges at all since most layer types don't want them.)
-                    Assert.True(is_interior_[v0]);
+                    System.Diagnostics.Debug.Assert(is_interior_[v0]);
                     foreach (var e in out_.EdgeIds(v0, v0))
                     {
                         foreach (var id in g_.InputEdgeIds(e))
@@ -2639,7 +2639,7 @@ public partial class S2Builder
                     used_[e] = true;
                     ++j;
                 }
-                Assert.True(merged_input_ids.Count == j);
+                System.Diagnostics.Debug.Assert(merged_input_ids.Count == j);
             }
             if (degenerate_ids.Any())
             {
@@ -2714,7 +2714,7 @@ public partial class S2Builder
                 {
                     if (merged_ids[order[index - 1]][0] >= layer_begins_[layer]) --index;
                 }
-                Assert.True(layer == InputEdgeLayer(merged_ids[(int)order[index]][0]));
+                System.Diagnostics.Debug.Assert(layer == InputEdgeLayer(merged_ids[(int)order[index]][0]));
                 merged_ids[order[index]].Add(degenerate_id);
             }
         }

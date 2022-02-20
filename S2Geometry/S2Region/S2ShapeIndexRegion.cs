@@ -85,7 +85,7 @@ public sealed class S2ShapeIndexRegion<TIndex> : IS2Region<S2ShapeIndexRegion<TI
         {
             // Add the lowest common ancestor of the given range.
             int level = first.CommonAncestorLevel(last);
-            Assert.True(level >= 0);
+            System.Diagnostics.Debug.Assert(level >= 0);
             cell_ids.Add(first.Parent(level));
         }
     }
@@ -235,7 +235,7 @@ public sealed class S2ShapeIndexRegion<TIndex> : IS2Region<S2ShapeIndexRegion<TI
         // Otherwise, the iterator points to an index cell containing "target".
         // If any shape contains the target cell, we return true.
         var icell = Index().GetIndexCell(pos);
-        Assert.True(icell.Value.Item1.Contains(target.Id));
+        System.Diagnostics.Debug.Assert(icell.Value.Item1.Contains(target.Id));
         var cell = icell.Value.Item2;
         for (int s = 0; s < cell.NumClipped(); ++s)
         {
@@ -282,7 +282,7 @@ public sealed class S2ShapeIndexRegion<TIndex> : IS2Region<S2ShapeIndexRegion<TI
         // cells are created only if they have at least one edge or they are
         // entirely contained by the loop.
         var icell = Index().GetIndexCell(pos);
-        Assert.True(icell.Value.Item1.Contains(target.Id));
+        System.Diagnostics.Debug.Assert(icell.Value.Item1.Contains(target.Id));
         if (icell.Value.Item1 == target.Id) return true;
 
         // Test whether any shape intersects the target cell or contains its center.

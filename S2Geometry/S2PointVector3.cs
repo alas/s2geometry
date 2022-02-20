@@ -120,7 +120,7 @@ public readonly record struct S2PointVector3
     public S2PointVector3 Inverse()
     {
         var det = Det();
-        Assert.True(det != 0); // Can't inverse. Determinant = 0.
+        System.Diagnostics.Debug.Assert(det != 0); // Can't inverse. Determinant = 0.
         return (1 / det) * ComatrixTransposed();
     }
 

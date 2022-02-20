@@ -112,7 +112,7 @@ public static partial class S2
         // Note that the test below is written so as to get correct results when the
         // angle ABC is degenerate.  If A = C or C = R it returns false, and
         // otherwise if A = R it returns true.
-        Assert.True(a != b && b != c);
+        System.Diagnostics.Debug.Assert(a != b && b != c);
         return !S2Pred.OrderedCCW(S2.RefDir(b), c, a, b);
     }
 
@@ -226,7 +226,7 @@ public static partial class S2
     // very small angle.  See "kIntersectionError" below for details.
     public static S2Point GetIntersection(S2Point a0, S2Point a1, S2Point b0, S2Point b1, Dictionary<Internal.IntersectionMethod, int>? intersectionMethodTally)
     {
-        Assert.True(CrossingSign(a0, a1, b0, b1) > 0);
+        System.Diagnostics.Debug.Assert(CrossingSign(a0, a1, b0, b1) > 0);
 
         // It is difficult to compute the intersection point of two edges accurately
         // when the angle between the edges is very small.  Previously we handled
@@ -292,8 +292,8 @@ public static partial class S2
         }
 
         // Make sure that the intersection point lies on both edges.
-        Assert.True(ApproximatelyOrdered(a0, result, a1, kIntersectionError));
-        Assert.True(ApproximatelyOrdered(b0, result, b1, kIntersectionError));
+        System.Diagnostics.Debug.Assert(ApproximatelyOrdered(a0, result, a1, kIntersectionError));
+        System.Diagnostics.Debug.Assert(ApproximatelyOrdered(b0, result, b1, kIntersectionError));
 
         return result;
     }
@@ -387,7 +387,7 @@ public static partial class S2
         // REQUIRES: a != b (this case should be handled before calling this function)
         public static S2Point ExactCrossProd(S2Point a, S2Point b)
         {
-            Assert.True(a != b);
+            System.Diagnostics.Debug.Assert(a != b);
             S2Point result_xf = a.ToExact().CrossProd(b.ToExact());
             if (!S2Pred.IsZero(result_xf))
             {
@@ -412,7 +412,7 @@ public static partial class S2
         // REQUIRES: a and b are linearly dependent
         public static S2Point SymbolicCrossProd(S2Point a, S2Point b)
         {
-            Assert.True(a != b);
+            System.Diagnostics.Debug.Assert(a != b);
             // SymbolicCrossProdSorted() requires that a < b.
             if (a < b)
             {
@@ -469,7 +469,7 @@ public static partial class S2
             if (S2Pred.OrderedCCW(a0, b0, a1, a_norm) && b0 < x) x = b0;
             if (S2Pred.OrderedCCW(a0, b1, a1, a_norm) && b1 < x) x = b1;
 
-            Assert.True(x.IsUnitLength());
+            System.Diagnostics.Debug.Assert(x.IsUnitLength());
             return x;
         }
 
@@ -536,8 +536,8 @@ public static partial class S2
     // without precision loss due to floating-point underflow.)
     public static S2Point RobustCrossProd(S2Point a, S2Point b)
     {
-        Assert.True(a.IsUnitLength());
-        Assert.True(b.IsUnitLength());
+        System.Diagnostics.Debug.Assert(a.IsUnitLength());
+        System.Diagnostics.Debug.Assert(b.IsUnitLength());
 
         // The direction of a.CrossProd(b) becomes unstable as (a + b) or (a - b)
         // approaches zero.  This leads to situations where a.CrossProd(b) is not
@@ -574,8 +574,8 @@ public static partial class S2
     // normalizable (i.e., EnsureNormalizable() should be called on the result).
     public static S2Point SymbolicCrossProdSorted(S2Point a, S2Point b)
     {
-        Assert.True(a < b);
-        Assert.True(S2Pred.IsZero(a.ToExact().CrossProd(b.ToExact())));
+        System.Diagnostics.Debug.Assert(a < b);
+        System.Diagnostics.Debug.Assert(S2Pred.IsZero(a.ToExact().CrossProd(b.ToExact())));
 
         // The following code uses the same symbolic perturbation model as S2::Sign.
         // The particular sequence of tests below was obtained using Mathematica
@@ -641,7 +641,7 @@ public static partial class S2
         // None of the remaining cases can occur in practice, because we can only get
         // to this point if b = (0, 0, 0).  Nevertheless, even (0, 0, 0) has a
         // well-defined direction under the symbolic perturbation model.
-        Assert.True(b[1] == 0 && b[2] == 0);        // da[0] coefficients (always zero)
+        System.Diagnostics.Debug.Assert(b[1] == 0 && b[2] == 0);        // da[0] coefficients (always zero)
 
         if (a[0] != 0 || a[1] != 0)
         {          // db[2]
@@ -690,7 +690,7 @@ public static partial class S2
     // REQUIRES: p != (0, 0, 0)
     public static S2Point EnsureNormalizable(S2Point p)
     {
-        Assert.True(p != new S2Point(0, 0, 0));
+        System.Diagnostics.Debug.Assert(p != new S2Point(0, 0, 0));
         if (!IsNormalizable(p))
         {
             // We can't just scale by a fixed factor because the smallest representable
@@ -802,7 +802,7 @@ public static partial class S2
         // even for edges that meet at an angle of 30 degrees.  (On Intel platforms
         // kMinResultLen corresponds to an intersection angle of about 0.04
         // degrees.)
-        Assert.True(kMinResultLen <= 0.5);
+        System.Diagnostics.Debug.Assert(kMinResultLen <= 0.5);
         if (kMinResultLen >= 0.5) return false;
 
         if (RobustNormalWithLength(a0, a1, out var a_norm) >= kMinNormalLength &&
@@ -882,7 +882,7 @@ public static partial class S2
 
     private static bool GetIntersectionStableSorted(S2Point a0, S2Point a1, S2Point b0, S2Point b1, out S2Point result)
     {
-        Assert.True((a1 - a0).Norm2() >= (b1 - b0).Norm2());
+        System.Diagnostics.Debug.Assert((a1 - a0).Norm2() >= (b1 - b0).Norm2());
         result = S2Point.Empty;
 
         // Compute the normal of the plane through (a0, a1) in a stable way.

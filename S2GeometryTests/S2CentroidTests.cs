@@ -33,7 +33,7 @@ namespace S2Geometry
             S2Point a = new(0, -1, 0), b = new(1, 0, 0), c = new(0, 1, 0);
             S2Point centroid = S2Centroid.TrueCentroid(a, b) + S2Centroid.TrueCentroid(b, c);
             Assert.True(S2.ApproxEquals(b, centroid.Normalize()));
-            Assert2.Near(2.0, centroid.Norm());
+            Assert2.DoubleEqual(2.0, centroid.Norm());
         }
 
         [Fact]

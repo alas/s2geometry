@@ -12,13 +12,10 @@ public class S2LatLngRectBounderTests
         return bounder.GetBound();
     }
 
-    private static S2LatLngRect GetEdgeBound(
-                    double x1, double y1, double z1,
-                    double x2, double y2, double z2)
-    {
-        return GetEdgeBound(new S2Point(x1, y1, z1).Normalize(),
-                            new S2Point(x2, y2, z2).Normalize());
-    }
+    private static S2LatLngRect GetEdgeBound(double x1, double y1, double z1,
+                                             double x2, double y2, double z2) =>
+        GetEdgeBound(new S2Point(x1, y1, z1).Normalize(),
+                     new S2Point(x2, y2, z2).Normalize());
 
     [Fact]
     public void Test_RectBounder_MaxLatitudeSimple()
@@ -37,17 +34,17 @@ public class S2LatLngRectBounderTests
         // allowable error range (i.e., by adding 0.5 * kRectError).
 
         // Max latitude, CW edge
-        Assert2.Near(S2.M_PI_4 + 0.5 * kRectError.LatRadians,
-                         GetEdgeBound(1, 1, 1, 1, -1, 1).Lat.Hi);
+        Assert2.DoubleEqual(S2.M_PI_4 + 0.5 * kRectError.LatRadians,
+            GetEdgeBound(1, 1, 1, 1, -1, 1).Lat.Hi);
         // Max latitude, CCW edge
-        Assert2.Near(S2.M_PI_4 + 0.5 * kRectError.LatRadians,
-                         GetEdgeBound(1, -1, 1, 1, 1, 1).Lat.Hi);  // NOLINT
-                                                                   // Min latitude, CW edge
-        Assert2.Near(-S2.M_PI_4 - 0.5 * kRectError.LatRadians,
-                         GetEdgeBound(1, -1, -1, -1, -1, -1).Lat.Lo);  // NOLINT
-                                                                       // Min latitude, CCW edge
-        Assert2.Near(-S2.M_PI_4 - 0.5 * kRectError.LatRadians,
-                         GetEdgeBound(-1, 1, -1, -1, -1, -1).Lat.Lo);  // NOLINT
+        Assert2.DoubleEqual(S2.M_PI_4 + 0.5 * kRectError.LatRadians,
+            GetEdgeBound(1, -1, 1, 1, 1, 1).Lat.Hi);  // NOLINT
+        // Min latitude, CW edge
+        Assert2.DoubleEqual(-S2.M_PI_4 - 0.5 * kRectError.LatRadians,
+            GetEdgeBound(1, -1, -1, -1, -1, -1).Lat.Lo);  // NOLINT
+        // Min latitude, CCW edge
+        Assert2.DoubleEqual(-S2.M_PI_4 - 0.5 * kRectError.LatRadians,
+            GetEdgeBound(-1, 1, -1, -1, -1, -1).Lat.Lo);  // NOLINT
 
         // Check cases where the edge passes through one of the poles.
         Assert.Equal(S2.M_PI_2, GetEdgeBound(.3, .4, 1, -.3, -.4, 1).Lat.Hi);  // NOLINT

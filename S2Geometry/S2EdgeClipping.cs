@@ -28,8 +28,8 @@ public static class S2EdgeClipping
     // well-defined even its endpoints are antipodal.
     public static void GetFaceSegments(S2PointUVW a, S2PointUVW b, FaceSegmentVector segments)
     {
-        Assert.True(a.IsUnitLength());
-        Assert.True(b.IsUnitLength());
+        System.Diagnostics.Debug.Assert(a.IsUnitLength());
+        System.Diagnostics.Debug.Assert(b.IsUnitLength());
         segments.Clear();
 
         // Fast path: both endpoints are on the same face.
@@ -96,7 +96,7 @@ public static class S2EdgeClipping
     // in (u,v) space, this method clips to [-R,R]x[-R,R] where R=(1+padding).
     public static bool ClipToPaddedFace(S2PointUVW a, S2PointUVW b, int face, double padding, out R2Point a_uv, out R2Point b_uv)
     {
-        Assert.True(padding >= 0);
+        System.Diagnostics.Debug.Assert(padding >= 0);
         // Fast path: both endpoints are on the given face.
         if (S2.GetFace(a) == face && S2.GetFace(b) == face)
         {
@@ -293,7 +293,7 @@ public static class S2EdgeClipping
     // REQUIRES: a != b
     public static double InterpolateDouble(double x, double a, double b, double a1, double b1)
     {
-        Assert.True(a != b);
+        System.Diagnostics.Debug.Assert(a != b);
         // To get results that are accurate near both A and B, we interpolate
         // starting from the closer of the two points.
         if (Math.Abs(a - x) <= Math.Abs(b - x))
@@ -378,7 +378,7 @@ public static class S2EdgeClipping
     // exits exactly through a corner vertex of the cube face.
     private static int GetExitAxis(S2PointUVW n)
     {
-        Assert.True(IntersectsFace(n));
+        System.Diagnostics.Debug.Assert(IntersectsFace(n));
         if (IntersectsOppositeEdges(n))
         {
             // The line passes through through opposite edges of the face.
@@ -392,7 +392,7 @@ public static class S2EdgeClipping
             // It exits the v=+1 or v=-1 edge if an even number of the components of N
             // are negative.  We test this using signbit() rather than multiplication
             // to avoid the possibility of underflow.
-            Assert.True(n[0] != 0 && n[1] != 0 && n[2] != 0);
+            System.Diagnostics.Debug.Assert(n[0] != 0 && n[1] != 0 && n[2] != 0);
             static int signbit(double a) => a < 0 ? 1 : 0;
             return ((signbit(n[0]) ^ signbit(n[1]) ^ signbit(n[2])) == 0) ? 1 : 0;
         }
@@ -457,7 +457,7 @@ public static class S2EdgeClipping
         {
             face = S2.GetUVWFace(face, 1 /*V axis*/, a_uv[1] > 0);
         }
-        Assert.True(IntersectsFace(S2.FaceXYZtoUVW(face, ab)));
+        System.Diagnostics.Debug.Assert(IntersectsFace(S2.FaceXYZtoUVW(face, ab)));
         S2.ValidFaceXYZtoUV(face, a, out a_uv);
         var x = Math.Max(-1.0, Math.Min(1.0, a_uv[0]));
         var y = Math.Max(-1.0, Math.Min(1.0, a_uv[1]));
@@ -505,7 +505,7 @@ public static class S2EdgeClipping
     // various parameters.
     private static int ClipDestination(S2PointUVW a, S2PointUVW b, S2PointUVW scaled_n, S2PointUVW a_tangent, S2PointUVW b_tangent, double scale_uv, out R2Point uv)
     {
-        Assert.True(IntersectsFace(scaled_n));
+        System.Diagnostics.Debug.Assert(IntersectsFace(scaled_n));
 
         // Optimization: if B is within the safe region of the face, use it.
         double kMaxSafeUVCoord = 1 - kFaceClipErrorUVCoord;

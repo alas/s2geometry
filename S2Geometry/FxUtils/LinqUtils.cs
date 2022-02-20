@@ -482,8 +482,8 @@ public static class LinqUtils
         return val;
     }
 
-    public static T GetRemIndex<T>(this T[] arr, int index)
+    public static T GetRemIndex<T>(this IList<T> arr, int index)
     {
-        return arr[index % arr.Length];
+        return arr[index % arr.Count];
     }
 }

@@ -53,7 +53,7 @@ public class S2PointVectorShape : S2Shape, IInitEncoder<S2PointVectorShape>
     public sealed override int NumChains() { return NumPoints; }
     public sealed override Chain GetChain(int i) { return new Chain(i, 1); }
     public sealed override Edge ChainEdge(int i, int j)
-    { Assert.True(j == 0); return new Edge(points_[i], points_[i]); }
+    { System.Diagnostics.Debug.Assert(j == 0); return new Edge(points_[i], points_[i]); }
     public sealed override ChainPosition GetChainPosition(int e) => new(e, 0);
     public override TypeTag GetTypeTag() => kTypeTag;
 
@@ -106,7 +106,7 @@ public class EncodedS2PointVectorShape : S2Shape, IEncoder, IInitEncoder<Encoded
     public sealed override int NumChains() { return NumPoints; }
     public sealed override Chain GetChain(int i) { return new Chain(i, 1); }
     public sealed override Edge ChainEdge(int i, int j)
-    { Assert.True(j == 0); return new Edge(points_[i], points_[i]); }
+    { System.Diagnostics.Debug.Assert(j == 0); return new Edge(points_[i], points_[i]); }
     public sealed override ChainPosition GetChainPosition(int e) => new(e, 0);
     public override TypeTag GetTypeTag() => S2PointVectorShape.kTypeTag;
 

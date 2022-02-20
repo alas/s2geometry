@@ -60,10 +60,10 @@ public class S2WindingOperationTests
     public void Test_S2WindingOperation_Empty()
     {
         ExpectWindingResult(
-            new Options(),
+            new(),
             new() { "" }, "5:5", 0, WindingRule.POSITIVE, "");
         ExpectWindingResult(
-            new Options(),
+            new(),
             new() { "" }, "5:5", 1, WindingRule.POSITIVE, "full");
     }
 
@@ -71,7 +71,7 @@ public class S2WindingOperationTests
     public void Test_S2WindingOperation_PointLoop()
     {
         ExpectDegenerateWindingResult(
-            new Options(),
+            new(),
             new() { "2:2" }, "5:5", 0, WindingRule.POSITIVE,
             "", "2:2");
     }
@@ -80,7 +80,7 @@ public class S2WindingOperationTests
     public void Test_S2WindingOperation_S2WindingOperation_SiblingPairLoop()
     {
         ExpectDegenerateWindingResult(
-            new Options(),
+            new(),
             new() { "2:2, 3:3" }, "5:5", 0, WindingRule.POSITIVE,
             "", "2:2, 3:3");
     }
@@ -89,19 +89,19 @@ public class S2WindingOperationTests
     public void Test_S2WindingOperation_Rectangle()
     {
         ExpectWindingResult(
-            new Options(),
+            new(),
             new() { "0:0, 0:10, 10:10, 10:0" }, "5:5", 1, WindingRule.POSITIVE,
             "0:0, 0:10, 10:10, 10:0");
         ExpectWindingResult(
-            new Options(),
+            new(),
             new() { "0:0, 0:10, 10:10, 10:0" }, "5:5", 1, WindingRule.NEGATIVE,
             "");
         ExpectWindingResult(
-            new Options(),
+            new(),
             new() { "0:0, 0:10, 10:10, 10:0" }, "5:5", 1, WindingRule.NON_ZERO,
             "0:0, 0:10, 10:10, 10:0");
         ExpectWindingResult(
-            new Options(),
+            new(),
             new() { "0:0, 0:10, 10:10, 10:0" }, "5:5", 1, WindingRule.ODD,
             "0:0, 0:10, 10:10, 10:0");
     }
@@ -112,19 +112,19 @@ public class S2WindingOperationTests
         // Note that NEGATIVE, NON_ZERO, and ODD effectively reverse the orientation
         // of one of the two triangles that form the bow tie.
         ExpectWindingResult(
-            new Options(new IdentitySnapFunction(S1Angle.FromDegrees(1))),
+            new(new IdentitySnapFunction(S1Angle.FromDegrees(1))),
             new() { "5:-5, -5:5, 5:5, -5:-5" }, "10:0", 0, WindingRule.POSITIVE,
             "0:0, -5:5, 5:5");
         ExpectWindingResult(
-            new Options(new IdentitySnapFunction(S1Angle.FromDegrees(1))),
+            new(new IdentitySnapFunction(S1Angle.FromDegrees(1))),
             new() { "5:-5, -5:5, 5:5, -5:-5" }, "10:0", 0, WindingRule.NEGATIVE,
             "-5:-5, 0:0, 5:-5");
         ExpectWindingResult(
-            new Options(new IdentitySnapFunction(S1Angle.FromDegrees(1))),
+            new(new IdentitySnapFunction(S1Angle.FromDegrees(1))),
             new() { "5:-5, -5:5, 5:5, -5:-5" }, "10:0", 0, WindingRule.NON_ZERO,
             "0:0, -5:5, 5:5; -5:-5, 0:0, 5:-5");
         ExpectWindingResult(
-            new Options(new IdentitySnapFunction(S1Angle.FromDegrees(1))),
+            new(new IdentitySnapFunction(S1Angle.FromDegrees(1))),
             new() { "5:-5, -5:5, 5:5, -5:-5" }, "10:0", 0, WindingRule.ODD,
             "0:0, -5:5, 5:5; -5:-5, 0:0, 5:-5");
     }
@@ -133,19 +133,19 @@ public class S2WindingOperationTests
     public void Test_S2WindingOperation_CollapsingShell()
     {
         ExpectDegenerateWindingResult(
-            new Options(new IdentitySnapFunction(S1Angle.FromDegrees(5))),
+            new(new IdentitySnapFunction(S1Angle.FromDegrees(5))),
             new() { "0:0, 0:3, 3:3" }, "10:0", 0, WindingRule.POSITIVE,
             "", "0:0");
         ExpectDegenerateWindingResult(
-            new Options(new IdentitySnapFunction(S1Angle.FromDegrees(5))),
+            new(new IdentitySnapFunction(S1Angle.FromDegrees(5))),
             new() { "0:0, 0:3, 3:3" }, "1:1", 1, WindingRule.POSITIVE,
             "", "0:0");
         ExpectWindingResult(
-            new Options(new IdentitySnapFunction(S1Angle.FromDegrees(5))),
+            new(new IdentitySnapFunction(S1Angle.FromDegrees(5))),
             new() { "0:0, 3:3, 0:3" }, "10:0", 1, WindingRule.POSITIVE,
             "full");
         ExpectWindingResult(
-            new Options(new IdentitySnapFunction(S1Angle.FromDegrees(5))),
+            new(new IdentitySnapFunction(S1Angle.FromDegrees(5))),
             new() { "0:0, 3:3, 0:3" }, "1:1", 0, WindingRule.POSITIVE,
             "full");
     }
@@ -159,11 +159,11 @@ public class S2WindingOperationTests
         // N-way unions.  They are kept by WindingRule::ODD since they are needed in
         // order to compute N-way symmetric differences.
         ExpectWindingResult(
-            new Options(),
+            new(),
             new() { "0:0, 0:8, 8:8", "0:0, 8:8, 8:0" }, "1:1", 1, WindingRule.POSITIVE,
             "0:0, 0:8, 8:8, 8:0");
         ExpectDegenerateWindingResult(
-            new Options(),
+            new(),
             new() { "0:0, 0:8, 8:8", "0:0, 8:8, 8:0" }, "2:2", 1, WindingRule.ODD,
             "0:0, 0:8, 8:8, 8:0", "0:0, 0:8, 8:8; 0:0, 8:8, 8:0");
     }
@@ -174,7 +174,7 @@ public class S2WindingOperationTests
     {
         // The snap function below rounds coordinates to the nearest degree.
         ExpectWindingResult(
-            new Options(new IntLatLngSnapFunction(0)),
+            new(new IntLatLngSnapFunction(0)),
             new()
             {
                 "0.1:0.2, 0:7.8, 7.6:8.2",
@@ -183,7 +183,7 @@ public class S2WindingOperationTests
             "6:2", 1, WindingRule.POSITIVE,
             "0:0, 0:8, 8:8, 8:0");
         ExpectDegenerateWindingResult(
-            new Options(new IntLatLngSnapFunction(0)),
+            new(new IntLatLngSnapFunction(0)),
             new()
             {
                 "0.1:0.2, 0:7.8, 7.6:8.2",
@@ -198,7 +198,7 @@ public class S2WindingOperationTests
     public void Test_S2WindingOperation_UnionOfSquares()
     {
         ExpectWindingResult(
-            new Options(new IntLatLngSnapFunction(1)),
+            new(new IntLatLngSnapFunction(1)),
             new()
             {
                 "0:0, 0:4, 4:4, 4:0",
@@ -213,7 +213,7 @@ public class S2WindingOperationTests
 
         // This computes the region overlapped by at least two squares.
         ExpectWindingResult(
-            new Options(new IntLatLngSnapFunction(1)),
+            new(new IntLatLngSnapFunction(1)),
             new()
             {
                 "0:0, 0:4, 4:4, 4:0",
@@ -228,7 +228,7 @@ public class S2WindingOperationTests
 
         // This computes the region overlapped by at least three squares.
         ExpectWindingResult(
-            new Options(new IntLatLngSnapFunction(1)),
+            new(new IntLatLngSnapFunction(1)),
             new()
             {
                 "0:0, 0:4, 4:4, 4:0",
@@ -242,7 +242,7 @@ public class S2WindingOperationTests
 
         // This computes the region overlapped by at least four squares.
         ExpectWindingResult(
-            new Options(new IntLatLngSnapFunction(1)),
+            new(new IntLatLngSnapFunction(1)),
             new()
             {
                 "0:0, 0:4, 4:4, 4:0",
@@ -256,7 +256,7 @@ public class S2WindingOperationTests
 
         // WindingRule::ODD yields a pattern reminiscent of a checkerboard.
         ExpectWindingResult(
-            new Options(new IntLatLngSnapFunction(1)),
+            new(new IntLatLngSnapFunction(1)),
             new()
             {
                 "0:0, 0:4, 4:4, 4:0",
@@ -287,7 +287,7 @@ public class S2WindingOperationTests
     public void Test_S2WindingOperation_SymmetricDifferenceDegeneracies()
     {
         ExpectDegenerateWindingResult(
-            new Options(new IntLatLngSnapFunction(1)),
+            new(new IntLatLngSnapFunction(1)),
             new()
             {
                 "0:0, 0:3, 3:3, 3:0",

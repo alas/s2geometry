@@ -23,7 +23,7 @@ public static partial class S2ShapeUtil
     // at infinity" that is guaranteed to be outside the loop.
     public static S2Shape.ReferencePoint GetReferencePoint(this S2Shape shape)
     {
-        Assert.True(shape.Dimension() == 2);
+        System.Diagnostics.Debug.Assert(shape.Dimension() == 2);
         if (shape.NumEdges() == 0)
         {
             // A shape with no edges is defined to be full if and only if it
@@ -59,12 +59,12 @@ public static partial class S2ShapeUtil
         {
             if (edges[i] < rev_edges[i])
             {  // edges[i] is unmatched
-                Assert.True(GetReferencePointAtVertex(shape, edges[i].V0, out result));
+                System.Diagnostics.Debug.Assert(GetReferencePointAtVertex(shape, edges[i].V0, out result));
                 return result;
             }
             if (rev_edges[i] < edges[i])
             {  // rev_edges[i] is unmatched
-                Assert.True(GetReferencePointAtVertex(shape, rev_edges[i].V0, out result));
+                System.Diagnostics.Debug.Assert(GetReferencePointAtVertex(shape, rev_edges[i].V0, out result));
                 return result;
             }
         }

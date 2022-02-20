@@ -81,15 +81,15 @@ public class ClosedSetNormalizer
         graph_options_out_ = graph_options_out;
         GraphOptions_ = graph_options_out_;
         sentinel_ = new Edge(Int32.MaxValue, Int32.MaxValue);
-        Assert.True(graph_options_out_.Count == 3);
-        Assert.True(graph_options_out_[0].EdgeType_ == EdgeType.DIRECTED);
-        Assert.True(graph_options_out_[2].EdgeType_ == EdgeType.DIRECTED);
+        System.Diagnostics.Debug.Assert(graph_options_out_.Count == 3);
+        System.Diagnostics.Debug.Assert(graph_options_out_[0].EdgeType_ == EdgeType.DIRECTED);
+        System.Diagnostics.Debug.Assert(graph_options_out_[2].EdgeType_ == EdgeType.DIRECTED);
 
         // NOTE(ericv): Supporting these options would require some extra code in
         // order to handle undirected edges, and they are not useful for building
         // polylines anyway (they are intended for polygon meshes).
-        Assert.True(graph_options_out_[1].SiblingPairs_ != SiblingPairs.CREATE);
-        Assert.True(graph_options_out_[1].SiblingPairs_ != SiblingPairs.REQUIRE);
+        System.Diagnostics.Debug.Assert(graph_options_out_[1].SiblingPairs_ != SiblingPairs.CREATE);
+        System.Diagnostics.Debug.Assert(graph_options_out_[1].SiblingPairs_ != SiblingPairs.REQUIRE);
 
         // Set the GraphOptions for the input graphs to ensure that (1) they share a
         // common set of vertices, (2) degenerate edges are kept only if they are
@@ -124,7 +124,7 @@ public class ClosedSetNormalizer
         // Ensure that the input graphs were built with our requested options.
         for (var dim = 0; dim < 3; ++dim)
         {
-            Assert.True(g[dim].Options == GraphOptions_[dim]);
+            System.Diagnostics.Debug.Assert(g[dim].Options == GraphOptions_[dim]);
         }
         if (Options_.SuppressLowerDimensions)
         {
@@ -367,7 +367,7 @@ public class NormalizeClosedSetImpl
                     output_layers_[2].GraphOptions_(),
                 });
         graphs_ = new List<Graph?>() { null, null, null }; graphs_left_ = 3;
-        Assert.True(3 == output_layers_.Count);
+        System.Diagnostics.Debug.Assert(3 == output_layers_.Count);
     }
 
     private class DimensionLayer : Layer

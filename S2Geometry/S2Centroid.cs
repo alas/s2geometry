@@ -50,9 +50,9 @@ public static class S2Centroid
     // the triangle is degenerate (and that this is intended behavior).
     public static S2Point TrueCentroid(S2Point a, S2Point b, S2Point c)
     {
-        Assert.True(a.IsUnitLength());
-        Assert.True(b.IsUnitLength());
-        Assert.True(c.IsUnitLength());
+        System.Diagnostics.Debug.Assert(a.IsUnitLength());
+        System.Diagnostics.Debug.Assert(b.IsUnitLength());
+        System.Diagnostics.Debug.Assert(c.IsUnitLength());
 
         // I couldn't find any references for computing the true centroid of a
         // spherical triangle...  I have a truly marvellous demonstration of this

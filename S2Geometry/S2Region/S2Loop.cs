@@ -234,8 +234,8 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
     // REQUIRES: 0 <= i < 2 * NumVertices
     public S2Point Vertex(int i)
     {
-        Assert.True(i >= 0);
-        Assert.True(i < (2 * NumVertices));
+        System.Diagnostics.Debug.Assert(i >= 0);
+        System.Diagnostics.Debug.Assert(i < (2 * NumVertices));
         int j = i - NumVertices;
         return Vertices[j < 0 ? i : j];
     }
@@ -256,8 +256,8 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
     // REQUIRES: 0 <= i < 2 * NumVertices
     public S2Point OrientedVertex(int i)
     {
-        Assert.True(i >= 0);
-        Assert.True(i < 2 * NumVertices);
+        System.Diagnostics.Debug.Assert(i >= 0);
+        System.Diagnostics.Debug.Assert(i < 2 * NumVertices);
         int j = i - NumVertices;
         if (j < 0) j = i;
         if (IsHole()) j = NumVertices - 1 - j;
@@ -294,7 +294,7 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
         // loop covers less than half the sphere and is therefore normalized.
         if (_bound.Lng.GetLength() < Math.PI) return true;
 
-        return S2.IsNormalized(Vertices);
+        return S2.IsNormalized(Vertices.ToList());
     }
 
     // Invert the loop if necessary so that the area enclosed by the loop is at
@@ -302,7 +302,7 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
     public void Normalize()
     {
         if (!IsNormalized()) Invert();
-        Assert.True(IsNormalized());
+        System.Diagnostics.Debug.Assert(IsNormalized());
     }
 
     // Reverse the order of the loop vertices, effectively complementing the
@@ -363,7 +363,7 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
         {
             return ContainsOrigin ? S2.M_4_PI : 0;
         }
-        return S2.GetArea(Vertices);
+        return S2.GetArea(new S2PointLoopSpan(Vertices));
     }
 
     // Returns the true centroid of the loop multiplied by the area of the loop
@@ -381,7 +381,7 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
     public S2Point Centroid()
     {
         // Empty and full loops are handled correctly.
-        return S2.GetCentroid(Vertices);
+        return S2.GetCentroid(Vertices.ToList());
     }
 
     // Returns the geodesic curvature of the loop, defined as the sum of the turn
@@ -401,14 +401,14 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
         {
             return ContainsOrigin ? (-S2.M_2_PI) : S2.M_2_PI;
         }
-        return S2.GetCurvature(Vertices);
+        return S2.GetCurvature(Vertices.ToList());
     }
 
     // Returns the maximum error in GetCurvature().  The return value is not
     // constant; it depends on the loop.
     public double CurvatureMaxError()
     {
-        return S2.GetCurvatureMaxError(Vertices);
+        return S2.GetCurvatureMaxError(Vertices.ToList());
     }
 
     // Returns the distance from the given point to the loop interior.  If the
@@ -662,11 +662,11 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
     // value to zero.  (This is true for built-in types such as "double".)
     public double GetSurfaceIntegral(Func<S2Point, S2Point, S2Point, double> f_tri)
     {
-        return S2.GetSurfaceIntegral(Vertices, f_tri);
+        return S2.GetSurfaceIntegral(Vertices.ToList(), f_tri);
     }
     public S2Point GetSurfaceIntegral(Func<S2Point, S2Point, S2Point, S2Point> f_tri)
     {
-        return S2.GetSurfaceIntegral(Vertices, f_tri);
+        return S2.GetSurfaceIntegral(Vertices.ToList(), f_tri);
     }
 
     // Constructs a regular polygon with the given number of vertices, all
@@ -761,8 +761,8 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
     // REQUIRES: if b.IsFull, then !b.is_hole().
     public int CompareBoundary(S2Loop b)
     {
-        Assert.True(!IsEmpty() && !b.IsEmpty());
-        Assert.True(!b.IsFull() || !b.IsHole());
+        System.Diagnostics.Debug.Assert(!IsEmpty() && !b.IsEmpty());
+        System.Diagnostics.Debug.Assert(!b.IsFull() || !b.IsHole());
 
         // The bounds must intersect for containment or crossing.
         if (!_bound.Intersects(b._bound)) return -1;
@@ -795,8 +795,8 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
     // REQUIRES: if b.IsFull, then reverse_b == false.
     public bool ContainsNonCrossingBoundary(S2Loop b, bool reverse_b)
     {
-        Assert.True(!IsEmpty() && !b.IsEmpty());
-        Assert.True(!b.IsFull() || !reverse_b);
+        System.Diagnostics.Debug.Assert(!IsEmpty() && !b.IsEmpty());
+        System.Diagnostics.Debug.Assert(!b.IsFull() || !reverse_b);
 
         // The bounds must intersect for containment.
         if (!_bound.Intersects(b._bound)) return false;
@@ -922,7 +922,7 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
         if (s2debug_override_ == S2Debug.ALLOW)
         {
             // Note that s2debug is false in optimized builds (by default).
-            Assert.True(IsValid());
+            System.Diagnostics.Debug.Assert(IsValid());
         }
 #endif
     }
@@ -952,7 +952,7 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
     {
         // subregion_bound_ must be at least as large as bound_.  (This is an
         // internal consistency check rather than a test of client data.)
-        Assert.True(_subregionBound.Contains(_bound));
+        System.Diagnostics.Debug.Assert(_subregionBound.Contains(_bound));
 
         // All vertices must be unit length.  (Unfortunately this check happens too
         // late in debug mode, because S2Loop construction calls S2Pred.Sign which
@@ -1040,7 +1040,7 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
         {
             (_bound as IEncoder).Encode(encoder);
         }
-        Assert.True(encoder.Avail() >= 0);
+        System.Diagnostics.Debug.Assert(encoder.Avail() >= 0);
     }
 
     // Decode a loop encoded with EncodeCompressed. The parameters must be the
@@ -1173,7 +1173,7 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
     // [This condition is true whenever it.Locate(target) returns INDEXED.]
     private bool BoundaryApproxIntersects(S2ShapeIndexIdCell? icell, S2Cell target)
     {
-        Assert.True(icell.Value.Item1.Contains(target.Id));
+        System.Diagnostics.Debug.Assert(icell.Value.Item1.Contains(target.Id));
         S2ClippedShape a_clipped = icell.Value.Item2.Clipped(0);
         int a_num_edges = a_clipped.NumEdges;
 
@@ -1204,7 +1204,7 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
     // vertices to be traversed in a canonical order.
     public S2.LoopOrder GetCanonicalLoopOrder()
     {
-        return S2.GetCanonicalLoopOrder(Vertices);
+        return S2.GetCanonicalLoopOrder(Vertices.ToList());
     }
 
     // Returns the index of a vertex at point "p", or -1 if not found.
@@ -1509,7 +1509,7 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
         encoder.PutPoints(Vertices);
         encoder.Put8((byte)(ContainsOrigin ? 1 : 0));
         encoder.Put32(Depth);
-        Assert.True(encoder.Avail() >= 0);
+        System.Diagnostics.Debug.Assert(encoder.Avail() >= 0);
 
         _bound.Encode(encoder, hint);
     }
@@ -1712,13 +1712,13 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
 
         public override Chain GetChain(int i)
         {
-            Assert.True(i == 0);
+            System.Diagnostics.Debug.Assert(i == 0);
             return new Chain(0, NumEdges());
         }
 
         public override Edge ChainEdge(int i, int j)
         {
-            Assert.True(i == 0);
+            System.Diagnostics.Debug.Assert(i == 0);
             return new Edge(Loop.Vertex(j), Loop.Vertex(j + 1));
         }
 
@@ -1824,7 +1824,7 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
         // Advances both iterators past ai.id().
         public bool HasCrossingRelation(RangeEnumerator ai, RangeEnumerator bi)
         {
-            Assert.True(ai.Id.Contains(bi.Id));
+            System.Diagnostics.Debug.Assert(ai.Id.Contains(bi.Id));
             if (ai.NumEdges() == 0)
             {
                 if (ai.ContainsCenter() == (ACrossingTarget != 0))
@@ -1873,7 +1873,7 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
         // within ai.id().  Advances "bi" (only) past ai.id().
         private bool HasCrossing(RangeEnumerator ai, RangeEnumerator bi)
         {
-            Assert.True(ai.Id.Contains(bi.Id));
+            System.Diagnostics.Debug.Assert(ai.Id.Contains(bi.Id));
             // If ai.id() intersects many edges of B, then it is faster to use
             // S2CrossingEdgeQuery to narrow down the candidates.  But if it intersects
             // only a few edges, it is faster to check all the crossings directly.

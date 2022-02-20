@@ -47,10 +47,10 @@ int size = tuple.typesize;
 if (type != typeof(Byte)) Write(Environment.NewLine);
 #>
         // <#= type.Name #> checks
-        Assert.True(<#= type.Name #>.MinValue == 0); // Unsupported signed integer
-        Assert.True((sizeof(<#= type.Name #>) & 0xE) != 0); // Unsupported integer length
-        Assert.True(2 <= sizeof(<#= type.Name #>)); // Unsupported integer length
-        Assert.True(sizeof(<#= type.Name #>) <= 8); // Unsupported integer length
+        System.Diagnostics.Debug.Assert(<#= type.Name #>.MinValue == 0); // Unsupported signed integer
+        System.Diagnostics.Debug.Assert((sizeof(<#= type.Name #>) & 0xE) != 0); // Unsupported integer length
+        System.Diagnostics.Debug.Assert(2 <= sizeof(<#= type.Name #>)); // Unsupported integer length
+        System.Diagnostics.Debug.Assert(sizeof(<#= type.Name #>) <= 8); // Unsupported integer length
 <# } #>
     }
 <# foreach (var tuple in types) {
@@ -79,7 +79,7 @@ int size = tuple.typesize;
         foreach (var x in v)
             one_bits |= x;
         int len = (BitsUtils.FindMSBSetNonZero64(one_bits) >> 3) + 1;
-        Assert.True(len >= 1 && len <= 8);
+        System.Diagnostics.Debug.Assert(len >= 1 && len <= 8);
 
         // Note that the multiplication is optimized into a bit shift.
         encoder.Ensure(Encoder.kVarintMax64 + v.Length * len);
@@ -103,15 +103,15 @@ int size = tuple.typesize;
     /// </summary>
     public static void EncodeUintWithLength(<#= type.Name #> value, int length, Encoder encoder)
     {
-        Assert.True(length >= 0 && length <= sizeof(<#= type.Name #>));
-        Assert.True(encoder.Avail() >= length);
+        System.Diagnostics.Debug.Assert(length >= 0 && length <= sizeof(<#= type.Name #>));
+        System.Diagnostics.Debug.Assert(encoder.Avail() >= length);
 
         while (--length >= 0)
         {
             encoder.Put8((byte)value);
             value = (<#= type.Name #>)(value >> 8);
         }
-        Assert.True(value == 0);
+        System.Diagnostics.Debug.Assert(value == 0);
     }
 
     // Decodes and consumes a variable-length integer consisting of "length" bytes
@@ -148,7 +148,7 @@ public class EncodedUintVector_<#= type.Name #>
     /// </summary>
     public static <#= type.Name #> GetUintWithLength(byte[] ptr, int index, int length)
     {
-        Assert.True(length >= 0 && length <= sizeof(<#= type.Name #>));
+        System.Diagnostics.Debug.Assert(length >= 0 && length <= sizeof(<#= type.Name #>));
 
         // Note that the following code is faster than any of the following:
         //
@@ -171,7 +171,7 @@ public class EncodedUintVector_<#= type.Name #>
 <# if (new [] { typeof(UInt16), typeof(UInt32), typeof(UInt64) }.Contains(type)) { #>
             return BitConverter.To<#= type.Name #>(ptr, index);
 <# }  else { #>
-            Assert.True(sizeof(<#= type.Name #>) == 1);
+            System.Diagnostics.Debug.Assert(sizeof(<#= type.Name #>) == 1);
             return ptr[index];
 <# } #>
         }
@@ -231,7 +231,7 @@ public class EncodedUintVector_<#= type.Name #>
     {
         get
         {
-            Assert.True(i >= 0 && i < Count);
+            System.Diagnostics.Debug.Assert(i >= 0 && i < Count);
             return GetUintWithLength(data_, i * len_, len_);
         }
     }
@@ -242,7 +242,7 @@ public class EncodedUintVector_<#= type.Name #>
     // REQUIRES: The vector elements are sorted in non-decreasing order.
     public int LowerBound(<#= type.Name #> target)
     {
-        Assert.True(len_ >= 1 && len_ <= sizeof(<#= type.Name #>));
+        System.Diagnostics.Debug.Assert(len_ >= 1 && len_ <= sizeof(<#= type.Name #>));
 
         // TODO(ericv): Consider using the unused 28 bits of "len_" to store the
         // last result of GetLowerBound() to be used as a hint.  This should help in

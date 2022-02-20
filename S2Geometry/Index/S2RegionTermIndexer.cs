@@ -255,7 +255,7 @@ public class S2RegionTermIndexer
             get => marker_[0];
             set
             {
-                Assert.True(!char.IsLetterOrDigit(value));
+                System.Diagnostics.Debug.Assert(!char.IsLetterOrDigit(value));
                 marker_ = new string(value, 1);
             }
         }
@@ -363,10 +363,10 @@ public class S2RegionTermIndexer
         // cells as ancestor cells only, since these cells have the special property
         // that query regions will never contain a descendant of these cells.
 
-        Assert.True(!Options_.IndexContainsPointsOnly);
+        System.Diagnostics.Debug.Assert(!Options_.IndexContainsPointsOnly);
 #if s2debug
         coverer_.Options_ = Options_;
-        Assert.True(coverer_.IsCanonical(covering));
+        System.Diagnostics.Debug.Assert(coverer_.IsCanonical(covering));
 #endif
         var terms = new List<string>();
         var prev_id = S2CellId.None;
@@ -376,9 +376,9 @@ public class S2RegionTermIndexer
             // IsCanonical() already checks the following conditions, but we repeat
             // them here for documentation purposes.
             var level = id.Level();
-            Assert.True(level >= Options_.MinLevel);
-            Assert.True(level <= Options_.MaxLevel);
-            Assert.True(0 == (level - Options_.MinLevel) % Options_.LevelMod);
+            System.Diagnostics.Debug.Assert(level >= Options_.MinLevel);
+            System.Diagnostics.Debug.Assert(level <= Options_.MaxLevel);
+            System.Diagnostics.Debug.Assert(0 == (level - Options_.MinLevel) % Options_.LevelMod);
 
             if (level < true_max_level)
             {
@@ -411,7 +411,7 @@ public class S2RegionTermIndexer
 
 #if s2debug
         coverer_.Options_ = Options_;
-        Assert.True(coverer_.IsCanonical(covering));
+        System.Diagnostics.Debug.Assert(coverer_.IsCanonical(covering));
 #endif
         var terms = new List<string>();
         var prev_id = S2CellId.None;
@@ -421,9 +421,9 @@ public class S2RegionTermIndexer
             // IsCanonical() already checks the following conditions, but we repeat
             // them here for documentation purposes.
             var level = id.Level();
-            Assert.True(level >= Options_.MinLevel);
-            Assert.True(level <= Options_.MaxLevel);
-            Assert.True(0 == (level - Options_.MinLevel) % Options_.LevelMod);
+            System.Diagnostics.Debug.Assert(level >= Options_.MinLevel);
+            System.Diagnostics.Debug.Assert(level <= Options_.MaxLevel);
+            System.Diagnostics.Debug.Assert(0 == (level - Options_.MinLevel) % Options_.LevelMod);
 
             // Cells in the covering are always queried as ancestor terms.
             terms.Add(GetTerm(TermType.ANCESTOR, id, prefix));

@@ -20,12 +20,12 @@ public abstract class ArrayN<T> : IEnumerable<T>
     {
         get
         {
-            Assert.True(i < Size);
+            System.Diagnostics.Debug.Assert(i < Size);
             return arr[i];
         }
         set
         {
-            Assert.True(i < Size);
+            System.Diagnostics.Debug.Assert(i < Size);
             arr[i] = value;
         }
     }
@@ -34,14 +34,14 @@ public abstract class ArrayN<T> : IEnumerable<T>
 
     public void Add(T item)
     {
-        Assert.True(Count < Size);
+        System.Diagnostics.Debug.Assert(Count < Size);
         arr[Count++] = item;
     }
 
     public void Reserve(int index)
     {
-        Assert.True(index + 1 <= Size);
-        Assert.True(index <= Count);
+        System.Diagnostics.Debug.Assert(index + 1 <= Size);
+        System.Diagnostics.Debug.Assert(index <= Count);
         if (Count < (index + 1)) Count++;
     }
 

@@ -95,7 +95,7 @@ public readonly record struct S1Angle : IComparable<S1Angle>
 
     public static S1Angle FromRadians(double radians) => new(radians);
 
-    public static S1Angle FromDegrees(double degrees) => new(degrees * S2.M_PI_180);
+    public static S1Angle FromDegrees(double degrees) => new(S2.M_PI_180 * degrees);
 
     public static S1Angle FromE5(long e5) => FromDegrees(e5 * 1e-5);
 
@@ -119,7 +119,7 @@ public readonly record struct S1Angle : IComparable<S1Angle>
 
     #region S1Angle
 
-    public double GetDegrees() => Radians * S2.M_180_PI;
+    public double GetDegrees() => S2.M_180_PI * Radians;
 
     // Note that the E5, E6, and E7 conversion involve two multiplications rather
     // than one.  This is mainly for backwards compatibility (changing this would

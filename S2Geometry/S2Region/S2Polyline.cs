@@ -46,7 +46,7 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoderStruct<S2Polyli
         if (s2debug_override_ == S2Debug.ALLOW)
         {
             // Note that s2debug is false in optimized builds (by default).
-            Assert.True(IsValid());
+            System.Diagnostics.Debug.Assert(IsValid());
         }
 #endif
     }
@@ -99,7 +99,7 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoderStruct<S2Polyli
         builder.StartLayer(new S2PolylineLayer(this));
         builder.AddPolyline(polyline);
         S2Error error;
-        Assert.True(builder.Build(out error)); // "Could not build polyline: " << error;
+        System.Diagnostics.Debug.Assert(builder.Build(out error)); // "Could not build polyline: " << error;
     }
 
     // Return true if the given vertices form a valid polyline.
@@ -154,8 +154,8 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoderStruct<S2Polyli
 
     public S2Point Vertex(int k)
     {
-        Assert.True(k >= 0);
-        Assert.True(k <= Vertices.Length);
+        System.Diagnostics.Debug.Assert(k >= 0);
+        System.Diagnostics.Debug.Assert(k <= Vertices.Length);
         return Vertices[k];
     }
 
@@ -229,7 +229,7 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoderStruct<S2Polyli
     // case there is no guarantee of distinctness).
     public S2Point GetSuffix(double fraction, out int next_vertex)
     {
-        Assert.True(Vertices.Length > 0);
+        System.Diagnostics.Debug.Assert(Vertices.Length > 0);
         // We intentionally let the (fraction >= 1) case fall through, since
         // we need to handle it in the loop below in any case because of
         // possible roundoff errors.
@@ -272,7 +272,7 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoderStruct<S2Polyli
     // return value is zero.
     public double UnInterpolate(S2Point point, int next_vertex)
     {
-        Assert.True(Vertices.Length > 0);
+        System.Diagnostics.Debug.Assert(Vertices.Length > 0);
         if (Vertices.Length < 2)
         {
             return 0;
@@ -300,7 +300,7 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoderStruct<S2Polyli
     // The polyline must be non-empty.
     public S2Point Project(S2Point point, out int next_vertex)
     {
-        Assert.True(Vertices.Length > 0);
+        System.Diagnostics.Debug.Assert(Vertices.Length > 0);
 
         if (Vertices.Length == 1)
         {
@@ -323,7 +323,7 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoderStruct<S2Polyli
                 min_index = i;
             }
         }
-        Assert.True(min_index != -1);
+        System.Diagnostics.Debug.Assert(min_index != -1);
 
         // Compute the point on the segment found that is closest to the point given.
         var closest_point = S2.Project(point, Vertex(min_index - 1), Vertex(min_index));
@@ -340,12 +340,12 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoderStruct<S2Polyli
     // The polyline must have at least 2 vertices.
     public bool IsOnRight(S2Point point)
     {
-        Assert.True(Vertices.Length >= 2);
+        System.Diagnostics.Debug.Assert(Vertices.Length >= 2);
 
         S2Point closest_point = Project(point, out int next_vertex);
 
-        Assert.True(next_vertex >= 1);
-        Assert.True(next_vertex <= Vertices.Length);
+        System.Diagnostics.Debug.Assert(next_vertex >= 1);
+        System.Diagnostics.Debug.Assert(next_vertex <= Vertices.Length);
 
         // If the closest point C is an interior vertex of the polyline, let B and D
         // be the previous and next vertices.  The given point P is on the right of
@@ -459,8 +459,8 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoderStruct<S2Polyli
     // vertices passes within "tolerance" of all interior vertices, in order.
     private static int FindEndVertex(S2Polyline polyline, S1Angle tolerance, int index)
     {
-        Assert.True(tolerance.Radians >= 0);
-        Assert.True((index + 1) < polyline.Vertices.Length);
+        System.Diagnostics.Debug.Assert(tolerance.Radians >= 0);
+        System.Diagnostics.Debug.Assert((index + 1) < polyline.Vertices.Length);
 
         // The basic idea is to keep track of the "pie wedge" of angles from the
         // starting vertex such that a ray from the starting vertex at that angle
@@ -526,7 +526,7 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoderStruct<S2Polyli
             double half_angle = Math.Asin(Math.Sin(tolerance.Radians) / Math.Sin(distance));
             S1Interval target = S1Interval.FromPoint(center).Expanded(half_angle);
             current_wedge = current_wedge.Intersection(target);
-            Assert.True(!current_wedge.IsEmpty());
+            System.Diagnostics.Debug.Assert(!current_wedge.IsEmpty());
         }
         // We break out of the loop when we reach a vertex index that can't be
         // included in the line segment, so back up by one vertex.
@@ -787,7 +787,7 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoderStruct<S2Polyli
         encoder.Put32(Vertices.Length);
         encoder.PutPoints(Vertices);
 
-        Assert.True(encoder.Avail() >= 0);
+        System.Diagnostics.Debug.Assert(encoder.Avail() >= 0);
     }
 
     // Encode the polylines's vertices using the most compact way: compressed or
@@ -888,7 +888,7 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoderStruct<S2Polyli
 #if s2debug
         //if (s2debug_override_ == S2Debug.ALLOW)
         {
-            Assert.True(pol.IsValid());
+            System.Diagnostics.Debug.Assert(pol.IsValid());
         }
 #endif
         return (true, pol);
@@ -1028,13 +1028,13 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoderStruct<S2Polyli
 
         public sealed override Chain GetChain(int i)
         {
-            Assert.True(i == 0);
+            System.Diagnostics.Debug.Assert(i == 0);
             return new Chain(0, NumEdgesStatic(Polyline));  // Avoid virtual call.
         }
 
         public sealed override Edge ChainEdge(int i, int j)
         {
-            Assert.True(i == 0);
+            System.Diagnostics.Debug.Assert(i == 0);
             return new Edge(Polyline.Vertex(j), Polyline.Vertex(j + 1));
         }
 

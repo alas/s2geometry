@@ -47,7 +47,7 @@ public readonly record struct S1Interval
         if (hi == -Math.PI && lo != Math.PI) hi_ = Math.PI;
         Lo = lo_;
         Hi = hi_;
-        Assert.True(IsValid());
+        System.Diagnostics.Debug.Assert(IsValid());
     }
 
     #endregion
@@ -70,8 +70,8 @@ public readonly record struct S1Interval
     /// </summary>
     public static S1Interval FromPointPair(double p1, double p2)
     {
-        Assert.True(Math.Abs(p1) <= Math.PI);
-        Assert.True(Math.Abs(p2) <= Math.PI);
+        System.Diagnostics.Debug.Assert(Math.Abs(p1) <= Math.PI);
+        System.Diagnostics.Debug.Assert(Math.Abs(p2) <= Math.PI);
         if (p1 == -Math.PI) p1 = Math.PI;
         if (p2 == -Math.PI) p2 = Math.PI;
         if (PositiveDistance(p1, p2) <= Math.PI)
@@ -163,7 +163,7 @@ public readonly record struct S1Interval
     public bool Contains(double p)
     {
         // Works for empty, full, and singleton intervals.
-        Assert.True(Math.Abs(p) <= Math.PI);
+        System.Diagnostics.Debug.Assert(Math.Abs(p) <= Math.PI);
         if (p == -Math.PI) p = Math.PI;
         return FastContains(p);
     }
@@ -172,7 +172,7 @@ public readonly record struct S1Interval
     public bool InteriorContains(double p)
     {
         // Works for empty, full, and singleton intervals.
-        Assert.True(Math.Abs(p) <= Math.PI);
+        System.Diagnostics.Debug.Assert(Math.Abs(p) <= Math.PI);
         if (p == -Math.PI) p = Math.PI;
 
         if (IsInverted())
@@ -279,7 +279,7 @@ public readonly record struct S1Interval
                 ? PositiveDistance(y.Hi, Hi) : 0;
             var lo_lo = new S1Interval(y_complement_center, y.Lo).Contains(Lo)
                 ? PositiveDistance(Lo, y.Lo) : 0;
-            Assert.True(hi_hi > 0 || lo_lo > 0);
+            System.Diagnostics.Debug.Assert(hi_hi > 0 || lo_lo > 0);
             return Math.Max(hi_hi, lo_lo);
         }
     }
@@ -291,7 +291,7 @@ public readonly record struct S1Interval
     // contains the given point "p" (an angle in the range [-Pi, Pi]).
     public static S1Interval AddPoint(S1Interval interval, double p)
     {
-        Assert.True(Math.Abs(p) <= Math.PI);
+        System.Diagnostics.Debug.Assert(Math.Abs(p) <= Math.PI);
         if (p == -Math.PI) p = Math.PI;
 
         if (!interval.FastContains(p))
@@ -323,8 +323,8 @@ public readonly record struct S1Interval
     // The interval must be non-empty.
     public double Project(double p)
     {
-        Assert.True(!IsEmpty());
-        Assert.True(Math.Abs(p) <= Math.PI);
+        System.Diagnostics.Debug.Assert(!IsEmpty());
+        System.Diagnostics.Debug.Assert(Math.Abs(p) <= Math.PI);
         if (p == -Math.PI) p = Math.PI;
         if (FastContains(p)) return p;
         // Compute distance from p to each endpoint.
@@ -428,7 +428,7 @@ public readonly record struct S1Interval
         // contains all of this interval, or the two intervals are disjoint.
 
         if (y.FastContains(Lo)) return this;  // IsEmpty okay here
-        Assert.True(!Intersects(y));
+        System.Diagnostics.Debug.Assert(!Intersects(y));
         return Empty;
     }
 

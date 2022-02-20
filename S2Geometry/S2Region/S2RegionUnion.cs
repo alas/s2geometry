@@ -18,7 +18,7 @@ public sealed record class S2RegionUnion : IS2Region<S2RegionUnion>
         Regions_ = regions;
         if (check)
         {
-            Assert.True(!Regions_.Any());
+            System.Diagnostics.Debug.Assert(!Regions_.Any());
         }
     }
 

@@ -27,10 +27,10 @@ public static partial class S2
     // the loop.  The result is between 0 and 4*Pi steradians.  The implementation
     // ensures that nearly-degenerate clockwise loops have areas close to zero,
     // while nearly-degenerate counter-clockwise loops have areas close to 4*Pi.
-    public static double GetArea(S2Point[] loop)
+    public static double GetArea(S2PointLoopSpan loop)
     {
         var area = GetSignedArea(loop);
-        Assert.True(Math.Abs(area) <= S2.M_2_PI);
+        System.Diagnostics.Debug.Assert(Math.Abs(area) <= S2.M_2_PI);
         if (area < 0.0) area += S2.M_4_PI;
         return area;
     }
@@ -42,7 +42,7 @@ public static partial class S2
     // maximum error of about 9 square meters.  (The actual error is typically
     // much smaller than this.)  The error bound can be computed using
     // GetCurvatureMaxError(), which returns the maximum error in steradians.
-    public static double GetApproxArea(S2Point[] loop)
+    public static double GetApproxArea(S2PointLoopSpan loop)
     {
         return S2.M_2_PI - GetCurvature(loop);
     }
@@ -64,7 +64,7 @@ public static partial class S2
     //  - The full loop (containing all points, and represented as a loop with no
     //    vertices) has a negative area with the minimum possible magnitude.
     //    (This is the "signed equivalent" of having an area of 4*Pi.)
-    public static double GetSignedArea(S2Point[] loop)
+    public static double GetSignedArea(S2PointLoopSpan loop)
     {
         // It is surprisingly difficult to compute the area of a loop robustly.  The
         // main issues are (1) whether degenerate loops are considered to be CCW or
@@ -146,7 +146,7 @@ public static partial class S2
         {
             double curvature = GetCurvature(loop);
             // Zero-area loops should have a curvature of approximately +/- 2*Pi.
-            Assert.True(!(area == 0 && curvature == 0));
+            System.Diagnostics.Debug.Assert(!(area == 0 && curvature == 0));
             if (curvature == S2.M_2_PI) return 0.0;  // Degenerate
             if (area <= 0 && curvature > 0)
             {
@@ -179,7 +179,7 @@ public static partial class S2
     //    For any such loop, reversing the order of the vertices is guaranteed to
     //    negate the curvature.  This property can be used to define a unique
     //    normalized orientation for every loop.
-    public static double GetCurvature(S2Point[] loop)
+    public static double GetCurvature(S2PointLoopSpan loop)
     {
         // By convention, a loop with no vertices contains all points on the sphere.
         if (!loop.Any()) return -S2.M_2_PI;
@@ -202,7 +202,7 @@ public static partial class S2
         // in the number of vertices.)  To avoid this we use the Kahan summation
         // algorithm (http://en.wikipedia.org/wiki/Kahan_summation_algorithm).
         LoopOrder order = GetCanonicalLoopOrder(loop);
-        int i = order.first, dir = order.dir, n = loop.Length;
+        int i = order.first, dir = order.dir, n = loop.Count;
         var sum = S2.TurnAngle(
             loop.GetRemIndex(i + n - dir),
             loop.GetRemIndex(i),
@@ -228,7 +228,7 @@ public static partial class S2
     // Returns the maximum error in GetCurvature() for the given loop.  This value
     // is also an upper bound on the error in GetArea(), GetSignedArea(), and
     // GetApproxArea().
-    public static double GetCurvatureMaxError(S2Point[] loop)
+    public static double GetCurvatureMaxError(S2PointLoopSpan loop)
     {
         // The maximum error can be bounded as follows:
         //   3.00 * S2Constants.DoubleEpsilon    for RobustCrossProd(b, a)
@@ -246,7 +246,7 @@ public static partial class S2
         // very conservative since it assumes that the maximum error is achieved on
         // every triangle.
         const double kMaxErrorPerVertex = 11.25 * S2.DoubleEpsilon;
-        return kMaxErrorPerVertex * loop.Length;
+        return kMaxErrorPerVertex * loop.Count;
     }
 
     // Returns the true centroid of the loop multiplied by the area of the loop
@@ -258,7 +258,7 @@ public static partial class S2
     // compute this way, and (2) it makes it easier to compute the centroid of
     // more complicated shapes (by splitting them into disjoint regions and adding
     // their centroids).
-    public static S2Point GetCentroid(S2Point[] loop)
+    public static S2Point GetCentroid(S2PointLoopSpan loop)
     {
         // GetSurfaceIntegral() returns either the integral of position over loop
         // interior, or the negative of the integral of position over the loop
@@ -274,7 +274,7 @@ public static partial class S2
     // Degenerate loops are handled consistently with S2Pred.Sign(), i.e., if a
     // loop can be expressed as the union of degenerate or nearly-degenerate
     // counter-clockwise triangles then this method will return true.
-    public static bool IsNormalized(S2Point[] loop)
+    public static bool IsNormalized(S2PointLoopSpan loop)
     {
         // We allow some error so that hemispheres are always considered normalized.
         //
@@ -324,7 +324,7 @@ public static partial class S2
     // sequence (first, first + dir, ..., first + (n - 1) * dir) does not change
     // when the loop vertex order is rotated or reversed.  This allows the loop
     // vertices to be traversed in a canonical order.
-    public static LoopOrder GetCanonicalLoopOrder(S2Point[] loop)
+    public static LoopOrder GetCanonicalLoopOrder(S2PointLoopSpan loop)
     {
         // In order to handle loops with duplicate vertices and/or degeneracies, we
         // return the LoopOrder that minimizes the entire corresponding vertex
@@ -341,7 +341,7 @@ public static partial class S2
         // (noting that the loop may contain duplicate vertices).  Then we consider
         // both possible directions starting from each such vertex index, and return
         // the LoopOrder corresponding to the smallest vertex sequence.
-        int n = loop.Length;
+        int n = loop.Count;
         if (n == 0) return new LoopOrder(0, 1);
 
         var min_indices = new List<int> { 0 };
@@ -387,15 +387,15 @@ public static partial class S2
     //
     // REQUIRES: The default constructor for T must initialize the value to zero.
     //           (This is true for built-in types such as "double".)
-    public static S2Point GetSurfaceIntegral(S2Point[] loop, Func<S2Point, S2Point, S2Point, S2Point> f_tri)
+    public static S2Point GetSurfaceIntegral(S2PointLoopSpan loop, Func<S2Point, S2Point, S2Point, S2Point> f_tri)
     {
         return GetSurfaceIntegral<S2Point>(loop, f_tri).Aggregate(S2Point.Empty, (a, b) => a + b);
     }
-    public static double GetSurfaceIntegral(S2Point[] loop, Func<S2Point, S2Point, S2Point, double> f_tri)
+    public static double GetSurfaceIntegral(S2PointLoopSpan loop, Func<S2Point, S2Point, S2Point, double> f_tri)
     {
         return GetSurfaceIntegral<double>(loop, f_tri).Aggregate(0.0, (a, b) => a + b);
     }
-    private static IEnumerable<T> GetSurfaceIntegral<T>(S2Point[] loop, Func<S2Point, S2Point, S2Point, T> f_tri)
+    private static IEnumerable<T> GetSurfaceIntegral<T>(S2PointLoopSpan loop, Func<S2Point, S2Point, S2Point, T> f_tri)
     {
         // We sum "f_tri" over a collection T of oriented triangles, possibly
         // overlapping.  Let the sign of a triangle be +1 if it is CCW and -1
@@ -430,10 +430,10 @@ public static partial class S2
         // reduced further if desired.
         const double kMaxLength = Math.PI - 1e-5;
 
-        if (loop.Length < 3) yield break;
+        if (loop.Count < 3) yield break;
 
         S2Point origin = loop[0];
-        for (int i = 1; i + 1 < loop.Length; ++i)
+        for (int i = 1; i + 1 < loop.Count; ++i)
         {
             // Let V_i be loop[i], let O be the current origin, and let length(A, B)
             // be the length of edge (A, B).  At the start of each loop iteration, the
@@ -445,8 +445,8 @@ public static partial class S2
             //  2. Either O == V_0, or O is approximately perpendicular to V_0.
             //  3. "sum" is the oriented integral of f over the area defined by
             //     (O, V_0, V_1, ..., V_i).
-            Assert.True(i == 1 || origin.Angle(loop[i]) < kMaxLength);
-            Assert.True(origin == loop[0] || Math.Abs(origin.DotProd(loop[0])) < S2.DoubleError);
+            System.Diagnostics.Debug.Assert(i == 1 || origin.Angle(loop[i]) < kMaxLength);
+            System.Diagnostics.Debug.Assert(origin == loop[0] || Math.Abs(origin.DotProd(loop[0])) < S2.DoubleError);
 
             if (loop[i + 1].Angle(origin) > kMaxLength)
             {
@@ -507,7 +507,7 @@ public static partial class S2
     // Returns a new loop obtained by removing all degeneracies from "loop".  In
     // particular, the result will not contain any adjacent duplicate vertices or
     // sibling edge pairs, i.e. vertex sequences of the form (A, A) or (A, B, A).
-    public static S2Point[] PruneDegeneracies(S2Point[] loop)
+    public static S2PointLoopSpan PruneDegeneracies(S2PointLoopSpan loop)
     {
         var vertices = new List<S2Point>();
         foreach (var v in loop)
@@ -528,7 +528,7 @@ public static partial class S2
             }
         }
         // Check whether the loop was completely degenerate.
-        if (vertices.Count < 3) return Array.Empty<S2Point>();
+        if (vertices.Count < 3) return new();
 
         // Otherwise some portion of the loop is guaranteed to be non-degenerate.
         // However there may still be some degenerate portions to remove.
@@ -540,17 +540,17 @@ public static partial class S2
         int k = 0;
         while (vertices[k + 1] == vertices[^(k + 1)]) ++k;
 
-        return vertices.Skip(k).SkipLastN(k).ToArray();
+        return vertices.Skip(k).SkipLastN(k).ToList();
     }
 
-    private static bool IsOrderLess(LoopOrder order1, LoopOrder order2, S2Point[] loop)
+    private static bool IsOrderLess(LoopOrder order1, LoopOrder order2, S2PointLoopSpan loop)
     {
         if (order1 == order2) return false;
 
         int i1 = order1.first, i2 = order2.first;
         int dir1 = order1.dir, dir2 = order2.dir;
-        Assert.True(loop.GetRemIndex(i1) == loop.GetRemIndex(i2));
-        for (int n = loop.Length; --n > 0;)
+        System.Diagnostics.Debug.Assert(loop.GetRemIndex(i1) == loop.GetRemIndex(i2));
+        for (int n = loop.Count; --n > 0;)
         {
             i1 += dir1;
             i2 += dir2;

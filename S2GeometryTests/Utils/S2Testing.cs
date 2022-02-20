@@ -14,10 +14,56 @@ public static class Assert2
         Assert.True(difRatio <= maxRatio);
     }
 
-    public static void Near(double a, double b, double absolute_range = 0.0001)
+    /// <summary>
+    /// Verifies that the two double values are approximately equal, to within 4 ULPs from each other.
+    /// 
+    /// Replacement for EXPECT_DOUBLE_EQ and ASSERT_DOUBLE_EQ
+    /// </summary>
+    public static void DoubleEqual(double value1, double value2, long units = 4L)
     {
-        Assert.True(Math.Abs(a) - Math.Abs(b) <= absolute_range);
+        var lValue1 = BitConverter.DoubleToInt64Bits(value1);
+        var lValue2 = BitConverter.DoubleToInt64Bits(value2);
+
+        // If the signs are different, return false except for +0 and -0.
+        if (((ulong)lValue1 >> 63) != ((ulong)lValue2 >> 63))
+        {
+            Assert.True(value1 == value2);
+            return;
+        }
+
+        var diff = Math.Abs(lValue1 - lValue2);
+
+        Assert.True(diff <= units);
     }
+
+    /// <summary>
+    /// Verifies that the two float values are approximately equal, to within 4 ULPs from each other.
+    /// 
+    /// Replacement for EXPECT_FLOAT_EQ and ASSERT_FLOAT_EQ
+    /// </summary>
+    public static void FloatEqual(float value1, float value2)
+    {
+        var lValue1 = BitConverter.ToInt32(BitConverter.GetBytes(value1), 0);
+        var lValue2 = BitConverter.ToInt32(BitConverter.GetBytes(value2), 0);
+
+        // If the signs are different, return false except for +0 and -0.
+        if ((lValue1 >> 31) != (lValue2 >> 31))
+            Assert.True(value1 == value2);
+
+        var diff = Math.Abs(lValue1 - lValue2);
+
+        Assert.True(diff <= 4L);
+    }
+    public static void FloatEqual(float value1, double value2) =>
+        FloatEqual(value1, (float)value2);
+
+    /// <summary>
+    /// Verifies that the difference between value1 and value2 does not exceed the absolute error bound abs_error.
+    /// 
+    /// Replacement for EXPECT_NEAR
+    /// </summary>
+    public static void Near(double value1, double value2, double absoluteError = 0.0001) =>
+        Assert.True(Math.Abs(value1 - value2) <= absoluteError);
 }
 
 // This class defines various static functions that are useful for writing
@@ -30,11 +76,11 @@ public static class S2Testing
         // "abac"), returns a vector of S2Points of the form (ch, 0, 0).  Note that
         // these points are not unit length and therefore are not suitable for general
         // use, however they are useful for testing certain functions.
-        public static S2Point[] StrToPoints(string str)
+        public static S2PointLoopSpan StrToPoints(string str)
         {
             return Encoding.ASCII.GetBytes(str)
                 .Select(t => new S2Point(t, 0, 0))
-                .ToArray();
+                .ToList();
         }
 
         public static string PointsToStr(IEnumerable<S2Point> points)

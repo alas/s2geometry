@@ -44,7 +44,7 @@ public class S2ContainsVertexQuery
         var best = new KeyValuePair<S2Point, int>(reference_dir, 0);
         foreach (var e in edge_map_)
         {
-            Assert.True(Math.Abs(e.Value) <= 1);
+            System.Diagnostics.Debug.Assert(Math.Abs(e.Value) <= 1);
             if (e.Value == 0) continue;  // This is a "matched" edge.
             if (S2Pred.OrderedCCW(reference_dir, best.Key, e.Key, target_))
             {

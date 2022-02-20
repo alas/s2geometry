@@ -31,10 +31,10 @@ public class S2LatLngRectTests
     {
         // Check various accessor methods.
         S2LatLngRect d1 = RectFromDegrees(-90, 0, -45, 180);
-        Assert2.Near(d1.LatLo().GetDegrees(), -90);
-        Assert2.Near(d1.LatHi().GetDegrees(), -45);
-        Assert2.Near(d1.LngLo().GetDegrees(), 0);
-        Assert2.Near(d1.LngHi().GetDegrees(), 180);
+        Assert2.DoubleEqual(d1.LatLo().GetDegrees(), -90);
+        Assert2.DoubleEqual(d1.LatHi().GetDegrees(), -45);
+        Assert2.DoubleEqual(d1.LngLo().GetDegrees(), 0);
+        Assert2.DoubleEqual(d1.LngHi().GetDegrees(), 180);
         Assert.Equal(d1.Lat, new(-S2.M_PI_2, -S2.M_PI_4));
         Assert.Equal(d1.Lng, new(0, Math.PI));
     }
@@ -552,8 +552,8 @@ public class S2LatLngRectTests
     public void Test_S2LatLngRect_Area()
     {
         Assert.Equal(0.0, S2LatLngRect.Empty.Area());
-        Assert2.Near(S2.M_4_PI, S2LatLngRect.Full.Area());
-        Assert2.Near(S2.M_PI_2, RectFromDegrees(0, 0, 90, 90).Area());
+        Assert2.DoubleEqual(S2.M_4_PI, S2LatLngRect.Full.Area());
+        Assert2.DoubleEqual(S2.M_PI_2, RectFromDegrees(0, 0, 90, 90).Area());
     }
 
     [Fact]
@@ -754,21 +754,21 @@ public class S2LatLngRectTests
         S2LatLngRect a2 = PointRectFromDegrees(90, 10);  // north pole
 
         S2LatLngRect b = RectFromDegrees(-85, -50, -80, 10);
-        Assert2.Near(a1.GetDirectedHausdorffDistance(b).Radians,
+        Assert2.DoubleEqual(a1.GetDirectedHausdorffDistance(b).Radians,
                          a1.GetDistance(b).Radians);
-        Assert2.Near(a2.GetDirectedHausdorffDistance(b).Radians,
+        Assert2.DoubleEqual(a2.GetDirectedHausdorffDistance(b).Radians,
                          a2.GetDistance(b).Radians);
 
         b = RectFromDegrees(4, -10, 80, 10);
-        Assert2.Near(a1.GetDirectedHausdorffDistance(b).Radians,
+        Assert2.DoubleEqual(a1.GetDirectedHausdorffDistance(b).Radians,
                          a1.GetDistance(b).Radians);
-        Assert2.Near(a2.GetDirectedHausdorffDistance(b).Radians,
+        Assert2.DoubleEqual(a2.GetDirectedHausdorffDistance(b).Radians,
                          a2.GetDistance(b).Radians);
 
         b = RectFromDegrees(70, 170, 80, -170);
-        Assert2.Near(a1.GetDirectedHausdorffDistance(b).Radians,
+        Assert2.DoubleEqual(a1.GetDirectedHausdorffDistance(b).Radians,
                          a1.GetDistance(b).Radians);
-        Assert2.Near(a2.GetDirectedHausdorffDistance(b).Radians,
+        Assert2.DoubleEqual(a2.GetDirectedHausdorffDistance(b).Radians,
                          a2.GetDistance(b).Radians);
     }
     [Fact]

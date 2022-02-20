@@ -296,23 +296,23 @@ namespace S2Geometry
             var a = MakePolylineOrDie("");
             var b = MakePolylineOrDie("");
             var correct_path = new WarpPath{ };
-            Assert.Throws<AssertionException>(() => VerifyPath(a, b, correct_path));
+            Assert.Throws<Exception>(() => VerifyPath(a, b, correct_path));
         }
 
         [Fact]
         public void Test_S2PolylineAlignmentTest_ExactLengthZeroInputA() {
             var a = MakePolylineOrDie("");
             var b = MakePolylineOrDie("0:0, 1:1, 2:2");
-            WarpPath correct_path = new() { };
-            Assert.Throws<AssertionException>(() => VerifyPath(a, b, correct_path));
+            WarpPath correct_path = new();
+            Assert.Throws<Exception>(() => VerifyPath(a, b, correct_path));
         }
 
         [Fact]
         public void Test_S2PolylineAlignmentTest_ExactLengthZeroInputB() {
             var a = MakePolylineOrDie("0:0, 1:1, 2:2");
             var b = MakePolylineOrDie("");
-            var correct_path = new WarpPath{ };
-            Assert.Throws<AssertionException>(() => VerifyPath(a, b, correct_path));
+            WarpPath correct_path = new();
+            Assert.Throws<Exception>(() => VerifyPath(a, b, correct_path));
         }
 
         [Fact]
@@ -373,7 +373,7 @@ namespace S2Geometry
         public void Test_S2PolylineAlignmentTest_MedoidPolylineNoPolylines() {
             S2Polyline[] polylines = Array.Empty<S2Polyline>();
             var default_opts = new S2PolylineAlignment.MedoidOptions();
-            Assert.Throws<AssertionException>(() => S2PolylineAlignment.GetMedoidPolyline(polylines, default_opts));
+            Assert.Throws<Exception>(() => S2PolylineAlignment.GetMedoidPolyline(polylines, default_opts));
         }
 
         [Fact]
@@ -487,7 +487,7 @@ namespace S2Geometry
         public void Test_S2PolylineAlignmentTest_ConsensusPolylineNoPolylines() {
             var polylines = Array.Empty<S2Polyline>();
             var default_opts = new S2PolylineAlignment.ConsensusOptions();
-            Assert.Throws<AssertionException>(() => S2PolylineAlignment.GetConsensusPolyline(polylines, default_opts));
+            Assert.Throws<Exception>(() => S2PolylineAlignment.GetConsensusPolyline(polylines, default_opts));
         }
 
         [Fact]

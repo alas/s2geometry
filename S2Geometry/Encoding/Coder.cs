@@ -14,10 +14,10 @@ public class Encoder : IEquatable<Encoder>
 
     static Encoder()
     {
-        Assert.True(sizeof(Byte) == 1);
-        Assert.True(sizeof(UInt16) == 2);
-        Assert.True(sizeof(UInt32) == 4);
-        Assert.True(sizeof(UInt64) == 8);
+        System.Diagnostics.Debug.Assert(sizeof(Byte) == 1);
+        System.Diagnostics.Debug.Assert(sizeof(UInt16) == 2);
+        System.Diagnostics.Debug.Assert(sizeof(UInt32) == 4);
+        System.Diagnostics.Debug.Assert(sizeof(UInt64) == 8);
     }
 
     // Initialize encoder to encode into "buf"
@@ -36,14 +36,14 @@ public class Encoder : IEquatable<Encoder>
     public void Put8(sbyte v) => Put8((byte)v);
     public void Put8(byte v)
     {
-        Assert.True(Avail() >= sizeof(byte));
+        System.Diagnostics.Debug.Assert(Avail() >= sizeof(byte));
         Buffer[Offset] = v;
         Offset += sizeof(byte);
     }
     public void Put16(Int16 v) => Put16((UInt16)v);
     public void Put16(UInt16 v)
     {
-        Assert.True(Avail() >= sizeof(UInt16));
+        System.Diagnostics.Debug.Assert(Avail() >= sizeof(UInt16));
         var bytes = BitConverter.GetBytes(v);
         Buffer[Offset] = bytes[0];
         Buffer[++Offset] = bytes[1];
@@ -51,7 +51,7 @@ public class Encoder : IEquatable<Encoder>
     public void Put32(Int32 v) => Put32((UInt32)v);
     public void Put32(UInt32 v)
     {
-        Assert.True(Avail() >= sizeof(UInt32));
+        System.Diagnostics.Debug.Assert(Avail() >= sizeof(UInt32));
         var bytes = BitConverter.GetBytes(v);
         Buffer[Offset] = bytes[0];
         Buffer[Offset + 1] = bytes[1];
@@ -62,7 +62,7 @@ public class Encoder : IEquatable<Encoder>
     public void Put64(Int64 v) => Put64((UInt64)v);
     public void Put64(UInt64 v)
     {
-        Assert.True(Avail() >= sizeof(UInt64));
+        System.Diagnostics.Debug.Assert(Avail() >= sizeof(UInt64));
         var bytes = BitConverter.GetBytes(v);
         Buffer[Offset] = bytes[0];
         Buffer[Offset + 1] = bytes[1];
@@ -91,7 +91,7 @@ public class Encoder : IEquatable<Encoder>
     }
     public void PutFloat(float f)
     {
-        Assert.True(Avail() >= sizeof(float));
+        System.Diagnostics.Debug.Assert(Avail() >= sizeof(float));
         var bytes = BitConverter.GetBytes(f);
         Buffer[Offset] = bytes[0];
         Buffer[Offset + 1] = bytes[1];
@@ -101,7 +101,7 @@ public class Encoder : IEquatable<Encoder>
     }
     public void PutDouble(double d)
     {
-        Assert.True(Avail() >= sizeof(double));
+        System.Diagnostics.Debug.Assert(Avail() >= sizeof(double));
         var bytes = BitConverter.GetBytes(d);
         Buffer[Offset] = bytes[0];
         Buffer[Offset + 1] = bytes[1];
@@ -131,15 +131,15 @@ public class Encoder : IEquatable<Encoder>
     // Return number of bytes encoded so far
     public int Length()
     {
-        Assert.True(Offset >= 0);
-        Assert.True(Offset <= Limit);  // Catch the buffer overflow.
+        System.Diagnostics.Debug.Assert(Offset >= 0);
+        System.Diagnostics.Debug.Assert(Offset <= Limit);  // Catch the buffer overflow.
         return Offset;
     }
 
     // Return number of bytes of space remaining in buffer
     public int Avail()
     {
-        Assert.True(Limit >= Offset);
+        System.Diagnostics.Debug.Assert(Limit >= Offset);
         return Limit - Offset;
     }
 
@@ -172,7 +172,7 @@ public class Encoder : IEquatable<Encoder>
     // Removes the last N bytes out of the encoded buffer
     public void RemoveLast(int N)
     {
-        Assert.True(Length() >= N);
+        System.Diagnostics.Debug.Assert(Length() >= N);
         Offset -= N;
     }
 
@@ -180,7 +180,7 @@ public class Encoder : IEquatable<Encoder>
 
     private void EnsureSlowPath(int N)
     {
-        Assert.True(Avail() < N);
+        System.Diagnostics.Debug.Assert(Avail() < N);
 
         // Double buffer size, but make sure we always have at least N extra bytes
         int current_len = Length();
@@ -194,7 +194,7 @@ public class Encoder : IEquatable<Encoder>
         Buffer = new_buffer;
 
         Limit = new_capacity;
-        Assert.True(Avail() >= N);
+        System.Diagnostics.Debug.Assert(Avail() >= N);
     }
 
     public string HexString() => Convert.ToHexString(Buffer, 0, Length());
@@ -235,10 +235,10 @@ public class Decoder
 
     static Decoder()
     {
-        Assert.True(sizeof(Byte) == 1);
-        Assert.True(sizeof(UInt16) == 2);
-        Assert.True(sizeof(UInt32) == 4);
-        Assert.True(sizeof(UInt64) == 8);
+        System.Diagnostics.Debug.Assert(sizeof(Byte) == 1);
+        System.Diagnostics.Debug.Assert(sizeof(UInt16) == 2);
+        System.Diagnostics.Debug.Assert(sizeof(UInt32) == 4);
+        System.Diagnostics.Debug.Assert(sizeof(UInt64) == 8);
     }
 
     // Initialize decoder to decode from "buf"
@@ -353,7 +353,7 @@ public class Decoder
     // Return number of available bytes to read
     public int Avail()
     {
-        Assert.True(Limit >= Offset);
+        System.Diagnostics.Debug.Assert(Limit >= Offset);
         return Limit - Offset;
     }
 }

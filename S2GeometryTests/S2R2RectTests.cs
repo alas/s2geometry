@@ -13,7 +13,7 @@ public class S2R2RectTests
     public void Test_S2R2Rect_EmptyRectangles()
     {
         // Test basic properties of empty rectangles.
-        S2R2Rect empty = S2R2Rect.Empty;
+        var empty = S2R2Rect.Empty;
         Assert.True(empty.IsValid());
         Assert.True(empty.IsEmpty());
         Assert.Equal(empty, empty);
@@ -107,7 +107,7 @@ public class S2R2RectTests
         // Much more testing of these methods is done in s1interval_test
         // and r1interval_test.
 
-        S2R2Rect empty = S2R2Rect.Empty;
+        var empty = S2R2Rect.Empty;
         R2Point sw1 = new(0, 0.25);
         R2Point ne1 = new(0.5, 0.75);
         S2R2Rect r1 = new(sw1, ne1);
@@ -153,11 +153,11 @@ public class S2R2RectTests
         R2Point ne1 = new(0.5, 0.75);
         S2R2Rect r1 = new(sw1, ne1);
 
-        S2R2Rect r2 = S2R2Rect.Empty;
-        r2.AddPoint(new R2Point(0, 0.25));
-        r2.AddPoint(new R2Point(0.5, 0.25));
-        r2.AddPoint(new R2Point(0, 0.75));
-        r2.AddPoint(new R2Point(0.1, 0.4));
+        var r2 = S2R2Rect.Empty;
+        r2 = r2.AddPoint(new(0, 0.25));
+        r2 = r2.AddPoint(new(0.5, 0.25));
+        r2 = r2.AddPoint(new(0, 0.75));
+        r2 = r2.AddPoint(new(0.1, 0.4));
         Assert.Equal(r1, r2);
     }
 
@@ -201,25 +201,25 @@ public class S2R2RectTests
     public void Test_S2R2Rect_Bounds()
     {
         // GetCapBound(), GetRectBound()
-        S2R2Rect empty = S2R2Rect.Empty;
+        var empty = S2R2Rect.Empty;
         Assert.True(empty.GetCapBound().IsEmpty());
         Assert.True(empty.GetRectBound().IsEmpty());
-        Assert.Equal(S2Cap.FromPoint(new S2Point(1, 0, 0)),
-                  new S2R2Rect(new R2Point(0.5, 0.5), new R2Point(0.5, 0.5)).GetCapBound());
+        Assert.Equal(S2Cap.FromPoint(new(1, 0, 0)),
+            new S2R2Rect(new R2Point(0.5, 0.5), new R2Point(0.5, 0.5)).GetCapBound());
         Assert.Equal(S2LatLngRect.FromPoint(S2LatLng.FromDegrees(0, 0)),
-                  new S2R2Rect(new R2Point(0.5, 0.5), new R2Point(0.5, 0.5)).GetRectBound());
+            new S2R2Rect(new R2Point(0.5, 0.5), new R2Point(0.5, 0.5)).GetRectBound());
 
         for (int i = 0; i < 10; ++i)
         {
             _logger.WriteLine("i=" + i);
-            S2R2Rect rect = S2R2Rect.FromCellId(S2Testing.GetRandomCellId());
-            S2Cap cap = rect.GetCapBound();
-            S2LatLngRect llrect = rect.GetRectBound();
+            var rect = S2R2Rect.FromCellId(S2Testing.GetRandomCellId());
+            var cap = rect.GetCapBound();
+            var llrect = rect.GetRectBound();
             for (int k = 0; k < 4; ++k)
             {
-                S2Point v = S2R2Rect.ToS2Point(rect.Vertex(k));
+                var v = S2R2Rect.ToS2Point(rect.Vertex(k));
                 // v2 is a point that is well outside the rectangle.
-                S2Point v2 = (cap.Center + 3 * (v - cap.Center)).Normalize();
+                var v2 = (cap.Center + 3 * (v - cap.Center)).Normalize();
                 Assert.True(cap.Contains(v));
                 Assert.False(cap.Contains(v2));
                 Assert.True(llrect.Contains(v));
@@ -233,7 +233,7 @@ public class S2R2RectTests
     {
         // Contains(S2Cell), MayIntersect(S2Cell)
 
-        S2R2Rect empty = S2R2Rect.Empty;
+        var empty = S2R2Rect.Empty;
         TestCellOps(empty, S2Cell.FromFace(3), 0);
 
         // This rectangle includes the first quadrant of face 0.  It's expanded

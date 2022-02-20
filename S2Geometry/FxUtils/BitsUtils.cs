@@ -58,7 +58,7 @@ public static class BitsUtils
                 log += shift;
             }
         }
-        //Assert.True(value == 1);
+        //System.Diagnostics.Debug.Assert(value == 1);
         return log;
     }
 

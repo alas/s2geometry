@@ -283,7 +283,7 @@ public int CompareTo(Result other)
     // (in which case edge_id() == -1).
     public Result FindFurthestEdge(Target target)
     {
-        // Assert.True(Marshal.SizeOf(typeof(Options)) <= 32); // Consider not copying Options here
+        // System.Diagnostics.Debug.Assert(Marshal.SizeOf(typeof(Options)) <= 32); // Consider not copying Options here
         Options tmp_options = Options_;
         tmp_options.MaxResults = (1);
         Base.Result base_result = base_.FindClosestEdge(target, tmp_options);
@@ -305,7 +305,7 @@ public int CompareTo(Result other)
     // threshold than it is to calculate the actual maximum distance.
     public bool IsDistanceGreater(Target target, S1ChordAngle limit)
     {
-        // Assert.True(Marshal.SizeOf(typeof(Options)) <= 32); // Consider not copying Options here
+        // System.Diagnostics.Debug.Assert(Marshal.SizeOf(typeof(Options)) <= 32); // Consider not copying Options here
         Options tmp_options = Options_;
         tmp_options.MaxResults = (1);
         tmp_options.MinDistance = (limit);
@@ -317,7 +317,7 @@ public int CompareTo(Result other)
     // "target" is exactly equal to "limit".
     public bool IsDistanceGreaterOrEqual(Target target, S1ChordAngle limit)
     {
-        // Assert.True(Marshal.SizeOf(typeof(Options)) <= 32); // Consider not copying Options here
+        // System.Diagnostics.Debug.Assert(Marshal.SizeOf(typeof(Options)) <= 32); // Consider not copying Options here
         Options tmp_options = Options_;
         tmp_options.MaxResults = (1);
         tmp_options.InclusiveMinDistance = (limit);
@@ -331,7 +331,7 @@ public int CompareTo(Result other)
     // or equal to "limit".
     public bool IsConservativeDistanceGreaterOrEqual(Target target, S1ChordAngle limit)
     {
-        // Assert.True(Marshal.SizeOf(typeof(Options)) <= 32); // Consider not copying Options here
+        // System.Diagnostics.Debug.Assert(Marshal.SizeOf(typeof(Options)) <= 32); // Consider not copying Options here
         Options tmp_options = Options_;
         tmp_options.MaxResults = 1;
         tmp_options.ConservativeMinDistance = limit;

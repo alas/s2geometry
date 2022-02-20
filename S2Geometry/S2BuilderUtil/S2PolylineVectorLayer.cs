@@ -91,7 +91,7 @@ public class S2PolylineVectorLayer : Layer
             get => sibling_pairs_;
             set
             {
-                Assert.True(value == SiblingPairs.KEEP ||
+                System.Diagnostics.Debug.Assert(value == SiblingPairs.KEEP ||
                        value == SiblingPairs.DISCARD);
                 sibling_pairs_ = value;
             }
@@ -202,7 +202,7 @@ public class S2PolylineVectorLayer : Layer
         LabelSetIds? label_set_ids, IdSetLexicon? label_set_lexicon,
         Options options)
     {
-        Assert.True((label_set_ids == null) == (label_set_lexicon == null));
+        System.Diagnostics.Debug.Assert((label_set_ids == null) == (label_set_lexicon == null));
         polylines_ = polylines;
         label_set_ids_ = label_set_ids;
         label_set_lexicon_ = label_set_lexicon;

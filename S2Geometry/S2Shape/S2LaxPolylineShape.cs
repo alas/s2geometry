@@ -66,7 +66,7 @@ public class S2LaxPolylineShape : S2Shape, IInitEncoder<S2LaxPolylineShape>
 
     public sealed override Edge GetEdge(int e)
     {
-        Assert.True(e < NumEdges());
+        System.Diagnostics.Debug.Assert(e < NumEdges());
         return new Edge(Vertex(e), Vertex(e + 1));
     }
     public sealed override int Dimension() => 1;
@@ -75,8 +75,8 @@ public class S2LaxPolylineShape : S2Shape, IInitEncoder<S2LaxPolylineShape>
     public sealed override Chain GetChain(int i) => new Chain(0, NumEdges());
     public sealed override Edge ChainEdge(int i, int j)
     {
-        Assert.True(i == 0);
-        Assert.True(j < NumEdges());
+        System.Diagnostics.Debug.Assert(i == 0);
+        System.Diagnostics.Debug.Assert(j < NumEdges());
         return new Edge(Vertex(j), Vertex(j + 1));
     }
     public sealed override ChainPosition GetChainPosition(int e) => new ChainPosition(0, e);
@@ -128,7 +128,7 @@ public class EncodedS2LaxPolylineShape : S2Shape, IInitEncoder<EncodedS2LaxPolyl
 
     public sealed override Edge GetEdge(int e)
     {
-        Assert.True(e < NumEdges());
+        System.Diagnostics.Debug.Assert(e < NumEdges());
         return new Edge(Vertex(e), Vertex(e + 1));
     }
     public sealed override int Dimension() { return 1; }
@@ -143,8 +143,8 @@ public class EncodedS2LaxPolylineShape : S2Shape, IInitEncoder<EncodedS2LaxPolyl
     }
     public sealed override Edge ChainEdge(int i, int j)
     {
-        Assert.True(i == 0);
-        Assert.True(j < NumEdges());
+        System.Diagnostics.Debug.Assert(i == 0);
+        System.Diagnostics.Debug.Assert(j < NumEdges());
         return new Edge(Vertex(j), Vertex(j + 1));
     }
     public sealed override ChainPosition GetChainPosition(int e)

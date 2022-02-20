@@ -109,8 +109,8 @@ public partial class S2Builder
             LabelSetLexicon = label_set_lexicon;
             is_full_polygon_predicate_ = is_full_polygon_predicate;
 
-            Assert.True(edges.IsSorted());
-            Assert.True(edges.Count == input_edge_id_set_ids.Count);
+            System.Diagnostics.Debug.Assert(edges.IsSorted());
+            System.Diagnostics.Debug.Assert(edges.Count == input_edge_id_set_ids.Count);
         }
 
         #endregion
@@ -163,12 +163,12 @@ public partial class S2Builder
         // must have a sibling edge.)
         public void MakeSiblingMap(EdgeLoop in_edge_ids)
         {
-            Assert.True(Options.SiblingPairs_ == SiblingPairs.REQUIRE ||
+            System.Diagnostics.Debug.Assert(Options.SiblingPairs_ == SiblingPairs.REQUIRE ||
                    Options.SiblingPairs_ == SiblingPairs.CREATE ||
                    Options.EdgeType_ == EdgeType.UNDIRECTED);
             for (var e = 0; e < NumEdges; ++e)
             {
-                Assert.True(GetEdge(e) == Reverse(GetEdge(in_edge_ids[e])));
+                System.Diagnostics.Debug.Assert(GetEdge(e) == Reverse(GetEdge(in_edge_ids[e])));
             }
             if (Options.EdgeType_ == EdgeType.DIRECTED) return;
             if (Options.DegenerateEdges_ == DegenerateEdges.DISCARD) return;
@@ -178,11 +178,11 @@ public partial class S2Builder
                 var v = GetEdge(e).ShapeId;
                 if (GetEdge(e).EdgeId == v)
                 {
-                    Assert.True(e + 1 < NumEdges);
-                    Assert.True(GetEdge(e + 1).ShapeId == v);
-                    Assert.True(GetEdge(e + 1).EdgeId == v);
-                    Assert.True(in_edge_ids[e] == e);
-                    Assert.True(in_edge_ids[e + 1] == e + 1);
+                    System.Diagnostics.Debug.Assert(e + 1 < NumEdges);
+                    System.Diagnostics.Debug.Assert(GetEdge(e + 1).ShapeId == v);
+                    System.Diagnostics.Debug.Assert(GetEdge(e + 1).EdgeId == v);
+                    System.Diagnostics.Debug.Assert(in_edge_ids[e] == e);
+                    System.Diagnostics.Debug.Assert(in_edge_ids[e + 1] == e + 1);
                     in_edge_ids[e] = e + 1;
                     in_edge_ids[e + 1] = e;
                     ++e;
@@ -510,9 +510,9 @@ public partial class S2Builder
         // REQUIRES: options.edge_type() == DIRECTED
         public bool GetDirectedLoops(LoopType loop_type, List<EdgeLoop> loops, out S2Error error)
         {
-            Assert.True(Options.DegenerateEdges_ == DegenerateEdges.DISCARD ||
+            System.Diagnostics.Debug.Assert(Options.DegenerateEdges_ == DegenerateEdges.DISCARD ||
                    Options.DegenerateEdges_ == DegenerateEdges.DISCARD_EXCESS);
-            Assert.True(Options.EdgeType_ == EdgeType.DIRECTED);
+            System.Diagnostics.Debug.Assert(Options.EdgeType_ == EdgeType.DIRECTED);
 
             if (!GetLeftTurnMap(GetInEdgeIds(), out var left_turn_map, out error)) return false;
             var min_input_ids = GetMinInputEdgeIds();
@@ -558,7 +558,7 @@ public partial class S2Builder
                 }
                 if (loop_type == LoopType.SIMPLE)
                 {
-                    Assert.True(!path.Any());  // Invariant.
+                    System.Diagnostics.Debug.Assert(!path.Any());  // Invariant.
                 }
                 else
                 {
@@ -572,12 +572,12 @@ public partial class S2Builder
         }
         public bool GetDirectedComponents(DegenerateBoundaries degenerate_boundaries, List<DirectedComponent> components, out S2Error error)
         {
-            Assert.True(Options.DegenerateEdges_ == DegenerateEdges.DISCARD ||
+            System.Diagnostics.Debug.Assert(Options.DegenerateEdges_ == DegenerateEdges.DISCARD ||
                    (Options.DegenerateEdges_ == DegenerateEdges.DISCARD_EXCESS &&
                     degenerate_boundaries == DegenerateBoundaries.KEEP));
-            Assert.True(Options.SiblingPairs_ == SiblingPairs.REQUIRE ||
+            System.Diagnostics.Debug.Assert(Options.SiblingPairs_ == SiblingPairs.REQUIRE ||
                    Options.SiblingPairs_ == SiblingPairs.CREATE);
-            Assert.True(Options.EdgeType_ == EdgeType.DIRECTED);  // Implied by above.
+            System.Diagnostics.Debug.Assert(Options.EdgeType_ == EdgeType.DIRECTED);  // Implied by above.
 
             var sibling_map = GetSiblingMap();
             if (!GetLeftTurnMap(sibling_map, out var left_turn_map, out error)) return false;
@@ -699,9 +699,9 @@ public partial class S2Builder
         //           [since REQUIRE, CREATE convert the edge_type() to DIRECTED]
         public bool GetUndirectedComponents(LoopType loop_type, List<UndirectedComponent> components, out S2Error error)
         {
-            Assert.True(Options.DegenerateEdges_ == DegenerateEdges.DISCARD ||
+            System.Diagnostics.Debug.Assert(Options.DegenerateEdges_ == DegenerateEdges.DISCARD ||
                    Options.DegenerateEdges_ == DegenerateEdges.DISCARD_EXCESS);
-            Assert.True(Options.EdgeType_ == EdgeType.UNDIRECTED);
+            System.Diagnostics.Debug.Assert(Options.EdgeType_ == EdgeType.UNDIRECTED);
 
             var sibling_map = GetInEdgeIds();
             if (!GetLeftTurnMap(sibling_map, out var left_turn_map, out error)) return false;
@@ -772,7 +772,7 @@ public partial class S2Builder
                     }
                     if (loop_type == LoopType.SIMPLE)
                     {
-                        Assert.True(!path.Any());  // Invariant.
+                        System.Diagnostics.Debug.Assert(!path.Any());  // Invariant.
                     }
                     else
                     {
@@ -821,7 +821,7 @@ public partial class S2Builder
         // REQUIRES: options.sibling_pairs() == { DISCARD, DISCARD_EXCESS, KEEP }
         public List<EdgePolyline> GetPolylines(PolylineType polyline_type)
         {
-            Assert.True(Options.SiblingPairs_ == SiblingPairs.DISCARD ||
+            System.Diagnostics.Debug.Assert(Options.SiblingPairs_ == SiblingPairs.DISCARD ||
                    Options.SiblingPairs_ == SiblingPairs.DISCARD_EXCESS ||
                    Options.SiblingPairs_ == SiblingPairs.KEEP);
             var builder = new PolylineBuilder(this);
@@ -1307,7 +1307,7 @@ return new Graph(new_options, Vertices, new_edges, new_input_edge_id_set_ids,
                     if (edge.ShapeId == edge.EdgeId)
                     {
                         // This is a degenerate edge.
-                        Assert.True(n_out == n_in);
+                        System.Diagnostics.Debug.Assert(n_out == n_in);
                         if (options_.DegenerateEdges_ == DegenerateEdges.DISCARD)
                         {
                             continue;
@@ -1332,7 +1332,7 @@ return new Graph(new_options, Vertices, new_edges, new_input_edge_id_set_ids,
                         {
                             // When we have undirected edges and are guaranteed to have siblings,
                             // we cut the number of edges in half (see s2builder.h).
-                            Assert.True(0 == (n_out & 1));  // Number of edges is always even.
+                            System.Diagnostics.Debug.Assert(0 == (n_out & 1));  // Number of edges is always even.
                             AddEdges(merge ? 1 : (n_out / 2), edge, MergeInputIds(out_begin, out_));
                         }
                         else if (merge)
@@ -1399,7 +1399,7 @@ return new Graph(new_options, Vertices, new_edges, new_input_edge_id_set_ids,
                     }
                     else
                     {
-                        Assert.True(options_.SiblingPairs_ == SiblingPairs.REQUIRE ||
+                        System.Diagnostics.Debug.Assert(options_.SiblingPairs_ == SiblingPairs.REQUIRE ||
                                options_.SiblingPairs_ == SiblingPairs.CREATE);
                         if (error.IsOk() && options_.SiblingPairs_ == SiblingPairs.REQUIRE &&
                             (options_.EdgeType_ == EdgeType.DIRECTED ? (n_out != n_in)
@@ -1533,7 +1533,7 @@ return new Graph(new_options, Vertices, new_edges, new_input_edge_id_set_ids,
                     CanonicalizeLoopOrder(min_input_ids_, polyline);
                     polylines.Add(polyline);
                 }
-                Assert.True(0 == edges_left_);
+                System.Diagnostics.Debug.Assert(0 == edges_left_);
 
                 // Sort the polylines to correspond to the input order (if possible).
                 CanonicalizeVectorOrder(min_input_ids_, polylines);
@@ -1606,7 +1606,7 @@ return new Graph(new_options, Vertices, new_edges, new_input_edge_id_set_ids,
                         polylines.Add(polyline);
                     }
                 }
-                Assert.True(0 == edges_left_);
+                System.Diagnostics.Debug.Assert(0 == edges_left_);
 
                 // Sort the polylines to correspond to the input order (if possible).
                 CanonicalizeVectorOrder(min_input_ids_, polylines);
@@ -1637,7 +1637,7 @@ return new Graph(new_options, Vertices, new_edges, new_input_edge_id_set_ids,
                 for (; ; )
                 {
                     polyline.Add(e);
-                    Assert.True(!used_[e]);
+                    System.Diagnostics.Debug.Assert(!used_[e]);
                     used_[e] = true;
                     if (!directed_) used_[sibling_map_[e]] = true;
                     --edges_left_;
@@ -1645,12 +1645,12 @@ return new Graph(new_options, Vertices, new_edges, new_input_edge_id_set_ids,
                     if (!IsInterior(v) || v == start) break;
                     if (directed_)
                     {
-                        Assert.True(1 == out_.Degree(v));
+                        System.Diagnostics.Debug.Assert(1 == out_.Degree(v));
                         e = out_.EdgeIds(v).First();
                     }
                     else
                     {
-                        Assert.True(2 == out_.Degree(v));
+                        System.Diagnostics.Debug.Assert(2 == out_.Degree(v));
                         foreach (var e2 in out_.EdgeIds(v)) if (!used_[e2]) e = e2;
                     }
                 }
@@ -1708,9 +1708,9 @@ return new Graph(new_options, Vertices, new_edges, new_input_edge_id_set_ids,
                         if (!used_[e])
                         {
                             var loop = BuildWalk(v);
-                            Assert.True(v == g_.GetEdge(loop.Last()).EdgeId);
+                            System.Diagnostics.Debug.Assert(v == g_.GetEdge(loop.Last()).EdgeId);
                             polyline.AddRange(loop);
-                            Assert.True(used_[e]);  // All outgoing edges from "v" are now used.
+                            System.Diagnostics.Debug.Assert(used_[e]);  // All outgoing edges from "v" are now used.
                             break;
                         }
                     }

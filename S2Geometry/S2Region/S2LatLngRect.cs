@@ -563,8 +563,8 @@ public readonly record struct S2LatLngRect : IS2Region<S2LatLngRect>, IDecoderSt
     {
         var a = this;
         var b = other;
-        Assert.True(!a.IsEmpty());
-        Assert.True(!b.IsEmpty());
+        System.Diagnostics.Debug.Assert(!a.IsEmpty());
+        System.Diagnostics.Debug.Assert(!b.IsEmpty());
 
         // First, handle the trivial cases where the longitude intervals overlap.
         if (a.Lng.Intersects(b.Lng))
@@ -676,7 +676,7 @@ public readonly record struct S2LatLngRect : IS2Region<S2LatLngRect>, IDecoderSt
         }
 
         double lng_distance = Lng.GetDirectedHausdorffDistance(other.Lng);
-        Assert.True(lng_distance >= 0);
+        System.Diagnostics.Debug.Assert(lng_distance >= 0);
         return GetDirectedHausdorffDistance(lng_distance, Lat, other.Lat);
     }
     public S1Angle GetHausdorffDistance(S2LatLngRect other)
@@ -726,8 +726,8 @@ public readonly record struct S2LatLngRect : IS2Region<S2LatLngRect>, IDecoderSt
         // Return true if the segment AB intersects the given edge of constant
         // latitude.  Unfortunately, lines of constant latitude are curves on
         // the sphere.  They can intersect a straight edge in 0, 1, or 2 points.
-        Assert.True(a.IsUnitLength());
-        Assert.True(b.IsUnitLength());
+        System.Diagnostics.Debug.Assert(a.IsUnitLength());
+        System.Diagnostics.Debug.Assert(b.IsUnitLength());
 
         // First, compute the normal to the plane AB that points vaguely north.
         var z = S2.RobustCrossProd(a, b).Normalize();
@@ -737,8 +737,8 @@ public readonly record struct S2LatLngRect : IS2Region<S2LatLngRect>, IDecoderSt
         // where the great circle through AB achieves its maximium latitude.
         var y = S2.RobustCrossProd(z, new S2Point(0, 0, 1)).Normalize();
         var x = y.CrossProd(z);
-        Assert.True(x.IsUnitLength());
-        Assert.True(x[2] >= 0);
+        System.Diagnostics.Debug.Assert(x.IsUnitLength());
+        System.Diagnostics.Debug.Assert(x[2] >= 0);
 
         // Compute the angle "theta" from the x-axis (in the x-y plane defined
         // above) where the great circle intersects the given line of latitude.
@@ -747,7 +747,7 @@ public readonly record struct S2LatLngRect : IS2Region<S2LatLngRect>, IDecoderSt
         {
             return false;  // The great circle does not reach the given latitude.
         }
-        Assert.True(x[2] > 0);
+        System.Diagnostics.Debug.Assert(x[2] > 0);
         double cos_theta = sin_lat / x[2];
         double sin_theta = Math.Sqrt(1 - cos_theta * cos_theta);
         double theta = Math.Atan2(sin_theta, cos_theta);
@@ -809,8 +809,8 @@ public readonly record struct S2LatLngRect : IS2Region<S2LatLngRect>, IDecoderSt
         //     b_hi to the interior of U, if any, where D (resp. U) is the portion
         //     of edge a below (resp. above) the intersection point from B2.
 
-        Assert.True(lng_diff >= 0);
-        Assert.True(lng_diff <= Math.PI);
+        System.Diagnostics.Debug.Assert(lng_diff >= 0);
+        System.Diagnostics.Debug.Assert(lng_diff <= Math.PI);
 
         if (lng_diff == 0)
         {
@@ -1014,7 +1014,7 @@ public readonly record struct S2LatLngRect : IS2Region<S2LatLngRect>, IDecoderSt
         encoder.PutDouble(Lng.Lo);
         encoder.PutDouble(Lng.Hi);
 
-        Assert.True(encoder.Avail() >= 0);
+        System.Diagnostics.Debug.Assert(encoder.Avail() >= 0);
     }
 
     // Decodes an S2LatLngRect encoded with Encode().  Returns true on success.

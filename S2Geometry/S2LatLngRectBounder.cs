@@ -25,7 +25,7 @@ public class S2LatLngRectBounder
     // vertices are ignored.
     public void AddPoint(S2Point b)
     {
-        Assert.True(b.IsUnitLength());
+        System.Diagnostics.Debug.Assert(b.IsUnitLength());
         AddInternal(b, new S2LatLng(b));
     }
 
@@ -244,7 +244,7 @@ public class S2LatLngRectBounder
     {
         // Simple consistency check to verify that b and b_latlng are alternate
         // representations of the same vertex.
-        Assert.True(S2.ApproxEquals(b, b_latlng.ToPoint()));
+        System.Diagnostics.Debug.Assert(S2.ApproxEquals(b, b_latlng.ToPoint()));
 
         if (bound_.IsEmpty())
         {

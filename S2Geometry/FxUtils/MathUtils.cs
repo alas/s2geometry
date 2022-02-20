@@ -1,6 +1,4 @@
-﻿using System.Globalization;
-
-namespace S2Geometry;
+﻿namespace S2Geometry;
 
 public static class MathUtils
 {
@@ -87,27 +85,6 @@ public static class MathUtils
 
     public static double Ldexp(double x, int exp) => x * Math.Pow(2, exp);
 
-    /// <summary>
-    /// from: https://stackoverflow.com/questions/374316/round-a-double-to-x-significant-figures (RoundToSignificantDigits)
-    /// </summary>
-    public static string Round(double d)
-    {
-        if (d == 0) return "0";
-
-        var scale = Math.Pow(10, Math.Floor(Math.Log10(Math.Abs(d))) + 1);
-        var t = scale * Math.Round(d / scale, 1);
-
-        return string.Format(CultureInfo.InvariantCulture, "{0:g15}", t);
-    }
-
-    public static double Scale(double d, int decimalPlaces)
-    {
-        if (d == 0) return 0;
-
-        var exp = Math.Floor(Math.Log10(Math.Abs(d)));
-        return d / (Math.Pow(10, exp) * Math.Pow(10, decimalPlaces));
-    }
-
     // Computes v^i, where i is a non-negative integer.
     // When T is a floating point type, this has the same semantics as pow(), but
     // is much faster.
@@ -117,7 +94,7 @@ public static class MathUtils
     // You can also use any type for which operator*= is defined.
     public static double IPow(double @base, int exp)
     {
-        Assert.True(exp >= 0);
+        System.Diagnostics.Debug.Assert(exp >= 0);
         var uexp = (UInt32)exp;
 
         if (uexp < 16)

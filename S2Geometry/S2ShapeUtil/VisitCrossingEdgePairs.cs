@@ -232,7 +232,7 @@ public static partial class S2ShapeUtil
             /// </summary>
             public bool VisitCrossings(RangeEnumerator ai, RangeEnumerator bi)
             {
-                Assert.True(ai.Id.Contains(bi.Id));
+                System.Diagnostics.Debug.Assert(ai.Id.Contains(bi.Id));
                 if (ai.Cell.NumEdges() == 0)
                 {
                     // Skip over the cells of B using binary search.

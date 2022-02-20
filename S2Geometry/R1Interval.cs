@@ -143,7 +143,7 @@ public readonly record struct R1Interval(
     /// </summary>
     public double Project(double p)
     {
-        Assert.True(!IsEmpty());
+        System.Diagnostics.Debug.Assert(!IsEmpty());
         return Math.Max(Lo, Math.Min(Hi, p));
     }
 

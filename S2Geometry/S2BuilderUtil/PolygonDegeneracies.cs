@@ -85,10 +85,10 @@ public readonly record struct PolygonDegeneracy(
 
     private static void CheckGraphOptions(Graph g)
     {
-        Assert.True(g.Options.EdgeType_ == EdgeType.DIRECTED);
-        Assert.True(g.Options.DegenerateEdges_ == DegenerateEdges.DISCARD ||
+        System.Diagnostics.Debug.Assert(g.Options.EdgeType_ == EdgeType.DIRECTED);
+        System.Diagnostics.Debug.Assert(g.Options.DegenerateEdges_ == DegenerateEdges.DISCARD ||
                g.Options.DegenerateEdges_ == DegenerateEdges.DISCARD_EXCESS);
-        Assert.True(g.Options.SiblingPairs_ == SiblingPairs.DISCARD ||
+        System.Diagnostics.Debug.Assert(g.Options.SiblingPairs_ == SiblingPairs.DISCARD ||
                g.Options.SiblingPairs_ == SiblingPairs.DISCARD_EXCESS);
     }
 
@@ -285,7 +285,7 @@ public class DegeneracyFinder
             if (result.RootSign == 0 && is_vertex_unbalanced_[v0])
             {
                 int v0_sign = ContainsVertexSign(v0);
-                Assert.True(v0_sign != 0);
+                System.Diagnostics.Debug.Assert(v0_sign != 0);
                 result.RootSign = v0_same_inside ? v0_sign : -v0_sign;
             }
             foreach (Int32 e in out_.EdgeIds(v0))
@@ -431,7 +431,7 @@ public class DegeneracyFinder
         var result = new List<PolygonDegeneracy>();
         foreach (var component in components)
         {
-            Assert.True(component.RootSign != 0);
+            System.Diagnostics.Debug.Assert(component.RootSign != 0);
             bool invert = component.RootSign < 0;
             foreach (var d in component.Degeneracies)
             {

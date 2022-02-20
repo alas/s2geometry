@@ -143,12 +143,12 @@ public readonly record struct S1ChordAngle : IComparable<S1ChordAngle>, IDistanc
     /// </summary>
     public S1ChordAngle(S2Point x, S2Point y)
     {
-        Assert.True(x.IsUnitLength());
-        Assert.True(y.IsUnitLength());
+        System.Diagnostics.Debug.Assert(x.IsUnitLength());
+        System.Diagnostics.Debug.Assert(y.IsUnitLength());
         // The squared distance may slightly exceed kMaxLength2 due to roundoff errors.
         // The maximum error in the result is 2 * S2Constants.DoubleEpsilon * length2_.
         Length2 = Math.Min(kMaxLength2, (x - y).Norm2());
-        Assert.True(IsValid());
+        System.Diagnostics.Debug.Assert(IsValid());
     }
 
     /// <summary>
@@ -180,9 +180,13 @@ public readonly record struct S1ChordAngle : IComparable<S1ChordAngle>, IDistanc
 
             // The chord length is 2 * sin(angle / 2).
             var length = 2 * Math.Sin(0.5 * Math.Min(Math.PI, ang));
-            Length2 = length * length;
+            // NOTE(Alas): sqrt(2) * sqrt(2) != 2 for System.Double
+            if (length == Math.Sqrt(2))
+                Length2 = 2;
+            else
+                Length2 = length * length;
         }
-        Assert.True(IsValid());
+        System.Diagnostics.Debug.Assert(IsValid());
     }
 
     /// <summary>
@@ -193,7 +197,7 @@ public readonly record struct S1ChordAngle : IComparable<S1ChordAngle>, IDistanc
     private S1ChordAngle(double length2)
     {
         Length2 = length2;
-        Assert.True(IsValid());
+        System.Diagnostics.Debug.Assert(IsValid());
     }
 
     #endregion
@@ -362,7 +366,7 @@ public readonly record struct S1ChordAngle : IComparable<S1ChordAngle>, IDistanc
     /// </summary>
     public double Sin2()
     {
-        Assert.True(!IsSpecial());
+        System.Diagnostics.Debug.Assert(!IsSpecial());
         // Let "a" be the (non-squared) chord length, and let A be the corresponding
         // half-angle (a = 2*sin(A)).  The formula below can be derived from:
         //   sin(2*A) = 2 * sin(A) * cos(A)
@@ -376,7 +380,7 @@ public readonly record struct S1ChordAngle : IComparable<S1ChordAngle>, IDistanc
     public double Cos()
     {
         // cos(2*A) = cos^2(A) - sin^2(A) = 1 - 2*sin^2(A)
-        Assert.True(!IsSpecial());
+        System.Diagnostics.Debug.Assert(!IsSpecial());
         return 1 - 0.5 * Length2;
     }
 
@@ -408,8 +412,8 @@ public readonly record struct S1ChordAngle : IComparable<S1ChordAngle>, IDistanc
         // Note that this method is much more efficient than converting the chord
         // angles to S1Angles and adding those.  It requires only one square root
         // plus a few additions and multiplications.
-        Assert.True(!a.IsSpecial());
-        Assert.True(!b.IsSpecial());
+        System.Diagnostics.Debug.Assert(!a.IsSpecial());
+        System.Diagnostics.Debug.Assert(!b.IsSpecial());
 
         // Optimization for the common case where "b" is an error tolerance
         // parameter that happens to be set to zero.
@@ -434,8 +438,8 @@ public readonly record struct S1ChordAngle : IComparable<S1ChordAngle>, IDistanc
     public static S1ChordAngle operator -(S1ChordAngle a, S1ChordAngle b)
     {
         // See comments in operator+().
-        Assert.True(!a.IsSpecial());
-        Assert.True(!b.IsSpecial());
+        System.Diagnostics.Debug.Assert(!a.IsSpecial());
+        System.Diagnostics.Debug.Assert(!b.IsSpecial());
         var a2 = a.Length2;
         var b2 = b.Length2;
         if (b2 == 0) return a;

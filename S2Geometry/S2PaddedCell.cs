@@ -131,7 +131,7 @@ public class S2PaddedCell
     // REQUIRES: bound().Intersects(rect)
     public S2CellId ShrinkToFit(R2Rect rect)
     {
-        Assert.True(Bound.Intersects(rect));
+        System.Diagnostics.Debug.Assert(Bound.Intersects(rect));
 
         // Quick rejection test: if "rect" contains the center of this cell along
         // either axis, then no further shrinking is possible.
