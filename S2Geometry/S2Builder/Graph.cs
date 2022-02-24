@@ -788,9 +788,7 @@ public partial class S2Builder
                 // then this component will contain normalized loops.)
                 if (min_input_ids[component[0][0][0]] > min_input_ids[component[1][0][0]])
                 {
-                    var tmp = component[0];
-                    component[0] = component[1];
-                    component[1] = tmp;
+                    (component[1], component[0]) = (component[0], component[1]);
                 }
                 components.Add(component);
             }
@@ -1430,8 +1428,8 @@ return new Graph(new_options, Vertices, new_edges, new_input_edge_id_set_ids,
                     }
                 }
 
-                LinqUtils.Swap(edges_, new_edges_);
-                LinqUtils.Swap(input_ids_, new_input_ids_);
+                (edges_, new_edges_) = (new_edges_, edges_);
+                (input_ids_, new_input_ids_) = (new_input_ids_, input_ids_);
                 edges_.TrimExcess();
                 input_ids_.TrimExcess();
             }
@@ -1473,14 +1471,14 @@ return new Graph(new_options, Vertices, new_edges, new_input_edge_id_set_ids,
             }
 
             private readonly GraphOptions options_;
-            private readonly List<Edge> edges_;
-            private readonly List<int> input_ids_;
+            private List<Edge> edges_;
+            private List<int> input_ids_;
             private readonly IdSetLexicon id_set_lexicon_;
             private readonly EdgeLoop out_edges_;
             private readonly EdgeLoop in_edges_;
 
-            private readonly List<Edge> new_edges_ = new();
-            private readonly List<int> new_input_ids_ = new();
+            private List<Edge> new_edges_ = new();
+            private List<int> new_input_ids_ = new();
 
             private readonly InputEdgeLoop tmp_ids_ = new();
         }

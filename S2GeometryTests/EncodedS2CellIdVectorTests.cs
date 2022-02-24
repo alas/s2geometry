@@ -255,7 +255,8 @@ public class EncodedS2CellIdVectorTests
         Encoder encoder = new();
         EncodedS2CellIdVector actual = MakeEncodedS2CellIdVector(expected, encoder);
         Assert.Equal(expected_bytes, encoder.Length());
-        Assert.Equal(actual.Decode(), expected);
+        var dec = actual.Decode();
+        Assert.True(dec.SequenceEqual(expected));
     }
 
     // Like the above, but accepts a UInt64[] rather than a S2CellId[].

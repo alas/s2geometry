@@ -17,7 +17,7 @@ public static partial class S2
             // This value makes polygon operations much slower, because it greatly
             // increases the number of degenerate cases that need to be handled using
             // S2Pred.ExpensiveSign().
-            new S2Point(0, 0, 1);
+            new(0, 0, 1);
 #else
         // The origin should not be a point that is commonly used in edge tests in
         // order to avoid triggering code to handle degenerate cases.  (This rules
@@ -35,8 +35,8 @@ public static partial class S2
     // (this is mainly useful for testing).  It is an error if either point is a
     // zero-length vector (default S2Point), but this is only checked in debug
     // mode.  In non-debug mode it will always return true.
-    public static bool ApproxEquals(S2Point a, S2Point b) 
-        => ApproxEquals(a, b, S1Angle.FromRadians(S2.DoubleError));
+    public static bool ApproxEquals(S2Point a, S2Point b) =>
+        ApproxEquals(a, b, S1Angle.FromRadians(S2.DoubleError));
     public static bool ApproxEquals(S2Point a, S2Point b, S1Angle maxError)
     {
         System.Diagnostics.Debug.Assert(a != S2Point.Empty);
@@ -60,9 +60,9 @@ public static partial class S2
 #else
         int k = a.LargestAbsComponent() - 1;
         if (k < 0) k = 2;
-        var temp = new double[] { 0.012, 0.0053, 0.00457 };
+        double[] temp = { 0.012, 0.0053, 0.00457 };
         temp[k] = 1;
-        var s2 = new S2Point(temp);
+        S2Point s2 = new(temp);
         return a.CrossProd(s2).Normalize();
 #endif
     }
@@ -114,13 +114,13 @@ public static partial class S2
     // Given an orthonormal basis "m" of column vectors and a point "p", returns
     // the coordinates of "p" with respect to the basis "m".  The resulting
     // point "q" satisfies the identity (m * q == p).
-    public static S2Point ToFrame(S2PointVector3 m, S2Point p)
+    public static S2Point ToFrame(S2PointVector3 m, S2Point p) =>
         // The inverse of an orthonormal matrix is its transpose.
-        => m.Transpose() * p;
+        m.Transpose() * p;
 
     // Given an orthonormal basis "m" of column vectors and a point "q" with
     // respect to that basis, return the equivalent point "p" with respect to
     // the standard axis-aligned basis.  The result satisfies (p == m * q).
-    public static S2Point FromFrame(S2PointVector3 m, S2Point q)
-        => m * q;
+    public static S2Point FromFrame(S2PointVector3 m, S2Point q) =>
+        m * q;
 }

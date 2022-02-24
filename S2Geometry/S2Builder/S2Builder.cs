@@ -184,12 +184,6 @@ public partial class S2Builder
     //   S2Builder builder{S2Builder.Options()};
     public S2Builder(Options options)
     {
-        Init(options);
-    }
-
-    // Initializes an S2Builder with the given options.
-    public void Init(Options options)
-    {
         Options_ = options;
         var snap_function = options.SnapFunction;
         var snap_radius = snap_function.SnapRadius;
@@ -1849,7 +1843,7 @@ public partial class S2Builder
     private readonly List<List<int>> edge_sites_ = new();
 
     // An object to track the memory usage of this class.
-    private readonly MemoryTracker tracker_;
+    private readonly MemoryTracker tracker_ = new();
 
     // Indicates whether the input edges are undirected.  Typically this is
     // specified for each output layer (e.g., s2builderutil.S2PolygonLayer).
@@ -2995,6 +2989,7 @@ public partial class S2Builder
     //    methods, and also any geometric objects created by these layers.)
     public class MemoryTracker : S2MemoryTracker.Client
     {
+        public MemoryTracker() : base() { }
         public MemoryTracker(S2MemoryTracker tracker) : base(tracker) { }
 
         // Called to track memory used to store the set of sites near a given edge.

@@ -20,7 +20,7 @@ public static partial class S2ShapeUtil
         {
             _index = index;
             _it = new S2ShapeIndex.Enumerator(index);
-            Refresh();
+            //Refresh();
         }
 
         // The current S2CellId and cell contents.

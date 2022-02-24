@@ -552,8 +552,15 @@ public class SnappedWindingDelta
     public struct EdgeSnap
     {
         public S2Shape.Edge input;
-        public VertexId v_in = -1;
-        public VertexId v_out = -1;
+        public VertexId v_in;
+        public VertexId v_out;
+
+        public EdgeSnap(S2Shape.Edge input, int v_in = -1, int v_out = -1)
+        {
+            this.input = input;
+            this.v_in = v_in;
+            this.v_out = v_out;
+        }
     }
 
     public readonly record struct InputVertexEdge(S2Point Point, EdgeSnap EdgeSnap)

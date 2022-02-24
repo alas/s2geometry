@@ -254,14 +254,14 @@ public class S2MemoryTracker
         // false if the current operation should be cancelled.
         public /*inline*/ bool Tally<T>(List<T> v)
         {
-            return Tally(v.Capacity * Marshal.SizeOf(v[0]));
+            return Tally(v.Capacity * SizeHelper.SizeOf(typeof(T)));
         }
 
         // Subtracts the memory used by the given vector from the current tally.
         // Returns false if the current operation should be cancelled.
         public /*inline*/ bool Untally<T>(List<T> v)
         {
-            return Tally(-v.Capacity * Marshal.SizeOf(v[0]));
+            return Tally(-v.Capacity * SizeHelper.SizeOf(typeof(T)));
         }
 
         // Ensures that the given vector has space for "n" additional elements and
@@ -289,10 +289,10 @@ public class S2MemoryTracker
             if (new_size <= old_capacity) return true;
             var new_capacity = exact ? new_size : Math.Max(new_size, 2 * old_capacity);
             // Note that reserve() allocates new storage before freeing the old storage.
-            if (!Tally(new_capacity * Marshal.SizeOf(typeof(T)))) return false;
+            if (!Tally(new_capacity * SizeHelper.SizeOf(typeof(T)))) return false;
             v.Capacity = new_capacity;
             System.Diagnostics.Debug.Assert(v.Capacity == new_capacity);
-            return Tally(-old_capacity * Marshal.SizeOf(typeof(T)));
+            return Tally(-old_capacity * SizeHelper.SizeOf(typeof(T)));
         }
 
         // Deallocates storage for the given vector and updates the memory
@@ -302,7 +302,7 @@ public class S2MemoryTracker
         {
             var old_capacity = v.Capacity;
             v.Clear();
-            return Tally(-old_capacity * Marshal.SizeOf(typeof(T)));
+            return Tally(-old_capacity * SizeHelper.SizeOf(typeof(T)));
         }
 
         // Returns the number of allocated bytes used by gtl::compact_array<T>.

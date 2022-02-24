@@ -459,15 +459,6 @@ public static class LinqUtils
         }
     }
 
-    public static void Swap<T>(List<T> a, List<T> b)
-    {
-        var tmp = a.ToList();
-        a.Clear();
-        a.AddRange(b);
-        b.Clear();
-        b.AddRange(tmp);
-    }
-
     /// <summary>
     /// https://stackoverflow.com/questions/16192906/net-dictionary-get-or-create-new
     /// </summary>

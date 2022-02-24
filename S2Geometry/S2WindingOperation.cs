@@ -76,7 +76,7 @@ public class S2WindingOperation
         S2Builder.Options builder_options = new(options_.snap_function_);
         builder_options.SplitCrossingEdges = true;
         builder_options.memory_tracker_ = options.memory_tracker_;
-        builder_.Init(builder_options);
+        builder_ = new(builder_options);
         builder_.StartLayer(new WindingLayer(this, result_layer));
     }
 

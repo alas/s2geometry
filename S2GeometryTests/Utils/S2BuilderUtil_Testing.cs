@@ -130,9 +130,9 @@ public class IndexMatchingLayer : Layer
         var ai_i = 0;
         var ei_i = 0;
         var limit = actual.Count - 1;
-        while (ai != actual.Last() || ei != expected.Last())
+        while (ai_i < actual.Count || ei_i < expected.Count)
         {
-            if (ei == expected.Last() || (ai != actual.Last() && ai < ei))
+            if (ei_i == expected.Count || (ai_i != actual.Count && ai < ei))
             {
                 extra.Add(ai); ai_i++;
             }

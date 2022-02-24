@@ -884,6 +884,21 @@ public class S2BooleanOperation
                 public int a0_crossings = 0;        // Count of polygon crossings at a0.
                 public int a1_crossings = 0;        // Count of polygon crossings at a1.
                 public int interior_crossings = 0;  // Count of polygon crossings in edge interior.
+
+                public EdgeCrossingResult(bool matches_polyline, bool a0MatchesPolyline, bool a1MatchesPolyline, bool a0_matches_polygon, bool a1_matches_polygon, ShapeEdgeId polygon_match_id, ShapeEdgeId sibling_match_id, ShapeEdgeId a0_loop_match_id, int a0_crossings, int a1_crossings, int interior_crossings)
+                {
+                    this.matches_polyline = matches_polyline;
+                    A0MatchesPolyline = a0MatchesPolyline;
+                    A1MatchesPolyline = a1MatchesPolyline;
+                    this.a0_matches_polygon = a0_matches_polygon;
+                    this.a1_matches_polygon = a1_matches_polygon;
+                    this.polygon_match_id = polygon_match_id;
+                    this.sibling_match_id = sibling_match_id;
+                    this.a0_loop_match_id = a0_loop_match_id;
+                    this.a0_crossings = a0_crossings;
+                    this.a1_crossings = a1_crossings;
+                    this.interior_crossings = interior_crossings;
+                }
             }
 
             private InputEdgeId InputEdgeId() => input_dimensions_.Count;
@@ -2880,9 +2895,7 @@ public class GraphEdgeClipper
             // Swap the edges if necessary so that they are in B chain order.
             if (b_reversed)
             {
-                var tmp = b_first;
-                b_first = b_last;
-                b_last = tmp;
+                (b_last, b_first) = (b_first, b_last);
             }
 
             // The B subchain connects the first and last vertices of A.  We test
@@ -3078,8 +3091,8 @@ public class EdgeClippingLayer : Layer
             // The Graph objects must be valid until the last Build() call completes,
             // so we store all of the graph data in arrays with 3 elements.
             System.Diagnostics.Debug.Assert(3 == layers_.Count);
-            var layer_edges = new List<Edge>[3];
-            var layer_input_edge_ids = new List<EdgeId>[3];
+            List<Edge>[] layer_edges = { new List<Edge>(), new List<Edge>(), new List<Edge>(), };
+            List<EdgeId>[] layer_input_edge_ids = { new List<EdgeId>(), new List<EdgeId>(), new List<EdgeId>(), };
             // Separate the edges according to their dimension.
             for (int i = 0; i < new_edges.Count; ++i)
             {
