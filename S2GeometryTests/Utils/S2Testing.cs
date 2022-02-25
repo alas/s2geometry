@@ -508,7 +508,7 @@ public static class S2Testing
         // calling MakeLoop().
         public Fractal()
         {
-            MaxLevel = -1;
+            _maxLevel = -1;
             min_level_arg_ = -1;
             min_level_ = -1;
             FractalDimension = Math.Log(4) / Math.Log(3); /* standard Koch curve */
@@ -686,13 +686,13 @@ public static class S2Testing
         // slightly compared to its nominal radius.
         public S2Loop MakeLoop(S2PointVector3 frame, S1Angle nominal_radius)
         {
-            var r2vertices = new List<R2Point>();
+            List<R2Point> r2vertices = new();
             GetR2Vertices(r2vertices);
-            var vertices = new List<S2Point>();
-            double r = nominal_radius.Radians;
+            List<S2Point> vertices = new();
+            var r = nominal_radius.Radians;
             foreach (var v in r2vertices)
             {
-                var p = new S2Point(v[0] * r, v[1] * r, 1);
+                S2Point p = new(v[0] * r, v[1] * r, 1);
                 vertices.Add(S2.FromFrame(frame, p).Normalize());
             }
             return new S2Loop(vertices);

@@ -39,10 +39,12 @@ namespace S2Geometry
             const double nominal_radius = 0.001;  // radians, or about 6km
             const double kDistortionError = 1e-5;
 
-            var fractal = new S2Testing.Fractal();
-            fractal.MinLevel = (min_level);
-            fractal.MaxLevel = (max_level);
-            fractal.FractalDimension = (dimension);
+            S2Testing.Fractal fractal = new()
+            {
+                MinLevel = min_level,
+                MaxLevel = max_level,
+                FractalDimension = dimension
+            };
             var frame = S2Testing.GetRandomFrame();
             var loop = fractal.MakeLoop(frame, S1Angle.FromRadians(nominal_radius));
             Assert.True(loop.IsValid());
