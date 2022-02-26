@@ -38,13 +38,3 @@ global using SourceEdgeCrossings = System.Collections.Generic.List<(System.Int32
 global using SourceIdLexicon = System.Collections.Generic.Dictionary<S2Geometry.SourceId, System.Int32>; // ValueLexicon<SourceId>
 
 global using S2ShapeIndexIdCell = S2Geometry.KeyData<S2Geometry.S2CellId, S2Geometry.S2ShapeIndexCell?>;
-
-// S2PointSpan represents a view of an S2Point array.  It is used to pass
-// vertex arrays to functions that don't care about the actual array type
-// (e.g. std::vector<S2Point> or S2Point[]).
-//
-// NOTE: S2PointSpan has an implicit constructor from any container type with
-// data() and size() methods (such as std::vector and std::array).  Therefore
-// you can use such containers as arguments for any S2PointSpan parameter.
-global using S2PointSpan = System.Collections.Generic.List<S2Geometry.S2Point>;
-global using S2PointLoopSpan = System.Collections.Generic.List<S2Geometry.S2Point>;

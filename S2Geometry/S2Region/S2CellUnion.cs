@@ -14,7 +14,7 @@
 
 namespace S2Geometry;
 
-public record class S2CellUnion(List<S2CellId> CellIds) : IS2Region<S2CellUnion>, IEnumerable<S2CellId>, IDecoder<S2CellUnion>
+public record class S2CellUnion : IS2Region<S2CellUnion>, IEnumerable<S2CellId>, IDecoder<S2CellUnion>
 {
     #region Fields, Constants
 
@@ -22,6 +22,12 @@ public record class S2CellUnion(List<S2CellId> CellIds) : IS2Region<S2CellUnion>
     public static S2CellUnion WholeSphere() => new(new int[] { 0, 1, 2, 3, 4, 5 }
         .Select(t => S2CellId.FromFace(t)).ToList());
 
+    #endregion
+
+    #region Properties
+
+    public List<S2CellId> CellIds { get; set; }
+    
     #endregion
 
     #region Constructors
@@ -41,8 +47,8 @@ public record class S2CellUnion(List<S2CellId> CellIds) : IS2Region<S2CellUnion>
     //
     //     S2CellUnion example({cell_id});
     public S2CellUnion(List<S2CellId> cell_ids, bool normalize = true)
-        : this(cell_ids)
     {
+        CellIds = cell_ids;
         if (normalize)
         {
             Normalize();
@@ -154,19 +160,20 @@ public record class S2CellUnion(List<S2CellId> CellIds) : IS2Region<S2CellUnion>
     public void Clear()
     {
         CellIds.Clear();
+        CellIds.TrimExcess();
     }
 
     // Gives ownership of the vector data to the client without copying, and
     // clears the content of the cell union.  The original data in cell_ids
     // is lost if there was any.
-    /*public List<S2CellId> Release()
+    public List<S2CellId> Release()
     {
         // vector's rvalue reference constructor does not necessarily leave
         // moved-from value in empty state, so swap instead.
         var tmp = CellIds;
-        CellIds = null;
+        CellIds = new List<S2CellId>();
         return tmp;
-    }*/
+    }
 
     // Convenience methods for accessing the individual cell ids.
     public S2CellId CellId(int i) => CellIds[i];
@@ -362,7 +369,7 @@ public record class S2CellUnion(List<S2CellId> CellIds) : IS2Region<S2CellUnion>
     // Returns the union of the two given cell unions.
     public S2CellUnion Union(S2CellUnion y)
     {
-        var cell_ids = new List<S2CellId>(CellIds.Count + y.CellIds.Count);
+        List<S2CellId> cell_ids = new(CellIds.Count + y.CellIds.Count);
         cell_ids.AddRange(CellIds);
         cell_ids.AddRange(y.CellIds);
         return new S2CellUnion(cell_ids);
