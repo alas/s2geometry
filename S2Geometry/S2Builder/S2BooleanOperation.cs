@@ -582,14 +582,14 @@ public class S2BooleanOperation
 
         public void DoBuild(out S2Error error)
         {
-            if (!tracker_.ok())
+            if (!tracker_.Ok())
             {
                 error = S2Error.OK;
                 return;
             }
             builder_options_ = new S2Builder.Options(op_.Options_.SnapFunction_);
             builder_options_.IntersectionTolerance = S2.kIntersectionErrorS1Angle;
-            builder_options_.MemoryTracker = tracker_.tracker();
+            builder_options_.MemoryTracker = tracker_.Tracker;
             if (op_.Options_.split_all_crossing_polyline_edges_)
             {
                 builder_options_.SplitCrossingEdges = true;
@@ -624,7 +624,7 @@ public class S2BooleanOperation
         {
             // This wrapper ensures that memory tracking errors are reported.
             DoBuild(out error);
-            if (!tracker_.ok()) error = tracker_.error();
+            if (!tracker_.Ok()) error = tracker_.Error();
             return error.IsOk();
         }
 
@@ -692,7 +692,7 @@ public class S2BooleanOperation
                 source_id_map.Clear();
                 Tally(-source_id_map_bytes_);
                 source_id_map_bytes_ = 0;
-                return ok();
+                return Ok();
             }
 
             // The amount of memory used by CrossingProcessor.source_id_map_.
@@ -980,7 +980,7 @@ public class S2BooleanOperation
                 builder_.AddEdge(a.V0, a.V1);
                 Inside ^= (interior_crossings & 1) != 0;
                 prev_inside_ = Inside;
-                return tracker_.ok();
+                return tracker_.Ok();
             }
 
             // Supports "early exit" in the case of boolean results by returning false
@@ -993,7 +993,7 @@ public class S2BooleanOperation
                 input_dimensions_.Add((sbyte)dimension);
                 builder_.AddEdge(p, p);
                 prev_inside_ = true;
-                return tracker_.ok();
+                return tracker_.Ok();
             }
 
             // Processes an edge of dimension 0 (i.e., a point) from region A.
@@ -2024,7 +2024,7 @@ public class S2BooleanOperation
                 index_crossings_.Sort();
                 index_crossings_first_region_id_ = region_id;
             }
-            return tracker_.ok();
+            return tracker_.Ok();
         }
         // Supports "early exit" in the case of boolean results by returning false
         // as soon as the result is known to be non-empty.
@@ -2055,7 +2055,7 @@ public class S2BooleanOperation
                     return false;
                 }
                 if (!IsBooleanOutput()) cp.DoneBoundaryPair();
-                return tracker_.ok();
+                return tracker_.Ok();
             }
             finally
             {
@@ -3082,7 +3082,7 @@ public class EdgeClippingLayer : Layer
                 layers_[0].GraphOptions_(), new_edges, new_input_edge_ids,
                 new_input_edge_id_set_lexicon, g.IsFullPolygonPredicate(),
                 out error, tracker_)!;
-            if (tracker_.ok()) layers_[0].Build(new_graph, out error);
+            if (tracker_.Ok()) layers_[0].Build(new_graph, out error);
             tracker_.Untally(new_edges);
             tracker_.Untally(new_input_edge_ids);
         }
@@ -3113,7 +3113,7 @@ public class EdgeClippingLayer : Layer
                     layers_[d].GraphOptions_(), layer_edges[d],
                     layer_input_edge_ids[d], new_input_edge_id_set_lexicon,
                     g.IsFullPolygonPredicate(), out error, tracker_)!);
-                if (tracker_.ok()) layers_[d].Build(layer_graphs[d], out error);
+                if (tracker_.Ok()) layers_[d].Build(layer_graphs[d], out error);
             }
             for (int d = 0; d < 3; ++d)
             {

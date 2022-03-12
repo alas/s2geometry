@@ -886,7 +886,7 @@ public partial class S2Builder
                 tracker.TallyTemp(edges.Count * kTempPerEdge);
                 tracker.Tally(-edges.Capacity * kFinalPerEdge);
             }
-            if (tracker == null || tracker.ok())
+            if (tracker == null || tracker.Ok())
             {
                 var processor = new EdgeProcessor(options, edges, input_ids, id_set_lexicon);
                 processor.Run(out error);
@@ -900,7 +900,7 @@ public partial class S2Builder
             }
             if (tracker != null && !tracker.Tally(edges.Capacity * kFinalPerEdge))
             {
-                error = tracker.error();
+                error = tracker.Error();
             }
         }
 
@@ -1007,7 +1007,7 @@ public partial class S2Builder
         new_input_edge_id_set_ids.Capacity = 2 * n;
     } else if (!tracker.AddSpaceExact(new_edges, n) ||
                !tracker.AddSpaceExact(new_input_edge_id_set_ids, n)) {
-      error = tracker.error();
+      error = tracker.Error();
       return null;
 }
     for (int i = 0; i<n; ++i) {
@@ -1017,7 +1017,7 @@ new_input_edge_id_set_ids.Add(IdSetLexicon.kEmptySetId);
   }
   Graph.ProcessEdges(new_options, new_edges, new_input_edge_id_set_ids,
                       new_input_edge_id_set_lexicon, out error, tracker);
-if (tracker != null && !tracker.ok()) return null;  // Graph would be invalid.
+if (tracker != null && !tracker.Ok()) return null;  // Graph would be invalid.
 return new Graph(new_options, Vertices, new_edges, new_input_edge_id_set_ids,
              new_input_edge_id_set_lexicon, LabelSetIds,
              LabelSetLexicon, is_full_polygon_predicate);

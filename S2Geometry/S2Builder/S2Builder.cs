@@ -634,7 +634,7 @@ public partial class S2Builder
         ChooseSites();
         BuildLayers();
         Reset();
-        if (!tracker_.ok()) error_ = tracker_.error();
+        if (!tracker_.Ok()) error_ = tracker_.Error();
         error = error_;
         return error.IsOk();
     }
@@ -699,13 +699,13 @@ public partial class S2Builder
 
     private void ChooseSites()
     {
-        if (!tracker_.ok() || !input_vertices_.Any()) return;
+        if (!tracker_.Ok() || !input_vertices_.Any()) return;
 
         // Note that although we always create an S2ShapeIndex, often it is not
         // actually built (because this happens lazily).  Therefore we only test
         // its memory usage at the places where it is used.
         MutableS2ShapeIndex input_edge_index = new();
-        input_edge_index.MemoryTracker = tracker_.tracker();
+        input_edge_index.MemoryTracker = tracker_.Tracker;
         input_edge_index.Add(new VertexIdEdgeVectorShape(input_edges_, input_vertices_));
         if (Options_.SplitCrossingEdges)
         {
@@ -841,7 +841,7 @@ public partial class S2Builder
     private void AddEdgeCrossings(MutableS2ShapeIndex input_edge_index)
     {
         input_edge_index.ForceBuild();
-        if (!tracker_.ok()) return;
+        if (!tracker_.Ok()) return;
 
         // We need to build a list of intersections and add them afterwards so that
         // we don't reallocate vertices_ during the VisitCrossings() call.
@@ -1074,7 +1074,7 @@ public partial class S2Builder
         // CheckEdge() defines the body of the loops below.
         var CheckEdge = (InputEdgeId e) =>
         {
-            if (!tracker_.ok()) return false;
+            if (!tracker_.Ok()) return false;
             SnapEdge(e, chain);
             edges_to_resnap.Remove(e);
             num_edges_after_snapping += chain.Count;
@@ -1258,7 +1258,7 @@ public partial class S2Builder
         options.IncludeInteriors = (false);
 
         if (!input_edge_index.IsFresh()) input_edge_index.ForceBuild();
-        if (!tracker_.ok()) return;
+        if (!tracker_.Ok()) return;
 
         // Memory used by S2ClosestEdgeQuery is not tracked, but it is temporary,
         // typically insignificant, and does not affect the high water mark.
@@ -1453,7 +1453,7 @@ public partial class S2Builder
 
     private void BuildLayers()
     {
-        if (!tracker_.ok()) return;
+        if (!tracker_.Ok()) return;
 
         // Each output edge has an "input edge id set id" (an int) representing
         // the set of input edge ids that were snapped to this edge.  The actual
@@ -1505,7 +1505,7 @@ public partial class S2Builder
                     }
                 }
             }
-            if (!tracker_.ok()) return;
+            if (!tracker_.Ok()) return;
 
             for (var i = 0; i < layers_.Count; ++i)
             {
@@ -1578,7 +1578,7 @@ public partial class S2Builder
                                 layer_input_edge_ids[i],
                                 input_edge_id_set_lexicon, out error_, tracker_);
 
-            if (!tracker_.ok()) return;
+            if (!tracker_.Ok()) return;
         }
     }
 
@@ -3048,7 +3048,7 @@ public partial class S2Builder
         {
             Tally(-site_index_bytes_);
             site_index_bytes_ = 0;
-            return ok();
+            return Ok();
         }
 
         // Called to indicate that edge simplification was requested.
@@ -3056,7 +3056,7 @@ public partial class S2Builder
                         List<List<InputVertexId>> site_vertices,
                         List<List<Edge>> layer_edges)
         {
-            if (!is_active()) return true;
+            if (!IsActive()) return true;
 
             // The simplify_edge_chains() option uses temporary memory per site
             // (output vertex) and per output edge, as outlined below.
@@ -3099,7 +3099,7 @@ public partial class S2Builder
         public bool TallyFilterVertices(int num_sites,
                              List<List<Edge>> layer_edges)
         {
-            if (!is_active()) return true;
+            if (!IsActive()) return true;
 
             // Vertex filtering (see BuildLayers) uses temporary space of one VertexId
             // per Voronoi site plus 2 VertexIds per layer edge, plus space for all the
@@ -3122,7 +3122,7 @@ public partial class S2Builder
         {
             Tally(-filter_vertices_bytes_);
             filter_vertices_bytes_ = 0;
-            return ok();
+            return Ok();
         }
 
         // The amount of non-inline memory used to store edge sites.

@@ -261,7 +261,7 @@ public class S2BufferOperation
         }
 
         // If buffer_radius < 0, polylines are discarded.
-        if (buffer_sign_ < 0 || !tracker_.ok()) return;
+        if (buffer_sign_ < 0 || !tracker_.Ok()) return;
 
         // Polylines with 0 or 1 vertices are defined to have no edges.
         int n = polyline.Count;
@@ -335,7 +335,7 @@ public class S2BufferOperation
 
         // The vertex copying below could be avoided by adding a version of
         // S2LaxLoopShape that doesn't own its vertices.
-        if (!tracker_.ok()) return;
+        if (!tracker_.Ok()) return;
         ref_winding_ += S2ShapeUtil.ContainsBruteForce(new S2LaxLoopShape(loop.ToArray()),
             ref_point_) ? 1 : 0;
         num_polygon_layers_ += 1;
@@ -587,7 +587,7 @@ public class S2BufferOperation
         System.Diagnostics.Debug.Assert(a != b);
         System.Diagnostics.Debug.Assert(b != c);
         System.Diagnostics.Debug.Assert(buffer_sign_ != 0);
-        if (!tracker_.ok()) return;
+        if (!tracker_.Ok()) return;
 
         // For left (convex) turns we need to add an offset arc.  For right
         // (concave) turns we connect the end of the current offset path to the
@@ -681,7 +681,7 @@ public class S2BufferOperation
     private void BufferLoop(S2PointLoopSpan loop)
     {
         // Empty loops always yield an empty path.
-        if (!loop.Any() || !tracker_.ok()) return;
+        if (!loop.Any() || !tracker_.Ok()) return;
 
         // Loops with one degenerate edge are treated as points.
         if (loop.Count == 1)

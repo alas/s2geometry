@@ -266,13 +266,13 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
     // Like all non-methods, this method is not thread-safe.
     public override void Minimize()
     {
-        mem_tracker_.Tally(-mem_tracker_.client_usage_bytes());
+        mem_tracker_.Tally(-mem_tracker_.ClientUsageBytes);
         cell_map_.Clear();
         pending_additions_begin_ = 0;
         if (pending_removals_ != null) pending_removals_.Clear();
         ResetChannel();
         MarkIndexStale();
-        if (mem_tracker_.is_active()) mem_tracker_.Tally(SpaceUsed());
+        if (mem_tracker_.IsActive()) mem_tracker_.Tally(SpaceUsed());
     }
 
     // Appends an encoded representation of the S2ShapeIndex to "encoder".
@@ -464,14 +464,14 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
     //    be exceeded.  If you set a memory limit smaller than 100MB and want to
     //    reduce memory usage rather than simply generating an error then you
     //    should also set FLAGS_s2shape_index_tmp_memory_budget appropriately.
-    public S2MemoryTracker MemoryTracker
+    public S2MemoryTracker? MemoryTracker
     {
-        get { return mem_tracker_.tracker(); }
+        get { return mem_tracker_.Tracker; }
         set
         {
-            mem_tracker_.Tally(-mem_tracker_.client_usage_bytes());
+            mem_tracker_.Tally(-mem_tracker_.ClientUsageBytes);
             mem_tracker_.Init(value);
-            if (mem_tracker_.is_active()) mem_tracker_.Tally(SpaceUsed());
+            if (mem_tracker_.IsActive()) mem_tracker_.Tally(SpaceUsed());
         }
     }
     private S2MemoryTracker.Client mem_tracker_ = new();
@@ -484,7 +484,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
 
         // If a memory tracking error has occurred we set the index status to FRESH
         // in order to prevent us from attempting to rebuild it.
-        var status = (!shapes_.Any() || !mem_tracker_.ok()) ? IndexStatus.FRESH : IndexStatus.STALE;
+        var status = (!shapes_.Any() || !mem_tracker_.Ok()) ? IndexStatus.FRESH : IndexStatus.STALE;
         index_status_ = status;
     }
 
@@ -706,14 +706,14 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         for (int i = 0; i < batches.Count; i++)
         {
             var batch = batches[i];
-            if (mem_tracker_.is_active())
+            if (mem_tracker_.IsActive())
             {
-                System.Diagnostics.Debug.Assert(mem_tracker_.client_usage_bytes() == SpaceUsed());  // Invariant.
+                System.Diagnostics.Debug.Assert(mem_tracker_.ClientUsageBytes == SpaceUsed());  // Invariant.
             }
             Array6<List<FaceEdge>> all_edges = new (() => new());
 
             ReserveSpace(ref batch, all_edges);
-            if (!mem_tracker_.ok())
+            if (!mem_tracker_.Ok())
             {
                 batches[i] = batch;
                 Minimize();
@@ -763,9 +763,9 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
                 // any, by setting contains_center() on the appropriate index cells.
                 FinishPartialShape(tracker.partial_shape_id_);
             }
-            if (mem_tracker_.is_active())
+            if (mem_tracker_.IsActive())
             {
-                mem_tracker_.Tally(-mem_tracker_.client_usage_bytes());
+                mem_tracker_.Tally(-mem_tracker_.ClientUsageBytes);
                 if (!mem_tracker_.Tally(SpaceUsed()))
                 {
                     Minimize();
@@ -1086,10 +1086,10 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         // 10 shape edges, and that the cell map uses 50% more space than necessary
         // for the new entries because they are inserted between existing entries
         // (which means that the btree nodes are not full).
-        if (mem_tracker_.is_active())
+        if (mem_tracker_.IsActive())
         {
             var new_usage = Convert.ToInt64(
-                SpaceUsed() - mem_tracker_.client_usage_bytes() +
+                SpaceUsed() - mem_tracker_.ClientUsageBytes +
                 0.1 * shape.NumEdges() * (1.5 * Marshal.SizeOf(typeof(S2ShapeIndexCell)) + //cell_map_.value_type
                                             Marshal.SizeOf(typeof(S2ShapeIndexCell)) +
                                             Marshal.SizeOf(typeof(S2ClippedShape))));
