@@ -160,7 +160,7 @@ namespace S2Geometry
 
             // Even though we are using the default snap radius of zero, the edge snap
             // radius is S2::kIntersectionError because split_crossing_edges() is true.
-            Assert.Equal(builder.Options_.edge_snap_radius(), S2.kIntersectionErrorS1Angle);
+            Assert.Equal(builder.Options_.EdgeSnapRadius(), S2.kIntersectionErrorS1Angle);
             S1Angle max_deviation = builder.Options_.MaxEdgeDeviation();
             const int kIters = 50 * iteration_multiplier;
 
@@ -397,7 +397,7 @@ namespace S2Geometry
             // A simpler version of the test above that uses AddIntersection() rather
             // than split_crossing_edges().
             S2Builder.Options options=new();
-            options.intersection_tolerance = S2.kIntersectionErrorS1Angle;
+            options.IntersectionTolerance = S2.kIntersectionErrorS1Angle;
             S2Builder builder=new(options);
             S2Polyline output=new();
             builder.StartLayer(new S2PolylineLayer(output));

@@ -37,7 +37,7 @@ public class S2BuilderUtil_GetSnappedWindingDeltaTest
         public override void Build(Graph g, out S2Error error)
         {
             // Find the reference vertex before and after snapping.
-            var ref_in = builder_.input_edge(ref_input_edge_id_).V0;
+            var ref_in = builder_.InputEdge(ref_input_edge_id_).V0;
             var ref_v = SnappedWindingDelta.FindFirstVertexId(ref_input_edge_id_, g);
             Assert.True(ref_v >= 0);
             int winding_delta = SnappedWindingDelta.GetSnappedWindingDelta(
@@ -69,7 +69,7 @@ public class S2BuilderUtil_GetSnappedWindingDeltaTest
     builder.ForceVertex(v);
 }
 builder.AddShape(S2TextFormat.MakeLaxPolygonOrDie(loops_str));
-var ref_edge = builder.input_edge(ref_input_edge_id);
+var ref_edge = builder.InputEdge(ref_input_edge_id);
         Assert.True(ref_edge.V0 == ref_edge.V1); // "Reference edge not degenerate";
         Assert.True(builder.Build(out _)); // << error;
     }
@@ -331,11 +331,11 @@ public override GraphOptions GraphOptions_()
 public override void Build(Graph g, out S2Error error)
 {
     // First we locate the vertices R, R', I, I'.
-    S2Point ref_in = builder_.input_edge(ref_input_edge_id_).V0;
+    S2Point ref_in = builder_.InputEdge(ref_input_edge_id_).V0;
     VertexId ref_v = SnappedWindingDelta.FindFirstVertexId(ref_input_edge_id_, g);
     S2Point ref_out = g.Vertex(ref_v);
 
-    S2Point iso_in = builder_.input_edge(isolated_input_edge_id_).V0;
+    S2Point iso_in = builder_.InputEdge(isolated_input_edge_id_).V0;
     VertexId iso_v = SnappedWindingDelta.FindFirstVertexId(isolated_input_edge_id_, g);
     S2Point iso_out = g.Vertex(iso_v);
 
@@ -357,9 +357,9 @@ public override void Build(Graph g, out S2Error error)
     // output edge.)
     int winding_in = 0;
     S2CopyingEdgeCrosser crosser=new(iso_in, ref_in);
-    for (int e = 0; e < builder_.num_input_edges(); ++e)
+    for (int e = 0; e < builder_.NumInputEdges(); ++e)
     {
-        var edge = builder_.input_edge(e);
+        var edge = builder_.InputEdge(e);
         winding_in += crosser.SignedEdgeOrVertexCrossing(edge.V0, edge.V1);
     }
     int winding_out = 0;

@@ -1,5 +1,3 @@
-#if s2debug
-
 using System.Globalization;
 using System.Text;
 
@@ -514,6 +512,7 @@ public static class S2TextFormat
     }
 
     public static string ToDebugString(this S2Point[] points) => AppendVertices(points.ToArray(), points.Length);
+    
     public static string ToDebugString(this S2PointLoopSpan points) => AppendVertices(points.ToArray(), points.Count);
 
     public static string ToDebugString(this List<S2LatLng> latlngs)
@@ -555,7 +554,7 @@ public static class S2TextFormat
     // polyline geometry, followed by all polygon geometry.
     public static string ToDebugString(this S2ShapeIndex index)
     {
-        var sb = new StringBuilder();
+        StringBuilder sb = new();
         for (var dim = 0; dim < 3; ++dim)
         {
             if (dim > 0) sb.Append('#');
@@ -593,4 +592,3 @@ public static class S2TextFormat
         return sb.ToString();
     }
 }
-#endif

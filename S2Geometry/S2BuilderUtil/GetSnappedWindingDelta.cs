@@ -196,7 +196,7 @@ public class SnappedWindingDelta
             {
                 if (input_edge_filter != null && input_edge_filter(input_id)) continue;
                 var snap = input_id_edge_map[input_id];
-                snap.input = builder.input_edge(input_id);
+                snap.input = builder.InputEdge(input_id);
                 if (edge.ShapeId != ref_v) snap.v_in = edge.ShapeId;
                 if (edge.EdgeId != ref_v) snap.v_out = edge.EdgeId;
             }

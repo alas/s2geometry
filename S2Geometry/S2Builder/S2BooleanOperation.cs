@@ -588,8 +588,8 @@ public class S2BooleanOperation
                 return;
             }
             builder_options_ = new S2Builder.Options(op_.Options_.SnapFunction_);
-            builder_options_.intersection_tolerance = S2.kIntersectionErrorS1Angle;
-            builder_options_.memory_tracker_ = tracker_.tracker();
+            builder_options_.IntersectionTolerance = S2.kIntersectionErrorS1Angle;
+            builder_options_.MemoryTracker = tracker_.tracker();
             if (op_.Options_.split_all_crossing_polyline_edges_)
             {
                 builder_options_.SplitCrossingEdges = true;
@@ -2297,7 +2297,7 @@ public class S2BooleanOperation
             // To determine whether the result is ambiguous, we compute a rough estimate
             // of the maximum expected area error (including errors due to snapping),
             // using the worst-case error bound for a hemisphere defined by 4 vertices.
-            var edge_snap_radius = builder_options_.edge_snap_radius();
+            var edge_snap_radius = builder_options_.EdgeSnapRadius();
             double hemisphere_area_error = S2.M_2_PI * edge_snap_radius.Radians +
                                            40 * S2.DoubleEpsilon;  // GetCurvatureMaxError
 

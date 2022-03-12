@@ -958,10 +958,7 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
         // that distance, then we should always merge shared edges without merging
         // different edges.
         var snap_radius = 0.5 * S2.kMinWidth.GetValue(S2.kMaxCellLevel);
-        var builder = new S2Builder
-        {
-            Options_ = new S2Builder.Options(new IdentitySnapFunction(S1Angle.FromRadians(snap_radius)))
-        };
+        var builder = new S2Builder(new S2Builder.Options(new IdentitySnapFunction(S1Angle.FromRadians(snap_radius))));
         builder.StartLayer(new S2PolygonLayer(this));
         foreach (var id in cells)
         {

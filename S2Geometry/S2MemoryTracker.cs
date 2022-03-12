@@ -194,7 +194,7 @@ public class S2MemoryTracker
         // Initializes this client to use the given memory tracker.  This function
         // may be called more than once (which is equivalent to destroying this
         // client and transferring the current memory usage to a new client).
-        public void Init(S2MemoryTracker tracker)
+        public void Init(S2MemoryTracker? tracker)
         {
             Int64 usage_bytes = client_usage_bytes_;
             Tally(-usage_bytes);
@@ -331,7 +331,7 @@ public class S2MemoryTracker
             return (int)(1.12 * Marshal.SizeOf(typeof(T)));
         }
 
-        private S2MemoryTracker tracker_ = null;
+        private S2MemoryTracker? tracker_ = null;
         private Int64 client_usage_bytes_ = 0;
     }
 

@@ -75,7 +75,7 @@ public class S2WindingOperation
         options_ = options ?? new();
         S2Builder.Options builder_options = new(options_.snap_function_);
         builder_options.SplitCrossingEdges = true;
-        builder_options.memory_tracker_ = options.memory_tracker_;
+        builder_options.MemoryTracker = options.memory_tracker_;
         builder_ = new(builder_options);
         builder_.StartLayer(new WindingLayer(this, result_layer));
     }
@@ -110,7 +110,7 @@ public class S2WindingOperation
         // The reference point must be an S2Builder input vertex in order to
         // determine how its winding number is affected by snapping.  We record the
         // input edge id of this edge so that we can find it later.
-        ref_input_edge_id_ = builder_.num_input_edges();
+        ref_input_edge_id_ = builder_.NumInputEdges();
         builder_.AddPoint(ref_p);
         ref_winding_in_ = ref_winding;
         rule_ = rule;
@@ -241,7 +241,7 @@ public class S2WindingOperation
 
             // Compute the winding number at the reference point after snapping (see
             // s2builderutil::GetSnappedWindingDelta).
-            S2Point ref_in = builder.input_edge(ref_input_edge_id).V0;
+            S2Point ref_in = builder.InputEdge(ref_input_edge_id).V0;
             VertexId ref_v = S2BuilderUtil.SnappedWindingDelta.FindFirstVertexId(ref_input_edge_id, g_);
             System.Diagnostics.Debug.Assert(ref_v >= 0);  // No errors are possible.
             ref_p_ = g_.Vertex(ref_v);
@@ -266,7 +266,7 @@ public class S2WindingOperation
             options.MaxEdgesPerCell = kMaxEdgesPerCell;
             index_ = new(options);
             index_.Init();
-            index_.MemoryTracker = builder.Options_.memory_tracker_;
+            index_.MemoryTracker = builder.Options_.MemoryTracker;
             index_.Add(new S2BuilderUtil.GraphShape(g_));
         }
 
