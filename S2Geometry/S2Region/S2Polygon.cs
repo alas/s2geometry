@@ -100,7 +100,7 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
     //   if (!polygon.IsValid()) { ... }
     //
     // This setting is preserved across calls to Init() and Decode().
-    public S2Debug s2debug_override_ { get; set; }
+    public S2Debug S2DebugOverride { get; set; }
 
     private readonly List<S2Loop> loops_ = new();
 
@@ -146,7 +146,7 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
     // non-empty by calling Init(), Decode(), etc.
     public S2Polygon()
     {
-        s2debug_override_ = S2Debug.ALLOW;
+        S2DebugOverride = S2Debug.ALLOW;
         error_inconsistent_loop_orientations_ = false;
         unindexed_contains_calls_ = 0;
     }
@@ -154,7 +154,7 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
     // Convenience constructor that calls InitNested() with the given loops.
     public S2Polygon(List<S2Loop> loops, bool initOriented = false, S2Debug s2debug_override = S2Debug.ALLOW)
     {
-        s2debug_override_ = s2debug_override;
+        S2DebugOverride = s2debug_override;
         loops_ = loops;
         if (initOriented) InitOriented();
         else InitNested();
@@ -164,7 +164,7 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
     // corresponding to the given cell.
     public S2Polygon(S2Cell cell)
     {
-        s2debug_override_ = S2Debug.ALLOW;
+        S2DebugOverride = S2Debug.ALLOW;
         Init(new S2Loop(cell));
     }
 
@@ -174,7 +174,7 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
     // empty loops at all.
     public S2Polygon(S2Loop loop, S2Debug s2debug_override = S2Debug.ALLOW)
     {
-        s2debug_override_ = s2debug_override;
+        S2DebugOverride = s2debug_override;
         Init(loop);
     }
 
@@ -2067,35 +2067,20 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
         // due to field packing with S2Shape::id_.
         private int prev_loop_ = 0;
 
-        public S2Polygon? Polygon { get; protected set; }
+        public S2Polygon Polygon { get; protected set; }
 
         // An array where element "i" is the total number of edges in loops 0..i-1.
         // This field is only used for polygons that have a large number of loops.
-        private int[]? loop_starts_;
+        private readonly int[]? loop_starts_;
 
         #endregion
 
         #region Constructors
 
-        public Shape()
-        {
-            Polygon = null;
-            loop_starts_ = null;
-        }
-
         public Shape(S2Polygon polygon)
         {
-            loop_starts_ = null;
-            Init(polygon);
-        }
-
-        #endregion
-
-        #region Shape
-
-        public virtual void Init(S2Polygon polygon)
-        {
             Polygon = polygon;
+            //inlined Init()
             loop_starts_ = null;
             int offset = 0;
             if (!polygon.IsFull())
@@ -2177,8 +2162,7 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
         {
             System.Diagnostics.Debug.Assert(e < NumEdges());
             int i;
-            var start = loop_starts_;
-            if (start == null)
+            if (loop_starts_ == null)
             {
                 // When the number of loops is small, linear search is faster.  Most often
                 // there is exactly one loop and the code below executes zero times.
@@ -2190,13 +2174,13 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
             else
             {
                 i = prev_loop_; //.load(std::memory_order_relaxed);
-                if (e >= start[i] && e < start[i + 1])
+                if (e >= loop_starts_[i] && e < loop_starts_[i + 1])
                 {
                     // This edge belongs to the same loop as the previous call.
                 }
                 else
                 {
-                    if (e == start[i + 1])
+                    if (e == loop_starts_[i + 1])
                     {
                         // This edge immediately follows the loop from the previous call.
                         // Note that S2Polygon does not allow empty loops.
@@ -2205,12 +2189,12 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
                     else
                     {
                         // "upper_bound" finds the loop just beyond the one we want.
-                        i = LinqUtils.GetUpperBound(loop_starts_, e, start[1], start[Polygon.NumLoops()]) - start[1];
+                        i = LinqUtils.GetUpperBound(loop_starts_, e, loop_starts_[1], loop_starts_[Polygon.NumLoops()]) - loop_starts_[1];
                     }
                     prev_loop_ = i; //.store(i, std::memory_order_relaxed);
                 }
 
-                e -= start[i];
+                e -= loop_starts_[i];
             }
             return new ChainPosition(i, e);
         }
@@ -2220,7 +2204,7 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
 
         #region IEncoder
 
-        public void Encode(Encoder encoder, CodingHint hint)
+        public override void Encode(Encoder encoder, CodingHint hint)
         {
             if (hint == CodingHint.FAST)
             {
@@ -2241,24 +2225,16 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
     // is constructed solely for the purpose of indexing it.
     public class OwningShape : Shape, IInitEncoder<OwningShape>
     {
-        public S2Polygon? owned_polygon_ { get; set; }
+        public S2Polygon OwnedPolygon { get; set; }
 
-        public OwningShape() { }  // Must call Init().
-
-        public OwningShape(S2Polygon polygon) : base(polygon) => Polygon = polygon;
-
-        public override void Init(S2Polygon polygon)
-        {
-            base.Init(polygon);
-            owned_polygon_ = polygon;
-        }
+        public OwningShape(S2Polygon polygon) : base(polygon) => OwnedPolygon = polygon;
 
         public static (bool, OwningShape?) Init(Decoder decoder)
         {
             var (success, polygon) = Decode(decoder);
             if (!success) return (false, null);
 
-            return (true, new OwningShape(polygon));
+            return (true, new OwningShape(polygon!));
         }
     }
 }

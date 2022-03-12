@@ -190,7 +190,7 @@ public class S2PolygonLayer : Layer
 
         if (options_.Validate)
         {
-            polygon_.s2debug_override_ = S2Debug.DISABLE;
+            polygon_.S2DebugOverride = S2Debug.DISABLE;
         }
     }
 

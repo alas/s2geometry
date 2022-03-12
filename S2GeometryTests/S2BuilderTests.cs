@@ -1169,7 +1169,7 @@ namespace S2Geometry
                 options.Idempotent = (false);
                 S2Builder builder = new(options);
                 S2Polygon output = new();
-                output.s2debug_override_ = S2Debug.DISABLE;
+                output.S2DebugOverride = S2Debug.DISABLE;
                 builder.StartLayer(new S2PolygonLayer(output));
                 builder.ForceVertex(v3);
                 builder.AddEdge(v0, v1);
