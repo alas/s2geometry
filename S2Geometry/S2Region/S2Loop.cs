@@ -56,7 +56,7 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
     // We store the vertices in an array rather than a vector because we don't
     // need any STL methods, and computing the number of vertices using size()
     // would be relatively expensive (due to division by Marshal.SizeOf(typeof(S2Point)) == 24).
-    public S2Point[]? Vertices { get; private set; } = null;
+    public S2Point[] Vertices { get; init; }
 
     // In general we build the index the first time it is needed, but we make an
     // exception for Contains(S2Point) because this method has a simple brute
@@ -127,7 +127,7 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
     // fatal error in Init() whenever the --s2debug flag is enabled.
     //
     // This setting is preserved across calls to Init() and Decode().
-    public S2Debug s2debug_override_ { get; set; } = S2Debug.ALLOW;
+    public S2Debug S2DebugOverride { get; set; } = S2Debug.ALLOW;
 
     #endregion
 
@@ -163,7 +163,7 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
     // kEmpty and kFull).  This method may be called multiple times.
     public S2Loop(IEnumerable<S2Point> vertices, S2Debug override_ = S2Debug.ALLOW)
     {
-        s2debug_override_ = override_;
+        S2DebugOverride = override_;
         ClearIndex();
         NumVertices = vertices.Count();
         Vertices = vertices.ToArray();
@@ -172,7 +172,7 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
     }
 
     // for Clone and Decode
-    private S2Loop() { }
+    private S2Loop() { Vertices = Array.Empty<S2Point>(); }
 
     // Construct a loop corresponding to the given cell.
     //
@@ -189,7 +189,7 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
         Depth = 0;
         NumVertices = 4;
         Vertices = new S2Point[NumVertices];
-        s2debug_override_ = S2Debug.ALLOW;
+        S2DebugOverride = S2Debug.ALLOW;
         _unindexedContainsCalls_ = 0;
 
         for (int i = 0; i < 4; ++i)
@@ -919,7 +919,7 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
                 index_.ForceBuild();
 #endif
 #if s2debug
-        if (s2debug_override_ == S2Debug.ALLOW)
+        if (S2DebugOverride == S2Debug.ALLOW)
         {
             // Note that s2debug is false in optimized builds (by default).
             System.Diagnostics.Debug.Assert(IsValid());
@@ -1045,36 +1045,35 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
 
     // Decode a loop encoded with EncodeCompressed. The parameters must be the
     // same as the one used when EncodeCompressed was called.
-    public static bool DecodeCompressed(Decoder decoder, int snap_level, out S2Loop output)
+    public static (bool success, S2Loop? output) DecodeCompressed(Decoder decoder, int snap_level)
     {
-        output = null;
         // TryGetVarUInt32 takes a UInt32*, but NumVertices is signed.
         // Decode to a temporary variable to avoid reinterpret_cast.
         if (!decoder.TryGetVarUInt32(out var unsigned_num_vertices))
         {
-            return false;
+            return (false, null);
         }
         if (unsigned_num_vertices == 0 ||
             unsigned_num_vertices > s2polygon_decode_max_num_vertices)
         {
-            return false;
+            return (false, null);
         }
 
         var vertices = new S2Point[unsigned_num_vertices];
 
         if (!S2PointCompression.S2DecodePointsCompressed(decoder, snap_level, vertices, 0))
         {
-            return false;
+            return (false, null);
         }
         if (!decoder.TryGetVarUInt32(out var properties_UInt32))
         {
-            return false;
+            return (false, null);
         }
         var containsOrigin = BitsUtils.IsBitSet(properties_UInt32, (int)CompressedLoopProperty.kOriginInside);
 
         if (!decoder.TryGetVarUInt32(out var unsigned_depth))
         {
-            return false;
+            return (false, null);
         }
         var depth = (int)unsigned_depth;
 
@@ -1086,7 +1085,7 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
             var (success_bound, bound2) = S2LatLngRect.Decode(decoder);
             if (!success_bound)
             {
-                return false;
+                return (false, null);
             }
             bound = bound2!.Value;
             subregionBound = S2LatLngRectBounder.ExpandForSubregions(bound);
@@ -1096,7 +1095,7 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
             initBoundFlag = true;
         }
 
-        output = new S2Loop
+        var output = new S2Loop
         {
             NumVertices = (int)unsigned_num_vertices,
             Vertices = vertices,
@@ -1111,7 +1110,7 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
         }
 
         output.InitIndex();
-        return true;
+        return (true, output);
     }
 
     // Returns a bitset of properties used by EncodeCompressed
@@ -1142,16 +1141,16 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
 
     // Given an iterator that is already positioned at the S2ShapeIndexCell
     // containing "p", returns Contains(p).
-    private bool Contains(S2ShapeIndexIdCell? icell, S2Point p)
+    private bool Contains(S2ShapeIndexIdCell icell, S2Point p)
     {
         // Test containment by drawing a line segment from the cell center to the
         // given point and counting edge crossings.
-        S2ClippedShape a_clipped = icell.Value.Item2.Clipped(0);
+        S2ClippedShape a_clipped = icell.Item2!.Clipped(0);
         bool inside = a_clipped.ContainsCenter;
         int a_num_edges = a_clipped.NumEdges;
         if (a_num_edges > 0)
         {
-            S2Point center = icell.Value.Item1.ToPoint();
+            S2Point center = icell.Item1.ToPoint();
             var crosser = new S2EdgeCrosser(center, p);
             int ai_prev = -2;
             for (int i = 0; i < a_num_edges; ++i)
@@ -1171,17 +1170,17 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
     //
     // REQUIRES: it.id().contains(target.id())
     // [This condition is true whenever it.Locate(target) returns INDEXED.]
-    private bool BoundaryApproxIntersects(S2ShapeIndexIdCell? icell, S2Cell target)
+    private bool BoundaryApproxIntersects(S2ShapeIndexIdCell icell, S2Cell target)
     {
-        System.Diagnostics.Debug.Assert(icell.Value.Item1.Contains(target.Id));
-        S2ClippedShape a_clipped = icell.Value.Item2.Clipped(0);
+        System.Diagnostics.Debug.Assert(icell.Item1.Contains(target.Id));
+        S2ClippedShape a_clipped = icell.Item2!.Clipped(0);
         int a_num_edges = a_clipped.NumEdges;
 
         // If there are no edges, there is no intersection.
         if (a_num_edges == 0) return false;
 
         // We can save some work if "target" is the index cell itself.
-        if (icell.Value.Item1 == target.Id) return true;
+        if (icell.Item1 == target.Id) return true;
 
         // Otherwise check whether any of the edges intersect "target".
         var kMaxError = S2EdgeClipping.kFaceClipErrorUVCoord + S2EdgeClipping.kIntersectsRectErrorUVDist;
@@ -1224,8 +1223,8 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
         if (!found) return -1;
 
         var icell = _index.GetIndexCell(pos);
-        var cell = icell.Value.Item2;
-        S2ClippedShape a_clipped = cell.Clipped(0);
+        var cell = icell!.Value.Item2;
+        S2ClippedShape a_clipped = cell!.Clipped(0);
         for (int i = a_clipped.NumEdges - 1; i >= 0; --i)
         {
             int ai = a_clipped.Edge(i);
@@ -1413,10 +1412,10 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
         var ic = _index.GetIndexCell(pos);
 
         // Otherwise check if any edges intersect "target".
-        if (BoundaryApproxIntersects(ic, cell)) return false;
+        if (BoundaryApproxIntersects(ic!.Value, cell)) return false;
 
         // Otherwise check if the loop contains the center of "target".
-        return Contains(ic, cell.Center());
+        return Contains(ic.Value, cell.Center());
     }
     public bool MayIntersect(S2Cell cell)
     {
@@ -1435,13 +1434,13 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
         // If "target" is an index cell, there is an intersection because index cells
         // are created only if they have at least one edge or they are entirely
         // contained by the loop.
-        if (icell.Value.Item1 == target.Id) return true;
+        if (icell!.Value.Item1 == target.Id) return true;
 
         // Otherwise check if any edges intersect "target".
-        if (BoundaryApproxIntersects(icell, target)) return true;
+        if (BoundaryApproxIntersects(icell.Value, target)) return true;
 
         // Otherwise check if the loop contains the center of "target".
-        return Contains(icell, target.Center());
+        return Contains(icell.Value, target.Center());
     }
     // The point 'p' does not need to be normalized.
     public bool Contains(S2Point p)
@@ -1485,7 +1484,7 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
         if (!found) return false;
 
         var icell = _index.GetIndexCell(pos);
-        return Contains(icell, p);
+        return Contains(icell!.Value, p);
     }
 
     #endregion
@@ -1598,7 +1597,7 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
     // Returns true if two loops have the same vertices in the same linear order
     // (i.e., cyclic rotations are not allowed).
 
-    public bool Equals(S2Loop? b) => Vertices.SequenceEqual(b.Vertices);
+    public bool Equals(S2Loop? b) => b is not null && Vertices.SequenceEqual(b.Vertices);
 
     public override int GetHashCode() => LinqUtils.GetSequenceHashCode(Vertices);
 
@@ -1644,16 +1643,13 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
     {
         var sb = new System.Text.StringBuilder("S2Loop, ");
 
-        if (Vertices != null)
-        {
-            sb.Append(Vertices.Length).Append(" points. [");
+        sb.Append(Vertices.Length).Append(" points. [");
 
-            foreach (var v in Vertices)
-            {
-                sb.Append(v.ToString()).Append(' ');
-            }
-            sb.Append(']');
+        foreach (var v in Vertices)
+        {
+            sb.Append(v.ToString()).Append(' ');
         }
+        sb.Append(']');
 
         return sb.ToString();
     }
@@ -1807,9 +1803,7 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
             b_query_ = new S2CrossingEdgeQuery(b._index);
             if (swapped)
             {
-                var tmp = ACrossingTarget;
-                ACrossingTarget = BCrossingTarget;
-                BCrossingTarget = tmp;
+                (BCrossingTarget, ACrossingTarget) = (ACrossingTarget, BCrossingTarget);
             }
         }
 

@@ -1918,7 +1918,7 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
     // a given S2Cell level; otherwise this method falls back to Decode().
     //
     // Returns true on success.
-    public static (bool, S2Polygon) DecodeWithinScope(Decoder decoder)
+    public static (bool, S2Polygon?) DecodeWithinScope(Decoder decoder)
     {
         if (decoder.Avail() < sizeof(byte)) return (false, null);
         var version = decoder.Get8();
@@ -1986,10 +1986,10 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
     }
 
     // Decode a polygon encoded with EncodeCompressed().
-    private static (bool success, S2Polygon result) DecodeCompressed(Decoder decoder)
+    private static (bool success, S2Polygon? result) DecodeCompressed(Decoder decoder)
     {
         if (decoder.Avail() < sizeof(byte)) return (false, null);
-        var pol = new S2Polygon();
+        S2Polygon pol = new();
         pol.ClearLoops();
         var snap_level = decoder.Get8();
         if (snap_level > S2.kMaxCellLevel) return (false, null);
@@ -2000,11 +2000,12 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
         pol.loops_.Capacity = (int)num_loops;
         for (var i = 0; i < num_loops; ++i)
         {
-            if (!S2Loop.DecodeCompressed(decoder, snap_level, out var loop))
+            var (success, loop) = S2Loop.DecodeCompressed(decoder, snap_level);
+            if (!success)
             {
                 return (false, null);
             }
-            pol.loops_.Add(loop);
+            pol.loops_.Add(loop!);
         }
         pol.InitLoopProperties();
         return (true, pol);
