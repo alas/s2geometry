@@ -239,7 +239,7 @@ S2.GetUpdateMinDistanceMaxError(value)).Successor());
     {
         // System.Diagnostics.Debug.Assert(Marshal.SizeOf(typeof(Options)) <= 32); // Consider not copying Options here
         Options tmp_options = Options_;
-        tmp_options.MaxResults = (1);
+        tmp_options.MaxResults = 1;
         return base_.FindClosestPoint(target, tmp_options);
     }
 

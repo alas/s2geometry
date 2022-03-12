@@ -1001,7 +1001,9 @@ public class S2LoopTests
     private static void TestDecodeCompressed(Encoder encoder, int level, out S2Loop loop)
     {
         var decoder = encoder.Decoder();
-        Assert.True(S2Loop.DecodeCompressed(decoder, level, out loop));
+        var (success, loop_) = S2Loop.DecodeCompressed(decoder, level);
+        Assert.True(success);
+        loop = loop_!;
     }
 
     private static void Rotate(ref S2Loop loop)

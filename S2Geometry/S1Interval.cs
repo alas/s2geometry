@@ -1,26 +1,25 @@
+// An S1Interval represents a closed interval on a unit circle (also known
+// as a 1-dimensional sphere).  It is capable of representing the empty
+// interval (containing no points), the full interval (containing all
+// points), and zero-length intervals (containing a single point).
+//
+// Points are represented by the angle they make with the positive x-axis in
+// the range [-Pi, Pi].  An interval is represented by its lower and upper
+// bounds (both inclusive, since the interval is closed).  The lower bound may
+// be greater than the upper bound, in which case the interval is "inverted"
+// (i.e. it passes through the point (-1, 0)).
+//
+// Note that the point (-1, 0) has two valid representations, Pi and -Pi.
+// The normalized representation of this point internally is Pi, so that
+// endpoints of normal intervals are in the range (-Pi, Pi].  However, we
+// take advantage of the point -Pi to construct two special intervals:
+// the Full() interval is [-Pi, Pi], and the Empty() interval is [Pi, -Pi].
+//
+// This class is intended to be copied by value as desired.  It uses
+// the default copy constructor and assignment operator.
+
 namespace S2Geometry;
 
-/// <summary>
-/// An S1Interval represents a closed interval on a unit circle (also known
-/// as a 1-dimensional sphere).  It is capable of representing the empty
-/// interval (containing no points), the full interval (containing all
-/// points), and zero-length intervals (containing a single point).
-///
-/// Points are represented by the angle they make with the positive x-axis in
-/// the range [-Pi, Pi].  An interval is represented by its lower and upper
-/// bounds (both inclusive, since the interval is closed).  The lower bound may
-/// be greater than the upper bound, in which case the interval is "inverted"
-/// (i.e. it passes through the point (-1, 0)).
-///
-/// Note that the point (-1, 0) has two valid representations, Pi and -Pi.
-/// The normalized representation of this point internally is Pi, so that
-/// endpoints of normal intervals are in the range (-Pi, Pi].  However, we
-/// take advantage of the point -Pi to construct two special intervals:
-/// the Full() interval is [-Pi, Pi], and the Empty() interval is [Pi, -Pi].
-///
-/// This class is intended to be copied by value as desired.  It uses
-/// the default copy constructor and assignment operator.
-/// </summary>
 [System.Diagnostics.DebuggerDisplay("{ToDebugString()}")]
 public readonly record struct S1Interval
 {

@@ -1,9 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
-
-namespace S2Geometry;
-
-using Delta = S1ChordAngle;
-
 // S2ClosestPointQueryBase is a templatized class for finding the closest
 // point(s) to a given target.  It is not intended to be used directly, but
 // rather to serve as the implementation of various specialized classes with
@@ -26,13 +20,20 @@ using Delta = S1ChordAngle;
 // used as long as it implements the Distance concept described in
 // s2distance_targets.h.  For example this can be used to measure maximum
 // distances, to get more accuracy, or to measure non-spheroidal distances.
+
+using System.Diagnostics.CodeAnalysis;
+
+namespace S2Geometry;
+
+using Delta = S1ChordAngle;
+
 public class S2ClosestPointQueryBase<Distance, Data> where Distance : IDistance where Data : IComparable<Data>
 {
     #region Fields, Constants
 
     private const int kMaxMaxResults = int.MaxValue;
-    private static readonly IDistance Infinity = (IDistance)typeof(Distance).GetField("Infinity").GetValue(null);
-    private static readonly IDistance Zero = (IDistance)typeof(Distance).GetField("Zero").GetValue(null);
+    private static readonly IDistance Infinity = (IDistance)typeof(Distance).GetField("Infinity")!.GetValue(null)!;
+    private static readonly IDistance Zero = (IDistance)typeof(Distance).GetField("Zero")!.GetValue(null)!;
     // The minimum number of points that a cell must contain to enqueue it
     // rather than processing its contents immediately.
     private const int kMinPointsToEnqueue = 13;
@@ -232,7 +233,7 @@ public class S2ClosestPointQueryBase<Distance, Data> where Distance : IDistance 
         for (var pos = 0; pos < Index.NumPoints(); pos++)
         {
             var it = Index.Get(pos);
-            MaybeAddResult(it.Value.Point, it.Value.Data);
+            MaybeAddResult(it!.Value.Point, it.Value.Data);
         }
     }
     private void FindClosestPointsOptimized()
@@ -293,7 +294,7 @@ public class S2ClosestPointQueryBase<Distance, Data> where Distance : IDistance 
             if (i < Index.NumPoints())
             {
                 var it_ = Index.Get(i);
-                MaybeAddResult(it_.Value.Point, it_.Value.Data);
+                MaybeAddResult(it_!.Value.Point, it_.Value.Data);
             }
             var it = Index.Get(--i);
             if (it != null)
@@ -466,7 +467,7 @@ public class S2ClosestPointQueryBase<Distance, Data> where Distance : IDistance 
                 var distance = distance_limit_;
                 // We check "region_" second because it may be relatively expensive.
                 if (target_.UpdateMinDistance(cell, ref distance) &&
-                    (Options_.Region != null || Options_.Region.MayIntersect(cell)))
+                    (Options_.Region == null || Options_.Region.MayIntersect(cell)))
                 {
                     if (use_conservative_cell_distance_)
                     {
@@ -559,7 +560,7 @@ public class S2ClosestPointQueryBase<Distance, Data> where Distance : IDistance 
         // it is faster to use a PointTarget with set_max_distance() instead.  You
         // can also call both methods, e.g. to set a maximum distance and also
         // require that points lie within a given rectangle.
-        public IS2Region Region { get; set; } = null;
+        public IS2Region? Region { get; set; } = null;
 
         // Specifies that distances should be computed by examining every point
         // rather than using the S2ShapeIndex.  This is useful for testing,
@@ -570,39 +571,19 @@ public class S2ClosestPointQueryBase<Distance, Data> where Distance : IDistance 
     }
 
     // Each "Result" object represents a closest point.
-    public class Result : IEquatable<Result>, IComparable<Result>
+    public readonly record struct Result(
+                    // The distance from the target to this point.
+                    IDistance Distance,
+                    // The point itself.
+                    S2Point Point, 
+                    // The client-specified data associated with this point.
+                    Data Data) : IComparable<Result>
     {
-        #region Fields, Constants
-
-        // The distance from the target to this point.
-        public IDistance Distance { get; }
-
-        // The point itself.
-        public S2Point Point { get; }
-
-        // The client-specified data associated with this point.
-        public Data Data { get; }
-
-        #endregion
-
         #region Constructors
 
         // The default constructor creates an "empty" result, with a distance() of
         // Infinity() and non-dereferencable point() and data() values.
-        public Result()
-        {
-            Distance = Infinity;
-            Point = S2Point.Empty;
-            Data = default;
-        }
-
-        // Constructs a Result object for the given point.
-        public Result(IDistance distance, S2Point point, Data data)
-        {
-            Distance = distance;
-            Point = point;
-            Data = data;
-        }
+        public Result() : this(Infinity, S2Point.Empty, default) { }
 
         #endregion
 
@@ -616,28 +597,10 @@ public class S2ClosestPointQueryBase<Distance, Data> where Distance : IDistance 
 
         #endregion
 
-        #region IEquatable
-
-        public bool Equals(Result other)
-        {
-            return Equals(Distance, other.Distance) && Point == other.Point && Data.Equals(other.Data);
-        }
-        public override bool Equals(object obj)
-        {
-            return obj is Result res && Equals(res);
-        }
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(Distance, Point, Data);
-        }
-        public static bool operator ==(Result x, Result y) => Equals(x, y);
-        public static bool operator !=(Result x, Result y) => !Equals(x, y);
-
-        #endregion
-
         #region IComparable
 
-        public int CompareTo([AllowNull] Result other)
+        // Compares two Result objects first by distance, then by point_data().
+        public int CompareTo(Result other)
         {
             if (Distance.CompareTo(other.Distance) != 0)
                 return Distance.CompareTo(other.Distance);
@@ -648,16 +611,10 @@ public class S2ClosestPointQueryBase<Distance, Data> where Distance : IDistance 
             return Data.CompareTo(other.Data);
         }
 
-        // Compares two Result objects first by distance, then by point_data().
-        public static bool operator <(Result x, Result y)
-        {
-            return x.CompareTo(y) < 0;
-        }
-
-        public static bool operator >(Result x, Result y)
-        {
-            return x.CompareTo(y) > 0;
-        }
+        public static bool operator <(Result x, Result y) => x.CompareTo(y) < 0;
+        public static bool operator >(Result x, Result y) => x.CompareTo(y) > 0;
+        public static bool operator <=(Result x, Result y) => x.CompareTo(y) <= 0;
+        public static bool operator >=(Result x, Result y) => x.CompareTo(y) >= 0;
 
         #endregion
     }
