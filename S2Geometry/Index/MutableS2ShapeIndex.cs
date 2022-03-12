@@ -310,8 +310,8 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         // it in advance lets us size the cell_ids vector correctly.
         ForceBuild();
 
-        var cell_ids = new List<S2CellId>(cell_map_.Count);
-        var encoded_cells = new StringVectorEncoder();
+        List<S2CellId> cell_ids = new(cell_map_.Count);
+        StringVectorEncoder encoded_cells = new();
 
         foreach (var it in GetNewEnumerable())
         {
@@ -348,7 +348,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
             shapes_.Add(shape);
         }
 
-        var cell_ids = new EncodedS2CellIdVector();
+        EncodedS2CellIdVector cell_ids = new();
         if (!cell_ids.Init(decoder)) return false;
 
         var (success, encoded_cells) = EncodedStringVector.Init(decoder);
@@ -357,8 +357,8 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         for (var i = 0; i < cell_ids.Count; ++i)
         {
             var id = cell_ids[i];
-            var cell = new S2ShapeIndexCell();
-            var decoder2 = encoded_cells.GetDecoder(i);
+            S2ShapeIndexCell cell = new();
+            var decoder2 = encoded_cells!.GetDecoder(i);
             if (!cell.Decode((int)num_shapes, decoder2)) return false;
             // todo: maybe addsorted
             cell_map_.Add(new S2ShapeIndexIdCell(id, cell));
@@ -474,7 +474,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
             if (mem_tracker_.IsActive()) mem_tracker_.Tally(SpaceUsed());
         }
     }
-    private S2MemoryTracker.Client mem_tracker_ = new();
+    private readonly S2MemoryTracker.Client mem_tracker_ = new();
 
     // Called to set the index status when the index needs to be rebuilt.
     private void MarkIndexStale()
@@ -2499,7 +2499,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         // same total amount of memory as the index grows.  The actual batch sizes
         // are then adjusted based on how many edges each shape has in order to
         // avoid splitting shapes between batches unnecessarily.
-        private List<int> max_batch_sizes_;
+        private readonly List<int> max_batch_sizes_;
 
         // The maximum size of the current batch is determined by how many edges
         // have been added to the index so far.  For example if GetBatchSizes()

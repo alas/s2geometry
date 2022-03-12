@@ -1166,9 +1166,7 @@ public class S2BooleanOperation
                 // If only one region is inverted, matching/sibling relations are reversed.
                 if (invert_a_ != invert_b_)
                 {
-                    var tmp = r.polygon_match_id;
-                    r.polygon_match_id = r.sibling_match_id;
-                    r.sibling_match_id = tmp;
+                    (r.sibling_match_id, r.polygon_match_id) = (r.polygon_match_id, r.sibling_match_id);
                 }
 
                 bool is_point = (a.V0 == a.V1);
@@ -1592,7 +1590,7 @@ public class S2BooleanOperation
             private readonly S2Builder? builder_;  // (null if boolean output was requested)
             private readonly List<sbyte> input_dimensions_;
             private readonly InputEdgeCrossings input_crossings_;
-            MemoryTracker tracker_;
+            private readonly MemoryTracker tracker_;
 
             // Fields set by StartBoundary:
 
@@ -1652,7 +1650,7 @@ public class S2BooleanOperation
             // loop or a sibling pair), indicates whether that loop represents a shell
             // or a hole.  This information is used during the second pass of
             // AddBoundaryPair() to determine the output for degenerate edges.
-            Dictionary<ShapeEdgeId, bool> is_degenerate_hole_;
+            private readonly Dictionary<ShapeEdgeId, bool> is_degenerate_hole_;
 
             // The value of that "inside_" would have just before the end of the
             // previous edge added to S2Builder.  This value is used to determine
@@ -2014,9 +2012,7 @@ public class S2BooleanOperation
                 for (var i = 0; i < index_crossings_.Count; i++)
                 {
                     var crossing = index_crossings_[i];
-                    var tmp = crossing.A;
-                    crossing.A = crossing.B;
-                    crossing.B = tmp;
+                    (crossing.B, crossing.A) = (crossing.A, crossing.B);
                     // The following predicates get inverted when the edges are swapped.
                     crossing.LeftToRight ^= true;
                     crossing.IsVertexCrossing ^= true;
@@ -2384,7 +2380,7 @@ public class S2BooleanOperation
         private readonly List<IndexCrossing> tmp_crossings_ = new();
 
         // An object to track the memory usage of this class.
-        private MemoryTracker tracker_;
+        private readonly MemoryTracker tracker_;
     }
 }
 

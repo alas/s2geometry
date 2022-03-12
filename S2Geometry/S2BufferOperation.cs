@@ -393,7 +393,7 @@ public class S2BufferOperation
             S2WindingOperation.WindingRule.POSITIVE, out error);
     }
 
-    private S1Angle GetMaxEdgeSpan(S1Angle radius, S1Angle requested_error)
+    private static S1Angle GetMaxEdgeSpan(S1Angle radius, S1Angle requested_error)
     {
         // If the allowable radius range spans Pi/2 then we can use edges as long as
         // we like, however we always use at least 3 edges to approximate a circle.
@@ -760,7 +760,7 @@ public class S2BufferOperation
     private S1ChordAngle point_step_;
 
     // Contains the buffered loops that have been accumulated so far.
-    private S2WindingOperation op_;
+    private readonly S2WindingOperation op_;
 
     // The current offset path.  When each path is completed into a loop it is
     // added to op_ (the S2WindingOperation).
@@ -786,7 +786,7 @@ public class S2BufferOperation
     // Used internally as a temporary to avoid excessive memory allocation.
     private S2Point[] tmp_vertices_;
 
-    private S2MemoryTracker.Client tracker_;
+    private readonly S2MemoryTracker.Client tracker_;
 
     // For polylines, specifies whether the end caps should be round or flat.
     // See Options.set_end_cap_style() below.
@@ -839,7 +839,7 @@ public class S2BufferOperation
         //
         // DEFAULT: 0.01  (i.e., maximum error of 1%)
         //
-        public static double kMinErrorFraction = 1e-6;
+        public const double kMinErrorFraction = 1e-6;
         //public double error_fraction_ { get; set; } = 0.01;
         public double error_fraction_ { get; set; } = 0.02;
 

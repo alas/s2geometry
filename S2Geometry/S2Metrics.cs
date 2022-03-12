@@ -109,7 +109,6 @@ public static partial class S2
     // level k is kMaxAngleSpan.GetValue(k), and the average angle span for all
     // cells at level k is approximately kAvgAngleSpan.GetValue(k).
 
-#pragma warning disable IDE1006 // Estilos de nombres
     public static readonly LengthMetric kMinAngleSpan = new(
 #if S2_LINEAR_PROJECTION
 			1.0																			// 1.000
@@ -322,5 +321,4 @@ public static partial class S2
     //
     // This is true for all projections.
     public static readonly double kMaxDiagAspect = Math.Sqrt(3);                    // 1.732
-#pragma warning restore IDE1006 // Estilos de nombres
 }
