@@ -1,23 +1,22 @@
-﻿namespace S2Geometry;
+﻿// This class represents an encoded vector of unsigned integers of type T.
+// Values are decoded only when they are accessed.  This allows for very fast
+// initialization and no additional memory use beyond the encoded data.
+// The encoded data is not owned by this class; typically it points into a
+// large contiguous buffer that contains other encoded data as well.
+//
+// This is one of several helper classes that allow complex data structures to
+// be initialized from an encoded format in constant time and then decoded on
+// demand.  This can be a big performance advantage when only a small part of
+// the data structure is actually used.
+//
+// Values are encoded using a fixed number of bytes per value, where the
+// number of bytes depends on the largest value present.
+//
+// REQUIRES: T is an unsigned integer type.
+// REQUIRES: 2 <= sizeof(T) <= 8
 
-/// <summary>
-/// This class represents an encoded vector of unsigned integers of type T.
-/// Values are decoded only when they are accessed.  This allows for very fast
-/// initialization and no additional memory use beyond the encoded data.
-/// The encoded data is not owned by this class; typically it points into a
-/// large contiguous buffer that contains other encoded data as well.
-///
-/// This is one of several helper classes that allow complex data structures to
-/// be initialized from an encoded format in constant time and then decoded on
-/// demand.  This can be a big performance advantage when only a small part of
-/// the data structure is actually used.
-///
-/// Values are encoded using a fixed number of bytes per value, where the
-/// number of bytes depends on the largest value present.
-///
-/// REQUIRES: T is an unsigned integer type.
-/// REQUIRES: 2 <= sizeof(T) <= 8
-/// </summary>
+namespace S2Geometry;
+
 public class EncodedUintVector
 {
     static EncodedUintVector()
