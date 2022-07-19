@@ -342,7 +342,7 @@ public static class S2Testing
         GetRandomFrameAt(z, out x, out y);
     }
 
-    public static S2PointVector3 GetRandomFrame()
+    public static S2PointS2Point GetRandomFrame()
     {
         return GetRandomFrameAt(RandomPoint());
     }
@@ -355,10 +355,10 @@ public static class S2Testing
         y = z.CrossProd(x).Normalize();
     }
 
-    public static S2PointVector3 GetRandomFrameAt(S2Point z)
+    public static S2PointS2Point GetRandomFrameAt(S2Point z)
     {
         GetRandomFrameAt(z, out var x, out var y);
-        return new S2PointVector3(x, y, z);
+        return new S2PointS2Point(x, y, z);
     }
 
     // Return a random cell id at the given level or at a randomly chosen
@@ -684,7 +684,7 @@ public static class S2Testing
         // (touching at the fractal's center point) and then projecting the edges
         // onto the sphere.  This has the side effect of shrinking the fractal
         // slightly compared to its nominal radius.
-        public S2Loop MakeLoop(S2PointVector3 frame, S1Angle nominal_radius)
+        public S2Loop MakeLoop(S2PointS2Point frame, S1Angle nominal_radius)
         {
             List<R2Point> r2vertices = new();
             GetR2Vertices(r2vertices);

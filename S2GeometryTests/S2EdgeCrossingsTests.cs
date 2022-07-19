@@ -451,7 +451,7 @@ public class S2EdgeCrossingsTests
     {
         // Tests that a correct intersection is computed even when two edges are
         // exactly collinear and the normals of both edges underflow in double
-        // precision when normalized (see the ToVector3 function for details).
+        // precision when normalized (see the ToS2Point function for details).
         S2Point a0 = new(1, 0, 0), a1 = new(1, 2e-300, 0);
         S2Point b0 = new(1, 1e-300, 0), b1 = new(1, 3e-300, 0);
         Assert.Equal(new S2Point(1, 1e-300, 0), S2.GetIntersection(a0, a1, b0, b1, null));

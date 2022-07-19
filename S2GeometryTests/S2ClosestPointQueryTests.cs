@@ -129,7 +129,7 @@ namespace S2Geometry
         private class GridPointIndexFactory : IPointIndexFactory {
             public void AddPoints(S2Cap index_cap, int num_points, TestIndex index) {
                 int sqrt_num_points = (int)Math.Ceiling(Math.Sqrt(num_points));
-                S2PointVector3 frame = S2Testing.GetRandomFrameAt(index_cap.Center);
+                S2PointS2Point frame = S2Testing.GetRandomFrameAt(index_cap.Center);
                 double radius = index_cap.RadiusAngle().Radians;
                 double spacing = 2 * radius / sqrt_num_points;
                 for (int i = 0; i < sqrt_num_points; ++i) {

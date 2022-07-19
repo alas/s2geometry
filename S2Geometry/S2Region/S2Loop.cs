@@ -681,7 +681,7 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
     // around the z-axis of the given coordinate frame, with the first vertex in
     // the direction of the positive x-axis.  (This allows the loop to be
     // rotated for testing purposes.)
-    public static S2Loop MakeRegularLoop(S2PointVector3 frame, S1Angle radius, int num_vertices)
+    public static S2Loop MakeRegularLoop(S2PointS2Point frame, S1Angle radius, int num_vertices)
     {
         // We construct the loop in the given frame coordinates, with the center at
         // (0, 0, 1).  For a loop of radius "r", the loop vertices have the form

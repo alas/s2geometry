@@ -26,7 +26,7 @@ public static class S2EdgeClipping
     // line AB.  All vertices lie within the [-1,1]x[-1,1] cube face rectangles.
     // The results are consistent with S2Pred.Sign(), i.e. the edge is
     // well-defined even its endpoints are antipodal.
-    public static void GetFaceSegments(S2PointUVW a, S2PointUVW b, FaceSegmentVector segments)
+    public static void GetFaceSegments(S2Point a, S2Point b, FaceSegmentVector segments)
     {
         System.Diagnostics.Debug.Assert(a.IsUnitLength());
         System.Diagnostics.Debug.Assert(b.IsUnitLength());
@@ -87,14 +87,14 @@ public static class S2EdgeClipping
     // kFaceClipErrorUVDist of the line AB, but the results may differ from
     // those produced by GetFaceSegments.  Returns false if AB does not
     // intersect the given face.
-    public static bool ClipToFace(S2PointUVW a, S2PointUVW b, int face, out R2Point a_uv, out R2Point b_uv)
+    public static bool ClipToFace(S2Point a, S2Point b, int face, out R2Point a_uv, out R2Point b_uv)
     {
         return ClipToPaddedFace(a, b, face, 0.0, out a_uv, out b_uv);
     }
 
     // Like ClipToFace, but rather than clipping to the square [-1,1]x[-1,1]
     // in (u,v) space, this method clips to [-R,R]x[-R,R] where R=(1+padding).
-    public static bool ClipToPaddedFace(S2PointUVW a, S2PointUVW b, int face, double padding, out R2Point a_uv, out R2Point b_uv)
+    public static bool ClipToPaddedFace(S2Point a, S2Point b, int face, double padding, out R2Point a_uv, out R2Point b_uv)
     {
         System.Diagnostics.Debug.Assert(padding >= 0);
         // Fast path: both endpoints are on the given face.
@@ -337,7 +337,7 @@ public static class S2EdgeClipping
 
     // Return true if a given directed line L intersects the cube face F.  The
     // line L is defined by its normal N in the (u,v,w) coordinates of F.
-    private static bool IntersectsFace(S2PointUVW n)
+    private static bool IntersectsFace(S2Point n)
     {
         // L intersects the [-1,1]x[-1,1] square in (u,v) if and only if the dot
         // products of N with the four corner vertices (-1,-1,1), (1,-1,1), (1,1,1),
@@ -355,7 +355,7 @@ public static class S2EdgeClipping
     // intersects two opposite edges of F (including the case where L passes
     // exactly through a corner vertex of F).  The line L is defined by its
     // normal N in the (u,v,w) coordinates of F.
-    private static bool IntersectsOppositeEdges(S2PointUVW n)
+    private static bool IntersectsOppositeEdges(S2Point n)
     {
         // The line L intersects opposite edges of the [-1,1]x[-1,1] (u,v) square if
         // and only exactly two of the corner vertices lie on each side of L.  This
@@ -376,7 +376,7 @@ public static class S2EdgeClipping
     // L exits the face: return 0 if L exits through the u=-1 or u=+1 edge, and 1
     // if L exits through the v=-1 or v=+1 edge.  Either result is acceptable if L
     // exits exactly through a corner vertex of the cube face.
-    private static int GetExitAxis(S2PointUVW n)
+    private static int GetExitAxis(S2Point n)
     {
         System.Diagnostics.Debug.Assert(IntersectsFace(n));
         if (IntersectsOppositeEdges(n))
@@ -401,7 +401,7 @@ public static class S2EdgeClipping
     // Given a cube face F, a directed line L (represented by its CCW normal N in
     // the (u,v,w) coordinates of F), and result of GetExitAxis(N), return the
     // (u,v) coordinates of the point where L exits the cube face.
-    private static R2Point GetExitPoint(S2PointUVW n, int axis)
+    private static R2Point GetExitPoint(S2Point n, int axis)
     {
         if (axis == 0)
         {
@@ -425,7 +425,7 @@ public static class S2EdgeClipping
     // we reproject A onto the adjacent face where the line AB approaches A most
     // closely.  This moves the origin by a small amount, but never more than the
     // error tolerances documented in the header file.
-    private static int MoveOriginToValidFace(int face, S2PointUVW a, S2PointUVW ab, ref R2Point a_uv)
+    private static int MoveOriginToValidFace(int face, S2Point a, S2Point ab, ref R2Point a_uv)
     {
         // Fast path: if the origin is sufficiently far inside the face, it is
         // always safe to use it.
@@ -470,7 +470,7 @@ public static class S2EdgeClipping
     // by its normal N in the (u,v,w) coordinates of that face).  The other
     // arguments include the point where AB exits "face", the corresponding
     // exit axis, and the "target face" containing the destination point B.
-    private static int GetNextFace(int face, R2Point exit, int axis, S2PointUVW n, int target_face)
+    private static int GetNextFace(int face, R2Point exit, int axis, S2Point n, int target_face)
     {
         // We return the face that is adjacent to the exit point along the given
         // axis.  If line AB exits *exactly* through a corner of the face, there are
@@ -503,7 +503,7 @@ public static class S2EdgeClipping
     // 0 to 3.  If the sum of the two scores is 3 or more, then AB does not
     // intersect this face.  See the calling function for the meaning of the
     // various parameters.
-    private static int ClipDestination(S2PointUVW a, S2PointUVW b, S2PointUVW scaled_n, S2PointUVW a_tangent, S2PointUVW b_tangent, double scale_uv, out R2Point uv)
+    private static int ClipDestination(S2Point a, S2Point b, S2Point scaled_n, S2Point a_tangent, S2Point b_tangent, double scale_uv, out R2Point uv)
     {
         System.Diagnostics.Debug.Assert(IntersectsFace(scaled_n));
 

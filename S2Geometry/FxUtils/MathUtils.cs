@@ -1,4 +1,6 @@
-﻿namespace S2Geometry;
+﻿using System.Numerics;
+
+namespace S2Geometry;
 
 public static class MathUtils
 {
@@ -143,5 +145,10 @@ public static class MathUtils
 
             return result;
         }
+    }
+
+    public static int Sgn<T>(T x) where T : IFloatingPointIeee754<T>
+    {
+        return (x == T.Zero ? 0 : (x < T.Zero ? -1 : 1));
     }
 }

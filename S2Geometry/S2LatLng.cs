@@ -310,7 +310,7 @@ public readonly record struct S2LatLng : IComparable<S2LatLng>
     public string ToStringInDegrees()
     {
         var pt = Normalized();
-        return FormattableString.Invariant($"{pt.LatDegrees():g},{pt.LngDegrees():g}");
+        return FormattableString.Invariant($"{pt.LatDegrees():F6},{pt.LngDegrees():F6}");
     }
 #endif
 

@@ -15,7 +15,7 @@
 // double != plain old data type.
 //
 // Note(Alas): sadly I can't cleanly make it generic due to limitations in c# so I only added support for double and S2Point
-public readonly record struct S2PointVector3
+public readonly record struct S2PointS2Point
 {
     #region Fields, Constants
 
@@ -33,7 +33,7 @@ public readonly record struct S2PointVector3
 
     #region Constructors
 
-    public S2PointVector3(
+    public S2PointS2Point(
         double m00, double m01, double m02,
         double m10, double m11, double m12,
         double m20, double m21, double m22)
@@ -43,7 +43,7 @@ public readonly record struct S2PointVector3
         M20 = m20; M21 = m21; M22 = m22;
     }
 
-    public S2PointVector3(S2Point a, S2Point b, S2Point c) : this(
+    public S2PointS2Point(S2Point a, S2Point b, S2Point c) : this(
         a[0], a[1], a[2],
         b[0], b[1], b[2],
         c[0], c[1], c[2])
@@ -52,7 +52,7 @@ public readonly record struct S2PointVector3
 
     #endregion
 
-    #region S2PointVector3
+    #region S2PointS2Point
 
     // Return matrix element (i,j) with 0<=i<=2 0<=j<=2
     public S2Point Row(int index) => index switch
@@ -96,14 +96,14 @@ public readonly record struct S2PointVector3
     }
 
     // Return the transposed matrix
-    public S2PointVector3 Transpose() => new(
+    public S2PointS2Point Transpose() => new(
         M00, M10, M20,
         M01, M11, M21,
         M02, M12, M22);
 
     // Return the transposed of the matrix of the cofactors
     // (Useful for inversion for example)
-    public S2PointVector3 ComatrixTransposed() => new(
+    public S2PointS2Point ComatrixTransposed() => new(
         M11 * M22 - M21 * M12,
         M21 * M02 - M01 * M22,
         M01 * M12 - M11 * M02,
@@ -117,7 +117,7 @@ public readonly record struct S2PointVector3
         M00 * M11 - M10 * M01);
 
     // Matrix inversion
-    public S2PointVector3 Inverse()
+    public S2PointS2Point Inverse()
     {
         var det = Det();
         System.Diagnostics.Debug.Assert(det != 0); // Can't inverse. Determinant = 0.
@@ -145,7 +145,7 @@ public readonly record struct S2PointVector3
     #region Operators
 
     // Matrix addition
-    public static S2PointVector3 operator +(S2PointVector3 left, S2PointVector3 right) => new(
+    public static S2PointS2Point operator +(S2PointS2Point left, S2PointS2Point right) => new(
         left.M00 + right.M00,
         left.M01 + right.M01,
         left.M02 + right.M02,
@@ -159,7 +159,7 @@ public readonly record struct S2PointVector3
         left.M22 + right.M22);
 
     // Matrix subtration
-    public static S2PointVector3 operator -(S2PointVector3 left, S2PointVector3 right) => new(
+    public static S2PointS2Point operator -(S2PointS2Point left, S2PointS2Point right) => new(
         left.M00 - right.M00,
         left.M01 - right.M01,
         left.M02 - right.M02,
@@ -173,7 +173,7 @@ public readonly record struct S2PointVector3
         left.M22 - right.M22);
 
     // Matrix multiplication by a scalar
-    public static S2PointVector3 operator *(S2PointVector3 left, double k) => new(
+    public static S2PointS2Point operator *(S2PointS2Point left, double k) => new(
         left.M00 * k,
         left.M01 * k,
         left.M02 * k,
@@ -187,12 +187,12 @@ public readonly record struct S2PointVector3
         left.M22 * k);
 
     // Matrix multiplication by a scalar
-    public static S2PointVector3 operator *(double k, S2PointVector3 m) => m * k;
+    public static S2PointS2Point operator *(double k, S2PointS2Point m) => m * k;
 
     // Matrix multiplication
-    public static S2PointVector3 operator *(S2PointVector3 left, S2PointVector3 right)
+    public static S2PointS2Point operator *(S2PointS2Point left, S2PointS2Point right)
     {
-        return new S2PointVector3(
+        return new S2PointS2Point(
             left.M00 * right.M00 + left.M01 * right.M10 + left.M02 * right.M20,
             left.M00 * right.M01 + left.M01 * right.M11 + left.M02 * right.M21,
             left.M00 * right.M02 + left.M01 * right.M12 + left.M02 * right.M22,
@@ -207,12 +207,12 @@ public readonly record struct S2PointVector3
     }
 
     // Multiplication of a matrix by a vector
-    public static S2Point operator *(S2PointVector3 left, S2Point v) => new(
+    public static S2Point operator *(S2PointS2Point left, S2Point v) => new(
             left.M00 * v[0] + left.M01 * v[1] + left.M02 * v[2],
             left.M10 * v[0] + left.M11 * v[1] + left.M12 * v[2],
             left.M20 * v[0] + left.M21 * v[1] + left.M22 * v[2]);
 
-    public static S2Point operator *(S2Point v, S2PointVector3 m) => m * v;
+    public static S2Point operator *(S2Point v, S2PointS2Point m) => m * v;
 
     #endregion
 

@@ -5,8 +5,8 @@
 // NOTE: S2PointSpan has an implicit constructor from any container type with
 // data() and size() methods (such as std::vector and std::array).  Therefore
 // you can use such containers as arguments for any S2PointSpan parameter.
-global using S2PointSpan = System.Collections.Generic.List<S2Geometry.S2Point>;
-global using S2PointLoopSpan = System.Collections.Generic.List<S2Geometry.S2Point>;
+global using S2PointSpan = System.Collections.Generic.List<S2Geometry.Vector3<double>>;
+global using S2PointLoopSpan = System.Collections.Generic.List<S2Geometry.Vector3<double>>;
 
 namespace S2Geometry;
 

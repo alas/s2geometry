@@ -377,7 +377,7 @@ public static partial class S2
         // Explicitly instantiate this function so that we can use it in tests without
         // putting its definition in a header file.
         //public bool GetStableCrossProd<double>(S2Point, S2Point, S2Point);
-        //public bool GetStableCrossProd<long double>(Vector3_ld, Vector3_ld, Vector3_ld);
+        //public bool GetStableCrossProd<long double>(S2Point_ld, S2Point_ld, S2Point_ld);
 
         // Returns the cross product of two points computed using exact arithmetic and
         // then symbolic perturbations if necessary, rounded to double-precision and

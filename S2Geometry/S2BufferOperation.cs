@@ -137,7 +137,7 @@ public class S2BufferOperation
         ref_winding_ = 0;
         have_input_start_ = false;
         have_offset_start_ = false;
-        buffer_sign_ = Options_.buffer_radius_.Radians.Sgn();
+        buffer_sign_ = MathUtils.Sgn(Options_.buffer_radius_.Radians);
         S1Angle abs_radius = S1Angle.Abs(Options_.buffer_radius_);
         S1Angle requested_error = S1Angle.Max(kMinRequestedError,
             Options_.error_fraction_ * abs_radius);
