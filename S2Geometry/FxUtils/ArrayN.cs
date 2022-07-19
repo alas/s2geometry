@@ -1,6 +1,6 @@
-﻿using System.Collections;
+﻿namespace S2Geometry;
 
-namespace S2Geometry;
+using System.Collections;
 
 // Ensure that we don't usually need to allocate memory.
 public class Array16<T> : ArrayN<T> { public Array16() : base() { } public Array16(Func<T> getDefault) : base(getDefault) { } public override int Size { get { return 16; } } }

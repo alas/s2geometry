@@ -138,7 +138,12 @@ namespace S2Geometry
         // ratios so that we can print them at the end.
         private record WorstCap(double Ratio, S2Cap Cap, int NumCells) : IComparable<WorstCap>
         {
-            public int CompareTo(WorstCap other) => Ratio.CompareTo(other.Ratio);
+            public int CompareTo(WorstCap? other)
+            {
+                if (other is null) return 1;
+
+                return Ratio.CompareTo(other.Ratio);
+            }
             public static bool operator <(WorstCap x, WorstCap y) => x.Ratio > y.Ratio;
             public static bool operator >(WorstCap x, WorstCap y) => x.Ratio > y.Ratio;
         }

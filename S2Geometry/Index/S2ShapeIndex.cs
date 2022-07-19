@@ -128,7 +128,7 @@ public abstract class S2ShapeIndex
 
     // Returns a pointer to the shape with the given id, or null if the shape
     // has been removed from the index.
-    public abstract S2Shape Shape(int id);
+    public abstract S2Shape? Shape(int id);
 
     // Returns the number of bytes currently occupied by the index (including any
     // unused space at the end of vectors, etc).

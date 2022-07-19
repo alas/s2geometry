@@ -75,10 +75,9 @@
 // which shapes(s) contain a given query point only requires decoding the data
 // in the S2ShapeIndexCell that contains that point.
 
-using System.Runtime.InteropServices;
-
 namespace S2Geometry;
 
+using System.Runtime.InteropServices;
 using ShapeEdgeId = S2ShapeUtil.ShapeEdgeId;
 
 public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
@@ -249,7 +248,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
     }
 
     // The options supplied for this index.
-    public Options Options_ { get; private set; }
+    public Options Options_ { get; set; }
 
     // The number of distinct shape ids that have been assigned.  This equals
     // the number of shapes in the index provided that no shapes have ever been
@@ -258,7 +257,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
 
     // Returns a pointer to the shape with the given id, or null if the shape
     // has been removed from the index.
-    public override S2Shape Shape(int id) => shapes_[id];
+    public override S2Shape? Shape(int id) => shapes_[id];
 
     // Minimizes memory usage by requesting that any data structures that can be
     // rebuilt should be discarded.  This method invalidates all iterators.
@@ -518,8 +517,8 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         // a shape is removed we need to make a copy of all its edges, since the
         // client is free to delete "shape" once this call is finished.
 
-        System.Diagnostics.Debug.Assert(shapes_[shape_id] != null);
         var shape = shapes_[shape_id];
+        System.Diagnostics.Debug.Assert(shape != null);
         if (shape_id < pending_additions_begin_)
         {
             var num_edges = shape.NumEdges();
@@ -739,7 +738,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
             for (; new ShapeEdgeId(beginShapeId, beginEdgeId) < batch.End;
                 ++beginShapeId, beginEdgeId = 0)
             {
-                var shape = Shape(beginShapeId);
+                var shape = shapes_[beginShapeId];
                 if (shape == null) continue;  // Already removed.
                 int edges_end = beginShapeId == batch.End.ShapeId
                     ? batch.End.EdgeId
@@ -796,7 +795,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         var shapesCount = NumShapeIds();
         for (var id = pending_additions_begin_; id < shapesCount; ++id)
         {
-            var shape = Shape(id);
+            var shape = shapes_[id];
             if (shape != null)
             {
                 num_edges_added += shape.NumEdges();
@@ -808,7 +807,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
                                  pending_additions_begin_);
         for (int id = pending_additions_begin_; id < shapes_.Count; ++id)
         {
-            var shape = Shape(id);
+            var shape = shapes_[id];
             if (shape != null) batch_gen.AddShape(id, shape.NumEdges());
         }
         return batch_gen.Finish();
@@ -854,7 +853,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         // for that batch is reached, then move on to the next batch.
         for (var id = pending_additions_begin_; id < shapesCount; ++id)
         {
-            var shape = Shape(id);
+            var shape = shapes_[id];
             if (shape == null) continue;
             num_edges += shape.NumEdges;
             if (num_edges >= batch_sizes[res.Count])
@@ -974,7 +973,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         for (; new ShapeEdgeId(beginShapeId, beginEdgeId) < batch.End;
              ++beginShapeId, beginEdgeId = 0)
         {
-            var shape = Shape(begin.ShapeId);
+            var shape = shapes_[begin.ShapeId];
             if (shape == null) continue;  // Already removed.
             int edges_end = begin.ShapeId == batch.End.ShapeId ? batch.End.EdgeId
                 : shape.NumEdges();
@@ -1077,7 +1076,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
     private void FinishPartialShape(int shape_id)
     {
         if (shape_id < 0) return;  // The partial shape did not have an interior.
-        var shape = Shape(shape_id);
+        var shape = shapes_[shape_id];
 
         // Filling in the interior of a partial shape can grow the cell_map_
         // significantly, however the new cells have just one shape and no edges.
@@ -1542,7 +1541,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         {
             var clipped = cell.Clipped(s);
             int shape_id = clipped.ShapeId;
-            var shape = Shape(shape_id);
+            var shape = shapes_[shape_id];
             if (shape == null) continue;  // This shape is being removed.
             int num_edges = clipped.NumEdges;
 
@@ -1969,7 +1968,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
 
     // The shapes in the index, accessed by their shape id.  Removed shapes are
     // replaced by null pointers.
-    private readonly List<S2Shape> shapes_ = new();
+    private readonly List<S2Shape?> shapes_ = new();
 
     // A map from S2CellId to the set of clipped shapes that intersect that
     // cell.  The cell ids cover a set of non-overlapping regions on the
@@ -1990,13 +1989,6 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
     }
     // Reads and writes to this field are guarded by "lock_".
     private IndexStatus index_status_ = IndexStatus.FRESH;
-
-    // The representation of an edge that has been queued for removal.
-    private record RemovedShape(
-        int ShapeId,
-        bool HasInterior, //Belongs to a shape of dimension 2.
-        bool ContainsTrackerOrigin,
-        List<S2Shape.Edge> Edges);
 
     // The set of shapes that have been queued for removal but not processed
     // yet.  Note that we need to copy the edge data since the caller is free to
@@ -2022,6 +2014,15 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
     // we defer some of the indexing work until query time.
     private int _channelPendingOperations = 0;
     private readonly object _channelLock = new();
+
+    /// <summary>
+    /// The representation of an edge that has been queued for removal.
+    /// </summary>
+    private record RemovedShape(
+        int ShapeId,
+        bool HasInterior, //Belongs to a shape of dimension 2.
+        bool ContainsTrackerOrigin,
+        List<S2Shape.Edge> Edges);
 
     // FaceEdge and ClippedEdge store temporary edge data while the index is being
     // updated.  FaceEdge represents an edge that has been projected onto a given

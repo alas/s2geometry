@@ -104,7 +104,7 @@ public sealed class EncodedS2ShapeIndex : S2ShapeIndex, IDisposable
     // A vector containing all shapes in the index.  Initially all shapes are
     // set to kUndecodedShape(); as shapes are decoded, they are added to the
     // vector using atomic.compare_exchange_strong.
-    private readonly ConcurrentDictionary<int, S2Shape> Shapes;
+    private readonly ConcurrentDictionary<int, S2Shape?> Shapes;
 
     // A vector containing the S2CellIds of each cell in the index.
     private readonly EncodedS2CellIdVector CellIds;
@@ -138,7 +138,7 @@ public sealed class EncodedS2ShapeIndex : S2ShapeIndex, IDisposable
     private EncodedS2ShapeIndex(int maxEdgesPerCell, ShapeFactory shapeFactory, EncodedS2CellIdVector cellIds,
                     Lazy<S2ShapeIndexCell>[] cells, EncodedStringVector encodedCells)
     {
-        //Minimize();
+        Minimize();
         Options_ = new()
         {
             MaxEdgesPerCell = maxEdgesPerCell
@@ -211,7 +211,7 @@ public sealed class EncodedS2ShapeIndex : S2ShapeIndex, IDisposable
 
     // Return a pointer to the shape with the given id, or null if the shape
     // has been removed from the index.
-    public override S2Shape Shape(int id)
+    public override S2Shape? Shape(int id)
     {
         var shape = Shapes[id];
         if (shape != null) return shape;
@@ -239,7 +239,7 @@ public sealed class EncodedS2ShapeIndex : S2ShapeIndex, IDisposable
             // cells_decoded_ vector.  (The cost is only about 1 cycle per 64 cells,
             // but for a huge polygon with 1 million cells that's still 16000 cycles.)
             foreach (int pos in CellCache)
-                Cells[pos] = null;
+                Cells[pos] = new Lazy<S2ShapeIndexCell>();
         }
         else
         {
@@ -247,7 +247,7 @@ public sealed class EncodedS2ShapeIndex : S2ShapeIndex, IDisposable
             {
                 if (Cells[i].IsValueCreated)
                 {
-                    Cells[i] = null;
+                    Cells[i] = new Lazy<S2ShapeIndexCell>();
                 }
             }
         }
@@ -276,7 +276,7 @@ public sealed class EncodedS2ShapeIndex : S2ShapeIndex, IDisposable
         return size;
     }
 
-    private S2Shape GetShape(int id)
+    private S2Shape? GetShape(int id)
     {
         // This method is called when a shape has not been decoded yet.
         var shape = ShapeFactory_[id];
