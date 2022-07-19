@@ -90,7 +90,7 @@ namespace S2Geometry
             { EdgeStr = _edge_str; IsHole = _is_hole; }
 
             public bool Equals(TestDegeneracy other) => EdgeStr == other.EdgeStr && IsHole == other.IsHole;
-            public override bool Equals(object obj) => obj is TestDegeneracy td && Equals(td);
+            public override bool Equals(object? obj) => obj is TestDegeneracy td && Equals(td);
             public override int GetHashCode() => HashCode.Combine(EdgeStr, IsHole);
 
             public static bool operator ==(TestDegeneracy x, TestDegeneracy y) => Equals(x, y);

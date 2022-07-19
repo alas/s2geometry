@@ -530,7 +530,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
 
             if (pending_removals_ == null)
             {
-                if (!mem_tracker_.Tally(Marshal.SizeOf(pending_removals_)))
+                if (!mem_tracker_.Tally(Marshal.SizeOf<List<RemovedShape>>()))
                 {
                     Minimize();
                     return shape;
@@ -1994,7 +1994,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
     // yet.  Note that we need to copy the edge data since the caller is free to
     // destroy the shape once Release() has been called.  This field is present
     // only when there are removed shapes to process (to save memory).
-    private List<RemovedShape> pending_removals_ = new();
+    private List<RemovedShape>? pending_removals_;
 
     // Additions and removals are queued and processed on the first subsequent
     // query.  There are several reasons to do this:

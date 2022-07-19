@@ -265,7 +265,6 @@ public class S2WindingOperation
             MutableS2ShapeIndex.Options options = new();
             options.MaxEdgesPerCell = kMaxEdgesPerCell;
             index_ = new(options);
-            index_.Init();
             index_.MemoryTracker = builder.Options_.MemoryTracker;
             index_.Add(new S2BuilderUtil.GraphShape(g_));
         }
@@ -340,7 +339,7 @@ public class S2WindingOperation
         // Another idea is to count the connected components in advance, however it
         // turns out that this takes about 25% as long as building the index does.
         private int brute_force_winding_tests_left_ = 1;
-        private MutableS2ShapeIndex index_;  // Built only if needed.
+        private readonly MutableS2ShapeIndex index_;  // Built only if needed.
     }
 
     // The actual winding number operation is implemented as an S2Builder layer.
