@@ -132,7 +132,7 @@ public partial class S2Builder
         // contiguous subrange of this ordering.
         public EdgeLoop GetInEdgeIds()
         {
-            var in_edge_ids = new EdgeLoop(NumEdges);
+            EdgeLoop in_edge_ids = new(NumEdges);
             in_edge_ids.Iota(0, NumEdges);
             in_edge_ids.Sort((int ai, int bi) => StableLessThan(Reverse(GetEdge(ai)), Reverse(GetEdge(bi)), ai, bi));
             return in_edge_ids;
@@ -358,7 +358,7 @@ public partial class S2Builder
 
                 // Sort the edges in clockwise order around "v0".
                 var min_endpoint = v0_edges.First().Endpoint;
-                v0_edges.Sort(1, v0_edges.Count, new CcwComp(min_endpoint, Vertices, v0));
+                v0_edges.Sort(1, v0_edges.Count - 1, new CcwComp(min_endpoint, Vertices, v0));
                 // Match incoming with outgoing edges.  We do this by keeping a stack of
                 // unmatched incoming edges.  We also keep a stack of outgoing edges with
                 // no previous incoming edge, and match these at the end by wrapping
@@ -957,8 +957,12 @@ public partial class S2Builder
         // their edge ids.
         public static int StableLessThan(Edge a, Edge b, int ai, int bi)
         {
-            if (a.ShapeId.CompareTo(b.ShapeId) != 0) return a.ShapeId.CompareTo(b.ShapeId);
-            if (a.EdgeId.CompareTo(b.EdgeId) != 0) return a.EdgeId.CompareTo(b.EdgeId);
+            var c = a.ShapeId.CompareTo(b.ShapeId);
+            if (c != 0) return c;
+
+            c = a.EdgeId.CompareTo(b.EdgeId);
+            if (c != 0) return c;
+
             return ai.CompareTo(bi);  // Stable sort.
         }
 

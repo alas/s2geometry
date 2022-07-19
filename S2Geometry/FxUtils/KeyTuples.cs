@@ -102,8 +102,7 @@ public readonly record struct KeyKey<T, U>(T Item1, U Item2)
     public int CompareTo(KeyKey<T, U> other)
     {
         var c = Item1.CompareTo(other.Item1);
-        if (c != 0)
-            return c;
+        if (c != 0) return c;
 
         return Item2.CompareTo(other.Item2);
     }
@@ -170,12 +169,10 @@ public readonly record struct Key3<T, U, V>(T Item1, U Item2, V Item3)
     public int CompareTo(Key3<T, U, V> other)
     {
         var c = Item1.CompareTo(other.Item1);
-        if (c != 0)
-            return c;
+        if (c != 0) return c;
 
         c = Item2.CompareTo(other.Item2);
-        if (c != 0)
-            return c;
+        if (c != 0) return c;
 
         return Item3.CompareTo(other.Item3);
     }
