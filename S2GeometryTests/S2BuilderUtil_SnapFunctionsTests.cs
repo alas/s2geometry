@@ -315,8 +315,10 @@ namespace S2Geometry
         private static List<S2CellId> GetNeighbors(S2CellId id)
         {
             int kNumLayers = 2;
-            List<S2CellId> nbrs = new();
-            nbrs.Add(id);
+            List<S2CellId> nbrs = new()
+            {
+                id
+            };
             for (int layer = 0; layer < kNumLayers; ++layer)
             {
                 List<S2CellId> new_nbrs = new();
@@ -448,8 +450,10 @@ namespace S2Geometry
                     var (c1, c2) = best_configs[id];
                     _logger.WriteLine($"  {label} = {ratio:f15} u={uv[0]:f7.4} v={uv[1]:f7.4} {id.ToToken()} {c1.ToToken()} {c2.ToToken()}");
                 }
-                List<S2CellId> nbrs = new(1);
-                nbrs.Add(id);
+                List<S2CellId> nbrs = new(1)
+                {
+                    id
+                };
                 id.AppendAllNeighbors(id.Level(), nbrs);
                 foreach (var nbr in nbrs)
                 {
@@ -473,8 +477,10 @@ namespace S2Geometry
             string label, S2CellIdMinEdgeSeparationFunction objective)
         {
             double best_score = 1e10;
-            List<S2CellId> best_cells = new();
-            best_cells.Add(kSearchRootId);
+            List<S2CellId> best_cells = new()
+            {
+                kSearchRootId
+            };
             for (int level = 0; level <= S2.kMaxCellLevel; ++level)
             {
                 double score = GetS2CellIdMinEdgeSeparation(label, objective, level, best_cells);
@@ -735,10 +741,12 @@ namespace S2Geometry
         // except that the scale is variable (see LatLngConfig below).
         private record IntLatLng(long Lat, long Lng) : IComparable<IntLatLng>
         {
-            public int CompareTo(IntLatLng other) 
+            public int CompareTo(IntLatLng? other) 
             {
-                if (Lat.CompareTo(other.Lat) != 0)
-                    return Lat.CompareTo(other.Lat);
+                if (other == null) return 1;
+
+                var c = Lat.CompareTo(other.Lat);
+                if (c != 0) return c;
 
                 return Lng.CompareTo(other.Lng);
             }
@@ -747,13 +755,15 @@ namespace S2Geometry
         // (Math.PI / scale) to convert them to radians.
         private record LatLngConfig(long Scale, IntLatLng LL0, IntLatLng LL1, IntLatLng LL2) : IComparable<LatLngConfig>
         {
-            public int CompareTo(LatLngConfig other)
+            public int CompareTo(LatLngConfig? other)
             {
-                if (LL0.CompareTo(other.LL0) != 0)
-                    return LL0.CompareTo(other.LL0);
+                if (other == null) return 1;
 
-                if (LL1.CompareTo(other.LL1) != 0)
-                    return LL1.CompareTo(other.LL1);
+                var c = LL0.CompareTo(other.LL0);
+                if (c != 0) return c;
+
+                c = LL1.CompareTo(other.LL1);
+                if (c != 0) return c;
 
                 return LL2.CompareTo(other.LL2);
             }

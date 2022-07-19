@@ -10,6 +10,9 @@ public class S2FurthestEdgeQueryTests
 
     // The approximate radius of S2Cap from which query edges are chosen.
     private static readonly S1Angle kTestCapRadius = S2Testing.KmToAngle(10);
+    private static ITestOutputHelper _logger;
+
+    public S2FurthestEdgeQueryTests(ITestOutputHelper logger) { _logger = logger; }
 
     [Fact]
     public void Test_S2FurthestEdgeQuery_NoEdges()
@@ -364,7 +367,8 @@ public class S2FurthestEdgeQueryTests
             ConvertResults(actual),
             query.Options_.MaxResults,
             new S2MaxDistance(min_distance),
-            max_error));
+            max_error,
+            _logger.WriteLine));
 
         if (!expected.Any())
         {

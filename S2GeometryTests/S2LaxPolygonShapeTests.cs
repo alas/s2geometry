@@ -4,6 +4,10 @@ namespace S2Geometry;
 
 public class S2LaxPolygonShapeTests
 {
+    private readonly ITestOutputHelper _logger;
+
+    public S2LaxPolygonShapeTests(ITestOutputHelper logger) { _logger = logger; }
+
     // Verifies that EncodedS2LaxPolygonShape behaves identically to
     // S2LaxPolygonShape. Also supports testing that the encoded form is identical
     // to the re-encoded form.
@@ -15,7 +19,7 @@ public class S2LaxPolygonShapeTests
         var decoder = encoder.Decoder();
         var (success, encoded) = EncodedS2LaxPolygonShape.Init(decoder);
         Assert.True(success);
-        Assert.Equal(encoded.NumLoops, original.NumLoops);
+        Assert.Equal(encoded!.NumLoops, original.NumLoops);
         Assert.Equal(encoded.NumVertices, original.NumVertices);
         Assert.Equal(encoded.NumEdges(), original.NumEdges());
         Assert.Equal(encoded.NumChains(), original.NumChains());
@@ -54,9 +58,9 @@ public class S2LaxPolygonShapeTests
     [Fact]
     public void Test_S2LaxPolygonShape_EmptyPolygon()
     {
-        System.Diagnostics.Debug.WriteLine(
+        _logger.WriteLine(
             $"(INFO) sizeof(S2LaxPolygonShape) == {Marshal.SizeOf(typeof(S2LaxPolygonShape))}");
-        System.Diagnostics.Debug.WriteLine(
+        _logger.WriteLine(
             $"(INFO) sizeof(EncodedS2LaxPolygonShape) == {Marshal.SizeOf(typeof(EncodedS2LaxPolygonShape))}");
 
         S2LaxPolygonShape shape = new(new S2Polygon());

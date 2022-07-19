@@ -167,7 +167,7 @@ public class EncodedStringVector : IInitEncoder<EncodedStringVector>
 
         if (offsets_.Count > 0)
         {
-            var length = (int)offsets_[offsets_.Count - 1];
+            var length = (int)offsets_[^1];
             encoder.Ensure(length);
             encoder.PutN(data_, length);
         }

@@ -329,7 +329,7 @@ public class S2ShapeIndexCell
     {
         return FindClipped(shape.Id);
     }
-    public S2ClippedShape FindClipped(int shape_id)
+    public S2ClippedShape? FindClipped(int shape_id)
     {
         // Linear search is fine because the number of shapes per cell is typically
         // very small (most often 1), and is large only for pathological inputs

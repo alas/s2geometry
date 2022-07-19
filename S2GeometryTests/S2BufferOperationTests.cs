@@ -8,6 +8,10 @@ using InputCallback = Action<S2BufferOperation>;
 
 public class S2BufferOperationTests
 {
+    private readonly ITestOutputHelper _logger;
+
+    public S2BufferOperationTests(ITestOutputHelper logger) { _logger = logger; }
+
     // Convenience function that calls the given lambda expression to add input to
     // an S2BufferOperation and returns the buffered result.
     private static S2LaxPolygonShape DoBuffer(
@@ -373,7 +377,7 @@ public class S2BufferOperationTests
 
             (S2BufferOperation op) => op.AddShapeIndex(input), options));
 
-        System.Diagnostics.Debug.Write(@$"
+        _logger.WriteLine(@$"
 radius = {buffer_radius.Radians:g17}, error_fraction = {error_fraction:g17}
 input = {S2TextFormat.ToDebugString(input)}
 output = {S2TextFormat.ToDebugString(output)}");
@@ -714,13 +718,11 @@ output = {S2TextFormat.ToDebugString(output)}");
     public void Test_S2BufferOperation_ZigZagPolyline()
     {
         Options options = new(S1Angle.FromDegrees(1));
-        foreach (PolylineSide polyline_side in new[]{
-    PolylineSide.LEFT, PolylineSide.RIGHT, PolylineSide.BOTH})
+        foreach (var polyline_side in new[] { PolylineSide.LEFT, PolylineSide.RIGHT, PolylineSide.BOTH })
         {
-            foreach (EndCapStyle end_cap_style in new[] {
-        EndCapStyle.ROUND, EndCapStyle.FLAT})
+            foreach (var end_cap_style in new[] { EndCapStyle.ROUND, EndCapStyle.FLAT })
             {
-                System.Diagnostics.Debug.Write(
+                _logger.WriteLine(
                     $"two_sided = {polyline_side == PolylineSide.BOTH}, round = {end_cap_style == EndCapStyle.ROUND}");
                 options.polyline_side_ = polyline_side;
                 options.end_cap_style_ = end_cap_style;

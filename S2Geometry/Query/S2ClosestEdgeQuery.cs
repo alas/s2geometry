@@ -189,25 +189,15 @@ public class S2ClosestEdgeQuery
             25;
     };
 
-    // Convenience constructor that calls Init().  Options may be specified here
+    // Convenience constructor.  Options may be specified here
     // or changed at any time using the Options() accessor method.
-    public S2ClosestEdgeQuery(S2ShapeIndex index, Options? options = null)
-    {
-        Init(index, options ?? new Options());
-    }
-
-    // Default constructor; requires Init() to be called.
-    public S2ClosestEdgeQuery() { }
-
-    // Initializes the query.  Options may be specified here or changed at any
-    // time using the Options() accessor method.
     //
     // REQUIRES: "index" must persist for the lifetime of this object.
     // REQUIRES: ReInit() must be called if "index" is modified.
-    public void Init(S2ShapeIndex index, Options? options = null)
+    public S2ClosestEdgeQuery(S2ShapeIndex index, Options? options = null)
     {
         Options_ = options ?? new Options();
-        base_.Init(index);
+        base_ = new(index);
     }
 
     // Reinitializes the query.  This method must be called whenever the
@@ -325,5 +315,5 @@ public class S2ClosestEdgeQuery
         return S2.Project(point, edge.V0, edge.V1);
     }
 
-    private readonly S2ClosestEdgeQueryBase<Distance> base_ = new();
+    private readonly S2ClosestEdgeQueryBase<Distance> base_;
 }

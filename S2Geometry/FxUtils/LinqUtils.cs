@@ -100,9 +100,6 @@ public static class LinqUtils
         return minIndex;
     }
 
-    /// <summary>
-    /// 
-    /// </summary>
     /// <remarks>from: https://stackoverflow.com/questions/8094867/good-gethashcode-override-for-list-of-foo-objects-respecting-the-order</remarks>
     public static int GetSequenceHashCode<T>(this IEnumerable<T> list)
     {
@@ -110,7 +107,7 @@ public static class LinqUtils
         const int seedValue = 0x2D2816FE;
         const int primeNumber = 397;
         return list.Aggregate(seedValue, (current, item) => (current * primeNumber)
-            + (Equals(item, default(T)) ? 0 : item.GetHashCode()));
+            + (Equals(item, default(T)) ? 0 : item!.GetHashCode()));
     }
 
     public static T[] DeepCustomClone<T>(this T[] arr) where T : ICustomCloneable

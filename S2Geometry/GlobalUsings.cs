@@ -1,5 +1,5 @@
-﻿global using Edge = S2Geometry.S2ShapeUtil.ShapeEdgeId;                                      // Defines an output edge.
-global using OutputEdge = S2Geometry.S2ShapeUtil.ShapeEdgeId;              // Defines an output edge.   
+﻿global using Edge = S2Geometry.S2ShapeUtil.ShapeEdgeId;                         // Defines an output edge.
+global using OutputEdge = S2Geometry.S2ShapeUtil.ShapeEdgeId;                   // Defines an output edge.   
 
 global using EdgeLoop = System.Collections.Generic.List<System.Int32>;          // A loop consisting of a sequence of edges.
 // Identifies an edge in the graph.  Edges are numbered sequentially
@@ -8,15 +8,15 @@ global using EdgeId = System.Int32;
 global using EdgePolyline = System.Collections.Generic.List<System.Int32>;
 global using EdgeIdSet = System.Collections.Generic.List<System.Int32>;
 global using EdgeLoops = System.Collections.Generic.List<System.Collections.Generic.List<System.Int32>>;
-global using InputEdge = S2Geometry.Int32Int32;               // Defines an input edge.
+global using InputEdge = S2Geometry.Int32Int32;                                 // Defines an input edge.
 global using InputEdgeId = System.Int32;
 global using InputEdgeIdSetId = System.Int32;
 global using InputEdgeLoop = System.Collections.Generic.List<System.Int32>;
 global using DirectedComponent = System.Collections.Generic.List<System.Collections.Generic.List<System.Int32>>;
 global using UndirectedComponent = S2Geometry.Array2<System.Collections.Generic.List<System.Collections.Generic.List<System.Int32>>>;
-global using LayerEdgeId = S2Geometry.Int32Int32;             // Identifies an output edge in a particular layer.   
+global using LayerEdgeId = S2Geometry.Int32Int32;                               // Identifies an output edge in a particular layer.   
 
-global using InputVertexKey = S2Geometry.S2CellIdInt32;       // Sort key for prioritizing input vertices.
+global using InputVertexKey = S2Geometry.S2CellIdInt32;                         // Sort key for prioritizing input vertices.
 global using VertexId = System.Int32;
 
 global using Label = System.Int32;

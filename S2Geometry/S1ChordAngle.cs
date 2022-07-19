@@ -482,8 +482,8 @@ public readonly record struct S1ChordAngle : IComparable<S1ChordAngle>, IDistanc
         }
         return false;
     }
-    public IDistance GetZero() => Zero;
-    public IDistance GetInfinity() => Infinity;
+    public static IDistance GetZero() => Zero;
+    public static IDistance GetInfinity() => Infinity;
 
     public bool Equals(IDistance? other) => other is S1ChordAngle ca && Equals(ca);
 
@@ -531,6 +531,6 @@ public interface IDistance : IEquatable<IDistance>, IComparable<IDistance>
     bool IsLessThan(IDistance other);
     S1ChordAngle ToS1ChordAngle();
     S1ChordAngle GetChordAngleBound();
-    IDistance GetZero();
-    IDistance GetInfinity();
+    static abstract IDistance GetZero();
+    static abstract IDistance GetInfinity();
 }

@@ -4,12 +4,16 @@ using LabelSetIds = List<System.Int32>;
 
 public class S2BuilderUtil_LaxPolylineLayerTests
 {
+    private static ITestOutputHelper _logger;
+
+    public S2BuilderUtil_LaxPolylineLayerTests(ITestOutputHelper logger) { _logger = logger; }
+
     private static void TestS2LaxPolylineShape(
                     List<string> input_strs,
                     string expected_str, EdgeType edge_type,
                     Options? options = null)
     {
-        System.Diagnostics.Debug.WriteLine(edge_type == EdgeType.DIRECTED ? "DIRECTED" : "UNDIRECTED");
+        _logger.WriteLine(edge_type == EdgeType.DIRECTED ? "DIRECTED" : "UNDIRECTED");
         S2Builder builder = new(options ?? new Options());
         S2LaxPolylineShape output = new();
         builder.StartLayer(new LaxPolylineLayer(

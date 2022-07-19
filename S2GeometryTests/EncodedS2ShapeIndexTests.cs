@@ -11,19 +11,17 @@ public class EncodedS2ShapeIndexTests
     private static void TestEncodedS2ShapeIndex<Shape>(MutableS2ShapeIndex expected, int expected_bytes)
          where Shape : S2Shape, IInitEncoder<Shape>, new()
     {
-        var decodeHomegeneousShapeIndex = (EncodedS2ShapeIndex index, Decoder decoder)
-            => index.Init(decoder, new S2ShapeUtilCoding.HomogeneousShapeFactory<Shape>(decoder));
-
         Encoder encoder = new();
         S2ShapeUtilCoding.EncodeHomogeneousShapes(expected, encoder);
         int shapes_bytes = encoder.Length();
         expected.Encode(encoder);
         Assert.Equal(expected_bytes, encoder.Length() - shapes_bytes);
         var decoder = encoder.Decoder();
-        EncodedS2ShapeIndex actual = new();
-        Assert.True(decodeHomegeneousShapeIndex(actual, decoder));
+        var (success, actual) = EncodedS2ShapeIndex.Factory(decoder,
+            new S2ShapeUtilCoding.HomogeneousShapeFactory<Shape>(decoder));
+        Assert.True(success);
         Assert.Equal(expected.Options_.MaxEdgesPerCell,
-                  actual.Options_.MaxEdgesPerCell);
+            actual!.Options_.MaxEdgesPerCell);
         S2ShapeUtil_Testing.ExpectEqual(expected, actual);
     }
 
@@ -223,7 +221,7 @@ public class EncodedS2ShapeIndexTests
     // concurrently with the const methods.
     public class LazyDecodeTest : ReaderWriterTest
     {
-        private readonly EncodedS2ShapeIndex index_ = new();
+        private readonly EncodedS2ShapeIndex index_;
 
         public LazyDecodeTest()
         {
@@ -255,7 +253,9 @@ public class EncodedS2ShapeIndexTests
             S2ShapeUtilCoding.CompactEncodeTaggedShapes(input, encoder);
             input.Encode(encoder);
             var decoder = encoder.Decoder();
-            index_.Init(decoder, S2ShapeUtilCoding.LazyDecodeShapeFactory(decoder));
+            var (_, index) = EncodedS2ShapeIndex.Factory(decoder,
+                S2ShapeUtilCoding.LazyDecodeShapeFactory(decoder));
+            index_ = index!;
         }
 
         public override void WriteOp()
@@ -282,7 +282,7 @@ public class EncodedS2ShapeIndexTests
         private readonly S2Polyline polyline_;
         private readonly S2PolylineLayer layer_;
 
-        public IndexedLaxPolylineLayer(MutableS2ShapeIndex index, Options options = null)
+        public IndexedLaxPolylineLayer(MutableS2ShapeIndex index, Options? options = null)
         {
             index_ = index;
             polyline_ = new();

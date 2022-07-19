@@ -180,22 +180,12 @@ public class S2ClosestCellQuery
     // REQUIRES: ReInit() must be called if "index" is modified.
     public S2ClosestCellQuery(S2CellIndex index, Options? options = null)
     {
-        Init(index, options ?? new Options());
+        Options_ = options ?? new Options();
+        base_.Init(index);
     }
 
     // Default constructor; requires Init() to be called.
     public S2ClosestCellQuery() { }
-
-    // Initializes the query.  Options may be specified here or changed at any
-    // time using the Options() accessor method.
-    //
-    // REQUIRES: "index" must persist for the lifetime of this object.
-    // REQUIRES: ReInit() must be called if "index" is modified.
-    public void Init(S2CellIndex index, Options? options = null)
-    {
-        Options_ = options ?? new Options();
-        base_.Init(index);
-    }
 
     // Reinitializes the query.  This method must be called if the underlying
     // S2CellIndex is modified (by calling Clear() and Build() again).

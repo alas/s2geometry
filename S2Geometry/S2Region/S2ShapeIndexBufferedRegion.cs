@@ -55,7 +55,7 @@ public sealed class S2ShapeIndexBufferedRegion : IS2Region<S2ShapeIndexBufferedR
         Radius = radius;
         radius_successor_ = radius.Successor();
         query_ = new S2ClosestEdgeQuery(index);
-        query_.Options_.IncludeInteriors = (true);
+        query_.Options_.IncludeInteriors = true;
     }
 
     // Convenience constructor that accepts an S1Angle for the radius.
@@ -66,15 +66,6 @@ public sealed class S2ShapeIndexBufferedRegion : IS2Region<S2ShapeIndexBufferedR
     #endregion
 
     #region S2ShapeIndexBufferedRegion
-
-    // Equivalent to the constructor above.
-    public void Init(S2ShapeIndex index, S1ChordAngle radius)
-    {
-        Radius = radius;
-        radius_successor_ = radius.Successor();
-        query_.Init(index);
-        query_.Options_.IncludeInteriors = (true);
-    }
 
     public S2ShapeIndex Index() => query_.Index();
 

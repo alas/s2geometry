@@ -285,7 +285,7 @@ public static class S2ShapeUtilCoding
         public WrappedShapeFactory(S2ShapeIndex index) { index_ = index; }
 
         public override int Count => index_.NumShapeIds();
-        public override S2Shape this[int shape_id]
+        public override S2Shape? this[int shape_id]
         {
             get
             {

@@ -21,8 +21,6 @@
 // s2distance_targets.h.  For example this can be used to measure maximum
 // distances, to get more accuracy, or to measure non-spheroidal distances.
 
-using System.Diagnostics.CodeAnalysis;
-
 namespace S2Geometry;
 
 using Delta = S1ChordAngle;
@@ -31,9 +29,11 @@ public class S2ClosestPointQueryBase<Distance, Data> where Distance : IDistance 
 {
     #region Fields, Constants
 
+    private static readonly IDistance Infinity = Distance.GetInfinity();
+    private static readonly IDistance Zero = Distance.GetZero();
+
     private const int kMaxMaxResults = int.MaxValue;
-    private static readonly IDistance Infinity = (IDistance)typeof(Distance).GetField("Infinity")!.GetValue(null)!;
-    private static readonly IDistance Zero = (IDistance)typeof(Distance).GetField("Zero")!.GetValue(null)!;
+
     // The minimum number of points that a cell must contain to enqueue it
     // rather than processing its contents immediately.
     private const int kMinPointsToEnqueue = 13;

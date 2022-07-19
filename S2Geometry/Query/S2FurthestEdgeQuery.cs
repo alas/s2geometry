@@ -68,8 +68,6 @@
 //
 // See S2FurthestEdgeQueryBase for full documentation.
 
-using System.Diagnostics.CodeAnalysis;
-
 namespace S2Geometry;
 
 using Base = S2ClosestEdgeQueryBase<S2MaxDistance>;
@@ -218,23 +216,13 @@ public int CompareTo(Result other)
 
     // Convenience constructor that calls Init().  Options may be specified here
     // or changed at any time using the Options() accessor method.
-    public S2FurthestEdgeQuery(S2ShapeIndex index, Options? options = null)
-    {
-        Init(index, options ?? new Options());
-    }
-
-    // Default constructor; requires Init() to be called.
-    public S2FurthestEdgeQuery() { }
-
-    // Initializes the query.  Options may be specified here or changed at any
-    // time using the Options() accessor method.
     //
     // REQUIRES: "index" must persist for the lifetime of this object.
     // REQUIRES: ReInit() must be called if "index" is modified.
-    public void Init(S2ShapeIndex index, Options? options = null)
+    public S2FurthestEdgeQuery(S2ShapeIndex index, Options? options = null)
     {
         Options_ = options ?? new Options();
-        base_.Init(index);
+        base_ = new(index);
     }
 
     // Reinitializes the query.  This method must be called whenever the
@@ -344,5 +332,5 @@ public int CompareTo(Result other)
     public S2Shape.Edge GetEdge(Result result) =>
         Index().Shape(result.ShapeId).GetEdge(result.EdgeId);
 
-    private readonly Base base_ = new();
+    private readonly Base base_;
 }

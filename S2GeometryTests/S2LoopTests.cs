@@ -756,7 +756,7 @@ public class S2LoopTests
         var decoder2 = encoder.Decoder();
         var (success2, loop2) = S2Loop.Decode(decoder2);
         Assert.True(success2);
-        Assert.True(l.BoundaryEquals(loop2));
+        Assert.True(l.BoundaryEquals(loop2!));
         Assert.Equal(l.Vertex(1), loop2.Vertex(1));
         Assert.NotEqual(loop1.Vertex(1), loop2.Vertex(1));
 

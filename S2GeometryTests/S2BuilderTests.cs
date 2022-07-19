@@ -193,12 +193,8 @@ namespace S2Geometry
                 {
                     Assert.True(S2.IsEdgeBNearEdgeA(
                         a, b, output.Vertex(i), output.Vertex(i + 1), max_deviation));
-                    System.Diagnostics.Debug.WriteLine(String.Format(
-                        "Iteration {0}: ({1}, {2}), {3}",
-                        iter,
-                        S2TextFormat.ToDebugString(a),
-                        S2TextFormat.ToDebugString(S2.Interpolate(0.5, a, b)),
-                        S2TextFormat.ToDebugString(output)));
+                    _logger.WriteLine(
+                        $"Iteration {iter}: ({S2TextFormat.ToDebugString(a)}, {S2TextFormat.ToDebugString(S2.Interpolate(0.5, a, b))}), {S2TextFormat.ToDebugString(output)}");
                 }
                 if (n > 2) ++num_effective;
             }
@@ -1578,7 +1574,7 @@ namespace S2Geometry
         }
 
         private static void TestPolylineLayers(List<string> input_strs, List<string> expected_strs,
-            S2PolylineLayer.Options layer_options, Options builder_options = null)
+            S2PolylineLayer.Options layer_options, Options? builder_options = null)
         {
             S2Builder builder = new(builder_options ?? new Options());
             List<S2Polyline> output = new();
@@ -1599,7 +1595,7 @@ namespace S2Geometry
         }
 
         private static void TestPolylineVector(List<string> input_strs, List<string> expected_strs,
-            S2PolylineVectorLayer.Options layer_options, Options builder_options = null)
+            S2PolylineVectorLayer.Options layer_options, Options? builder_options = null)
         {
             S2Builder builder = new(builder_options ?? new Options());
             List<S2Polyline> output = new();
@@ -1620,12 +1616,12 @@ namespace S2Geometry
         }
 
         private static void TestPolylineLayersBothEdgeTypes(List<string> input_strs,
-            List<string> expected_strs, S2PolylineLayer.Options layer_options, Options builder_options = null)
+            List<string> expected_strs, S2PolylineLayer.Options layer_options, Options? builder_options = null)
         {
             builder_options ??= new Options();
-            layer_options.EdgeType = (EdgeType.DIRECTED);
+            layer_options.EdgeType = EdgeType.DIRECTED;
             TestPolylineLayers(input_strs, expected_strs, layer_options, builder_options);
-            layer_options.EdgeType = (EdgeType.UNDIRECTED);
+            layer_options.EdgeType = EdgeType.UNDIRECTED;
             TestPolylineLayers(input_strs, expected_strs, layer_options, builder_options);
         }
 

@@ -867,8 +867,8 @@ public class EncodedS2PointVector
 
     private Format format_;
     private UInt32 size_;
-    private S2Point[] points;
-    private EncodedStringVector blocks;
+    private S2Point[]? points;
+    private EncodedStringVector? blocks;
     private UInt64 base_;
     private byte level;
     private bool have_exceptions;

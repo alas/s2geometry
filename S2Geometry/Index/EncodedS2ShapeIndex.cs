@@ -88,19 +88,43 @@
 // lock such as absl.Mutex to guard access to it.  (There is no global state
 // and therefore each index can be guarded independently.)
 
+namespace S2Geometry;
+
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
-
-namespace S2Geometry;
-
 using Options = MutableS2ShapeIndex.Options;
 
 public sealed class EncodedS2ShapeIndex : S2ShapeIndex, IDisposable
 {
-    // Creates an index that must be initialized by calling Init().
-    public EncodedS2ShapeIndex() { }
+    public readonly Options Options_;
 
+    private readonly ShapeFactory ShapeFactory_;
+
+    // A vector containing all shapes in the index.  Initially all shapes are
+    // set to kUndecodedShape(); as shapes are decoded, they are added to the
+    // vector using atomic.compare_exchange_strong.
+    private readonly ConcurrentDictionary<int, S2Shape> Shapes;
+
+    // A vector containing the S2CellIds of each cell in the index.
+    private readonly EncodedS2CellIdVector CellIds;
+
+    // A vector containing the encoded contents of each cell in the index.
+    private readonly EncodedStringVector EncodedCells;
+
+    // A raw array containing the decoded contents of each cell in the index.
+    // Initially all values are *uninitialized memory*.  The cells_decoded_
+    // field below keeps track of which elements are present.
+    private readonly Lazy<S2ShapeIndexCell>[] Cells;
+
+    // In order to minimize destructor time when very few cells of a large
+    // S2ShapeIndex are needed, we keep track of the indices of the first few
+    // cells to be decoded.  This lets us avoid scanning the cells_decoded_
+    // vector when the number of cells decoded is very small.
+    private readonly InputEdgeLoop CellCache;
+
+    // Creates an index ~that must be initialized by calling Init()~.
+    //
     // Initializes the EncodedS2ShapeIndex, returning true on success.
     //
     // This method does not decode the S2Shape objects in the index; this is
@@ -111,23 +135,38 @@ public sealed class EncodedS2ShapeIndex : S2ShapeIndex, IDisposable
     //
     // Note that the encoded shape vector must *precede* the encoded S2ShapeIndex
     // in the Decoder's data buffer in this example.
-    public bool Init(Decoder decoder, ShapeFactory shape_factory)
+    private EncodedS2ShapeIndex(int maxEdgesPerCell, ShapeFactory shapeFactory, EncodedS2CellIdVector cellIds,
+                    Lazy<S2ShapeIndexCell>[] cells, EncodedStringVector encodedCells)
     {
-        Minimize();
-        if (!decoder.TryGetVarUInt64(out var max_edges_version)) return false;
+        //Minimize();
+        Options_ = new()
+        {
+            MaxEdgesPerCell = maxEdgesPerCell
+        };
+        ShapeFactory_ = shapeFactory;
+        CellIds = cellIds;
+        Cells = cells;
+        EncodedCells = encodedCells;
+        Shapes = new();
+        CellCache = new();
+    }
+
+    public static (bool, EncodedS2ShapeIndex?) Factory(Decoder decoder, ShapeFactory shape_factory)
+    {
+        if (!decoder.TryGetVarUInt64(out var max_edges_version)) return (false, null);
         int version = (int)(max_edges_version & 3);
         if (version != MutableS2ShapeIndex.kCurrentEncodingVersionNumber)
         {
-            return false;
+            return (false, null);
         }
-        Options_.MaxEdgesPerCell = (int)(max_edges_version >> 2);
+        var maxEdgesPerCell = (int)(max_edges_version >> 2);
 
         // AtomicShape is a subtype of atomic<S2Shape> that changes the
         // default constructor value to kUndecodedShape().  This saves the effort of
         // initializing all the elements twice.
-        shapes_ = new();
-        shape_factory_ = (ShapeFactory)shape_factory.CustomClone();
-        if (!cell_ids_.Init(decoder)) return false;
+        var shapeFactory = (ShapeFactory)shape_factory.CustomClone();
+        EncodedS2CellIdVector cellIds = new();
+        if (!cellIds.Init(decoder)) return (false, null);
 
         // The cells_ elements are *uninitialized memory*.  Instead we have bit
         // vector (cells_decoded_) to indicate which elements of cells_ are valid.
@@ -147,15 +186,14 @@ public sealed class EncodedS2ShapeIndex : S2ShapeIndex, IDisposable
         // cells_ = make_unique<S2ShapeIndexCell*>[](cell_ids_.size());
         // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
         //                                NO NO NO
-        cells_ = new Lazy<S2ShapeIndexCell>[cell_ids_.Count];
+        var cells = new Lazy<S2ShapeIndexCell>[cellIds.Count];
 
         var (success, shape) = EncodedStringVector.Init(decoder);
         if (success)
         {
-            encoded_cells_ = shape!;
-            return true;
+            return (true, new(maxEdgesPerCell, shapeFactory, cellIds, cells, shape!));
         }
-        return false;
+        return (false, null);
     }
 
     public void Dispose()
@@ -166,18 +204,16 @@ public sealed class EncodedS2ShapeIndex : S2ShapeIndex, IDisposable
         Minimize();
     }
 
-    public Options Options_ { get; }
-
     // The number of distinct shape ids in the index.  This equals the number of
     // shapes in the index provided that no shapes have ever been removed.
     // (Shape ids are not reused.)
-    public override int NumShapeIds() { return shapes_.Count; }
+    public override int NumShapeIds() { return Shapes.Count; }
 
     // Return a pointer to the shape with the given id, or null if the shape
     // has been removed from the index.
     public override S2Shape Shape(int id)
     {
-        var shape = shapes_[id];
+        var shape = Shapes[id];
         if (shape != null) return shape;
         return GetShape(id);
     }
@@ -188,39 +224,39 @@ public sealed class EncodedS2ShapeIndex : S2ShapeIndex, IDisposable
     // Like all non-methods, this method is not thread-safe.
     public override void Minimize()
     {
-        if (cells_ == null) return;  // Not initialized yet.
+        if (Cells == null) return;  // Not initialized yet.
 
-        foreach (var atomic_shape in shapes_)
+        foreach (var atomic_shape in Shapes)
         {
             if (atomic_shape.Value != null)
-                shapes_[atomic_shape.Key] = null;
+                Shapes[atomic_shape.Key] = null;
         }
 
-        if (cell_cache_.Count < MaxCellCacheSize())
+        if (CellCache.Count < MaxCellCacheSize())
         {
             // When only a tiny fraction of the cells are decoded, we keep track of
             // those cells in cell_cache_ to avoid the cost of scanning the
             // cells_decoded_ vector.  (The cost is only about 1 cycle per 64 cells,
             // but for a huge polygon with 1 million cells that's still 16000 cycles.)
-            foreach (int pos in cell_cache_)
-                cells_[pos] = null;
+            foreach (int pos in CellCache)
+                Cells[pos] = null;
         }
         else
         {
-            for (var i = 0; i < cells_.Length; i++)
+            for (var i = 0; i < Cells.Length; i++)
             {
-                if (cells_[i].IsValueCreated)
+                if (Cells[i].IsValueCreated)
                 {
-                    cells_[i] = null;
+                    Cells[i] = null;
                 }
             }
         }
-        cell_cache_.Clear();
+        CellCache.Clear();
     }
 
     public override (int pos, bool found) SeekCell(S2CellId target)
     {
-        var pos = cell_ids_.LowerBound(target);
+        var pos = CellIds.LowerBound(target);
 
         if (pos < 0) return (~pos, false);
         return (pos, true);
@@ -234,21 +270,21 @@ public sealed class EncodedS2ShapeIndex : S2ShapeIndex, IDisposable
         // TODO(ericv): Add SpaceUsed() method to S2Shape base class,and include
         // memory owned by the allocated S2Shapes (here and in S2ShapeIndex).
         int size = Marshal.SizeOf(this);
-        size += shapes_.Count * Marshal.SizeOf(typeof(S2Shape));
-        size += cell_ids_.Count * Marshal.SizeOf(typeof(S2ShapeIndexCell));  // cells_
-        size += cell_cache_.Count * sizeof(int);
+        size += Shapes.Count * Marshal.SizeOf(typeof(S2Shape));
+        size += CellIds.Count * Marshal.SizeOf(typeof(S2ShapeIndexCell));  // cells_
+        size += CellCache.Count * sizeof(int);
         return size;
     }
 
     private S2Shape GetShape(int id)
     {
         // This method is called when a shape has not been decoded yet.
-        var shape = shape_factory_[id];
+        var shape = ShapeFactory_[id];
         if (shape is not null) shape.SetId(id);
-        return shapes_[id];
+        return Shapes[id];
     }
 
-    public override S2CellId? GetCellId(int index) => cell_ids_[index];
+    public override S2CellId? GetCellId(int index) => CellIds[index];
     public override S2ShapeIndexIdCell? GetIndexCell(int index)
     {
         // memory_order_release ensures that no reads or writes in the current
@@ -269,33 +305,33 @@ public sealed class EncodedS2ShapeIndex : S2ShapeIndex, IDisposable
         //
         // Note that we do still use a lock for the write path to ensure that
         // cells_[i] and cell_decoded(i) are updated together atomically.
-        if (cells_[index].IsValueCreated)
+        if (Cells[index].IsValueCreated)
         {
-            var cell2 = cells_[index].Value;
+            var cell2 = Cells[index].Value;
             if (cell2 != null) return new(GetCellId(index)!.Value, cell2);
         }
 
         // Decode the cell before acquiring the spinlock in order to minimize the
         // time that the lock is held.
         S2ShapeIndexCell cell = new();
-        var decoder = encoded_cells_.GetDecoder(index);
+        var decoder = EncodedCells.GetDecoder(index);
         if (!cell.Decode(NumShapeIds(), decoder))
         {
             return null;
         }
         // Recheck cell_decoded(i) once we hold the lock in case another thread
         // has decoded this cell in the meantime.
-        if (cells_[index].IsValueCreated)
+        if (Cells[index].IsValueCreated)
         {
-            var cell2 = cells_[index].Value;
+            var cell2 = Cells[index].Value;
             if (cell2 != null) return new(GetCellId(index)!.Value, cell2);
         }
 
         // Update the cell, setting cells_[i] before cell_decoded(i).
-        cells_[index] = new Lazy<S2ShapeIndexCell>(cell);
-        if (cell_cache_.Count < MaxCellCacheSize())
+        Cells[index] = new Lazy<S2ShapeIndexCell>(cell);
+        if (CellCache.Count < MaxCellCacheSize())
         {
-            cell_cache_.Add(index);
+            CellCache.Add(index);
         }
         return new(GetCellId(index)!.Value, cell);
     }
@@ -311,7 +347,7 @@ public sealed class EncodedS2ShapeIndex : S2ShapeIndex, IDisposable
         // takes about 1 cycle per 64 cells to scan encoded_cells_, so that works
         // out to (65536/64) == 1024 cycles.  However this cost is amortized over
         // the 32 cells decoded, which works out to 32 cycles per cell.
-        return cell_ids_.Count >> 11;
+        return CellIds.Count >> 11;
     }
 
     public override IReversableEnumerator<S2ShapeIndexIdCell> GetNewEnumerator()
@@ -322,38 +358,14 @@ public sealed class EncodedS2ShapeIndex : S2ShapeIndex, IDisposable
         while (enumerator.MoveNext())
             yield return enumerator.Current;
     }
-    public override int GetEnumerableCount() => cell_ids_.Count;
-
-    private ShapeFactory shape_factory_;
-
-    // A vector containing all shapes in the index.  Initially all shapes are
-    // set to kUndecodedShape(); as shapes are decoded, they are added to the
-    // vector using atomic.compare_exchange_strong.
-    private ConcurrentDictionary<int, S2Shape> shapes_;
-
-    // A vector containing the S2CellIds of each cell in the index.
-    private readonly EncodedS2CellIdVector cell_ids_ = new();
-
-    // A vector containing the encoded contents of each cell in the index.
-    private EncodedStringVector encoded_cells_;
-
-    // A raw array containing the decoded contents of each cell in the index.
-    // Initially all values are *uninitialized memory*.  The cells_decoded_
-    // field below keeps track of which elements are present.
-    private Lazy<S2ShapeIndexCell>[] cells_;
-
-    // In order to minimize destructor time when very few cells of a large
-    // S2ShapeIndex are needed, we keep track of the indices of the first few
-    // cells to be decoded.  This lets us avoid scanning the cells_decoded_
-    // vector when the number of cells decoded is very small.
-    private readonly InputEdgeLoop cell_cache_ = new();
+    public override int GetEnumerableCount() => CellIds.Count;
 
     private class EncodedS2ShapeIndexEnumerator : IReversableEnumerator<S2ShapeIndexIdCell>
     {
         private readonly EncodedS2CellIdVector _cellIds;
         private int position;
         public EncodedS2ShapeIndexEnumerator(EncodedS2ShapeIndex index)
-        { _cellIds = index.cell_ids_; position = -1; }
+        { _cellIds = index.CellIds; position = -1; }
 
         public S2ShapeIndexIdCell Current => new(_cellIds[position], null);
 

@@ -7,25 +7,27 @@ using DegenerateEdges = GraphOptions.DegenerateEdges;
 using DuplicateEdges = GraphOptions.DuplicateEdges;
 using SiblingPairs = GraphOptions.SiblingPairs;
 
-using InputEdgeFilter = Func<InputEdgeId, bool>;
-
 // Used to build a histogram of winding numbers.
 using WindingTally = Dictionary<int, int>;
 
 public class S2BuilderUtil_GetSnappedWindingDeltaTest
 {
+    private readonly ITestOutputHelper _logger;
+
+    public S2BuilderUtil_GetSnappedWindingDeltaTest(ITestOutputHelper logger) { _logger = logger; }
+
     // This S2Builder layer simply calls s2builderutil::GetSnappedWindingDelta()
     // with the given "ref_input_edge_id" and compares the result to
     // "expected_winding_delta".
-    public class WindingNumberComparingLayer : S2Builder.Layer 
+    public class WindingNumberComparingLayer : S2Builder.Layer
     {
         public WindingNumberComparingLayer(InputEdgeId ref_input_edge_id,
-                                       S2Builder builder,
-                                       int expected_winding_delta)
+                        S2Builder builder,
+                        int expected_winding_delta)
         {
-                ref_input_edge_id_ = ref_input_edge_id;
-                builder_ = builder;
-                expected_winding_delta_ = expected_winding_delta;
+            ref_input_edge_id_ = ref_input_edge_id;
+            builder_ = builder;
+            expected_winding_delta_ = expected_winding_delta;
         }
 
         public override GraphOptions GraphOptions_()
@@ -51,25 +53,25 @@ public class S2BuilderUtil_GetSnappedWindingDeltaTest
         private readonly int expected_winding_delta_;
     }
 
-
     // Given a set of loops, a set of forced vertices, and a snap radius in
     // degrees, verifies that the change in winding number computed by
     // s2builderutil::GetSnappedWindingDelta() for the degenerate edge
     // "ref_input_edge_id" is "expected_winding_delta".
-    public static void ExpectWindingDelta(
+    private static void ExpectWindingDelta(
                     string loops_str, string forced_vertices_str,
                     double snap_radius_degrees, InputEdgeId ref_input_edge_id,
                     int expected_winding_delta)
-{
-    S2Builder builder= new(new Options(new IdentitySnapFunction(
-        S1Angle.FromDegrees(snap_radius_degrees))));
-    builder.StartLayer(new WindingNumberComparingLayer(
-        ref_input_edge_id, builder, expected_winding_delta));
-    foreach (var v in S2TextFormat.ParsePointsOrDie(forced_vertices_str)) {
-    builder.ForceVertex(v);
-}
-builder.AddShape(S2TextFormat.MakeLaxPolygonOrDie(loops_str));
-var ref_edge = builder.InputEdge(ref_input_edge_id);
+    {
+        S2Builder builder = new(new Options(new IdentitySnapFunction(
+            S1Angle.FromDegrees(snap_radius_degrees))));
+        builder.StartLayer(new WindingNumberComparingLayer(
+            ref_input_edge_id, builder, expected_winding_delta));
+        foreach (var v in S2TextFormat.ParsePointsOrDie(forced_vertices_str))
+        {
+            builder.ForceVertex(v);
+        }
+        builder.AddShape(S2TextFormat.MakeLaxPolygonOrDie(loops_str));
+        var ref_edge = builder.InputEdge(ref_input_edge_id);
         Assert.True(ref_edge.V0 == ref_edge.V1); // "Reference edge not degenerate";
         Assert.True(builder.Build(out _)); // << error;
     }
@@ -88,92 +90,104 @@ var ref_edge = builder.InputEdge(ref_input_edge_id);
     public void Test_GetSnappedWindingDelta_NoOtherEdges()
     {
         ExpectWindingDelta("0:0", "0:0", 10.0, 0, 0);
-}
+    }
 
     // Degenerate input loops.
     [Fact]
-    public void Test_GetSnappedWindingDelta_DegenerateInputLoops() {
+    public void Test_GetSnappedWindingDelta_DegenerateInputLoops()
+    {
         ExpectWindingDelta("0:0; 1:1; 2:2", "0:0", 10.0, 0, 0);
-}
+    }
 
     // Duplicate degenerate input loops.
     [Fact]
-    public void Test_GetSnappedWindingDelta_DuplicateDegenerateInputLoops() {
+    public void Test_GetSnappedWindingDelta_DuplicateDegenerateInputLoops()
+    {
         ExpectWindingDelta("0:0; 0:0; 1:1; 1:1", "0:0", 10.0, 0, 0);
-}
+    }
 
     // A shell around the reference vertex that collapses to a single point.
     [Fact]
-    public void Test_GetSnappedWindingDelta_CollapsingShell() {
+    public void Test_GetSnappedWindingDelta_CollapsingShell()
+    {
         ExpectWindingDelta("0:0; 1:1, 1:-2, -2:1", "0:0", 10.0, 0, -1);
-}
+    }
 
     // A hole around the reference vertex that collapses to a single point.
     [Fact]
-    public void Test_GetSnappedWindingDelta_CollapsingHole() {
+    public void Test_GetSnappedWindingDelta_CollapsingHole()
+    {
         ExpectWindingDelta("0:0; 1:1, -2:1, 1:-2", "0:0", 10.0, 0, +1);
-}
+    }
 
     // A single "shell" that winds around the reference vertex twice.
     [Fact]
-    public void Test_GetSnappedWindingDelta_CollapsingDoubleShell() {
+    public void Test_GetSnappedWindingDelta_CollapsingDoubleShell()
+    {
         ExpectWindingDelta("0:0; 1:1, 1:-2, -2:1, 2:2, 2:-3, -3:2",
                        "0:0", 10.0, 0, -2);
-}
+    }
 
     // A loop that enters the Voronoi region of the snapped reference vertex and
     // then leaves again, where the reference vertex is not contained by the loop
     // and does not move during snapping.
     [Fact]
-    public void Test_GetSnappedWindingDelta_ExternalLoopRefVertexStaysOutside() {
+    public void Test_GetSnappedWindingDelta_ExternalLoopRefVertexStaysOutside()
+    {
         ExpectWindingDelta("0:0; 20:0, 0:0, 0:20", "0:0", 10.0, 0, 0);
-}
+    }
 
     // Like the above, except that the reference vertex is contained by the loop.
     // (See S2::RefDir comments above.)
     [Fact]
-    public void Test_GetSnappedWindingDelta_ExternalLoopRefVertexStaysInside() {
+    public void Test_GetSnappedWindingDelta_ExternalLoopRefVertexStaysInside()
+    {
         ExpectWindingDelta("0:0; 0:-20, 0:0, 20:0", "0:0", 10.0, 0, 0);
-}
+    }
 
     // The reference vertex moves from outside to inside an external loop during
     // snapping.
     [Fact]
-    public void Test_GetSnappedWindingDelta_ExternalLoopRefVertexMovesInside() {
+    public void Test_GetSnappedWindingDelta_ExternalLoopRefVertexMovesInside()
+    {
         ExpectWindingDelta("1:1; 0:-20, 1:-1, 20:0", "0:0", 10.0, 0, +1);
-}
+    }
 
     // A single loop edge crosses the Voronoi region of the reference vertex and the
     // reference vertex stays outside the loop during snapping.
     [Fact]
-    public void Test_GetSnappedWindingDelta_CrossingEdgeRefVertexStaysOutside() {
+    public void Test_GetSnappedWindingDelta_CrossingEdgeRefVertexStaysOutside()
+    {
         ExpectWindingDelta("-1:-1; 20:-20, -20:20, 20:20", "0:0", 10.0, 0, 0);
-}
+    }
 
     // A single loop edge crosses the Voronoi region of the reference vertex and the
     // reference vertex moves outside the loop during snapping.
     [Fact]
-    public void Test_GetSnappedWindingDelta_CrossingEdgeRefVertexMovesOutside() {
+    public void Test_GetSnappedWindingDelta_CrossingEdgeRefVertexMovesOutside()
+    {
         ExpectWindingDelta("1:1; 20:-20, -20:20, 20:20", "0:0", 10.0, 0, -1);
-}
+    }
 
     // An external loop that winds CW around the reference vertex twice, where the
     // reference vertex moves during snapping, and where the reference vertex is
     // outside the loop after snapping (so that its winding number only increases
     // by 1).
     [Fact]
-    public void Test_GetSnappedWindingDelta_ExternalLoopDoubleHoleToSingleHole() {
+    public void Test_GetSnappedWindingDelta_ExternalLoopDoubleHoleToSingleHole()
+    {
         ExpectWindingDelta("4:4; 0:20, 3:3, 6:3, 2:7, 2:2, 2:20", "0:0", 10.0, 0, +1);
-}
+    }
 
     // An external loop that winds CW around the reference vertex twice, where the
     // reference vertex moves during snapping, and where the reference vertex is
     // inside the loop after snapping (so that its winding number increases by 3).
     [Fact]
-    public void Test_GetSnappedWindingDelta_ExternalLoopDoubleHoleToSingleShell() {
+    public void Test_GetSnappedWindingDelta_ExternalLoopDoubleHoleToSingleShell()
+    {
         ExpectWindingDelta("4:4; 0:-20, 6:2, 2:6, 2:2, 6:2, 2:6, 2:2, 20:0",
                        "0:0", 10.0, 0, +3);
-}
+    }
 
     // This and the following tests vertify that the partial loops formed by the
     // local input and output edges are closed consistently with each other (such
@@ -187,19 +201,21 @@ var ref_edge = builder.InputEdge(ref_input_edge_id);
     // edges snap to the same adjacent Voronoi site so that the snapped edges form
     // a loop with one external vertex.
     [Fact]
-    public void Test_GetSnappedWindingDelta_ExternalEdgesCrossSnapToSameVertex() {
+    public void Test_GetSnappedWindingDelta_ExternalEdgesCrossSnapToSameVertex()
+    {
         ExpectWindingDelta("1:1; -5:30, 7:-3, -7:-3, 5:30",
                        "0:0, 0:15", 10.0, 0, -1);
-}
+    }
 
     // This test is similar except that the entering/exiting edges snap to two
     // different external Voronoi sites.  Again, the input edges cross but the
     // snapped edges do not.
     [Fact]
-    public void Test_GetSnappedWindingDelta_ExternalEdgesCrossSnapToDifferentVertices() {
+    public void Test_GetSnappedWindingDelta_ExternalEdgesCrossSnapToDifferentVertices()
+    {
         ExpectWindingDelta("1:1; -5:40, 7:-3, -7:-3, 5:40",
                        "0:0, 6:10, -6:10", 10.0, 0, -1);
-}
+    }
 
     // Test cases where the winding numbers of the reference points Za and Zb in
     // the algorithm description change due to snapping.  (The points Za and Zb
@@ -213,7 +229,8 @@ var ref_edge = builder.InputEdge(ref_input_edge_id);
     // The first/last vertex can be adjusted slightly to control which side of each
     // edge Za/Zb is on.
     [Fact]
-    public void Test_GetSnappedWindingDelta_ReferencePointWindingNumbersChange() {
+    public void Test_GetSnappedWindingDelta_ReferencePointWindingNumbersChange()
+    {
         // Winding number of Za ~= 0.01:90 changes.
         ExpectWindingDelta("1:1; 70:-179.99, 5:0, 0:5, -0.01:110",
                        "0:0, 1:90", 10.0, 0, 0);
@@ -229,7 +246,7 @@ var ref_edge = builder.InputEdge(ref_input_edge_id);
         // Winding number of Za ~= -0.01:90 changes in the opposite direction.
         ExpectWindingDelta("1:1; 70:179.99, 5:0, 0:5, 0:110",
                        "0:0, -1:20, 1:90", 10.0, 0, 0);
-}
+    }
 
     // This test demonstrates that a connecting vertex may be necessary in order
     // to ensure that the loops L and L' used to compute the change in winding
@@ -238,7 +255,8 @@ var ref_edge = builder.InputEdge(ref_input_edge_id);
     // to an edge chain longer than 180 degrees, i.e. where the shortest edge
     // between their new endpoints goes the wrong way around the sphere.)
     [Fact]
-    public void Test_GetSnappedWindingDelta_ReferenceLoopsTopologicallyConsistent() {
+    public void Test_GetSnappedWindingDelta_ReferenceLoopsTopologicallyConsistent()
+    {
         // A0A1 follows the equator, Za is at the north pole.  A0A1 snaps to the
         // polyline (0:148, 0:74, 44:-39, -31:-48), where the last two vertices are
         // A0' and R' respectively.  (The perpendicular bisector of A0' and R' just
@@ -252,143 +270,148 @@ var ref_edge = builder.InputEdge(ref_input_edge_id);
         // B1 and B1' to ensure that the edge stays within the snap radius of B0B1.
         ExpectWindingDelta("-45:24;  -59:0, 44:-39, -31:-48, 0:0, 0:148",
                        "-31:-48, 44:-39", 60.0, 0, 1);
-}
+    }
 
     // A complex example with multiple loops that combines many of the situations
     // tested individually above.
     [Fact]
-    public void Test_GetSnappedWindingDelta_ComplexExample() {
-        ExpectWindingDelta("1:1; "+  
-                       "70:179.99, 5:0, 0:5, 0:110; "+  
-                       "70:179.99, 0:0, 0:3, 3:0, 0:-1, 0:110; "+  
-                       "10:-10, -10:10, 10:10; "+  
+    public void Test_GetSnappedWindingDelta_ComplexExample()
+    {
+        ExpectWindingDelta("1:1; "+
+                       "70:179.99, 5:0, 0:5, 0:110; "+
+                       "70:179.99, 0:0, 0:3, 3:0, 0:-1, 0:110; "+
+                       "10:-10, -10:10, 10:10; "+
                        "2:2, 1:-2, -1:2, 2:2, 1:-2, -1:2 ",
                        "0:0, -1:90, 1:90, 45:-5", 10.0, 0, -5);
-}
+    }
 
     // This test demonstrates the necessity of the algorithm step that reverses
     // the sign of Za, Zb if necessary to point away from the Voronoi site R'.
     // Further examples can be generated by running RandomLoops test below for
     // enough iterations.
     [Fact]
-    public void Test_GetSnappedWindingDelta_EnsureZaZbNotInVoronoiRegion() {
+    public void Test_GetSnappedWindingDelta_EnsureZaZbNotInVoronoiRegion()
+    {
         ExpectWindingDelta(
         "30:42, 30:42; -27:52, 66:131, 30:-93", "", 67.0, 0, -1);
-}
+    }
 
     // This test demonstrates the necessity of closing the "chain_diff" loop used
     // by the algorithm.  Further examples can be found by running RandomLoops.
     [Fact]
-    public void Test_GetSnappedWindingDelta_EnsureChainDiffLoopIsClosed() {
+    public void Test_GetSnappedWindingDelta_EnsureChainDiffLoopIsClosed()
+    {
         ExpectWindingDelta(
         "8:26, 8:26; -36:70, -64:-35, -41:48", "", 66, 0, 0);
-}
+    }
 
     // This test previously failed due to a bug in GetVoronoiSiteExclusion()
     // involving long edges (near 180 degrees) and large snap radii.
     [Fact]
-    public void Test_GetSnappedWindingDelta_VoronoiExclusionBug() {
+    public void Test_GetSnappedWindingDelta_VoronoiExclusionBug()
+    {
         ExpectWindingDelta(
-        "24.97:102.02, 24.97:102.02; "+  
+        "24.97:102.02, 24.97:102.02; "+
         "25.84:131.46, -29.23:-166.58, 29.40:173.03, -18.02:-5.83",
         "", 64.83, 0, -1);
-}
+    }
 
-// This S2Builder::Layer checks that the change in winding number due to
-// snapping computed by s2builderutil::GetSnappedWindingDelta() is correct for
-// the given configuration of input edges.
-//
-// "ref_input_edge_id" should be a degenerate edge SS that specifies the
-// reference vertex R whose change in winding number is verified.
-//
-// "isolated_input_edge_id" should be a degenerate edge II that is not
-// expected to snap together with any other edges.  (This ensures that the
-// winding number of its vertex I does not change due to snapping.)  I should
-// be chosen to be as far away as possible from other vertices and edges used
-// for testing purposes.  If more than one edge happens to snap to this
-// vertex, S2Error::FAILED_PRECONDITION is returned.
-public class WindingNumberCheckingLayer : S2Builder.Layer
-{
-public  WindingNumberCheckingLayer(InputEdgeId ref_input_edge_id,
-                                      InputEdgeId isolated_input_edge_id,
-                                      S2Builder builder,
-                                      WindingTally winding_tally)
-       {
+    // This S2Builder::Layer checks that the change in winding number due to
+    // snapping computed by s2builderutil::GetSnappedWindingDelta() is correct for
+    // the given configuration of input edges.
+    //
+    // "ref_input_edge_id" should be a degenerate edge SS that specifies the
+    // reference vertex R whose change in winding number is verified.
+    //
+    // "isolated_input_edge_id" should be a degenerate edge II that is not
+    // expected to snap together with any other edges.  (This ensures that the
+    // winding number of its vertex I does not change due to snapping.)  I should
+    // be chosen to be as far away as possible from other vertices and edges used
+    // for testing purposes.  If more than one edge happens to snap to this
+    // vertex, S2Error::FAILED_PRECONDITION is returned.
+    public class WindingNumberCheckingLayer : S2Builder.Layer
+    {
+        public WindingNumberCheckingLayer(InputEdgeId ref_input_edge_id,
+                        InputEdgeId isolated_input_edge_id,
+                        S2Builder builder,
+                        WindingTally winding_tally)
+        {
             ref_input_edge_id_ = ref_input_edge_id;
             isolated_input_edge_id_ = isolated_input_edge_id;
             builder_ = builder; winding_tally_ = winding_tally;
-}
+        }
 
-public override GraphOptions GraphOptions_() 
+        public override GraphOptions GraphOptions_()
         {
-    // Some of the graph options are chosen randomly.
-    return new GraphOptions(
-        EdgeType.DIRECTED, DegenerateEdges.KEEP,
-      S2Testing.Random.OneIn(2) ? DuplicateEdges.KEEP : DuplicateEdges.MERGE,
-      S2Testing.Random.OneIn(2) ? SiblingPairs.KEEP : SiblingPairs.CREATE);
-  }
+            // Some of the graph options are chosen randomly.
+            return new GraphOptions(
+                EdgeType.DIRECTED, DegenerateEdges.KEEP,
+              S2Testing.Random.OneIn(2) ? DuplicateEdges.KEEP : DuplicateEdges.MERGE,
+              S2Testing.Random.OneIn(2) ? SiblingPairs.KEEP : SiblingPairs.CREATE);
+        }
 
-public override void Build(Graph g, out S2Error error)
-{
-    // First we locate the vertices R, R', I, I'.
-    S2Point ref_in = builder_.InputEdge(ref_input_edge_id_).V0;
-    VertexId ref_v = SnappedWindingDelta.FindFirstVertexId(ref_input_edge_id_, g);
-    S2Point ref_out = g.Vertex(ref_v);
+        public override void Build(Graph g, out S2Error error)
+        {
+            // First we locate the vertices R, R', I, I'.
+            S2Point ref_in = builder_.InputEdge(ref_input_edge_id_).V0;
+            VertexId ref_v = SnappedWindingDelta.FindFirstVertexId(ref_input_edge_id_, g);
+            S2Point ref_out = g.Vertex(ref_v);
 
-    S2Point iso_in = builder_.InputEdge(isolated_input_edge_id_).V0;
-    VertexId iso_v = SnappedWindingDelta.FindFirstVertexId(isolated_input_edge_id_, g);
-    S2Point iso_out = g.Vertex(iso_v);
+            S2Point iso_in = builder_.InputEdge(isolated_input_edge_id_).V0;
+            VertexId iso_v = SnappedWindingDelta.FindFirstVertexId(isolated_input_edge_id_, g);
+            S2Point iso_out = g.Vertex(iso_v);
 
-    // If more than one edge snapped to the isolated vertex I, we skip this test
-    // since we have no way to  independently verify correctness of the results.
-    Graph.VertexOutMap out_map=new(g);
-    if (out_map.Degree(iso_v) != 1 ||
-        g.InputEdgeIds(out_map.EdgeIds(iso_v).First()).Count != 1)
-    {
-        error = new S2Error(S2ErrorCode.FAILED_PRECONDITION, "Isolated vertex not isolated");
-        return;
+            // If more than one edge snapped to the isolated vertex I, we skip this test
+            // since we have no way to  independently verify correctness of the results.
+            Graph.VertexOutMap out_map = new(g);
+            if (out_map.Degree(iso_v) != 1 ||
+                g.InputEdgeIds(out_map.EdgeIds(iso_v).First()).Count != 1)
+            {
+                error = new S2Error(S2ErrorCode.FAILED_PRECONDITION, "Isolated vertex not isolated");
+                return;
+            }
+
+            // Next we compute the winding number of R relative to I by counting signed
+            // edge crossings of the input edges, and the winding number of R' related
+            // to I' by counting signed edge crossings of the output edges.  (In order
+            // to support DuplicateEdges::MERGE and SiblingEdges::CREATE, we also need
+            // to take into account the number of input edges that snapped to each
+            // output edge.)
+            int winding_in = 0;
+            S2CopyingEdgeCrosser crosser = new(iso_in, ref_in);
+            for (int e = 0; e < builder_.NumInputEdges(); ++e)
+            {
+                var edge = builder_.InputEdge(e);
+                winding_in += crosser.SignedEdgeOrVertexCrossing(edge.V0, edge.V1);
+            }
+            int winding_out = 0;
+            crosser.Init(iso_out, ref_out);
+            for (EdgeId e = 0; e < g.NumEdges; ++e)
+            {
+                var edge = g.GetEdge(e);
+                winding_out += g.InputEdgeIds(e).Count *
+                               crosser.SignedEdgeOrVertexCrossing(g.Vertex(edge.ShapeId),
+                                                                  g.Vertex(edge.EdgeId));
+            }
+
+            // Finally, check that s2builderutil::GetSnappedWindingDelta() computes the
+            // difference between the two (using only local snapping information).
+            int winding_delta = SnappedWindingDelta.GetSnappedWindingDelta(
+                ref_in, ref_v, null, builder_, g, out error);
+            Assert.True(error.IsOk());
+            Assert.Equal(winding_delta, winding_out - winding_in);
+            winding_tally_[winding_delta] += 1;
+        }
+
+        private readonly InputEdgeId ref_input_edge_id_;
+        private readonly InputEdgeId isolated_input_edge_id_;
+        private readonly S2Builder builder_;
+        private readonly WindingTally winding_tally_;
     }
-
-    // Next we compute the winding number of R relative to I by counting signed
-    // edge crossings of the input edges, and the winding number of R' related
-    // to I' by counting signed edge crossings of the output edges.  (In order
-    // to support DuplicateEdges::MERGE and SiblingEdges::CREATE, we also need
-    // to take into account the number of input edges that snapped to each
-    // output edge.)
-    int winding_in = 0;
-    S2CopyingEdgeCrosser crosser=new(iso_in, ref_in);
-    for (int e = 0; e < builder_.NumInputEdges(); ++e)
-    {
-        var edge = builder_.InputEdge(e);
-        winding_in += crosser.SignedEdgeOrVertexCrossing(edge.V0, edge.V1);
-    }
-    int winding_out = 0;
-    crosser.Init(iso_out, ref_out);
-    for (EdgeId e = 0; e < g.NumEdges; ++e)
-    {
-        var edge = g.GetEdge(e);
-        winding_out += g.InputEdgeIds(e).Count *
-                       crosser.SignedEdgeOrVertexCrossing(g.Vertex(edge.ShapeId),
-                                                          g.Vertex(edge.EdgeId));
-    }
-
-    // Finally, check that s2builderutil::GetSnappedWindingDelta() computes the
-    // difference between the two (using only local snapping information).
-    int winding_delta = SnappedWindingDelta.GetSnappedWindingDelta(
-        ref_in, ref_v, null, builder_, g, out error);
-    Assert.True(error.IsOk());
-    Assert.Equal(winding_delta, winding_out - winding_in);
-    winding_tally_[winding_delta] += 1;
-}
-
-private readonly InputEdgeId ref_input_edge_id_;
-private readonly InputEdgeId isolated_input_edge_id_;
-private readonly S2Builder builder_;
-private readonly WindingTally winding_tally_;
-}
 
     [Fact]
-    public void TestGetSnappedWindingDelta_RandomLoops() {
+    public void TestGetSnappedWindingDelta_RandomLoops()
+    {
         // Count the number of tests for each winding number result and also the
         // number of tests where the isolated vertex was not isolated, to verify
         // that the test is working as intended.
@@ -398,7 +421,7 @@ private readonly WindingTally winding_tally_;
         for (int iter = 0; iter < numIters; ++iter)
         {
             S2Testing.Random.Reset(iter + 1);  // For reproducability.
-            System.Diagnostics.Debug.WriteLine("Iteration " + iter);
+            _logger.WriteLine("Iteration " + iter);
 
             // Choose a random snap radius up to the allowable maximum.
             S1Angle snap_radius = S2Testing.Random.RandDouble() *
@@ -450,11 +473,10 @@ private readonly WindingTally winding_tally_;
         }
         // We expect that at most 20% of tests will result in an isolated vertex.
         Assert.True(num_not_isolated <= 0.2 * numIters);
-        System.Diagnostics.Debug.WriteLine("Histogram of winding number deltas tested:");
-        foreach (var entry in winding_tally) {
-        System.Diagnostics.Debug.WriteLine($"{entry.Key} : {entry.Value}");
+        _logger.WriteLine("Histogram of winding number deltas tested:");
+        foreach (var entry in winding_tally)
+        {
+            _logger.WriteLine($"{entry.Key} : {entry.Value}");
+        }
     }
-}
-
-
 }

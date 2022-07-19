@@ -81,8 +81,8 @@ public readonly record struct S2MaxDistance(S1ChordAngle Distance) : IComparable
         return CompareTo(md);
     }
 
-    public IDistance GetZero() => Zero;
-    public IDistance GetInfinity() => Infinity;
+    public static IDistance GetZero() => Zero;
+    public static IDistance GetInfinity() => Infinity;
 
     #endregion
 

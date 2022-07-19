@@ -28,142 +28,95 @@ using LabelledCell = S2CellIndex.LabelledCell;
 // distances, to get more accuracy, or to measure non-spheroidal distances.
 public class S2ClosestCellQueryBase<Distance> where Distance : IEquatable<Distance>, IComparable<Distance>, IDistance
 {
-    private static readonly Distance Infinity = (Distance)typeof(Distance).GetField("Infinity").GetValue(null);
-    private static readonly Distance Zero = (Distance)typeof(Distance).GetField("Zero").GetValue(null);
-
-    // Options that control the set of cells returned.  Note that by default
-    // *all* cells are returned, so you will always want to set either the
-    // max_results() option or the max_distance() option (or both).
-    //
-    // This class is also available as S2ClosestCellQueryBase<Data>.Options.
-    //
-    // The IDistance template argument is described below.
-    public class Options
-    {
-        public Options() { }
-
-        // Specifies that at most "max_results" cells should be returned.
-        //
-        // REQUIRES: max_results >= 1
-        // DEFAULT: kMaxMaxResults
-        public int MaxResults
-        {
-            get => maxResults;
-            set
-            {
-                System.Diagnostics.Debug.Assert(value >= 1);
-                maxResults = value;
-            }
-        }
-        private int maxResults = kMaxMaxResults;
-
-        public const int kMaxMaxResults = int.MaxValue;
-
-        // Specifies that only cells whose distance to the target is less than
-        // "max_distance" should be returned.
-        //
-        // Note that cells whose distance is exactly equal to "max_distance" are
-        // not returned.  In most cases this doesn't matter (since distances are
-        // not computed exactly in the first place), but if such cells are needed
-        // then you can retrieve them by specifying "max_distance" as the next
-        // largest representable IDistance.  For example, if IDistance is an
-        // S1ChordAngle then you can specify max_distance.Successor().
-        //
-        // DEFAULT: IDistance.Infinity()
-        public Distance MaxDistance { get; set; } = Infinity;
-
-        // Specifies that cells up to max_error() further away than the true
-        // closest cells may be substituted in the result set, as long as such
-        // cells satisfy all the remaining search criteria (such as max_distance).
-        // This option only has an effect if max_results() is also specified;
-        // otherwise all cells closer than max_distance() will always be returned.
-        //
-        // Note that this does not affect how the distance between cells is
-        // computed; it simply gives the algorithm permission to stop the search
-        // early as soon as the best possible improvement drops below max_error().
-        //
-        // This can be used to implement distance predicates efficiently.  For
-        // example, to determine whether the minimum distance is less than D, the
-        // IsIDistanceLess() method sets max_results() == 1 and max_distance() ==
-        // max_error() == D.  This causes the algorithm to terminate as soon as it
-        // finds any cell whose distance is less than D, rather than continuing to
-        // search for a cell that is even closer.
-        //
-        // DEFAULT: S1ChordAngle.Zero
-        public S1ChordAngle MaxError { get; set; } = S1ChordAngle.Zero;
-
-        // Specifies that cells must intersect the given S2Region.  "region" is
-        // owned by the caller and must persist during the lifetime of this
-        // object.  The value may be changed between calls to FindClosestPoints(),
-        // or reset by calling set_region(null).
-        //
-        // Note that if you want to set the region to a disc around a target
-        // point, it is faster to use a PointTarget with set_max_distance()
-        // instead.  You can also call both methods, e.g. to set a maximum
-        // distance and also require that cells lie within a given rectangle.
-        public IS2Region Region { get; set; } = null;
-
-        // Specifies that distances should be computed by examining every cell
-        // rather than using the S2ShapeIndex.  This is useful for testing,
-        // benchmarking, and debugging.
-        //
-        // DEFAULT: false
-        public bool UseBruteForce { get; set; } = false;
-    }
-
-    // Each "Result" object represents a closest (cell_id, label) pair.
-    public readonly record struct Result(
-                    // The distance from the target to this cell.
-                    Distance Distance,
-                    // The cell itself.
-                    S2CellId CellId,
-                    // The label associated with this S2CellId.
-                    Int32 Label
-        ) : IComparable<Result>
-    {
-        // The default constructor yields an empty result, with a distance() of
-        // Infinity() and invalid cell_id() and label() values.
-        public Result()
-            : this(Infinity, S2CellId.None, -1)
-        {
-        }
-
-        // Returns true if this Result object does not refer to any cell.
-        // (The only case where an empty Result is returned is when the
-        // FindClosestCell() method does not find any cells that meet the
-        // specified criteria.)
-        public bool IsEmpty() => CellId == S2CellId.None;
-
-        // Returns true if two Result objects are identical.
-        public bool Equals(Result other) =>
-            Equals(Distance, other.Distance) &&
-            CellId == other.CellId &&
-            Label == other.Label;
-
-        public override int GetHashCode() => HashCode.Combine(Distance, CellId, Label);
-
-        // Compares two Result objects first by distance, then by cell_id and
-        // finally by label.
-        public int CompareTo(Result other) //=> this < other ? -1 : this > other ? 1 : 0;
-        {
-            var c = Distance.CompareTo(other.Distance);
-            if (c != 0) return c;
-
-            c = CellId.CompareTo(other.CellId);
-            if (c != 0) return c;
-
-            return Label.CompareTo(other.Label);
-        }
-
-        public static bool operator <(Result x, Result y) => x.CompareTo(y) < 0;
-        public static bool operator >(Result x, Result y) => x.CompareTo(y) > 0;
-        public static bool operator <=(Result x, Result y) => x.CompareTo(y) <= 0;
-        public static bool operator >=(Result x, Result y) => x.CompareTo(y) >= 0;
-    }
+    private static readonly Distance Infinity = (Distance)Distance.GetInfinity();
+    private static readonly Distance Zero = (Distance)Distance.GetZero();
 
     // The minimum number of ranges that a cell must contain to enqueue it
     // rather than processing its contents immediately.
     private const int kMinRangesToEnqueue = 6;
+
+    private Options options_;
+    private S2DistanceTarget<Distance> target_;
+
+    // True if max_error() must be subtracted from priority queue cell distances
+    // in order to ensure that such distances are measured conservatively.  This
+    // is true only if the target takes advantage of max_error() in order to
+    // return faster results, and 0 < max_error() < distance_limit_.
+    private bool use_conservative_cell_distance_;
+
+    // For the optimized algorithm we precompute the top-level S2CellIds that
+    // will be added to the priority queue.  There can be at most 6 of these
+    // cells.  Essentially this is just a covering of the indexed cells.
+    private readonly List<S2CellId> index_covering_ = new();
+
+    // The distance beyond which we can safely ignore further candidate cells.
+    // (Candidates that are exactly at the limit are ignored; this is more
+    // efficient for UpdateMinIDistance() and should not affect clients since
+    // distance measurements have a small amount of error anyway.)
+    //
+    // Initially this is the same as the maximum distance specified by the user,
+    // but it can also be updated by the algorithm (see MaybeAddResult).
+    private Distance distance_limit_;
+
+    // The current result set is stored in one of three ways:
+    //
+    //  - If max_results() == 1, the best result is kept in result_singleton_.
+    //
+    //  - If max_results() == kMaxMaxResults, results are appended to
+    //    result_vector_ and sorted/uniqued at the end.
+    //
+    //  - Otherwise results are kept in a btree_set so that we can progressively
+    //    reduce the distance limit once max_results() results have been found.
+    //    (A priority queue is not sufficient because we need to be able to
+    //    check whether a candidate cell is already in the result set.)
+    //
+    // TODO(ericv): Check whether it would be faster to use avoid_duplicates_
+    // when result_set_ is used so that we could use a priority queue instead.
+    private Result result_singleton_;
+    private readonly List<Result> result_vector_ = new();
+    private readonly SortedSet<Result> result_set_ = new(); // absl.btree_set<Result>
+
+    // When the results are stored in a btree_set (see above), usually
+    // duplicates can be removed simply by inserting candidate cells in the
+    // current result set.  However this is not true if Options.max_error() > 0
+    // and the Target subtype takes advantage of this by returning suboptimal
+    // distances.  This is because when UpdateMinIDistance() is called with
+    // different "min_dist" parameters (i.e., the distance to beat), the
+    // implementation may return a different distance for the same cell.  Since
+    // the btree_set is keyed by (distance, cell_id, label) this can create
+    // duplicate results.
+    //
+    // The flag below is true when duplicates must be avoided explicitly.  This
+    // is achieved by maintaining a separate set keyed by (cell_id, label) only,
+    // and checking whether each edge is in that set before computing the
+    // distance to it.
+    //
+    // TODO(ericv): Check whether it is faster to avoid duplicates by default
+    // (even when Options.max_results() == 1), rather than just when we need to.
+    private bool avoid_duplicates_;
+    private readonly Dictionary<int, int> tested_cells_ = new();
+
+    // Priority queue of unprocessed S2CellIds, sorted
+    // in increasing order of distance from the target.
+    private readonly SortedSet<ReverseKeyData<IDistance, S2CellId>> queue_ = new();
+
+    // The Target class represents the geometry to which the distance is
+    // measured.  For example, there can be subtypes for measuring the distance
+    // to a point, an edge, or to an S2ShapeIndex (an arbitrary collection of
+    // geometry).
+    //
+    // Implementations do *not* need to be thread-safe.  They may cache data or
+    // allocate temporary data structures in order to improve performance.
+    // using Target = S2DistanceTarget<Distance>;
+
+    // Used to iterate over the contents of an S2CellIndex range.  It is defined
+    // here to take advantage of the fact that when multiple ranges are visited
+    // in increasing order, duplicates can automatically be eliminated.
+    private ContentsEnumerator contents_it_;
+
+    // Temporaries, defined here to avoid multiple allocations / initializations.
+    private readonly List<S2CellId> max_distance_covering_ = new();
+    private readonly List<S2CellId> intersection_with_max_distance_ = new();
 
     // Default constructor; requires Init() to be called.
     public S2ClosestCellQueryBase() { }
@@ -576,87 +529,133 @@ public class S2ClosestCellQueryBase<Distance> where Distance : IEquatable<Distan
         }
     }
 
-    private Options options_;
-    private S2DistanceTarget<Distance> target_;
-
-    // True if max_error() must be subtracted from priority queue cell distances
-    // in order to ensure that such distances are measured conservatively.  This
-    // is true only if the target takes advantage of max_error() in order to
-    // return faster results, and 0 < max_error() < distance_limit_.
-    private bool use_conservative_cell_distance_;
-
-    // For the optimized algorithm we precompute the top-level S2CellIds that
-    // will be added to the priority queue.  There can be at most 6 of these
-    // cells.  Essentially this is just a covering of the indexed cells.
-    private readonly List<S2CellId> index_covering_ = new();
-
-    // The distance beyond which we can safely ignore further candidate cells.
-    // (Candidates that are exactly at the limit are ignored; this is more
-    // efficient for UpdateMinIDistance() and should not affect clients since
-    // distance measurements have a small amount of error anyway.)
+    // Options that control the set of cells returned.  Note that by default
+    // *all* cells are returned, so you will always want to set either the
+    // max_results() option or the max_distance() option (or both).
     //
-    // Initially this is the same as the maximum distance specified by the user,
-    // but it can also be updated by the algorithm (see MaybeAddResult).
-    private Distance distance_limit_;
+    // This class is also available as S2ClosestCellQueryBase<Data>.Options.
+    //
+    // The IDistance template argument is described below.
+    public class Options
+    {
+        public Options() { }
 
-    // The current result set is stored in one of three ways:
-    //
-    //  - If max_results() == 1, the best result is kept in result_singleton_.
-    //
-    //  - If max_results() == kMaxMaxResults, results are appended to
-    //    result_vector_ and sorted/uniqued at the end.
-    //
-    //  - Otherwise results are kept in a btree_set so that we can progressively
-    //    reduce the distance limit once max_results() results have been found.
-    //    (A priority queue is not sufficient because we need to be able to
-    //    check whether a candidate cell is already in the result set.)
-    //
-    // TODO(ericv): Check whether it would be faster to use avoid_duplicates_
-    // when result_set_ is used so that we could use a priority queue instead.
-    private Result result_singleton_;
-    private readonly List<Result> result_vector_ = new();
-    private readonly SortedSet<Result> result_set_ = new(); // absl.btree_set<Result>
+        // Specifies that at most "max_results" cells should be returned.
+        //
+        // REQUIRES: max_results >= 1
+        // DEFAULT: kMaxMaxResults
+        public int MaxResults
+        {
+            get => maxResults;
+            set
+            {
+                System.Diagnostics.Debug.Assert(value >= 1);
+                maxResults = value;
+            }
+        }
+        private int maxResults = kMaxMaxResults;
 
-    // When the results are stored in a btree_set (see above), usually
-    // duplicates can be removed simply by inserting candidate cells in the
-    // current result set.  However this is not true if Options.max_error() > 0
-    // and the Target subtype takes advantage of this by returning suboptimal
-    // distances.  This is because when UpdateMinIDistance() is called with
-    // different "min_dist" parameters (i.e., the distance to beat), the
-    // implementation may return a different distance for the same cell.  Since
-    // the btree_set is keyed by (distance, cell_id, label) this can create
-    // duplicate results.
-    //
-    // The flag below is true when duplicates must be avoided explicitly.  This
-    // is achieved by maintaining a separate set keyed by (cell_id, label) only,
-    // and checking whether each edge is in that set before computing the
-    // distance to it.
-    //
-    // TODO(ericv): Check whether it is faster to avoid duplicates by default
-    // (even when Options.max_results() == 1), rather than just when we need to.
-    private bool avoid_duplicates_;
-    private readonly Dictionary<int, int> tested_cells_ = new();
+        public const int kMaxMaxResults = int.MaxValue;
 
-    // Priority queue of unprocessed S2CellIds, sorted
-    // in increasing order of distance from the target.
-    private readonly SortedSet<ReverseKeyData<IDistance, S2CellId>> queue_
-               = new();
+        // Specifies that only cells whose distance to the target is less than
+        // "max_distance" should be returned.
+        //
+        // Note that cells whose distance is exactly equal to "max_distance" are
+        // not returned.  In most cases this doesn't matter (since distances are
+        // not computed exactly in the first place), but if such cells are needed
+        // then you can retrieve them by specifying "max_distance" as the next
+        // largest representable IDistance.  For example, if IDistance is an
+        // S1ChordAngle then you can specify max_distance.Successor().
+        //
+        // DEFAULT: IDistance.Infinity()
+        public Distance MaxDistance { get; set; } = Infinity;
 
-    // The Target class represents the geometry to which the distance is
-    // measured.  For example, there can be subtypes for measuring the distance
-    // to a point, an edge, or to an S2ShapeIndex (an arbitrary collection of
-    // geometry).
-    //
-    // Implementations do *not* need to be thread-safe.  They may cache data or
-    // allocate temporary data structures in order to improve performance.
-    // using Target = S2DistanceTarget<Distance>;
+        // Specifies that cells up to max_error() further away than the true
+        // closest cells may be substituted in the result set, as long as such
+        // cells satisfy all the remaining search criteria (such as max_distance).
+        // This option only has an effect if max_results() is also specified;
+        // otherwise all cells closer than max_distance() will always be returned.
+        //
+        // Note that this does not affect how the distance between cells is
+        // computed; it simply gives the algorithm permission to stop the search
+        // early as soon as the best possible improvement drops below max_error().
+        //
+        // This can be used to implement distance predicates efficiently.  For
+        // example, to determine whether the minimum distance is less than D, the
+        // IsIDistanceLess() method sets max_results() == 1 and max_distance() ==
+        // max_error() == D.  This causes the algorithm to terminate as soon as it
+        // finds any cell whose distance is less than D, rather than continuing to
+        // search for a cell that is even closer.
+        //
+        // DEFAULT: S1ChordAngle.Zero
+        public S1ChordAngle MaxError { get; set; } = S1ChordAngle.Zero;
 
-    // Used to iterate over the contents of an S2CellIndex range.  It is defined
-    // here to take advantage of the fact that when multiple ranges are visited
-    // in increasing order, duplicates can automatically be eliminated.
-    private ContentsEnumerator contents_it_;
+        // Specifies that cells must intersect the given S2Region.  "region" is
+        // owned by the caller and must persist during the lifetime of this
+        // object.  The value may be changed between calls to FindClosestPoints(),
+        // or reset by calling set_region(null).
+        //
+        // Note that if you want to set the region to a disc around a target
+        // point, it is faster to use a PointTarget with set_max_distance()
+        // instead.  You can also call both methods, e.g. to set a maximum
+        // distance and also require that cells lie within a given rectangle.
+        public IS2Region Region { get; set; } = null;
 
-    // Temporaries, defined here to avoid multiple allocations / initializations.
-    private readonly List<S2CellId> max_distance_covering_ = new();
-    private readonly List<S2CellId> intersection_with_max_distance_ = new();
+        // Specifies that distances should be computed by examining every cell
+        // rather than using the S2ShapeIndex.  This is useful for testing,
+        // benchmarking, and debugging.
+        //
+        // DEFAULT: false
+        public bool UseBruteForce { get; set; } = false;
+    }
+
+    // Each "Result" object represents a closest (cell_id, label) pair.
+    public readonly record struct Result(
+                    // The distance from the target to this cell.
+                    Distance Distance,
+                    // The cell itself.
+                    S2CellId CellId,
+                    // The label associated with this S2CellId.
+                    Int32 Label
+        ) : IComparable<Result>
+    {
+        // The default constructor yields an empty result, with a distance() of
+        // Infinity() and invalid cell_id() and label() values.
+        public Result()
+            : this(Infinity, S2CellId.None, -1)
+        {
+        }
+
+        // Returns true if this Result object does not refer to any cell.
+        // (The only case where an empty Result is returned is when the
+        // FindClosestCell() method does not find any cells that meet the
+        // specified criteria.)
+        public bool IsEmpty() => CellId == S2CellId.None;
+
+        // Returns true if two Result objects are identical.
+        public bool Equals(Result other) =>
+            Equals(Distance, other.Distance) &&
+            CellId == other.CellId &&
+            Label == other.Label;
+
+        public override int GetHashCode() => HashCode.Combine(Distance, CellId, Label);
+
+        // Compares two Result objects first by distance, then by cell_id and
+        // finally by label.
+        public int CompareTo(Result other) //=> this < other ? -1 : this > other ? 1 : 0;
+        {
+            var c = Distance.CompareTo(other.Distance);
+            if (c != 0) return c;
+
+            c = CellId.CompareTo(other.CellId);
+            if (c != 0) return c;
+
+            return Label.CompareTo(other.Label);
+        }
+
+        public static bool operator <(Result x, Result y) => x.CompareTo(y) < 0;
+        public static bool operator >(Result x, Result y) => x.CompareTo(y) > 0;
+        public static bool operator <=(Result x, Result y) => x.CompareTo(y) <= 0;
+        public static bool operator >=(Result x, Result y) => x.CompareTo(y) >= 0;
+    }
 }

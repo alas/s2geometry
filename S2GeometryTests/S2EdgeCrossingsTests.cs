@@ -11,6 +11,7 @@ public class S2EdgeCrossingsTests
     private readonly ITestOutputHelper _logger;
     public enum Precision { DOUBLE, LONG_DOUBLE, EXACT, SYMBOLIC, NUM_PRECISIONS }
     private static readonly string[] kPrecisionNames = new[] { "double", "long double", "exact", "symbolic" };
+
     public S2EdgeCrossingsTests(ITestOutputHelper logger) { _logger = logger; }
 
     // A helper class that keeps track of how often each precision was used and
@@ -302,7 +303,7 @@ public class S2EdgeCrossingsTests
             stats.Tally(prec);
         }
         // These stats are very heavily skewed towards degenerate cases.
-        System.Diagnostics.Debug.WriteLine($"(ERROR) {stats}");
+        _logger.WriteLine($"(ERROR) {stats}");
     }
 
     [Fact]

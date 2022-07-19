@@ -2,8 +2,10 @@ namespace S2Geometry;
 
 public static class S2TestingCheckDistance<Id, Distance> where Distance : IDistance where Id : IEquatable<Id>
 {
-    private static readonly IDistance Infinity = (IDistance)typeof(Distance).GetField("Infinity").GetValue(null);
-    private static readonly IDistance Zero = (IDistance)typeof(Distance).GetField("Zero").GetValue(null);
+    private static readonly IDistance Infinity = Distance.GetInfinity();
+    private static readonly IDistance Zero = Distance.GetZero();
+
+    public delegate void WriteLineDelegate(string s);
 
     // Compare two sets of "closest" items, where "expected" is computed via brute
     // force (i.e., considering every possible candidate) and "actual" is computed
@@ -12,10 +14,10 @@ public static class S2TestingCheckDistance<Id, Distance> where Distance : IDista
     // "max_error" is the maximum error allowed when selecting which items are
     // closest (see S2ClosestEdgeQuery.Options.max_error).
     public static bool CheckDistanceResults(List<(Distance, Id)> expected, List<(Distance, Id)> actual,
-        int max_size, Distance max_distance, S1ChordAngle max_error)
+                    int max_size, Distance max_distance, S1ChordAngle max_error, WriteLineDelegate writeline)
     {
-        return CheckResultSet(actual, expected, max_size, max_distance, max_error, kMaxPruningError, "Missing") & /*not &&*/
-               CheckResultSet(expected, actual, max_size, max_distance, max_error, S1ChordAngle.Zero, "Extra");
+        return CheckResultSet(actual, expected, max_size, max_distance, max_error, kMaxPruningError, "Missing", writeline) & /*not &&*/
+               CheckResultSet(expected, actual, max_size, max_distance, max_error, S1ChordAngle.Zero, "Extra", writeline);
     }
     // This is a conservative bound on the error in computing the distance from
     // the target geometry to an S2Cell.  Such errors can cause candidates to be
@@ -26,7 +28,7 @@ public static class S2TestingCheckDistance<Id, Distance> where Distance : IDista
     // does not include any duplicate results.
     private static bool CheckResultSet(List<(Distance, Id)> x, List<(Distance, Id)> y,
                     int max_size, Distance max_distance, S1ChordAngle max_error, S1ChordAngle max_pruning_error,
-                    string label)
+                    string label, WriteLineDelegate writeline)
     {
         // Results should be sorted by distance, but not necessarily then by Id.
         Assert.True(x.IsSorted(((Distance, Id) x, (Distance, Id) y) =>
@@ -70,7 +72,7 @@ public static class S2TestingCheckDistance<Id, Distance> where Distance : IDista
             if (yp.Item1.IsLessThan(limit) && count != 1)
             {
                 result = false;
-                System.Diagnostics.Debug.WriteLine($"{(count > 1 ? "Duplicate" : label)} distance = {yp.Item1}, id = {yp.Item2}");
+                writeline($"{(count > 1 ? "Duplicate" : label)} distance = {yp.Item1}, id = {yp.Item2}");
             }
         }
 

@@ -17,6 +17,9 @@ namespace S2Geometry
         private const int kNumIndexes = 50;
         private const int kNumEdges = 100;
         private const int kNumQueries = 200;
+        private static ITestOutputHelper _logger;
+
+        public S2ClosestEdgeQueryTests(ITestOutputHelper logger) { _logger = logger; }
 
         [Fact]
         public void Test_S2ClosestEdgeQuery_NoEdges()
@@ -392,7 +395,8 @@ namespace S2Geometry
                     ConvertResults(actual),
                     query.Options_.MaxResults,
                     query.Options_.MaxDistance,
-                    query.Options_.MaxError));
+                    query.Options_.MaxError,
+                    _logger.WriteLine));
 
             if (!expected.Any()) return new Result();
 

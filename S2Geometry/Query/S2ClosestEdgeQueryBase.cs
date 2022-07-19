@@ -1,5 +1,3 @@
-namespace S2Geometry;
-
 // The Target class represents the geometry to which the distance is
 // measured.  For example, there can be subtypes for measuring the distance
 // to a point, an edge, or to an S2ShapeIndex (an arbitrary collection of
@@ -36,8 +34,14 @@ namespace S2Geometry;
 // used as long as it implements the Distance concept described in
 // s2distance_targets.h.  For example this can be used to measure maximum
 // distances, to get more accuracy, or to measure non-spheroidal distances.
+
+namespace S2Geometry;
+
 public class S2ClosestEdgeQueryBase<Distance> where Distance : IDistance
 {
+    private static readonly Distance Infinity = (Distance)Distance.GetInfinity();
+    private static readonly Distance Zero = (Distance)Distance.GetZero();
+
     // Returns a reference to the underlying S2ShapeIndex.
     public S2ShapeIndex Index { get; private set; }
     public Options Options_ { get; private set; }
@@ -123,31 +127,20 @@ public class S2ClosestEdgeQueryBase<Distance> where Distance : IDistance
     private readonly List<S2CellId> max_distance_covering_ = new();
     private readonly List<S2CellId> initial_cells_ = new();
 
-    private static readonly Distance Infinity = (Distance)typeof(Distance).GetField("Infinity")!.GetValue(null)!;
-    private static readonly Distance Zero = (Distance)typeof(Distance).GetField("Zero")!.GetValue(null)!;
-
     #region Constructors
 
-    // Default constructor; requires Init() to be called.
-    public S2ClosestEdgeQueryBase()
-    {
-    }
-
-    // Convenience constructor that calls Init().
-    public S2ClosestEdgeQueryBase(S2ShapeIndex index) : this()
-    {
-        Init(index);
-    }
-
-    #endregion
-
+    // Convenience constructor.
+    //
     // Initializes the query.
+    //
     // REQUIRES: ReInit() must be called if "index" is modified.
-    public void Init(S2ShapeIndex index)
+    public S2ClosestEdgeQueryBase(S2ShapeIndex index)
     {
         Index = index;
         ReInit();
     }
+
+    #endregion
 
     // Reinitializes the query.  This method must be called whenever the
     // underlying index is modified.
