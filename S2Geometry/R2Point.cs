@@ -96,7 +96,8 @@ public readonly record struct R2Point(double X, double Y) : IComparable<R2Point>
     /// <summary>
     /// return the index of the smallest, median ,largest component of the vector
     /// </summary>
-    public int[] ComponentOrder => new[]
+    public int[] ComponentOrder =>
+        new[]
         {
             (0, this[0]),
             (1, this[1]),

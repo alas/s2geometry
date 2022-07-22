@@ -38,8 +38,8 @@ public readonly record struct R1Interval(
     /// given points. This is equivalent to starting with an empty interval and
     /// calling AddPoint() twice, but it is more efficient.
     /// </summary>
-    public static R1Interval FromPointPair(double p1, double p2)
-        => p1 <= p2 ? new R1Interval(p1, p2) : new R1Interval(p2, p1);
+    public static R1Interval FromPointPair(double p1, double p2) =>
+        p1 <= p2 ? new R1Interval(p1, p2) : new R1Interval(p2, p1);
 
     #endregion
 
@@ -222,7 +222,8 @@ public readonly record struct R1Interval(
 
     public override string ToString() => $"[{Lo}, {Hi}]";
 
-    public string ToDebugString() => IsEmpty() ? "[Empty]" 
+    public string ToDebugString() => IsEmpty()
+        ? "[Empty]" 
         : $"{S1Angle.FromRadians(Lo)}, {S1Angle.FromRadians(Hi)}";
 
     #endregion
