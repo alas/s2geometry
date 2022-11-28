@@ -98,7 +98,7 @@ public class S2ClosestCellQueryBase<Distance> where Distance : IEquatable<Distan
 
     // Priority queue of unprocessed S2CellIds, sorted
     // in increasing order of distance from the target.
-    private readonly SortedSet<ReverseKeyData<IDistance, S2CellId>> queue_ = new();
+    private readonly SortedSet<ReverseKeyData<Distance, S2CellId>> queue_ = new();
 
     // The Target class represents the geometry to which the distance is
     // measured.  For example, there can be subtypes for measuring the distance
@@ -509,7 +509,7 @@ public class S2ClosestCellQueryBase<Distance> where Distance : IEquatable<Distan
                     // Ensure that "distance" is a lower bound on distance to the cell.
                     distance = (Distance)distance.Substract(Options_().MaxError);
                 }
-                queue_.Add(new ReverseKeyData<IDistance, S2CellId>(distance, id));
+                queue_.Add(new ReverseKeyData<Distance, S2CellId>(distance, id));
             }
             return true;  // Seek to next child.
         }

@@ -531,6 +531,6 @@ public interface IDistance : IEquatable<IDistance>, IComparable<IDistance>
     bool IsLessThan(IDistance other);
     S1ChordAngle ToS1ChordAngle();
     S1ChordAngle GetChordAngleBound();
-    static abstract IDistance GetZero();
-    static abstract IDistance GetInfinity();
+    static virtual IDistance GetZero() => throw new NotImplementedException();
+    static virtual IDistance GetInfinity() => throw new NotImplementedException();
 }
