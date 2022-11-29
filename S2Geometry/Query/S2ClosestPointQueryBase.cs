@@ -210,7 +210,7 @@ public class S2ClosestPointQueryBase<Distance, Data> where Distance : IEquatable
         // because one is a Delta and one is a Distance.  Instead we subtract them.
         use_conservative_cell_distance_ = target_uses_max_error &&
             (Equals(distance_limit_, Distance.GetInfinity()) ||
-                Distance.GetZero().IsLessThan(distance_limit_.SubstractChord(options.MaxError)));
+                Distance.GetZero() < distance_limit_ - options.MaxError);
 
         // Note that given point is processed only once (unlike S2ClosestEdgeQuery),
         // and therefore we don't need to worry about the possibility of having
@@ -314,11 +314,11 @@ public class S2ClosestPointQueryBase<Distance, Data> where Distance : IEquatable
             S2CellUnion.GetIntersection(index_covering_, region_covering_, intersection_with_region_);
             initial_cells = intersection_with_region_;
         }
-        if (distance_limit_.IsLessThan(Distance.GetInfinity().ToS1ChordAngle()))
+        if (distance_limit_ < Distance.GetInfinity())
         {
             var coverer = new S2RegionCoverer();
             coverer.Options_.MaxCells = 4;
-            Delta radius = cap.Radius + distance_limit_.GetChordAngleBound();
+            var radius = cap.Radius + distance_limit_.GetChordAngleBound();
             var search_cap = new S2Cap(cap.Center, radius);
             var max_distance_covering_ = new List<S2CellId>();
             coverer.GetFastCovering(search_cap, max_distance_covering_);
@@ -408,7 +408,7 @@ public class S2ClosestPointQueryBase<Distance, Data> where Distance : IEquatable
         {
             // Optimization for the common case where only the closest point is wanted.
             result_singleton_ = result;
-            distance_limit_ = result.Distance.SubstractChord(Options_.MaxError);
+            distance_limit_ = result.Distance - Options_.MaxError;
         }
         else if (Options_.MaxResults == kMaxMaxResults)
         {
@@ -427,7 +427,7 @@ public class S2ClosestPointQueryBase<Distance, Data> where Distance : IEquatable
             result_set_.Add(result);
             if (result_set_.Count >= Options_.MaxResults)
             {
-                distance_limit_ = result_set_.First().Distance.SubstractChord(Options_.MaxError);
+                distance_limit_ = result_set_.First().Distance - Options_.MaxError;
             }
         }
     }
@@ -469,7 +469,7 @@ public class S2ClosestPointQueryBase<Distance, Data> where Distance : IEquatable
                     if (use_conservative_cell_distance_)
                     {
                         // Ensure that "distance" is a lower bound on distance to the cell.
-                        distance = distance.SubstractChord(Options_.MaxError);
+                        distance = distance - Options_.MaxError;
                     }
                     queue_.Add(new QueueEntry(distance, id));
                 }

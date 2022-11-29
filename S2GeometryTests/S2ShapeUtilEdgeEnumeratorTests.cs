@@ -5,25 +5,25 @@ using static S2ShapeUtil;
 public class S2ShapeUtilEdgeEnumeratorTests
 {
     [Fact]
-    public void Test_S2ShapeUtilEdgeEnumeratorTest_Empty()
-        => Verify(MakeIndexOrDie("##"));
+    public void Test_S2ShapeUtilEdgeEnumeratorTest_Empty() =>
+        Verify(MakeIndexOrDie("##"));
 
     [Fact]
-    public void Test_S2ShapeutilEdgeEnumeratorTest_Points()
-        => Verify(MakeIndexOrDie("0:0|1:1##"));
+    public void Test_S2ShapeutilEdgeEnumeratorTest_Points() =>
+        Verify(MakeIndexOrDie("0:0|1:1##"));
 
     [Fact]
-    public void Test_S2ShapeutilEdgeEnumeratorTest_Lines()
-        => Verify(MakeIndexOrDie("#0:0,10:10|5:5,5:10|1:2,2:1#"));
+    public void Test_S2ShapeutilEdgeEnumeratorTest_Lines() =>
+        Verify(MakeIndexOrDie("#0:0,10:10|5:5,5:10|1:2,2:1#"));
 
     [Fact]
-    public void Test_S2ShapeutilEdgeEnumeratorTest_Polygons()
-        => Verify(MakeIndexOrDie("##10:10,10:0,0:0|-10:-10,-10:0,0:0,0:-10"));
+    public void Test_S2ShapeutilEdgeEnumeratorTest_Polygons() =>
+        Verify(MakeIndexOrDie("##10:10,10:0,0:0|-10:-10,-10:0,0:0,0:-10"));
 
 
     [Fact]
-    public void Test_S2ShapeutilEdgeEnumeratorTest_Collection()
-        => Verify(MakeIndexOrDie("1:1|7:2#1:1,2:2,3:3|2:2,1:7#" +
+    public void Test_S2ShapeutilEdgeEnumeratorTest_Collection() =>
+        Verify(MakeIndexOrDie("1:1|7:2#1:1,2:2,3:3|2:2,1:7#" +
             "10:10,10:0,0:0;20:20,20:10,10:10|15:15,15:0,0:0"));
 
     [Fact]

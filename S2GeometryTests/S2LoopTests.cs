@@ -1,5 +1,3 @@
-using System.Text;
-
 namespace S2Geometry;
 
 public class S2LoopTests

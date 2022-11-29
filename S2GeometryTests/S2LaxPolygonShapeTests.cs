@@ -1,6 +1,6 @@
-using System.Runtime.InteropServices;
-
 namespace S2Geometry;
+
+using System.Runtime.InteropServices;
 
 public class S2LaxPolygonShapeTests
 {

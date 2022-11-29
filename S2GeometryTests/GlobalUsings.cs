@@ -44,3 +44,6 @@ global using S2Point = S2Geometry.Vector3<double>;
 // you can use such containers as arguments for any S2PointSpan parameter.
 global using S2PointSpan = System.Collections.Generic.List<S2Geometry.Vector3<double>>;
 global using S2PointLoopSpan = System.Collections.Generic.List<S2Geometry.Vector3<double>>;
+
+global using S2EdgeCrosser = S2Geometry.S2EdgeCrosserBase;
+global using S2CopyingEdgeCrosser = S2Geometry.S2EdgeCrosserBase;

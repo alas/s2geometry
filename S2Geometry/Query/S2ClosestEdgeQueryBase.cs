@@ -265,7 +265,7 @@ public class S2ClosestEdgeQueryBase<Distance> where Distance : IEquatable<Distan
         // because one is a Delta and one is a Distance.  Instead we subtract them.
         use_conservative_cell_distance_ = target_uses_max_error &&
             (Equals(distance_limit_, Distance.GetInfinity()) ||
-                Distance.GetZero().IsLessThan(distance_limit_.SubstractChord(options.MaxError)));
+                Distance.GetZero() < (distance_limit_ - options.MaxError));
 
         // Use the brute force algorithm if the index is small enough.  To avoid
         // spending too much time counting edges when there are many shapes, we stop
@@ -321,7 +321,7 @@ public class S2ClosestEdgeQueryBase<Distance> where Distance : IEquatable<Distan
             // Work around weird parse error in gcc 4.9 by using a local variable for
             // entry.distance.
             Distance distance = entry.Distance;
-            if (!distance.IsLessThan(distance_limit_))
+            if (!(distance < distance_limit_))
             {
                 queue_.Clear();
                 break;
@@ -553,7 +553,7 @@ public class S2ClosestEdgeQueryBase<Distance> where Distance : IEquatable<Distan
         {
             // Optimization for the common case where only the closest edge is wanted.
             result_singleton_ = result;
-            distance_limit_ = result.Distance.SubstractChord(Options_.MaxError);
+            distance_limit_ = result.Distance - Options_.MaxError;
         }
         else if (Options_.MaxResults == Options.kMaxMaxResults)
         {
@@ -572,7 +572,7 @@ public class S2ClosestEdgeQueryBase<Distance> where Distance : IEquatable<Distan
                 {
                     result_set_.Remove(result_set_.Last());
                 }
-                distance_limit_ = (Distance)result_set_.Last().Distance.SubstractChord(Options_.MaxError);
+                distance_limit_ = (Distance)result_set_.Last().Distance - Options_.MaxError;
             }
         }
     }
@@ -637,7 +637,7 @@ public class S2ClosestEdgeQueryBase<Distance> where Distance : IEquatable<Distan
         if (use_conservative_cell_distance_)
         {
             // Ensure that "distance" is a lower bound on the true distance to the cell.
-            distance = distance.SubstractChord(Options_.MaxError);  // operator-=() not defined.
+            distance -= Options_.MaxError;
         }
         queue_.Add(new QueueEntry(distance, id, index_cell));
     }

@@ -48,16 +48,6 @@ public readonly record struct S2MaxDistance(S1ChordAngle Distance) : IComparable
 
     #region IDistance
 
-    public S2MaxDistance SubstractChord(S1ChordAngle other) => this - other;
-
-    public S2MaxDistance Substract(S2MaxDistance other) => new((this - other).Distance);
-
-    public bool IsLessThan(S1ChordAngle other) => this < new S2MaxDistance(other);
-
-    public bool IsLessThan(S2MaxDistance other) => this < other;
-
-    public S1ChordAngle ToS1ChordAngle() => Distance;
-
     public S1ChordAngle GetChordAngleBound() => S1ChordAngle.Straight - Distance;
 
     // If (dist < that), updates that and returns true (used internally).
@@ -69,16 +59,6 @@ public readonly record struct S2MaxDistance(S1ChordAngle Distance) : IComparable
             return true;
         }
         return false;
-    }
-
-    public bool Equals(S2MaxDistance? other) => other is S2MaxDistance md && Equals(md);
-
-    public int CompareTo(S2MaxDistance? other)
-    {
-        if (other is not S2MaxDistance md) throw new NotImplementedException(
-            $"cannot compare {nameof(S2MaxDistance)} to type {other?.GetType().FullName}");
-
-        return CompareTo(md);
     }
 
     public static S2MaxDistance GetZero() => Zero;
@@ -101,6 +81,11 @@ public readonly record struct S2MaxDistance(S1ChordAngle Distance) : IComparable
     public static bool operator >(S2MaxDistance x, S2MaxDistance y) => x.Distance < y.Distance;
     public static bool operator <=(S2MaxDistance x, S2MaxDistance y) => x.Distance >= y.Distance;
     public static bool operator >=(S2MaxDistance x, S2MaxDistance y) => x.Distance <= y.Distance;
+
+    public static bool operator <(S2MaxDistance x, S1ChordAngle y) => x.Distance > y;
+    public static bool operator >(S2MaxDistance x, S1ChordAngle y) => x.Distance < y;
+    public static bool operator <=(S2MaxDistance x, S1ChordAngle y) => x.Distance >= y;
+    public static bool operator >=(S2MaxDistance x, S1ChordAngle y) => x.Distance <= y;
 
     #endregion
 

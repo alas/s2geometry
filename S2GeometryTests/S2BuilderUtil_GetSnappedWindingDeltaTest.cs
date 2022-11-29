@@ -1,7 +1,4 @@
-﻿global using S2EdgeCrosser = S2Geometry.S2EdgeCrosserBase;
-global using S2CopyingEdgeCrosser = S2Geometry.S2EdgeCrosserBase;
-
-namespace S2Geometry;
+﻿namespace S2Geometry;
 
 using DegenerateEdges = GraphOptions.DegenerateEdges;
 using DuplicateEdges = GraphOptions.DuplicateEdges;

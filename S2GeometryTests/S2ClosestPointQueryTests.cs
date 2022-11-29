@@ -1,9 +1,9 @@
-using TestIndex = S2Geometry.S2PointIndex<int>;
-using TestQuery = S2Geometry.S2ClosestPointQuery<int>;
-// The result format required by CheckDistanceResults() in S2Testing.h.
-using Target = S2Geometry.S2DistanceTarget<S2Geometry.S1ChordAngle>;
-
 namespace S2Geometry;
+
+using TestIndex = S2PointIndex<int>;
+using TestQuery = S2ClosestPointQuery<int>;
+// The result format required by CheckDistanceResults() in S2Testing.h.
+using Target = S2DistanceTarget<S1ChordAngle>;
 
 public class S2ClosestPointQueryTests
 {
@@ -160,8 +160,8 @@ public class S2ClosestPointQueryTests
             if (region != null) Assert.True(region.Contains(result.Point));
 
             // Check that it satisfies the max_distance() condition.
-            Assert.True(result.Distance.IsLessThan(query.Options_.MaxDistance));
-            results.Add((result.Distance.ToS1ChordAngle(), result.Data));
+            Assert.True(result.Distance < query.Options_.MaxDistance);
+            results.Add((result.Distance, result.Data));
         }
     }
 
@@ -173,7 +173,7 @@ public class S2ClosestPointQueryTests
         GetClosestPoints(target, query, actual);
         Assert.True(S2TestingCheckDistance<int, S1ChordAngle>.CheckDistanceResults(expected, actual,
                                          query.Options_.MaxResults,
-                                         query.Options_.MaxDistance.ToS1ChordAngle(),
+                                         query.Options_.MaxDistance,
                                          query.Options_.MaxError,
                                          _logger.WriteLine));
 

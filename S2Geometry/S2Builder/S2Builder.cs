@@ -1009,7 +1009,7 @@ public partial class S2Builder
             {
                 sites.Add(result.Data);
                 if (!snapping_needed_ &&
-                    result.Distance.IsLessThan(min_edge_site_separation_ca_limit_) &&
+                    result.Distance < min_edge_site_separation_ca_limit_ &&
                     result.Point != v0 && result.Point != v1 &&
                     S2Pred.CompareEdgeDistance(result.Point, v0, v1, min_edge_site_separation_ca_) < 0)
                 {

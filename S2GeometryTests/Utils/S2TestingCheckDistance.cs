@@ -48,14 +48,14 @@ public static class S2TestingCheckDistance<Id, Distance> where Distance : IEquat
             }
             else
             {
-                limit = max_distance.SubstractChord(max_pruning_error);
+                limit = max_distance - max_pruning_error;
             }
         }
         else if (x.Any())
         {
             // Result set X contains only the closest "max_size" items, to within a
             // tolerance of "max_error + max_pruning_error".
-            limit = x.Last().Item1.SubstractChord(max_error).SubstractChord(max_pruning_error);
+            limit = (x.Last().Item1 - max_error) - max_pruning_error;
         }
 
         bool result = true;
@@ -66,7 +66,7 @@ public static class S2TestingCheckDistance<Id, Distance> where Distance : IEquat
             {
                 return Equals(xp.Item2, yp.Item2);
             });
-            if (yp.Item1.IsLessThan(limit) && count != 1)
+            if (yp.Item1 < limit && count != 1)
             {
                 result = false;
                 writeline($"{(count > 1 ? "Duplicate" : label)} distance = {yp.Item1}, id = {yp.Item2}");

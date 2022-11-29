@@ -1,6 +1,6 @@
-using System.Text;
-
 namespace S2Geometry;
+
+using System.Text;
 
 public class S2PredicatesTests
 {

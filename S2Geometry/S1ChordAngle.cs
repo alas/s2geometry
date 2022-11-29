@@ -348,13 +348,13 @@ public readonly record struct S1ChordAngle : IComparable<S1ChordAngle>, IDistanc
     /// respect to the true distance after the points are projected to lie
     /// exactly on the sphere.)
     /// </summary>
-    public double GetS2PointConstructorMaxError()
+    public double GetS2PointConstructorMaxError() =>
         // There is a relative error of 2.5 * S2Constants.DoubleEpsilon when computing the squared
         // distance, plus a relative error of 2 * S2Constants.DoubleEpsilon and an absolute error
         // of (16 * S2Constants.DoubleEpsilon**2) because the lengths of the input points may
         // differ from 1 by up to (2 * S2Constants.DoubleEpsilon) each.  (This is the maximum
         // length error in S2Point.Normalize.)
-        => 4.5 * S2.DoubleEpsilon * Length2 + 16 * S2.DoubleEpsilon * S2.DoubleEpsilon;
+        4.5 * S2.DoubleEpsilon * Length2 + 16 * S2.DoubleEpsilon * S2.DoubleEpsilon;
 
     #region Trigonmetric functions.
 
@@ -460,14 +460,6 @@ public readonly record struct S1ChordAngle : IComparable<S1ChordAngle>, IDistanc
 
     #region IDistance
 
-    public S1ChordAngle SubstractChord(S1ChordAngle other) => this - other;
-
-    public S1ChordAngle Substract(S1ChordAngle other) => this - other;
-
-    public bool IsLessThan(S1ChordAngle other) => this < other;
-
-    public S1ChordAngle ToS1ChordAngle() => this;
-
     public S1ChordAngle GetChordAngleBound() => PlusError(S1AngleConstructorMaxError);
 
     // If (dist < that), updates that and returns true (used internally).
@@ -482,16 +474,6 @@ public readonly record struct S1ChordAngle : IComparable<S1ChordAngle>, IDistanc
     }
     public static S1ChordAngle GetZero() => Zero;
     public static S1ChordAngle GetInfinity() => Infinity;
-
-    public bool Equals(S1ChordAngle? other) => other is S1ChordAngle ca && Equals(ca);
-
-    public int CompareTo(S1ChordAngle? other)
-    {
-        if (other is not S1ChordAngle ca) throw new NotImplementedException(
-            $"cannot compare {nameof(S1ChordAngle)} to type {other?.GetType().FullName}");
-
-        return CompareTo(ca);
-    }
 
     #endregion
 
@@ -523,11 +505,16 @@ public readonly record struct S1ChordAngle : IComparable<S1ChordAngle>, IDistanc
 
 public interface IDistance<T> where T : IEquatable<T>, IComparable<T>, IDistance<T>
 {
-    T SubstractChord(S1ChordAngle other);
-    T Substract(T other);
-    bool IsLessThan(S1ChordAngle other);
-    bool IsLessThan(T other);
-    S1ChordAngle ToS1ChordAngle();
+    static abstract T operator -(T me, S1ChordAngle other);
+    static abstract T operator -(T me, T other);
+    static abstract bool operator <(T me, S1ChordAngle other);
+    static abstract bool operator >(T me, S1ChordAngle other);
+    static abstract bool operator <=(T me, S1ChordAngle other);
+    static abstract bool operator >=(T me, S1ChordAngle other);
+    static abstract bool operator <(T me, T other);
+    static abstract bool operator >(T me, T other);
+    static abstract bool operator <=(T me, T other);
+    static abstract bool operator >=(T me, T other);
     S1ChordAngle GetChordAngleBound();
     static abstract T GetZero();
     static abstract T GetInfinity();

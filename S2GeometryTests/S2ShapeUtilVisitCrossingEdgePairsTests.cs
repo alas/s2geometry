@@ -1,6 +1,6 @@
-using static S2Geometry.S2ShapeUtil;
-
 namespace S2Geometry;
+
+using static S2ShapeUtil;
 
 public class S2ShapeUtilVisitCrossingEdgePairsTests
 {

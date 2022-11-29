@@ -1,7 +1,7 @@
+namespace S2Geometry;
+
 using System.Runtime.InteropServices;
 using System.Text;
-
-namespace S2Geometry;
 
 public class S2PolylineTests
 {

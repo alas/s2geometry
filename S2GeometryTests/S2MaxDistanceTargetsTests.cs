@@ -375,3 +375,8 @@ public class S2MaxDistanceTargetsTests
         return shape_ids.ToArray();
     }
 }
+
+public static class S2MaxDistanceExtensions
+{
+    public static S1ChordAngle ToS1ChordAngle(this S2MaxDistance me) => me.Distance;
+}
