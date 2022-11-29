@@ -35,14 +35,14 @@ public static class S2TestingCheckDistance<Id, Distance> where Distance : IEquat
 
         // Result set X should contain all the items from Y whose distance is less
         // than "limit" computed below.
-        Distance limit = Distance.GetZero();
+        Distance limit = Distance.Zero;
         if (x.Count < max_size)
         {
             // Result set X was not limited by "max_size", so it should contain all
             // the items up to "max_distance", except that a few items right near the
             // distance limit may be missed because the distance measurements used for
             // pruning S2Cells are not conservative.
-            if (Equals(max_distance, Distance.GetInfinity()))
+            if (Equals(max_distance, Distance.Infinity))
             {
                 limit = max_distance;
             }

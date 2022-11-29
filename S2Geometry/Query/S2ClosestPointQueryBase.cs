@@ -176,7 +176,7 @@ public class S2ClosestPointQueryBase<Distance, Data> where Distance : IEquatable
         System.Diagnostics.Debug.Assert(!result_vector_.Any());
         System.Diagnostics.Debug.Assert(!result_set_.Any());
         System.Diagnostics.Debug.Assert(target.MaxBruteForceIndexSize >= 0);
-        if (Equals(distance_limit_, Distance.GetZero())) return;
+        if (Equals(distance_limit_, Distance.Zero)) return;
 
         // If max_error() > 0 and the target takes advantage of this, then we may
         // need to adjust the distance estimates to the priority queue cells to
@@ -209,8 +209,8 @@ public class S2ClosestPointQueryBase<Distance, Data> where Distance : IEquatable
         // Note that we can't compare max_error() and distance_limit_ directly
         // because one is a Delta and one is a Distance.  Instead we subtract them.
         use_conservative_cell_distance_ = target_uses_max_error &&
-            (Equals(distance_limit_, Distance.GetInfinity()) ||
-                Distance.GetZero() < distance_limit_ - options.MaxError);
+            (Equals(distance_limit_, Distance.Infinity) ||
+                Distance.Zero < distance_limit_ - options.MaxError);
 
         // Note that given point is processed only once (unlike S2ClosestEdgeQuery),
         // and therefore we don't need to worry about the possibility of having
@@ -299,7 +299,7 @@ public class S2ClosestPointQueryBase<Distance, Data> where Distance : IEquatable
                 MaybeAddResult(it.Value.Point, it.Value.Data);
             }
             // Skip the rest of the algorithm if we found a matching point.
-            if (Equals(distance_limit_, Distance.GetZero())) return;
+            if (Equals(distance_limit_, Distance.Zero)) return;
         }
         // We start with a covering of the set of indexed points, then intersect it
         // with the given region (if any) and maximum search radius disc (if any).
@@ -314,7 +314,7 @@ public class S2ClosestPointQueryBase<Distance, Data> where Distance : IEquatable
             S2CellUnion.GetIntersection(index_covering_, region_covering_, intersection_with_region_);
             initial_cells = intersection_with_region_;
         }
-        if (distance_limit_ < Distance.GetInfinity())
+        if (distance_limit_ < Distance.Infinity)
         {
             var coverer = new S2RegionCoverer();
             coverer.Options_.MaxCells = 4;
@@ -526,7 +526,7 @@ public class S2ClosestPointQueryBase<Distance, Data> where Distance : IEquatable
         // S1ChordAngle then you can specify max_distance.Successor().
         //
         // DEFAULT: Distance.Infinity
-        public Distance MaxDistance { get; set; } = Distance.GetInfinity();
+        public Distance MaxDistance { get; set; } = Distance.Infinity;
 
         // Specifies that points up to max_error() further away than the true
         // closest points may be substituted in the result set, as long as such
@@ -580,7 +580,7 @@ public class S2ClosestPointQueryBase<Distance, Data> where Distance : IEquatable
 
         // The default constructor creates an "empty" result, with a distance() of
         // Infinity() and non-dereferencable point() and data() values.
-        public Result() : this(Distance.GetInfinity(), S2Point.Empty, default) { }
+        public Result() : this(Distance.Infinity, S2Point.Empty, default) { }
 
         #endregion
 

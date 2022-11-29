@@ -15,10 +15,10 @@ public readonly record struct S2MaxDistance(S1ChordAngle Distance) : IComparable
 {
     #region Fields, Constants
 
-    public static readonly S2MaxDistance Zero = new(S1ChordAngle.Straight);
-    public static readonly S2MaxDistance Infinity = new(S1ChordAngle.Negative);
-    public static readonly S2MaxDistance Negative = new(S1ChordAngle.Infinity);
-    public static readonly S2MaxDistance DefaultValue = new(S1ChordAngle.Zero);
+    public static S2MaxDistance Zero { get; } = new(S1ChordAngle.Straight);
+    public static S2MaxDistance Infinity { get; } = new(S1ChordAngle.Negative);
+    public static S2MaxDistance Negative { get; } = new(S1ChordAngle.Infinity);
+    public static S2MaxDistance DefaultValue { get; } = new(S1ChordAngle.Zero);
 
     #endregion
 
@@ -61,9 +61,6 @@ public readonly record struct S2MaxDistance(S1ChordAngle Distance) : IComparable
         }
         return false;
     }
-
-    public static S2MaxDistance GetZero() => Zero;
-    public static S2MaxDistance GetInfinity() => Infinity;
 
     #endregion
 

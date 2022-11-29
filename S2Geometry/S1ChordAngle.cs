@@ -106,7 +106,7 @@ public readonly record struct S1ChordAngle : IComparable<S1ChordAngle>, IDistanc
 
     private const double kMaxLength2 = 4.0;
 
-    public static readonly S1ChordAngle Zero = new(0);
+    public static S1ChordAngle Zero { get; } = new(0);
 
     /// <summary>
     /// Return a chord angle of 90 degrees (a "right angle").
@@ -124,7 +124,7 @@ public readonly record struct S1ChordAngle : IComparable<S1ChordAngle>, IDistanc
     /// operations on Infinity() are comparisons, S1Angle conversions, and
     /// Successor() / Predecessor().
     /// </summary>
-    public static readonly S1ChordAngle Infinity = new(S1Angle.Infinity);
+    public static S1ChordAngle Infinity { get; } = new(S1Angle.Infinity);
 
     /// <summary>
     /// Return a chord angle smaller than Zero().  The only valid operations on
@@ -285,11 +285,11 @@ public readonly record struct S1ChordAngle : IComparable<S1ChordAngle>, IDistanc
     /// </summary>
     public bool IsSpecial() => IsNegative() || IsInfinity();
 
-    public static S1ChordAngle Max(S1ChordAngle left, S1ChordAngle right)
-        => right > left ? right : left;
+    public static S1ChordAngle Max(S1ChordAngle left, S1ChordAngle right) =>
+        right > left ? right : left;
 
-    public static S1ChordAngle Min(S1ChordAngle left, S1ChordAngle right)
-        => right > left ? left : right;
+    public static S1ChordAngle Min(S1ChordAngle left, S1ChordAngle right) =>
+        right > left ? left : right;
 
     /// Returns the smallest representable S1ChordAngle larger than this object.
     /// This can be used to convert a "<" comparison to a "<=" comparison.  For
@@ -472,8 +472,6 @@ public readonly record struct S1ChordAngle : IComparable<S1ChordAngle>, IDistanc
         }
         return false;
     }
-    public static S1ChordAngle GetZero() => Zero;
-    public static S1ChordAngle GetInfinity() => Infinity;
 
     #endregion
 
@@ -516,6 +514,6 @@ public interface IDistance<T> where T : IEquatable<T>, IComparable<T>, IDistance
     static abstract bool operator <=(T me, T other);
     static abstract bool operator >=(T me, T other);
     S1ChordAngle GetChordAngleBound();
-    static abstract T GetZero();
-    static abstract T GetInfinity();
+    static abstract T Zero { get; }
+    static abstract T Infinity { get; }
 }

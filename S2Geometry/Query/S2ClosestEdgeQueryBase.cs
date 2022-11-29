@@ -215,7 +215,7 @@ public class S2ClosestEdgeQueryBase<Distance> where Distance : IEquatable<Distan
         System.Diagnostics.Debug.Assert(!result_vector_.Any());
         System.Diagnostics.Debug.Assert(!result_set_.Any());
         System.Diagnostics.Debug.Assert(target.MaxBruteForceIndexSize >= 0);
-        if (Equals(distance_limit_, Distance.GetZero())) return;
+        if (Equals(distance_limit_, Distance.Zero)) return;
 
         if (options.IncludeInteriors)
         {
@@ -228,9 +228,9 @@ public class S2ClosestEdgeQueryBase<Distance> where Distance : IEquatable<Distan
                 });
             foreach (int shape_id in shape_ids)
             {
-                AddResult(new Result(Distance.GetZero(), shape_id, -1));
+                AddResult(new Result(Distance.Zero, shape_id, -1));
             }
-            if (Equals(distance_limit_, Distance.GetZero())) return;
+            if (Equals(distance_limit_, Distance.Zero)) return;
         }
 
         // If max_error() > 0 and the target takes advantage of this, then we may
@@ -264,8 +264,8 @@ public class S2ClosestEdgeQueryBase<Distance> where Distance : IEquatable<Distan
         // Note that we can't compare max_error() and distance_limit_ directly
         // because one is a Delta and one is a Distance.  Instead we subtract them.
         use_conservative_cell_distance_ = target_uses_max_error &&
-            (Equals(distance_limit_, Distance.GetInfinity()) ||
-                Distance.GetZero() < (distance_limit_ - options.MaxError));
+            (Equals(distance_limit_, Distance.Infinity) ||
+                Distance.Zero < (distance_limit_ - options.MaxError));
 
         // Use the brute force algorithm if the index is small enough.  To avoid
         // spending too much time counting edges when there are many shapes, we stop
@@ -385,13 +385,13 @@ public class S2ClosestEdgeQueryBase<Distance> where Distance : IEquatable<Distan
             if (found)
             {
                 var tc = Index.GetIndexCell(pos).Value;
-                ProcessEdges(new QueueEntry(Distance.GetZero(), tc.Item1, tc.Item2));
+                ProcessEdges(new QueueEntry(Distance.Zero, tc.Item1, tc.Item2));
                 // Skip the rest of the algorithm if we found an intersecting edge.
-                if (Equals(distance_limit_, Distance.GetZero())) return;
+                if (Equals(distance_limit_, Distance.Zero)) return;
             }
         }
         if (!index_covering_.Any()) InitCovering();
-        if (Equals(distance_limit_, Distance.GetInfinity()))
+        if (Equals(distance_limit_, Distance.Infinity))
         {
             // Start with the precomputed index covering.
             for (int i = 0; i < index_covering_.Count; ++i)
@@ -625,7 +625,7 @@ public class S2ClosestEdgeQueryBase<Distance> where Distance : IEquatable<Distan
             if (num_edges < kMinEdgesToEnqueue)
             {
                 // Set "distance" to zero to avoid the expense of computing it.
-                ProcessEdges(new QueueEntry(Distance.GetZero(), id, index_cell));
+                ProcessEdges(new QueueEntry(Distance.Zero, id, index_cell));
                 return;
             }
         }
@@ -686,7 +686,7 @@ public class S2ClosestEdgeQueryBase<Distance> where Distance : IEquatable<Distan
         // S1ChordAngle then you can specify max_distance.Successor().
         //
         // DEFAULT: Distance.Infinity()
-        public Distance MaxDistance { get; set; } = Distance.GetInfinity();
+        public Distance MaxDistance { get; set; } = Distance.Infinity;
 
         // Specifies that edges up to max_error() further away than the true
         // closest edges may be substituted in the result set, as long as such
@@ -782,7 +782,7 @@ public class S2ClosestEdgeQueryBase<Distance> where Distance : IEquatable<Distan
 
         // The default constructor yields an empty result, with a distance() of
         // Infinity() and shape_id == edge_id == -1.
-        public Result() : this(Distance.GetInfinity(), -1, -1) { }
+        public Result() : this(Distance.Infinity, -1, -1) { }
 
         #endregion
 

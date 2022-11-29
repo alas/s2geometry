@@ -193,9 +193,9 @@ public class S2FurthestEdgeQuery
         // It is never returned by methods that return a vector of results.)
         public bool IsEmpty() => ShapeId < 0;
 
-#region IComparable
+        #region IComparable
 
-public int CompareTo(Result other)
+        public int CompareTo(Result other)
         {
             var c = Distance.CompareTo(other.Distance);
             if (c != 0) return c;
@@ -273,7 +273,7 @@ public int CompareTo(Result other)
     {
         // System.Diagnostics.Debug.Assert(Marshal.SizeOf(typeof(Options)) <= 32); // Consider not copying Options here
         Options tmp_options = Options_;
-        tmp_options.MaxResults = (1);
+        tmp_options.MaxResults = 1;
         Base.Result base_result = base_.FindClosestEdge(target, tmp_options);
         return new Result(base_result);
     }
@@ -295,9 +295,9 @@ public int CompareTo(Result other)
     {
         // System.Diagnostics.Debug.Assert(Marshal.SizeOf(typeof(Options)) <= 32); // Consider not copying Options here
         Options tmp_options = Options_;
-        tmp_options.MaxResults = (1);
-        tmp_options.MinDistance = (limit);
-        tmp_options.MaxError = (S1ChordAngle.Straight);
+        tmp_options.MaxResults = 1;
+        tmp_options.MinDistance = limit;
+        tmp_options.MaxError = S1ChordAngle.Straight;
         return base_.FindClosestEdge(target, tmp_options).ShapeId >= 0;
     }
 
@@ -307,7 +307,7 @@ public int CompareTo(Result other)
     {
         // System.Diagnostics.Debug.Assert(Marshal.SizeOf(typeof(Options)) <= 32); // Consider not copying Options here
         Options tmp_options = Options_;
-        tmp_options.MaxResults = (1);
+        tmp_options.MaxResults = 1;
         tmp_options.InclusiveMinDistance = (limit);
         tmp_options.MaxError = (S1ChordAngle.Straight);
         return base_.FindClosestEdge(target, tmp_options).ShapeId >= 0;
