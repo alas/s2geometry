@@ -10,7 +10,7 @@
 // All other operations are implemented similarly (using the supplementary
 // distance Pi - x).  For example, S2MaxDistance(x) - S2MaxDistance(y) ==
 // S2MaxDistance(x + y).
-public readonly record struct S2MaxDistance(S1ChordAngle Distance) : IComparable<S2MaxDistance>, IDistance
+public readonly record struct S2MaxDistance(S1ChordAngle Distance) : IComparable<S2MaxDistance>, IDistance<S2MaxDistance>
 {
     #region Fields, Constants
 
@@ -48,13 +48,13 @@ public readonly record struct S2MaxDistance(S1ChordAngle Distance) : IComparable
 
     #region IDistance
 
-    public S1ChordAngle SubstractChord(S1ChordAngle other) => (this - new S2MaxDistance(other)).Distance;
+    public S2MaxDistance SubstractChord(S1ChordAngle other) => this - other;
 
-    public IDistance Substract(S1ChordAngle other) => (this - new S2MaxDistance(other)).Distance;
+    public S2MaxDistance Substract(S2MaxDistance other) => new((this - other).Distance);
 
     public bool IsLessThan(S1ChordAngle other) => this < new S2MaxDistance(other);
 
-    public bool IsLessThan(IDistance other) => this < (S2MaxDistance)other;
+    public bool IsLessThan(S2MaxDistance other) => this < other;
 
     public S1ChordAngle ToS1ChordAngle() => Distance;
 
@@ -71,9 +71,9 @@ public readonly record struct S2MaxDistance(S1ChordAngle Distance) : IComparable
         return false;
     }
 
-    public bool Equals(IDistance? other) => other is S2MaxDistance md && Equals(md);
+    public bool Equals(S2MaxDistance? other) => other is S2MaxDistance md && Equals(md);
 
-    public int CompareTo(IDistance? other)
+    public int CompareTo(S2MaxDistance? other)
     {
         if (other is not S2MaxDistance md) throw new NotImplementedException(
             $"cannot compare {nameof(S2MaxDistance)} to type {other?.GetType().FullName}");
@@ -81,8 +81,8 @@ public readonly record struct S2MaxDistance(S1ChordAngle Distance) : IComparable
         return CompareTo(md);
     }
 
-    public static IDistance GetZero() => Zero;
-    public static IDistance GetInfinity() => Infinity;
+    public static S2MaxDistance GetZero() => Zero;
+    public static S2MaxDistance GetInfinity() => Infinity;
 
     #endregion
 
@@ -107,6 +107,7 @@ public readonly record struct S2MaxDistance(S1ChordAngle Distance) : IComparable
     #region Operators
 
     public static S2MaxDistance operator -(S2MaxDistance x, S2MaxDistance delta) => new(x.Distance + delta.Distance);
+    public static S2MaxDistance operator -(S2MaxDistance x, S1ChordAngle delta) => new(x.Distance + delta);
 
     #endregion
 

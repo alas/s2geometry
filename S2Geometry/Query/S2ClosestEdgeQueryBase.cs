@@ -37,11 +37,8 @@
 
 namespace S2Geometry;
 
-public class S2ClosestEdgeQueryBase<Distance> where Distance : IDistance
+public class S2ClosestEdgeQueryBase<Distance> where Distance : IEquatable<Distance>, IComparable<Distance>, IDistance<Distance>
 {
-    private static readonly Distance Infinity = (Distance)Distance.GetInfinity();
-    private static readonly Distance Zero = (Distance)Distance.GetZero();
-
     // Returns a reference to the underlying S2ShapeIndex.
     public S2ShapeIndex Index { get; private set; }
     public Options Options_ { get; private set; }
@@ -218,7 +215,7 @@ public class S2ClosestEdgeQueryBase<Distance> where Distance : IDistance
         System.Diagnostics.Debug.Assert(!result_vector_.Any());
         System.Diagnostics.Debug.Assert(!result_set_.Any());
         System.Diagnostics.Debug.Assert(target.MaxBruteForceIndexSize >= 0);
-        if (Equals(distance_limit_, Zero)) return;
+        if (Equals(distance_limit_, Distance.GetZero())) return;
 
         if (options.IncludeInteriors)
         {
@@ -231,9 +228,9 @@ public class S2ClosestEdgeQueryBase<Distance> where Distance : IDistance
                 });
             foreach (int shape_id in shape_ids)
             {
-                AddResult(new Result(Zero, shape_id, -1));
+                AddResult(new Result(Distance.GetZero(), shape_id, -1));
             }
-            if (Equals(distance_limit_, Zero)) return;
+            if (Equals(distance_limit_, Distance.GetZero())) return;
         }
 
         // If max_error() > 0 and the target takes advantage of this, then we may
@@ -267,8 +264,8 @@ public class S2ClosestEdgeQueryBase<Distance> where Distance : IDistance
         // Note that we can't compare max_error() and distance_limit_ directly
         // because one is a Delta and one is a Distance.  Instead we subtract them.
         use_conservative_cell_distance_ = target_uses_max_error &&
-            (Equals(distance_limit_, Infinity) ||
-                Zero.IsLessThan(distance_limit_.Substract(options.MaxError)));
+            (Equals(distance_limit_, Distance.GetInfinity()) ||
+                Distance.GetZero().IsLessThan(distance_limit_.SubstractChord(options.MaxError)));
 
         // Use the brute force algorithm if the index is small enough.  To avoid
         // spending too much time counting edges when there are many shapes, we stop
@@ -388,13 +385,13 @@ public class S2ClosestEdgeQueryBase<Distance> where Distance : IDistance
             if (found)
             {
                 var tc = Index.GetIndexCell(pos).Value;
-                ProcessEdges(new QueueEntry(Zero, tc.Item1, tc.Item2));
+                ProcessEdges(new QueueEntry(Distance.GetZero(), tc.Item1, tc.Item2));
                 // Skip the rest of the algorithm if we found an intersecting edge.
-                if (Equals(distance_limit_, Zero)) return;
+                if (Equals(distance_limit_, Distance.GetZero())) return;
             }
         }
         if (!index_covering_.Any()) InitCovering();
-        if (Equals(distance_limit_, Infinity))
+        if (Equals(distance_limit_, Distance.GetInfinity()))
         {
             // Start with the precomputed index covering.
             for (int i = 0; i < index_covering_.Count; ++i)
@@ -556,7 +553,7 @@ public class S2ClosestEdgeQueryBase<Distance> where Distance : IDistance
         {
             // Optimization for the common case where only the closest edge is wanted.
             result_singleton_ = result;
-            distance_limit_ = (Distance)result.Distance.Substract(Options_.MaxError);
+            distance_limit_ = result.Distance.SubstractChord(Options_.MaxError);
         }
         else if (Options_.MaxResults == Options.kMaxMaxResults)
         {
@@ -575,7 +572,7 @@ public class S2ClosestEdgeQueryBase<Distance> where Distance : IDistance
                 {
                     result_set_.Remove(result_set_.Last());
                 }
-                distance_limit_ = (Distance)result_set_.Last().Distance.Substract(Options_.MaxError);
+                distance_limit_ = (Distance)result_set_.Last().Distance.SubstractChord(Options_.MaxError);
             }
         }
     }
@@ -628,7 +625,7 @@ public class S2ClosestEdgeQueryBase<Distance> where Distance : IDistance
             if (num_edges < kMinEdgesToEnqueue)
             {
                 // Set "distance" to zero to avoid the expense of computing it.
-                ProcessEdges(new QueueEntry(Zero, id, index_cell));
+                ProcessEdges(new QueueEntry(Distance.GetZero(), id, index_cell));
                 return;
             }
         }
@@ -640,7 +637,7 @@ public class S2ClosestEdgeQueryBase<Distance> where Distance : IDistance
         if (use_conservative_cell_distance_)
         {
             // Ensure that "distance" is a lower bound on the true distance to the cell.
-            distance = (Distance)distance.Substract(Options_.MaxError);  // operator-=() not defined.
+            distance = distance.SubstractChord(Options_.MaxError);  // operator-=() not defined.
         }
         queue_.Add(new QueueEntry(distance, id, index_cell));
     }
@@ -689,7 +686,7 @@ public class S2ClosestEdgeQueryBase<Distance> where Distance : IDistance
         // S1ChordAngle then you can specify max_distance.Successor().
         //
         // DEFAULT: Distance.Infinity()
-        public Distance MaxDistance { get; set; } = Infinity;
+        public Distance MaxDistance { get; set; } = Distance.GetInfinity();
 
         // Specifies that edges up to max_error() further away than the true
         // closest edges may be substituted in the result set, as long as such
@@ -785,7 +782,7 @@ public class S2ClosestEdgeQueryBase<Distance> where Distance : IDistance
 
         // The default constructor yields an empty result, with a distance() of
         // Infinity() and shape_id == edge_id == -1.
-        public Result() : this(Infinity, -1, -1) { }
+        public Result() : this(Distance.GetInfinity(), -1, -1) { }
 
         #endregion
 

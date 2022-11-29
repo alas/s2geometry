@@ -25,12 +25,9 @@ namespace S2Geometry;
 
 using Delta = S1ChordAngle;
 
-public class S2ClosestPointQueryBase<Distance, Data> where Distance : IDistance where Data : IComparable<Data>
+public class S2ClosestPointQueryBase<Distance, Data> where Distance : IEquatable<Distance>, IComparable<Distance>, IDistance<Distance> where Data : IComparable<Data>
 {
     #region Fields, Constants
-
-    private static readonly IDistance Infinity = Distance.GetInfinity();
-    private static readonly IDistance Zero = Distance.GetZero();
 
     private const int kMaxMaxResults = int.MaxValue;
 
@@ -174,12 +171,12 @@ public class S2ClosestPointQueryBase<Distance, Data> where Distance : IDistance 
         target_ = target;
         Options_ = options;
 
-        distance_limit_ = (Distance)options.MaxDistance;
+        distance_limit_ = options.MaxDistance;
         result_singleton_ = new Result();
         System.Diagnostics.Debug.Assert(!result_vector_.Any());
         System.Diagnostics.Debug.Assert(!result_set_.Any());
         System.Diagnostics.Debug.Assert(target.MaxBruteForceIndexSize >= 0);
-        if (Equals(distance_limit_, Zero)) return;
+        if (Equals(distance_limit_, Distance.GetZero())) return;
 
         // If max_error() > 0 and the target takes advantage of this, then we may
         // need to adjust the distance estimates to the priority queue cells to
@@ -212,8 +209,8 @@ public class S2ClosestPointQueryBase<Distance, Data> where Distance : IDistance 
         // Note that we can't compare max_error() and distance_limit_ directly
         // because one is a Delta and one is a Distance.  Instead we subtract them.
         use_conservative_cell_distance_ = target_uses_max_error &&
-            (Equals(distance_limit_, Infinity) ||
-                Zero.IsLessThan(distance_limit_.SubstractChord(options.MaxError)));
+            (Equals(distance_limit_, Distance.GetInfinity()) ||
+                Distance.GetZero().IsLessThan(distance_limit_.SubstractChord(options.MaxError)));
 
         // Note that given point is processed only once (unlike S2ClosestEdgeQuery),
         // and therefore we don't need to worry about the possibility of having
@@ -247,7 +244,7 @@ public class S2ClosestPointQueryBase<Distance, Data> where Distance : IDistance 
             queue_.Remove(entry);
             // Work around weird parse error in gcc 4.9 by using a local variable for
             // entry.distance.
-            IDistance distance = entry.Distance;
+            var distance = entry.Distance;
             if (!(distance.CompareTo(distance_limit_) < 0))
             {
                 queue_.Clear();  // Clear any remaining entries.
@@ -302,7 +299,7 @@ public class S2ClosestPointQueryBase<Distance, Data> where Distance : IDistance 
                 MaybeAddResult(it.Value.Point, it.Value.Data);
             }
             // Skip the rest of the algorithm if we found a matching point.
-            if (Equals(distance_limit_, Zero)) return;
+            if (Equals(distance_limit_, Distance.GetZero())) return;
         }
         // We start with a covering of the set of indexed points, then intersect it
         // with the given region (if any) and maximum search radius disc (if any).
@@ -317,7 +314,7 @@ public class S2ClosestPointQueryBase<Distance, Data> where Distance : IDistance 
             S2CellUnion.GetIntersection(index_covering_, region_covering_, intersection_with_region_);
             initial_cells = intersection_with_region_;
         }
-        if (distance_limit_.IsLessThan(Infinity.ToS1ChordAngle()))
+        if (distance_limit_.IsLessThan(Distance.GetInfinity().ToS1ChordAngle()))
         {
             var coverer = new S2RegionCoverer();
             coverer.Options_.MaxCells = 4;
@@ -411,7 +408,7 @@ public class S2ClosestPointQueryBase<Distance, Data> where Distance : IDistance 
         {
             // Optimization for the common case where only the closest point is wanted.
             result_singleton_ = result;
-            distance_limit_ = (Distance)result.Distance.Substract(Options_.MaxError);
+            distance_limit_ = result.Distance.SubstractChord(Options_.MaxError);
         }
         else if (Options_.MaxResults == kMaxMaxResults)
         {
@@ -430,7 +427,7 @@ public class S2ClosestPointQueryBase<Distance, Data> where Distance : IDistance 
             result_set_.Add(result);
             if (result_set_.Count >= Options_.MaxResults)
             {
-                distance_limit_ = (Distance)result_set_.First().Distance.Substract(Options_.MaxError);
+                distance_limit_ = result_set_.First().Distance.SubstractChord(Options_.MaxError);
             }
         }
     }
@@ -472,7 +469,7 @@ public class S2ClosestPointQueryBase<Distance, Data> where Distance : IDistance 
                     if (use_conservative_cell_distance_)
                     {
                         // Ensure that "distance" is a lower bound on distance to the cell.
-                        distance = (Distance)distance.Substract(Options_.MaxError);
+                        distance = distance.SubstractChord(Options_.MaxError);
                     }
                     queue_.Add(new QueueEntry(distance, id));
                 }
@@ -529,7 +526,7 @@ public class S2ClosestPointQueryBase<Distance, Data> where Distance : IDistance 
         // S1ChordAngle then you can specify max_distance.Successor().
         //
         // DEFAULT: Distance.Infinity
-        public IDistance MaxDistance { get; set; } = Infinity;
+        public Distance MaxDistance { get; set; } = Distance.GetInfinity();
 
         // Specifies that points up to max_error() further away than the true
         // closest points may be substituted in the result set, as long as such
@@ -573,7 +570,7 @@ public class S2ClosestPointQueryBase<Distance, Data> where Distance : IDistance 
     // Each "Result" object represents a closest point.
     public readonly record struct Result(
                     // The distance from the target to this point.
-                    IDistance Distance,
+                    Distance Distance,
                     // The point itself.
                     S2Point Point, 
                     // The client-specified data associated with this point.
@@ -583,7 +580,7 @@ public class S2ClosestPointQueryBase<Distance, Data> where Distance : IDistance 
 
         // The default constructor creates an "empty" result, with a distance() of
         // Infinity() and non-dereferencable point() and data() values.
-        public Result() : this(Infinity, S2Point.Empty, default) { }
+        public Result() : this(Distance.GetInfinity(), S2Point.Empty, default) { }
 
         #endregion
 
@@ -625,12 +622,12 @@ public class S2ClosestPointQueryBase<Distance, Data> where Distance : IDistance 
     {
         // A lower bound on the distance from the target to "id".  This is the key
         // of the priority queue.
-        public readonly IDistance Distance;
+        public readonly Distance Distance;
 
         // The cell being queued.
         public readonly S2CellId Id;
 
-        public QueueEntry(IDistance _distance, S2CellId _id)
+        public QueueEntry(Distance _distance, S2CellId _id)
         {
             Distance = _distance; Id = _id;
         }

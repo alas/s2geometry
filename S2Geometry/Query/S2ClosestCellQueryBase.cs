@@ -26,11 +26,8 @@ using LabelledCell = S2CellIndex.LabelledCell;
 // used as long as it implements the IDistance concept described in
 // s2distance_targets.h.  For example this can be used to measure maximum
 // distances, to get more accuracy, or to measure non-spheroidal distances.
-public class S2ClosestCellQueryBase<Distance> where Distance : IEquatable<Distance>, IComparable<Distance>, IDistance
+public class S2ClosestCellQueryBase<Distance> where Distance : IEquatable<Distance>, IComparable<Distance>, IDistance<Distance>
 {
-    private static readonly Distance Infinity = (Distance)Distance.GetInfinity();
-    private static readonly Distance Zero = (Distance)Distance.GetZero();
-
     // The minimum number of ranges that a cell must contain to enqueue it
     // rather than processing its contents immediately.
     private const int kMinRangesToEnqueue = 6;
@@ -206,7 +203,7 @@ public class S2ClosestCellQueryBase<Distance> where Distance : IEquatable<Distan
         System.Diagnostics.Debug.Assert(!result_vector_.Any());
         System.Diagnostics.Debug.Assert(!result_set_.Any());
         System.Diagnostics.Debug.Assert(target.MaxBruteForceIndexSize >= 0);
-        if (Equals(distance_limit_, Zero)) return;
+        if (Equals(distance_limit_, Distance.GetZero())) return;
 
         // If max_error() > 0 and the target takes advantage of this, then we may
         // need to adjust the distance estimates to the priority queue cells to
@@ -228,17 +225,17 @@ public class S2ClosestCellQueryBase<Distance> where Distance : IEquatable<Distan
         // i.e. all remaining candidate cells and edges can safely be discarded.
         // (Note that this is how IsIDistanceLess() and friends are implemented.)
         bool target_uses_max_error = false;
-        if (!Equals(options.MaxError, Zero))
+        if (!Equals(options.MaxError, Distance.GetZero()))
         {
             target_.MaxError = options.MaxError;
             target_uses_max_error = true;
         }
 
         // Note that we can't compare max_error() and distance_limit_ directly
-        // because one is a S1ChordAngle and one is a IDistance.  Instead we subtract them.
+        // because one is a S1ChordAngle and one is a Distance.  Instead we subtract them.
         use_conservative_cell_distance_ = target_uses_max_error &&
-            (Equals(distance_limit_, Infinity) ||
-             S1ChordAngle.Zero.IsLessThan(distance_limit_.Substract(options.MaxError)));
+            (Equals(distance_limit_, Distance.GetInfinity()) ||
+             Distance.GetZero().IsLessThan(distance_limit_.SubstractChord(options.MaxError)));
 
         // Use the brute force algorithm if the index is small enough.
         if (options.UseBruteForce ||
@@ -273,7 +270,7 @@ public class S2ClosestCellQueryBase<Distance> where Distance : IEquatable<Distan
             queue_.Remove(entry);
             // Work around weird parse error in gcc 4.9 by using a local variable for
             // entry.distance.
-            IDistance distance = entry.Item1;
+            Distance distance = entry.Item1;
             if (!(distance.IsLessThan(distance_limit_)))
             {
                 queue_.Clear();
@@ -317,14 +314,14 @@ public class S2ClosestCellQueryBase<Distance> where Distance : IEquatable<Distan
             var target = new S2CellId(cap.Center);
             range.Seek(target);
             AddRange(range);
-            if (Equals(distance_limit_, Zero)) return;
+            if (Equals(distance_limit_, Distance.GetZero())) return;
 
             // If the range immediately follows "center" (rather than containing it),
             // then check the previous non-empty range as well.
             if (range.Current.StartId > target && range.MovePrevious())
             {
                 AddRange(range);
-                if (Equals(distance_limit_, Zero)) return;
+                if (Equals(distance_limit_, Distance.GetZero())) return;
             }
         }
 
@@ -345,7 +342,7 @@ public class S2ClosestCellQueryBase<Distance> where Distance : IEquatable<Distan
         // (4) normalizing the result.
         if (!index_covering_.Any()) InitCovering();
         var initial_cells = index_covering_;
-        if (distance_limit_.IsLessThan(Infinity))
+        if (distance_limit_.IsLessThan(Distance.GetInfinity()))
         {
             var coverer = new S2RegionCoverer();
             coverer.Options_.MaxCells = 4;
@@ -452,7 +449,7 @@ public class S2ClosestCellQueryBase<Distance> where Distance : IEquatable<Distan
         {
             // Optimization for the common case where only the closest cell is wanted.
             result_singleton_ = result;
-            distance_limit_ = (Distance)result.Distance.Substract(Options_().MaxError);
+            distance_limit_ = result.Distance.SubstractChord(Options_().MaxError);
         }
         else if (Options_().MaxResults == Options.kMaxMaxResults)
         {
@@ -471,7 +468,7 @@ public class S2ClosestCellQueryBase<Distance> where Distance : IEquatable<Distan
                 {
                     result_set_.Remove(result_set_.Last());
                 }
-                distance_limit_ = (Distance)result_set_.Last().Distance.Substract(Options_().MaxError);
+                distance_limit_ = result_set_.Last().Distance.SubstractChord(Options_().MaxError);
             }
         }
     }
@@ -507,7 +504,7 @@ public class S2ClosestCellQueryBase<Distance> where Distance : IEquatable<Distan
                 if (use_conservative_cell_distance_)
                 {
                     // Ensure that "distance" is a lower bound on distance to the cell.
-                    distance = (Distance)distance.Substract(Options_().MaxError);
+                    distance = distance.SubstractChord(Options_().MaxError);
                 }
                 queue_.Add(new ReverseKeyData<Distance, S2CellId>(distance, id));
             }
@@ -568,7 +565,7 @@ public class S2ClosestCellQueryBase<Distance> where Distance : IEquatable<Distan
         // S1ChordAngle then you can specify max_distance.Successor().
         //
         // DEFAULT: IDistance.Infinity()
-        public Distance MaxDistance { get; set; } = Infinity;
+        public Distance MaxDistance { get; set; } = Distance.GetInfinity();
 
         // Specifies that cells up to max_error() further away than the true
         // closest cells may be substituted in the result set, as long as such
@@ -622,7 +619,7 @@ public class S2ClosestCellQueryBase<Distance> where Distance : IEquatable<Distan
         // The default constructor yields an empty result, with a distance() of
         // Infinity() and invalid cell_id() and label() values.
         public Result()
-            : this(Infinity, S2CellId.None, -1)
+            : this(Distance.GetInfinity(), S2CellId.None, -1)
         {
         }
 

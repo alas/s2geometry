@@ -95,7 +95,7 @@
 
 namespace S2Geometry;
 
-public readonly record struct S1ChordAngle : IComparable<S1ChordAngle>, IDistance
+public readonly record struct S1ChordAngle : IComparable<S1ChordAngle>, IDistance<S1ChordAngle>
 {
     #region Fields, Constants
 
@@ -462,11 +462,9 @@ public readonly record struct S1ChordAngle : IComparable<S1ChordAngle>, IDistanc
 
     public S1ChordAngle SubstractChord(S1ChordAngle other) => this - other;
 
-    public IDistance Substract(S1ChordAngle other) => this - other;
+    public S1ChordAngle Substract(S1ChordAngle other) => this - other;
 
     public bool IsLessThan(S1ChordAngle other) => this < other;
-
-    public bool IsLessThan(IDistance other) => this < (S1ChordAngle)other;
 
     public S1ChordAngle ToS1ChordAngle() => this;
 
@@ -482,12 +480,12 @@ public readonly record struct S1ChordAngle : IComparable<S1ChordAngle>, IDistanc
         }
         return false;
     }
-    public static IDistance GetZero() => Zero;
-    public static IDistance GetInfinity() => Infinity;
+    public static S1ChordAngle GetZero() => Zero;
+    public static S1ChordAngle GetInfinity() => Infinity;
 
-    public bool Equals(IDistance? other) => other is S1ChordAngle ca && Equals(ca);
+    public bool Equals(S1ChordAngle? other) => other is S1ChordAngle ca && Equals(ca);
 
-    public int CompareTo(IDistance? other)
+    public int CompareTo(S1ChordAngle? other)
     {
         if (other is not S1ChordAngle ca) throw new NotImplementedException(
             $"cannot compare {nameof(S1ChordAngle)} to type {other?.GetType().FullName}");
@@ -523,14 +521,14 @@ public readonly record struct S1ChordAngle : IComparable<S1ChordAngle>, IDistanc
     #endregion
 }
 
-public interface IDistance : IEquatable<IDistance>, IComparable<IDistance>
+public interface IDistance<T> where T : IEquatable<T>, IComparable<T>, IDistance<T>
 {
-    S1ChordAngle SubstractChord(S1ChordAngle other);
-    IDistance Substract(S1ChordAngle other);
+    T SubstractChord(S1ChordAngle other);
+    T Substract(T other);
     bool IsLessThan(S1ChordAngle other);
-    bool IsLessThan(IDistance other);
+    bool IsLessThan(T other);
     S1ChordAngle ToS1ChordAngle();
     S1ChordAngle GetChordAngleBound();
-    static virtual IDistance GetZero() => throw new NotImplementedException();
-    static virtual IDistance GetInfinity() => throw new NotImplementedException();
+    static abstract T GetZero();
+    static abstract T GetInfinity();
 }

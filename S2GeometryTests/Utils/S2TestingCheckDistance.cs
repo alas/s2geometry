@@ -1,10 +1,7 @@
 namespace S2Geometry;
 
-public static class S2TestingCheckDistance<Id, Distance> where Distance : IDistance where Id : IEquatable<Id>
+public static class S2TestingCheckDistance<Id, Distance> where Distance : IEquatable<Distance>, IComparable<Distance>, IDistance<Distance> where Id : IEquatable<Id>
 {
-    private static readonly IDistance Infinity = Distance.GetInfinity();
-    private static readonly IDistance Zero = Distance.GetZero();
-
     public delegate void WriteLineDelegate(string s);
 
     // Compare two sets of "closest" items, where "expected" is computed via brute
@@ -38,27 +35,27 @@ public static class S2TestingCheckDistance<Id, Distance> where Distance : IDista
 
         // Result set X should contain all the items from Y whose distance is less
         // than "limit" computed below.
-        var limit = Zero;
+        Distance limit = Distance.GetZero();
         if (x.Count < max_size)
         {
             // Result set X was not limited by "max_size", so it should contain all
             // the items up to "max_distance", except that a few items right near the
             // distance limit may be missed because the distance measurements used for
             // pruning S2Cells are not conservative.
-            if (Equals(max_distance, Infinity))
+            if (Equals(max_distance, Distance.GetInfinity()))
             {
                 limit = max_distance;
             }
             else
             {
-                limit = (Distance)max_distance.Substract(max_pruning_error);
+                limit = max_distance.SubstractChord(max_pruning_error);
             }
         }
         else if (x.Any())
         {
             // Result set X contains only the closest "max_size" items, to within a
             // tolerance of "max_error + max_pruning_error".
-            limit = (Distance)x.Last().Item1.Substract(max_error).Substract(max_pruning_error);
+            limit = x.Last().Item1.SubstractChord(max_error).SubstractChord(max_pruning_error);
         }
 
         bool result = true;

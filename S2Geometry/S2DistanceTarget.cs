@@ -60,7 +60,7 @@ namespace S2Geometry;
 //   // distance then the corresponding angle needs to be 0.56% larger.
 //   S1ChordAngle GetChordAngleBound();
 // };
-public abstract class S2DistanceTarget<Distance> where Distance : IDistance
+public abstract class S2DistanceTarget<Distance> where Distance : IEquatable<Distance>, IComparable<Distance>, IDistance<Distance>
 {
     // Returns an S2Cap that bounds the set of points whose distance to the
     // target is Distance.Zero().
