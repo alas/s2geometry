@@ -10,10 +10,9 @@
 // only with other sibling pairs.  (Below we require a slightly stronger
 // condition, namely that sibling pairs cannot coincide with any other edges.)
 
-using System.Diagnostics.CodeAnalysis;
-
 namespace S2Geometry.S2BuilderUtil;
 
+using System.Diagnostics.CodeAnalysis;
 using static S2Builder;
 using static S2Builder.GraphOptions;
 

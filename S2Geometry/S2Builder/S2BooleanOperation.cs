@@ -238,10 +238,9 @@
 //       new s2builderutil.S2PolylineVectorLayer(polylines),
 //       new S2PolygonLayer(polygon));
 
-using System.Runtime.InteropServices;
-
 namespace S2Geometry;
 
+using System.Runtime.InteropServices;
 using S2BuilderUtil;
 using static S2Builder;
 using static S2Builder.GraphOptions;

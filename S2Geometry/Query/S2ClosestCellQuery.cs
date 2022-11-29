@@ -1,8 +1,3 @@
-namespace S2Geometry;
-
-using Base = S2ClosestCellQueryBase<S1ChordAngle>;
-using S2MinDistanceTarget = S2DistanceTarget<S1ChordAngle>; // S1ChordAngle = S2MinDistance, S2MinDistanceTarget = Target
-
 // S2ClosestCellQuery is a helper class for finding the closest cell(s) to a
 // given point, edge, S2Cell, S2CellUnion, or geometry collection.  A typical
 // use case would be to add a collection of S2Cell coverings to an S2CellIndex
@@ -58,6 +53,11 @@ using S2MinDistanceTarget = S2DistanceTarget<S1ChordAngle>; // S1ChordAngle = S2
 // geometric objects.
 //
 // See S2ClosestCellQueryBase for full documentation.
+
+namespace S2Geometry;
+
+using Base = S2ClosestCellQueryBase<S1ChordAngle>;
+
 public class S2ClosestCellQuery
 {
     #region MaxBruteForceIndexSize

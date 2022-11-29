@@ -1,5 +1,3 @@
-namespace S2Geometry;
-
 // An S2Region represents a two-dimensional region over the unit sphere.
 // It is an abstract interface with various concrete subtypes.
 //
@@ -7,6 +5,9 @@ namespace S2Geometry;
 // approximated as simpler regions.  So rather than having a wide variety
 // of virtual methods that are implemented by all subtypes, the interface
 // is restricted to methods that are useful for computing approximations.
+
+namespace S2Geometry;
+
 public interface IS2Region<T> : IS2Region, IEquatable<T> where T : IS2Region { }
 
 public interface IEncoder

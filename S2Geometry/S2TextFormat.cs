@@ -1,7 +1,7 @@
+namespace S2Geometry;
+
 using System.Globalization;
 using System.Text;
-
-namespace S2Geometry;
 
 public static class S2TextFormat
 {

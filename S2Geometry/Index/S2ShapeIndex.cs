@@ -115,9 +115,9 @@
 // from multiple threads, while non-const methods require exclusive access to
 // the S2ShapeIndex.
 
-using System.Collections;
-
 namespace S2Geometry;
+
+using System.Collections;
 
 public abstract class S2ShapeIndex
 {

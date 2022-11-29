@@ -1,5 +1,3 @@
-namespace S2Geometry;
-
 // There are several notions of the "centroid" of a triangle.  First, there
 // is the planar centroid, which is simply the centroid of the ordinary
 // (non-spherical) triangle defined by the three vertices.  Second, there is
@@ -28,6 +26,9 @@ namespace S2Geometry;
 // hand, the true centroid is at M=(0, 0.5, 0.5), which when projected onto
 // the surface is a much more reasonable interpretation of the "center" of
 // this triangle.
+
+namespace S2Geometry;
+
 public static class S2Centroid
 {
     // Returns the centroid of the planar triangle ABC.  This can be normalized to

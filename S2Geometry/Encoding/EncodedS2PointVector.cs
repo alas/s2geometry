@@ -9,9 +9,9 @@
 // demand.  This can be a big performance advantage when only a small part of
 // the data structure is actually used.
 
-using System.Runtime.InteropServices;
-
 namespace S2Geometry;
+
+using System.Runtime.InteropServices;
 
 public class EncodedS2PointVector
 {

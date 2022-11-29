@@ -1,6 +1,6 @@
-using System.Collections;
-
 namespace S2Geometry;
+
+using System.Collections;
 
 public static partial class S2ShapeUtil
 {

@@ -131,9 +131,9 @@
 //#define S2_LINEAR_PROJECTION
 //#define S2_TAN_PROJECTION
 
-using System.Collections.ObjectModel;
-
 namespace S2Geometry;
+
+using System.Collections.ObjectModel;
 
 public static partial class S2
 {

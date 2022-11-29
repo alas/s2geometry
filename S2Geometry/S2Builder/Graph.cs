@@ -1,9 +1,7 @@
-using System.Diagnostics.CodeAnalysis;
-using System.Runtime.InteropServices;
-using System.Text;
-
 namespace S2Geometry;
 
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.InteropServices;
 using SiblingPairs = S2Builder.GraphOptions.SiblingPairs;
 using DegenerateEdges = S2Builder.GraphOptions.DegenerateEdges;
 using DuplicateEdges = S2Builder.GraphOptions.DuplicateEdges;

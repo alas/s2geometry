@@ -66,9 +66,9 @@
 // allocations rather than detecting them after the fact (as would happen with
 // malloc hooks).
 
-using System.Runtime.InteropServices;
-
 namespace S2Geometry;
+
+using System.Runtime.InteropServices;
 
 public class S2MemoryTracker
 {

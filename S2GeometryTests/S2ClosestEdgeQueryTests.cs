@@ -1,8 +1,8 @@
 namespace S2Geometry;
 
-using Distance = S1ChordAngle; // S2MinDistance
+using Distance = S2MinDistance;
 using Result = S2ClosestEdgeQueryBase<S1ChordAngle>.Result;
-using Target = S2DistanceTarget<S1ChordAngle>; // S2MinDistanceTarget
+using Target = S2MinDistanceTarget;
 
 using TestingResult = ValueTuple<S1ChordAngle, Edge>;
 using TestingDistance = S2TestingCheckDistance<Edge, S1ChordAngle>;

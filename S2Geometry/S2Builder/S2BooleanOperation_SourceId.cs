@@ -1,10 +1,12 @@
 ﻿namespace S2Geometry;
 
-// SourceId identifies an edge from one of the two input S2ShapeIndexes.
-// It consists of a region id (0 or 1), a shape id within that region's
-// S2ShapeIndex, and an edge id within that shape.
-//
-// Note(Alas): extracted from S2BooleanOperation
+/// <summary>
+/// SourceId identifies an edge from one of the two input S2ShapeIndexes.
+/// It consists of a region id (0 or 1), a shape id within that region's
+/// S2ShapeIndex, and an edge id within that shape.
+///
+/// Note(Alas): extracted from S2BooleanOperation
+/// </summary>
 public readonly record struct SourceId(int RegionId, int ShapeId, int EdgeId) : IComparable<SourceId>
 {
     #region Fields, Constants

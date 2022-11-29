@@ -70,10 +70,10 @@
 // built-in methods such as VisitIntersectingCells and GetIntersectingLabels,
 // or a helper such as S2ClosestCellQuery or S2Closest*Query.CellUnionTarget.
 
+namespace S2Geometry;
+
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
-
-namespace S2Geometry;
 
 public class S2CellIndex
 {
@@ -603,7 +603,6 @@ public class S2CellIndex
 
         #endregion
     }
-
 
     private readonly struct DeltaBuild : IComparable<DeltaBuild>
     {

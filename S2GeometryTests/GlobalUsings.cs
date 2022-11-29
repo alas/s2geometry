@@ -47,3 +47,6 @@ global using S2PointLoopSpan = System.Collections.Generic.List<S2Geometry.Vector
 
 global using S2EdgeCrosser = S2Geometry.S2EdgeCrosserBase;
 global using S2CopyingEdgeCrosser = S2Geometry.S2EdgeCrosserBase;
+
+global using S2MinDistance = S2Geometry.S1ChordAngle;
+global using S2MinDistanceTarget = S2Geometry.S2DistanceTarget<S2Geometry.S1ChordAngle>;

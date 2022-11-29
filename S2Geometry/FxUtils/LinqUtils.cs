@@ -69,9 +69,6 @@ public static class LinqUtils
         }
     }
 
-    /// <summary>
-    /// 
-    /// </summary>
     /// <remarks>from: https://stackoverflow.com/questions/16323386/fast-efficient-way-to-get-index-of-minimum-value-in-listt/16323480</remarks>
     public static int IndexOfMin<T>(this IList<T> self) where T : IComparable<T>
     {

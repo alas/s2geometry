@@ -1,6 +1,6 @@
-﻿using System.Numerics;
+﻿namespace S2Geometry;
 
-namespace S2Geometry;
+using System.Numerics;
 
 public static class MathUtils
 {

@@ -53,9 +53,9 @@
 //
 //  - No loop may be empty.  The full loop may appear only in the full polygon.
 
-using System.Runtime.InteropServices;
-
 namespace S2Geometry;
+
+using System.Runtime.InteropServices;
 
 // A map from each loop to its immediate children with respect to nesting.
 // This map is built during initialization of multi-loop polygons to

@@ -27,10 +27,9 @@
 // relationships, e.g. whether one loop contains another.  If your data does
 // not satisfy these restrictions, you can use S2Builder to normalize it.
 
-using System.Runtime.InteropServices;
-
 namespace S2Geometry;
 
+using System.Runtime.InteropServices;
 using RangeEnumerator = S2ShapeUtil.RangeEnumerator;
 
 public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDecoder<S2Loop>

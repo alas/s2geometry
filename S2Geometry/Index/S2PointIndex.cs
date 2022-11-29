@@ -61,10 +61,10 @@
 // REQUIRES: "Data" has default and copy constructors.
 // REQUIRES: "Data" has operator== and operator<.
 
+namespace S2Geometry;
+
 using System.Collections;
 using System.Runtime.InteropServices;
-
-namespace S2Geometry;
 
 public class S2PointIndex<Data> : IEnumerable<TreeNode<Data>>
 {

@@ -64,13 +64,11 @@
 // The implementation is designed to be fast for both simple and complex
 // geometric objects.
 
-using System.Runtime.InteropServices;
-
 namespace S2Geometry;
 
-// S2MinDistance is a thin wrapper around S1ChordAngle that implements the
-// Distance concept required by S2ClosestPointQueryBase.
-using Distance = S1ChordAngle; // S2MinDistance
+using System.Runtime.InteropServices;
+
+using Distance = S2MinDistance;
 
 // Each "Result" object represents a closest edge.  Here are its main
 // methods (see S2ClosestEdgeQueryBase::Result for details):
@@ -93,14 +91,12 @@ using Distance = S1ChordAngle; // S2MinDistance
 //   // case, namely when FindClosestEdge() does not find any suitable edges.
 //   // It is never returned by methods that return a vector of results.)
 //   bool is_empty() const;
-using Result = S2ClosestEdgeQueryBase<S1ChordAngle>.Result;
+using Result = S2ClosestEdgeQueryBase<S2MinDistance>.Result;
 
 // "Target" represents the geometry to which the distance is measured.
 // There are subtypes for measuring the distance to a point, an edge, an
 // S2Cell, or an S2ShapeIndex (an arbitrary collection of geometry).
-// using S2MinDistance = S1ChordAngle;
-// using S2MinDistanceTarget = S2DistanceTarget<S2MinDistance>;
-using Target = S2DistanceTarget<S1ChordAngle>; // S2MinDistanceTarget
+using Target = S2MinDistanceTarget;
 
 public class S2ClosestEdgeQuery
 {

@@ -1,5 +1,3 @@
-namespace S2Geometry;
-
 // S2RegionTermIndexer is a helper class for adding spatial data to an
 // information retrieval system.  Such systems work by converting documents
 // into a collection of "index terms" (e.g., representing words or phrases),
@@ -135,6 +133,9 @@ namespace S2Geometry;
 //   the same cell, we have a choice about whether to treat this match as a
 //   "covering term" or an "ancestor term".  One choice minimizes query size
 //   while the other minimizes index size.
+
+namespace S2Geometry;
+
 public class S2RegionTermIndexer
 {
     // The following parameters control the tradeoffs between index size, query

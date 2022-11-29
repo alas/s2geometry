@@ -30,9 +30,9 @@
 // This class is intended to be copied by value as desired.  It uses
 // the default copy constructor and assignment operator.
 
-using System.Globalization;
-
 namespace S2Geometry;
+
+using System.Globalization;
 
 public readonly record struct S2CellId(UInt64 Id) : IComparable<S2CellId>, IDecoderStruct<S2CellId>
 {

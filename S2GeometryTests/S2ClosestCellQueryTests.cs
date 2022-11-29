@@ -1,7 +1,7 @@
 namespace S2Geometry;
 
 using LabelledCell = S2CellIndex.LabelledCell;
-using Target = S2DistanceTarget<S1ChordAngle>; // S2MinDistanceTarget
+using Target = S2MinDistanceTarget;
 
 public class S2ClosestCellQueryTests
 {

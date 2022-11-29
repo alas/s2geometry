@@ -1,5 +1,4 @@
-﻿
-// The S2 library defines extra validity checks throughout the code that can
+﻿// The S2 library defines extra validity checks throughout the code that can
 // optionally be enabled or disabled.  By default, these validity checks are
 // enabled in debug-mode builds (including fastbuild) and disabled in
 // optimized builds.

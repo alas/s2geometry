@@ -1,5 +1,3 @@
-namespace S2Geometry;
-
 // S2DistanceTarget represents a geometric object to which distances are
 // measured.  For example, there are subtypes for measuring distances to a
 // point, an edge, or to an S2ShapeIndex (an arbitrary collection of
@@ -60,6 +58,9 @@ namespace S2Geometry;
 //   // distance then the corresponding angle needs to be 0.56% larger.
 //   S1ChordAngle GetChordAngleBound();
 // };
+
+namespace S2Geometry;
+
 public abstract class S2DistanceTarget<Distance> where Distance : IEquatable<Distance>, IComparable<Distance>, IDistance<Distance>
 {
     // Returns an S2Cap that bounds the set of points whose distance to the

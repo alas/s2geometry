@@ -2,7 +2,7 @@
 // minimum distances on the sphere.  Their purpose is to allow code to be
 // shared among the various query classes that find nearby geometry, such as
 // S2ClosestEdgeQuery, S2ClosestPointQuery, and S2ClosestCellQuery.
-namespace S2Geometry;
+
 
 // S2MinDistance is a thin wrapper around S1ChordAngle that is used by classes
 // such as S2ClosestEdgeQuery to compute minimum distances on the sphere (as
@@ -10,7 +10,7 @@ namespace S2Geometry;
 //
 // It implements the Distance concept defined by S2DistanceTarget (see
 // s2distance_target.h for details).
-using S2MinDistance = S1ChordAngle;
+global using S2MinDistance = S2Geometry.S1ChordAngle;
 
 // S2MinDistanceTarget represents a geometric object to which distances are
 // measured.  Specifically, it is used to compute minimum distances on the
@@ -18,7 +18,9 @@ using S2MinDistance = S1ChordAngle;
 //
 // Subtypes are defined below for measuring the distance to a point, an edge,
 // an S2Cell, or an S2ShapeIndex (an arbitrary collection of geometry).
-using S2MinDistanceTarget = S2DistanceTarget<S1ChordAngle>;
+global using S2MinDistanceTarget = S2Geometry.S2DistanceTarget<S2Geometry.S1ChordAngle>;
+
+namespace S2Geometry;
 
 // An S2DistanceTarget subtype for computing the minimum distance to a point.
 public class S2MinDistancePointTarget : S2MinDistanceTarget

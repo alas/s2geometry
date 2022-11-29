@@ -1,38 +1,36 @@
-/// <summary>
-/// Given a sequence of S2Points assumed to be the center of level-k cells,
-/// compresses it into a stream using the following method:
-/// - decompose the points into (face, si, ti) tuples (see s2coords.h)
-/// - run-length encode the faces, combining face number and count into a
-///     varInt32.  See the Faces class in s2point_compression.cc.
-/// - right shift the (si, ti) to remove the part that's ant for all cells
-///     of level-k.  The result is called the (pi, qi) space.
-/// - 2nd derivative encode the pi and qi sequences (linear prediction)
-/// - zig-zag encode all derivative values but the first, which cannot be
-///     negative
-/// - interleave the zig-zag encoded values
-/// - encode the first interleaved value in a fixed length encoding
-///     (varint would make this value larger)
-/// - encode the remaining interleaved values as varint64s, as the
-///     derivative encoding should make the values small.
-/// In addition, provides a lossless method to compress a sequence of points even
-/// if some points are not the center of level-k cells. These points are stored
-/// exactly, using 3 double precision values, after the above encoded string,
-/// together with their index in the sequence (this leads to some redundancy - it
-/// is expected that only a small fraction of the points are not cell centers).
-/// 
-/// Require that the encoder was constructed with the no-arg constructor, as
-/// Ensure() will be called to allocate space.
-/// 
-/// 
-/// To encode leaf cells, this requires 8 bytes for the first vertex plus
-/// an average of 3.8 bytes for each additional vertex, when computed on
-/// Google's geographic repository.
-/// </summary>
+// Given a sequence of S2Points assumed to be the center of level-k cells,
+// compresses it into a stream using the following method:
+// - decompose the points into (face, si, ti) tuples (see s2coords.h)
+// - run-length encode the faces, combining face number and count into a
+//     varInt32.  See the Faces class in s2point_compression.cc.
+// - right shift the (si, ti) to remove the part that's ant for all cells
+//     of level-k.  The result is called the (pi, qi) space.
+// - 2nd derivative encode the pi and qi sequences (linear prediction)
+// - zig-zag encode all derivative values but the first, which cannot be
+//     negative
+// - interleave the zig-zag encoded values
+// - encode the first interleaved value in a fixed length encoding
+//     (varint would make this value larger)
+// - encode the remaining interleaved values as varint64s, as the
+//     derivative encoding should make the values small.
+// In addition, provides a lossless method to compress a sequence of points even
+// if some points are not the center of level-k cells. These points are stored
+// exactly, using 3 double precision values, after the above encoded string,
+// together with their index in the sequence (this leads to some redundancy - it
+// is expected that only a small fraction of the points are not cell centers).
+// 
+// Require that the encoder was constructed with the no-arg constructor, as
+// Ensure() will be called to allocate space.
+// 
+// 
+// To encode leaf cells, this requires 8 bytes for the first vertex plus
+// an average of 3.8 bytes for each additional vertex, when computed on
+// Google's geographic repository.
+
+namespace S2Geometry;
 
 using System.Collections;
 using System.Runtime.InteropServices;
-
-namespace S2Geometry;
 
 public static class S2PointCompression
 {

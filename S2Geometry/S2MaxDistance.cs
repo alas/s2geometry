@@ -1,6 +1,4 @@
-﻿namespace S2Geometry;
-
-// S2MaxDistance is a class that allows maximum distances to be computed using
+﻿// S2MaxDistance is a class that allows maximum distances to be computed using
 // a minimum distance algorithm.  Specifically, S2MaxDistance(x) represents the
 // supplementary distance (Pi - x).  This has the effect of inverting the sort
 // order, i.e.
@@ -10,6 +8,9 @@
 // All other operations are implemented similarly (using the supplementary
 // distance Pi - x).  For example, S2MaxDistance(x) - S2MaxDistance(y) ==
 // S2MaxDistance(x + y).
+
+namespace S2Geometry;
+
 public readonly record struct S2MaxDistance(S1ChordAngle Distance) : IComparable<S2MaxDistance>, IDistance<S2MaxDistance>
 {
     #region Fields, Constants

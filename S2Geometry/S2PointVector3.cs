@@ -1,6 +1,4 @@
-﻿namespace S2Geometry;
-
-// A simple class to handle 3x3 matrices
+﻿// A simple class to handle 3x3 matrices
 // The aim of this class is to be able to manipulate 3x3 matrices
 // and 3D vectors as naturally as possible and make calculations
 // readable.
@@ -14,7 +12,10 @@
 // This feature is necessary to use the class in a more general framework with
 // double != plain old data type.
 //
-// Note(Alas): sadly I can't cleanly make it generic due to limitations in c# so I only added support for double and S2Point
+// Note(Alas): sadly I can't cleanly make it generic due to limitations in C# so I only added support for double and S2Point
+
+namespace S2Geometry;
+
 public readonly record struct S2PointS2Point
 {
     #region Fields, Constants

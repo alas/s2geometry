@@ -65,9 +65,9 @@
 // can be found here:
 // https://pdfs.semanticscholar.org/a596/8ca9488199291ffe5473643142862293d69d.pdf
 
-using System.Text;
-
 namespace S2Geometry;
+
+using System.Text;
 
 using WarpPath = List<(int start, int end)>;
 

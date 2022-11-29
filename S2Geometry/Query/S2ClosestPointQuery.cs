@@ -1,8 +1,3 @@
-namespace S2Geometry;
-
-using Distance = S1ChordAngle;
-using Target = S2DistanceTarget<S1ChordAngle>;
-
 // Given a set of points stored in an S2PointIndex, S2ClosestPointQuery
 // provides methods that find the closest point(s) to a given query point
 // or query edge.  Example usage:
@@ -59,6 +54,12 @@ using Target = S2DistanceTarget<S1ChordAngle>;
 // point sets.
 //
 // See S2ClosestPointQueryBase for full documentation.
+
+namespace S2Geometry;
+
+using Distance = S1ChordAngle;
+using Target = S2DistanceTarget<S1ChordAngle>;
+
 public class S2ClosestPointQuery<Data> where Data : IComparable<Data>
 {
     // Options that control the set of points returned.  Note that by default

@@ -1,10 +1,11 @@
-namespace S2Geometry;
-
 // S2PointVectorShape is an S2Shape representing a set of S2Points. Each point
 // is reprsented as a degenerate edge with the same starting and ending
 // vertices.
 //
 // This class is useful for adding a collection of points to an S2ShapeIndex.
+
+namespace S2Geometry;
+
 public class S2PointVectorShape : S2Shape, IInitEncoder<S2PointVectorShape>
 {
     public const TypeTag kTypeTag = TypeTag.S2PointVectorShape;

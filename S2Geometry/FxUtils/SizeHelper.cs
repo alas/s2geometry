@@ -1,6 +1,6 @@
-﻿using System.Reflection.Emit;
+﻿namespace S2Geometry;
 
-namespace S2Geometry;
+using System.Reflection.Emit;
 
 internal static class SizeHelper
 {

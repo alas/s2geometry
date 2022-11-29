@@ -1,9 +1,3 @@
-namespace S2Geometry;
-
-using ContentsEnumerator = S2CellIndex.ContentsEnumerator;
-using NonEmptyRangeEnumerator = S2CellIndex.NonEmptyRangeEnumerator;
-using LabelledCell = S2CellIndex.LabelledCell;
-
 // S2ClosestCellQueryBase is a templatized class for finding the closest
 // (cell_id, label) pairs in an S2CellIndex to a given target.  It is not
 // intended to be used directly, but rather to serve as the implementation of
@@ -26,6 +20,13 @@ using LabelledCell = S2CellIndex.LabelledCell;
 // used as long as it implements the IDistance concept described in
 // s2distance_targets.h.  For example this can be used to measure maximum
 // distances, to get more accuracy, or to measure non-spheroidal distances.
+
+namespace S2Geometry;
+
+using ContentsEnumerator = S2CellIndex.ContentsEnumerator;
+using NonEmptyRangeEnumerator = S2CellIndex.NonEmptyRangeEnumerator;
+using LabelledCell = S2CellIndex.LabelledCell;
+
 public class S2ClosestCellQueryBase<Distance> where Distance : IEquatable<Distance>, IComparable<Distance>, IDistance<Distance>
 {
     // The minimum number of ranges that a cell must contain to enqueue it

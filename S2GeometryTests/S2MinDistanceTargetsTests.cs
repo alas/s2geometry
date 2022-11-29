@@ -1,7 +1,5 @@
 namespace S2Geometry;
 
-using S2MinDistanceTarget = S2DistanceTarget<S1ChordAngle>;
-
 public class S2MinDistanceTargetsTests
 {
     [Fact]
