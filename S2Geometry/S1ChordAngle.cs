@@ -501,6 +501,10 @@ public readonly record struct S1ChordAngle : IComparable<S1ChordAngle>, IDistanc
     #endregion
 }
 
+/// <summary>
+/// "surrogate singleton" from: https://stackoverflow.com/a/66927384/3323941
+/// </summary>
+/// <typeparam name="T"></typeparam>
 public interface IDistance<T> where T : IEquatable<T>, IComparable<T>, IDistance<T>
 {
     static abstract T operator -(T me, S1ChordAngle other);
