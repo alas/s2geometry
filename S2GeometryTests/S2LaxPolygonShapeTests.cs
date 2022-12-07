@@ -42,7 +42,7 @@ public class S2LaxPolygonShapeTests
         List<int> edge_ids=new(count);
         LinqUtils.Iota(edge_ids, 0, count);
         var mt = new PseudoRandom.MersenneTwister();
-        edge_ids = edge_ids.Shuffle(mt.genrand_N).ToList();
+        edge_ids = edge_ids.Shuffle(mt.GenerateRandomN).ToList();
         foreach (var e in edge_ids)
         {
             Assert.Equal(encoded.GetChainPosition(e), original.GetChainPosition(e));
@@ -324,7 +324,7 @@ public class S2LaxPolygonShapeTests
             }
         }
         var mt = new PseudoRandom.MersenneTwister();
-        edges = edges.Shuffle(mt.genrand_N).ToList();
+        edges = edges.Shuffle(mt.GenerateRandomN).ToList();
         foreach (var (e, i, j) in edges)
         {
             Assert.Equal(shape.GetChainPosition(e), new S2Shape.ChainPosition(i, j));

@@ -23,8 +23,6 @@
 //     architecture(Haswell). We need to consider benchmarking it on more
 //     recent architectures.
 
-using System;
-
 namespace S2Geometry;
 
 public static class BitsInterleave

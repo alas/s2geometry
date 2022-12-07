@@ -152,7 +152,7 @@ public static class S2ShapeUtilCoding
     //           can be enlarged as necessary by calling Ensure(int).
     public static bool EncodeTaggedShapes(S2ShapeIndex index, ShapeEncoder shape_encoder, Encoder encoder)
     {
-        var shape_vector = new StringVectorEncoder();
+        StringVectorEncoder shape_vector = new();
         foreach (var shape in index)
         {
             var sub_encoder = shape_vector.AddViaEncoder();
@@ -232,17 +232,11 @@ public static class S2ShapeUtilCoding
 
     // Convenience function that calls TaggedShapeFactory using FullDecodeShape
     // as the ShapeDecoder.
-    public static TaggedShapeFactory FullDecodeShapeFactory(Decoder decoder)
-    {
-        return new TaggedShapeFactory(FullDecodeShape, decoder);
-    }
+    public static TaggedShapeFactory FullDecodeShapeFactory(Decoder decoder) => new (FullDecodeShape, decoder);
 
     // Convenience function that calls TaggedShapeFactory using LazyDecodeShape
     // as the ShapeDecoder.
-    public static TaggedShapeFactory LazyDecodeShapeFactory(Decoder decoder)
-    {
-        return new TaggedShapeFactory(LazyDecodeShape, decoder);
-    }
+    public static TaggedShapeFactory LazyDecodeShapeFactory(Decoder decoder) => new (LazyDecodeShape, decoder);
 
     // A ShapeFactory that simply returns shapes from the given vector.
     //

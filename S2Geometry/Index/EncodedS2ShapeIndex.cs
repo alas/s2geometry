@@ -285,6 +285,7 @@ public sealed class EncodedS2ShapeIndex : S2ShapeIndex, IDisposable
     }
 
     public override S2CellId? GetCellId(int index) => CellIds[index];
+
     public override S2ShapeIndexIdCell? GetIndexCell(int index)
     {
         // memory_order_release ensures that no reads or writes in the current
@@ -350,20 +351,23 @@ public sealed class EncodedS2ShapeIndex : S2ShapeIndex, IDisposable
         return CellIds.Count >> 11;
     }
 
-    public override IReversableEnumerator<S2ShapeIndexIdCell> GetNewEnumerator()
-        => new EncodedS2ShapeIndexEnumerator(this);
+    public override IReversableEnumerator<S2ShapeIndexIdCell> GetNewEnumerator() =>
+        new EncodedS2ShapeIndexEnumerator(this);
+
     public override IEnumerable<S2ShapeIndexIdCell> GetNewEnumerable()
     {
         var enumerator = GetNewEnumerator();
         while (enumerator.MoveNext())
             yield return enumerator.Current;
     }
+
     public override int GetEnumerableCount() => CellIds.Count;
 
     private class EncodedS2ShapeIndexEnumerator : IReversableEnumerator<S2ShapeIndexIdCell>
     {
         private readonly EncodedS2CellIdVector _cellIds;
         private int position;
+
         public EncodedS2ShapeIndexEnumerator(EncodedS2ShapeIndex index)
         { _cellIds = index.CellIds; position = -1; }
 

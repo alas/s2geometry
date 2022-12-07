@@ -46,31 +46,11 @@ public class MersenneTwister
     private int mti = N + 1;            // mti==N+1 means mt[N] is not initialized
     
     public MersenneTwister() => init_by_array(new ulong[] { 0x123, 0x234, 0x345, 0x456 });  // set default seeds
-    
-    public MersenneTwister(ulong s) => init_genrand(s);
-    
-    public MersenneTwister(ulong[] init_key) => init_by_array(init_key);
-
-    // initializes mt[N] with a seed
-    public void init_genrand(ulong s)
-    {
-        mt[0] = s & 0xffffffffUL;
-        for (mti = 1; mti < N; mti++)
-        {
-            mt[mti] = (1812433253UL * (mt[mti - 1] ^ (mt[mti - 1] >> 30)) + (ulong)mti);
-            /* See Knuth TAOCP Vol2. 3rd Ed. P.106 for multiplier. */
-            /* In the previous versions, MSBs of the seed affect   */
-            /* only MSBs of the array mt[].                        */
-            /* 2002/01/09 modified by Makoto Matsumoto             */
-            mt[mti] &= 0xffffffffUL;
-            /* for >32 bit machines */
-        }
-    }
 
     // initialize by an array with array-length
     // init_key is the array for initializing keys
     // init_key.Length is its length
-    public void init_by_array(ulong[] init_key)
+    private void init_by_array(ulong[] init_key)
     {
         init_genrand(19650218UL);
         int i = 1;
@@ -93,9 +73,28 @@ public class MersenneTwister
         }
         mt[0] = 0x80000000UL; // MSB is 1; assuring non-zero initial array 
     }
+        
+    // initializes mt[N] with a seed
+    private void init_genrand(ulong s)
+    {
+        mt[0] = s & 0xffffffffUL;
+        for (mti = 1; mti < N; mti++)
+        {
+            mt[mti] = (1812433253UL * (mt[mti - 1] ^ (mt[mti - 1] >> 30)) + (ulong)mti);
+            /* See Knuth TAOCP Vol2. 3rd Ed. P.106 for multiplier. */
+            /* In the previous versions, MSBs of the seed affect   */
+            /* only MSBs of the array mt[].                        */
+            /* 2002/01/09 modified by Makoto Matsumoto             */
+            mt[mti] &= 0xffffffffUL;
+            /* for >32 bit machines */
+        }
+    }
+
+    // generates a random integer number from 0 to N-1
+    public int GenerateRandomN(int iN) => (int)(genrand_uint32() * (iN / 4294967296.0));
 
     // generates a random number on [0,0xffffffff]-interval
-    public ulong genrand_uint32()
+    private ulong genrand_uint32()
     {
         ulong[] mag01 = new ulong[] { 0x0UL, MATRIX_A };
         ulong y = 0;
@@ -129,13 +128,4 @@ public class MersenneTwister
         y ^= (y >> 18);
         return y;
     }
-
-    // generates a random floating point number on [0,1]
-    public double genrand_real1() => genrand_uint32() * (1.0 / 4294967295.0); // divided by 2^32-1
-
-    // generates a random floating point number on [0,1)
-    public double genrand_real2() => genrand_uint32() * (1.0 / 4294967296.0); // divided by 2^32
-
-    // generates a random integer number from 0 to N-1
-    public int genrand_N(int iN) => (int)(genrand_uint32() * (iN / 4294967296.0));
 }

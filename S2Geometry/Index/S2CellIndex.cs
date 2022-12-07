@@ -391,7 +391,7 @@ public class S2CellIndex
             do
             {
                 Position++;
-            } while (Current.IsEmpty && !IsAtSentinel());
+            } while (Current.IsEmpty() && !IsAtSentinel());
 
             return !IsAtSentinel();
         }
@@ -404,10 +404,10 @@ public class S2CellIndex
             while (Position > 0)
             {
                 Position--;
-                if (!Current.IsEmpty) return true;
+                if (!Current.IsEmpty()) return true;
             }
             // Return to original position.
-            if (Current.IsEmpty && !IsAtSentinel())
+            if (Current.IsEmpty() && !IsAtSentinel())
             {
                 MoveNext();
             }
@@ -544,31 +544,11 @@ public class S2CellIndex
     #endregion
 
     // Convenience class that represents a (cell_id, label) pair.
-    public readonly struct LabelledCell : IEquatable<LabelledCell>, IComparable<LabelledCell>
+    public readonly record struct LabelledCell(S2CellId CellId, Int32 Label) : IComparable<LabelledCell>
     {
         #region Fields, Constants
 
-        public readonly S2CellId CellId { get; init; }
-        public readonly Int32 Label { get; init; }
-
         public static readonly LabelledCell Zero = new(S2CellId.None, -1);
-
-        #endregion
-
-        #region Constructors
-
-        public LabelledCell(S2CellId cell_id, Int32 label)
-        { CellId = cell_id; Label = label; }
-
-        #endregion
-
-        #region IEquatable
-
-        public bool Equals(LabelledCell y) => CellId == y.CellId && Label == y.Label;
-        public override bool Equals(object? obj) => obj is LabelledCell cell && Equals(cell);
-        public override int GetHashCode() => HashCode.Combine(CellId.Id, Label);
-        public static bool operator ==(LabelledCell x, LabelledCell y) => Equals(x, y);
-        public static bool operator !=(LabelledCell x, LabelledCell y) => !Equals(x, y);
 
         #endregion
 
@@ -587,7 +567,8 @@ public class S2CellIndex
             if (y.CellId > x.CellId) return false;
             return x.Label > y.Label;
         }
-        public int CompareTo([AllowNull] LabelledCell other)
+
+        public int CompareTo(LabelledCell other)
         {
             if (CellId.CompareTo(other.CellId) != 0)
                 return CellId.CompareTo(other.CellId);
@@ -604,15 +585,8 @@ public class S2CellIndex
         #endregion
     }
 
-    private readonly struct DeltaBuild : IComparable<DeltaBuild>
+    private readonly record struct DeltaBuild(S2CellId StartId, S2CellId CellId, int Label) : IComparable<DeltaBuild>
     {
-        public readonly S2CellId StartId { get; init; }
-        public readonly S2CellId CellId { get; init; }
-        public readonly int Label { get; init; }
-
-        public DeltaBuild(S2CellId start_id, S2CellId cell_id, Int32 label)
-        { StartId = start_id; CellId = cell_id; Label = label; }
-
         // Deltas are sorted first by start_id, then in reverse order by cell_id,
         // and then by label.  This is necessary to ensure that (1) larger cells
         // are pushed on the stack before smaller cells, and (2) cells are popped
@@ -635,22 +609,17 @@ public class S2CellIndex
     // "start_id" (a leaf cell) and ends at the "start_id" field of the next
     // RangeNode.  "contents" points to the node of cell_tree_ representing the
     // cells that overlap this range.
-    public readonly struct RangeNode : IComparable<RangeNode>
+    public readonly record struct RangeNode(
+        S2CellId StartId,  // First leaf cell contained by this range.
+        int Contents)      // Contents of this node (an index within cell_tree_).
+        : IComparable<RangeNode>
     {
-        public readonly S2CellId StartId { get; init; }  // First leaf cell contained by this range.
-        public readonly int Contents { get; init; }     // Contents of this node (an index within cell_tree_).
-
-        public RangeNode(S2CellId start_id, int contents)
-        {
-            StartId = start_id; Contents = contents;
-        }
-
         // Comparison operator needed for upper_bound().
         public int CompareTo(RangeNode other) => StartId.CompareTo(other.StartId);
 
         // Returns true if no (s2cell_id, label) pairs intersect this range.
         // Also returns true if it is the last (sentinel).
-        public bool IsEmpty => Contents == kDoneContents;
+        public bool IsEmpty() => Contents == kDoneContents;
 
         public override string ToString() => $"{Contents} - {StartId}";
     }

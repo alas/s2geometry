@@ -186,9 +186,9 @@ public class S2BufferOperation
         // geometry to be converted back to points/polylines in the output if the
         // client so desires.
         S2WindingOperation.Options winding_options = new(options.snap_function_);
-        winding_options.include_degeneracies_ = (
+        winding_options.IncludeDegeneracies = (
             buffer_sign_ == 0 && Options_.buffer_radius_ >= S1Angle.Zero);
-        winding_options.memory_tracker_ = options.memory_tracker_;
+        winding_options.MemoryTracker = options.memory_tracker_;
         op_.Init(result_layer, winding_options);
         tracker_.Init(options.memory_tracker_);
     }

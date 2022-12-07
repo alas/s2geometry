@@ -73,9 +73,9 @@ public class S2WindingOperation
     public void Init(S2Builder.Layer result_layer, Options? options = null)
     {
         options_ = options ?? new();
-        S2Builder.Options builder_options = new(options_.snap_function_);
+        S2Builder.Options builder_options = new(options_.SnapFunction);
         builder_options.SplitCrossingEdges = true;
-        builder_options.MemoryTracker = options.memory_tracker_;
+        builder_options.MemoryTracker = options.MemoryTracker;
         builder_ = new(builder_options);
         builder_.StartLayer(new WindingLayer(this, result_layer));
     }
@@ -121,28 +121,27 @@ public class S2WindingOperation
     {
         public Options()
         {
-            snap_function_ = new S2BuilderUtil.IdentitySnapFunction(S1Angle.Zero);
+            SnapFunction = new S2BuilderUtil.IdentitySnapFunction(S1Angle.Zero);
         }
 
         // Convenience constructor that calls set_snap_function().
         public Options(S2BuilderUtil.SnapFunction snap_function)
         {
-            snap_function_ = snap_function;
+            SnapFunction = snap_function;
         }
 
         public Options(Options options)
         {
-            snap_function_ = (S2BuilderUtil.SnapFunction)options.snap_function_;
-            include_degeneracies_ = options.include_degeneracies_;
-            memory_tracker_ = options.memory_tracker_;
+            SnapFunction = options.SnapFunction;
+            IncludeDegeneracies = options.IncludeDegeneracies;
+            MemoryTracker = options.MemoryTracker;
         }
-
 
         // Specifies the function used for snap rounding the output during the
         // call to Build().
         //
         // DEFAULT: s2builderutil::IdentitySnapFunction(S1Angle::Zero())
-        public S2BuilderUtil.SnapFunction snap_function_ { get; set; }
+        public S2BuilderUtil.SnapFunction SnapFunction { get; set; }
 
         // This option can be enabled to provide limited support for degeneracies
         // (i.e., sibling edge pairs and isolated vertices).  By default the output
@@ -171,7 +170,7 @@ public class S2WindingOperation
         // (e.g. intersection) or other boundary models (e.g, semi-open).
         //
         // DEFAULT: false
-        public bool include_degeneracies_ { get; set; } = false;
+        public bool IncludeDegeneracies { get; set; } = false;
 
         // Specifies that internal memory usage should be tracked using the given
         // S2MemoryTracker.  If a memory limit is specified and more more memory
@@ -199,7 +198,7 @@ public class S2WindingOperation
         //    purpose of preventing clients from running out of memory.
         //
         // DEFAULT: nullptr (memory tracking disabled)
-        public S2MemoryTracker? memory_tracker_ { get; set; } = null;
+        public S2MemoryTracker? MemoryTracker { get; set; } = null;
     }
 
     // Specifies the winding rule used to determine which regions belong to the
@@ -244,9 +243,9 @@ public class S2WindingOperation
             S2Point ref_in = builder.InputEdge(ref_input_edge_id).V0;
             VertexId ref_v = S2BuilderUtil.SnappedWindingDelta.FindFirstVertexId(ref_input_edge_id, g_);
             System.Diagnostics.Debug.Assert(ref_v >= 0);  // No errors are possible.
-            ref_p_ = g_.Vertex(ref_v);
+            CurrentRefPoint = g_.Vertex(ref_v);
             S2Error error;
-            ref_winding_ = ref_winding_in + S2BuilderUtil.SnappedWindingDelta.GetSnappedWindingDelta(
+            CurrentRefWinding = ref_winding_in + S2BuilderUtil.SnappedWindingDelta.GetSnappedWindingDelta(
                 ref_in, ref_v, ie => true, builder, g_, out error);
             System.Diagnostics.Debug.Assert(error.IsOk());  // No errors are possible.
 
@@ -276,8 +275,8 @@ public class S2WindingOperation
             // Count signed edge crossings starting from the reference point, whose
             // winding number is known.  If we need to do this many times then we build
             // an S2ShapeIndex to speed up this process.
-            S2EdgeCrosser crosser = new(ref_p_, p);
-            int winding = ref_winding_;
+            S2EdgeCrosser crosser = new(CurrentRefPoint, p);
+            int winding = CurrentRefWinding;
             if (--brute_force_winding_tests_left_ >= 0)
             {
                 for (EdgeId e = 0; e < g_.NumEdges; ++e)
@@ -288,7 +287,7 @@ public class S2WindingOperation
             else
             {
                 S2CrossingEdgeQuery query = new(index_);
-                foreach (var id in query.GetCandidates(ref_p_, p, index_.Shape(0)))
+                foreach (var id in query.GetCandidates(CurrentRefPoint, p, index_.Shape(0)))
                 {
                     winding += SignedCrossingDelta(crosser, id.EdgeId);
                 }
@@ -297,16 +296,22 @@ public class S2WindingOperation
             // that are sorted in approximate S2CellId order.  This means that if we
             // update our reference point as we go along, the edges for which we need to
             // count crossings are much shorter on average.
-            ref_p_ = p;
-            ref_winding_ = winding;
+            CurrentRefPoint = p;
+            CurrentRefWinding = winding;
             return winding;
         }
 
         // Returns the current reference point.
-        public S2Point current_ref_point() { return ref_p_; }
+        //
+        // The current reference point.  Initially this is simply the snapped
+        // position of the input reference point, but it is updated on each call to
+        // GetWindingNumber (see below).
+        public S2Point CurrentRefPoint { get; private set; }
 
         // Returns the winding number at the current reference point.
-        public int current_ref_winding() { return ref_winding_; }
+        //
+        // The winding number at the current reference point.
+        public int CurrentRefWinding { get; private set; }
 
         // Returns the change in winding number due to crossing the given graph edge.
         private int SignedCrossingDelta(S2EdgeCrosser crosser, EdgeId e) =>
@@ -315,14 +320,6 @@ public class S2WindingOperation
                 g_.Vertex(g_.GetEdge(e).EdgeId));
 
         private readonly Graph g_;
-
-        // The current reference point.  Initially this is simply the snapped
-        // position of the input reference point, but it is updated on each call to
-        // GetWindingNumber (see below).
-        private S2Point ref_p_;
-
-        // The winding number at the current reference point.
-        private int ref_winding_;
 
         // For each connected component of the S2Builder output graph, we determine
         // the winding number at one arbitrary vertex by counting edge crossings.
@@ -349,7 +346,7 @@ public class S2WindingOperation
         {
             op_ = op;
             result_layer_ = result_layer;
-            tracker_ = new(op.options_.memory_tracker_);
+            tracker_ = new(op.options_.MemoryTracker);
         }
 
         // Layer interface:
@@ -429,7 +426,7 @@ public class S2WindingOperation
             // purpose.
             S2Builder.IsFullPolygonPredicate is_full_polygon_predicate = (Graph g, out S2Error error) => {
                 error = S2Error.OK;
-                return MatchesRule(oracle.current_ref_winding());
+                return MatchesRule(oracle.CurrentRefWinding);
             };
             IdSetLexicon result_id_set_lexicon = new_graph.InputEdgeIdSetLexicon;
             Graph result_graph = new_graph.MakeSubgraph(
@@ -568,7 +565,7 @@ public class S2WindingOperation
 
         private bool MatchesDegeneracy(int winding, int winding_minus, int winding_plus)
         {
-            if (!op_.options_.include_degeneracies_) return false;
+            if (!op_.options_.IncludeDegeneracies) return false;
 
             // A degeneracy is either a self-loop or a sibling pair where equal numbers
             // of input edges snapped to both edges of the pair.  The test below covers

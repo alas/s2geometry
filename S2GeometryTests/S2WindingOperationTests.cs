@@ -48,10 +48,10 @@ public class S2WindingOperationTests
                     WindingRule rule,
                     string expected_str_false, string expected_str_true)
     {
-        options.include_degeneracies_ = false;
+        options.IncludeDegeneracies = false;
         ExpectWindingResult(options, loop_strs, ref_point_str, ref_winding, rule,
             expected_str_false);
-        options.include_degeneracies_ = true;
+        options.IncludeDegeneracies = true;
         ExpectWindingResult(options, loop_strs, ref_point_str, ref_winding, rule,
             expected_str_true);
     }
@@ -308,7 +308,7 @@ public class S2WindingOperationTests
     {
         // Prevent these from being detected as dead code.
         S2WindingOperation.Options opts=new();
-        opts.snap_function_ = new IdentitySnapFunction();
-        Assert.Equal(opts.snap_function_.SnapRadius, S1Angle.Zero);
+        opts.SnapFunction = new IdentitySnapFunction();
+        Assert.Equal(opts.SnapFunction.SnapRadius, S1Angle.Zero);
     }
 }

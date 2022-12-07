@@ -151,9 +151,9 @@ public class S2RegionTermIndexer
         {
             // Override the S2RegionCoverer defaults.
             MaxCells = 8;
-            MinLevel = (4);
-            MaxLevel = (16);
-            LevelMod = (1);
+            MinLevel = 4;
+            MaxLevel = 16;
+            LevelMod = 1;
         }
 
         ///////////////// Options Inherited From S2RegionCoverer ////////////////

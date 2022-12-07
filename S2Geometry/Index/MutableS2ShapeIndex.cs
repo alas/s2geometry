@@ -760,7 +760,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
                 // We have just finished adding the edges of shape that was split over
                 // multiple batches.  Now we need to mark the interior of the shape, if
                 // any, by setting contains_center() on the appropriate index cells.
-                FinishPartialShape(tracker.partial_shape_id_);
+                FinishPartialShape(tracker.PartialShapeId);
             }
             if (mem_tracker_.IsActive())
             {
@@ -982,7 +982,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
             // contains_center() flags appropriately.
             if (edges_begin > 0 || edges_end < shape.NumEdges())
             {
-                tracker.partial_shape_id_ = shapeId;
+                tracker.PartialShapeId = shapeId;
             }
             else
             {
@@ -1159,6 +1159,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
             }
         }
     }
+    
     // Given a face and a vector of edges that intersect that face, add or remove
     // all the edges from the index.  (An edge is added if shapes_[id] is not
     // null, and removed otherwise.)
@@ -1218,6 +1219,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         // Otherwise (no edges, or no shrinking is possible), subdivide normally.
         UpdateEdges(pcell, clipped_edges, tracker, alloc, disjoint_from_index);
     }
+
     private S2CellId ShrinkToFit(S2PaddedCell pcell, R2Rect bound)
     {
         var shrunk_id = pcell.ShrinkToFit(bound);
@@ -1231,6 +1233,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         }
         return shrunk_id;
     }
+
     // Skip over the cells in the given range, creating index cells if we are
     // currently in the interior of at least one shape.
     private void SkipCellRange(S2CellId begin, S2CellId end, InteriorTracker tracker, EdgeAllocator alloc, bool disjoint_from_index)
@@ -1417,6 +1420,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
             tracker.RestoreStateBefore(pending_additions_begin_);
         }
     }
+    
     // Absorb an index cell by transferring its contents to "edges" and/or
     // "tracker", and then delete this cell from the index.  If "edges" includes
     // any edges that are being removed, this method also updates their
@@ -1491,7 +1495,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
             // cell is inside the shape, so we need to test all the edges against the
             // line segment from the cell center to the entry vertex.
             var edge_shape_id = shape_id;
-            var edge_has_interior = shape.Dimension() == 2 && shape_id != tracker.partial_shape_id_;
+            var edge_has_interior = shape.Dimension() == 2 && shape_id != tracker.PartialShapeId;
             if (edge_has_interior)
             {
                 tracker.AddShape(shape_id, clipped.ContainsCenter);
@@ -1561,6 +1565,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         // average cell edge length at that level is at most "max_cell_edge".
         return S2.kAvgEdge.GetLevelForMaxValue(max_cell_edge);
     }
+    
     // Return the number of distinct shapes that are either associated with the
     // given edges, or that are currently stored in the InteriorTracker.
     private static int CountShapes(List<ClippedEdge> edges, List<int> cshape_ids)
@@ -1587,6 +1592,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         count += cshape_ids.Count - cnext;
         return count;
     }
+    
     // Attempt to build an index cell containing the given edges, and return true
     // if successful.  (Otherwise the edges should be subdivided further.)
     private bool MakeIndexCell(S2PaddedCell pcell, List<ClippedEdge> edges, InteriorTracker tracker)
@@ -1886,6 +1892,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         int v_end = u_end ^ (((e.A[0] > e.B[0]) != (e.A[1] > e.B[1])) ? 1 : 0);
         return UpdateBound(edge, u_end, u, v_end, v, alloc);
     }
+    
     // Given an edge, clip the given endpoint (lo=0, hi=1) of the v-axis so that
     // it does not extend past the given value.
     private static ClippedEdge ClipVBound(ClippedEdge edge, int v_end, double v, EdgeAllocator alloc)
@@ -1927,6 +1934,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         UPDATING,  // Updates are currently being applied.
         FRESH,     // There are no pending updates.
     }
+    
     // Reads and writes to this field are guarded by "lock_".
     private IndexStatus index_status_ = IndexStatus.FRESH;
 
@@ -1982,21 +1990,17 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
     //    the data is separated, because it often only needs to access the data in
     //    ClippedEdge and this data is cached more successfully.
     [StructLayout(LayoutKind.Sequential)]
-    public record FaceEdge
-    (
-        Int32 ShapeId,      // The shape that this edge belongs to
-        Int32 EdgeId,       // Edge id within that shape
-        Int32 MaxLevel,     // Not desirable to subdivide this edge beyond this level
-        bool HasInterior,   // Belongs to a shape of dimension 2.
-        S2Shape.Edge Edge,   // The edge endpoints
-        R2Point A, R2Point B // The edge endpoints, clipped to a given face
-    );
+    public record FaceEdge(
+        Int32 ShapeId,         // The shape that this edge belongs to
+        Int32 EdgeId,          // Edge id within that shape
+        Int32 MaxLevel,        // Not desirable to subdivide this edge beyond this level
+        bool HasInterior,      // Belongs to a shape of dimension 2.
+        S2Shape.Edge Edge,     // The edge endpoints
+        R2Point A, R2Point B); // The edge endpoints, clipped to a given face
 
-    public record ClippedEdge
-    (
+    public record ClippedEdge(
         FaceEdge FaceEdge,  // The original unclipped edge
-        R2Rect Bound        // Bounding box for the clipped portion
-    );
+        R2Rect Bound);      // Bounding box for the clipped portion
 
     // Given a set of shapes, InteriorTracker keeps track of which shapes contain
     // a particular point (the "focus").  It provides an efficient way to move the
@@ -2190,11 +2194,11 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         // As an optimization, we also save is_active_ so that RestoreStateBefore()
         // can deactivate the tracker again in the case where the shapes being added
         // and removed do not have an interior, but some existing shapes do.
-        bool saved_is_active_;
+        private bool saved_is_active_;
 
         // If non-negative, indicates that only some edges of the given shape are
         // being added and therefore its interior should not be tracked yet.
-        public int partial_shape_id_ { get; set; } = -1;
+        public int PartialShapeId { get; set; } = -1;
     }
 
     // A BatchDescriptor represents a set of pending updates that will be applied

@@ -311,7 +311,7 @@ public class S2CellIndexTests
             }
 
             // Keep the non-empty iterator synchronized with the regular one.
-            if (!it.Current.IsEmpty)
+            if (!it.Current.IsEmpty())
             {
                 Assert.Equal(it.Current.StartId, non_empty.Current.StartId);
                 Assert.Equal(it.GetLimitId(), non_empty.GetLimitId());
