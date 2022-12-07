@@ -6,14 +6,14 @@ using Seq = List<Int32>;
 public class IdSetLexiconTests
 {
     [Fact]
-    public void Test_IdSetLexicon_EmptySet()
+    internal void Test_IdSetLexicon_EmptySet()
     {
         IdSetLexicon lexicon = new();
         ExpectIdSet(new IdSet { }, lexicon.IdSet_(lexicon.Add(new Seq { })));
     }
 
     [Fact]
-    public void Test_IdSetLexicon_SingletonSets()
+    internal void Test_IdSetLexicon_SingletonSets()
     {
         IdSetLexicon lexicon = new();
         Assert.Equal(5, lexicon.Add(new Seq { 5 }));
@@ -29,7 +29,7 @@ public class IdSetLexiconTests
     }
 
     [Fact]
-    public void Test_IdSetLexicon_SetsAreSorted()
+    internal void Test_IdSetLexicon_SetsAreSorted()
     {
         IdSetLexicon lexicon = new();
         Assert.Equal(~0, lexicon.Add(new Seq { 2, 5 }));
@@ -42,7 +42,7 @@ public class IdSetLexiconTests
     }
 
     [Fact]
-    public void Test_IdSetLexicon_Clear()
+    internal void Test_IdSetLexicon_Clear()
     {
         IdSetLexicon lexicon = new();
         Assert.Equal(~0, lexicon.Add(new Seq { 1, 2 }));

@@ -157,7 +157,7 @@ public static class S2EdgeClipping
     //    v-coordinates differ from the vertex by at most this amount.
 
     public const double kFaceClipErrorRadians = 3 * S2.DoubleEpsilon;
-    //private const double kFaceClipErrorUVDist = 9 * S2Constants.DoubleEpsilon;
+    public const double kFaceClipErrorUVDist = 9 * S2.DoubleEpsilon;
     public static readonly double kFaceClipErrorUVCoord = 9 * S2.M_SQRT1_2 * S2.DoubleEpsilon;
 
     // Returns true if the edge AB intersects the given (closed) rectangle to

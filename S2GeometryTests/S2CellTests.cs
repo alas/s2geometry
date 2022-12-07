@@ -4,10 +4,10 @@ public class S2CellTests
 {
     private readonly ITestOutputHelper _logger;
 
-    public S2CellTests(ITestOutputHelper logger) { _logger = logger; }
+    internal S2CellTests(ITestOutputHelper logger) { _logger = logger; }
 
     [Fact]
-    public void Test_S2Cell_TestFaces()
+    internal void Test_S2Cell_TestFaces()
     {
         var edge_counts = new Dictionary<S2Point, int>();
         var vertex_counts = new Dictionary<S2Point, int>();
@@ -52,15 +52,15 @@ public class S2CellTests
 
     private class LevelStats
     {
-        public double Count = 0;
-        public double Min_area = 0, Max_area = 0, Avg_area = 0;
-        public double Min_width = 0, Max_width = 0, Avg_width = 0;
-        public double Min_edge = 0, Max_edge = 0, Avg_edge = 0, Max_edge_aspect = 0;
-        public double Min_diag = 0, Max_diag = 0, Avg_diag = 0, Max_diag_aspect = 0;
-        public double Min_angle_span = 0, Max_angle_span = 0, Avg_angle_span = 0;
-        public double Min_approx_ratio = 0, Max_approx_ratio = 0;
+        internal double Count = 0;
+        internal double Min_area = 0, Max_area = 0, Avg_area = 0;
+        internal double Min_width = 0, Max_width = 0, Avg_width = 0;
+        internal double Min_edge = 0, Max_edge = 0, Avg_edge = 0, Max_edge_aspect = 0;
+        internal double Min_diag = 0, Max_diag = 0, Avg_diag = 0, Max_diag_aspect = 0;
+        internal double Min_angle_span = 0, Max_angle_span = 0, Avg_angle_span = 0;
+        internal double Min_approx_ratio = 0, Max_approx_ratio = 0;
     
-        public static LevelStats GetDefault()
+        internal static LevelStats GetDefault()
         {
             return new LevelStats {
                 Min_area = 100,
@@ -312,7 +312,7 @@ public class S2CellTests
     }
 
     [Fact]
-    public void Test_S2Cell_TestSubdivide()
+    internal void Test_S2Cell_TestSubdivide()
     {
         // Only test a sample of faces to reduce the runtime.
         TestSubdivide(S2Cell.FromFace(0));
@@ -391,7 +391,7 @@ Level   Ratio  Ratio Aspect  Ratio Aspect    Min    Max    Min    Max
     }
 
     [Fact]
-    public void Test_S2Cell_CellVsLoopRectBound()
+    internal void Test_S2Cell_CellVsLoopRectBound()
     {
         // This test verifies that the S2Cell and S2Loop bounds contain each other
         // to within their maximum errors.
@@ -420,7 +420,7 @@ Level   Ratio  Ratio Aspect  Ratio Aspect    Min    Max    Min    Max
     private static readonly S2LatLng kLoopError = S2LatLngRectBounder.MaxErrorForTests();
 
     [Fact]
-    public void Test_S2Cell_RectBoundIsLargeEnough()
+    internal void Test_S2Cell_RectBoundIsLargeEnough()
     {
         // Construct many points that are nearly on an S2Cell edge, and verify that
         // whenever the cell contains a point P then its bound contains S2LatLng(P).
@@ -442,7 +442,7 @@ Level   Ratio  Ratio Aspect  Ratio Aspect    Min    Max    Min    Max
     }
 
     [Fact]
-    public void Test_S2Cell_ConsistentWithS2CellIdFromPoint()
+    internal void Test_S2Cell_ConsistentWithS2CellIdFromPoint()
     {
         // Construct many points that are nearly on an S2Cell edge, and verify that
         // S2Cell(S2CellId(p)).Contains(p) is always true.
@@ -460,7 +460,7 @@ Level   Ratio  Ratio Aspect  Ratio Aspect    Min    Max    Min    Max
     }
 
     [Fact]
-    public void Test_S2CellId_AmbiguousContainsPoint()
+    internal void Test_S2CellId_AmbiguousContainsPoint()
     {
         // This tests a case where S2CellId returns the "wrong" cell for a point
         // that is very close to the cell edge. (ConsistentWithS2CellIdFromPoint
@@ -507,7 +507,7 @@ Level   Ratio  Ratio Aspect  Ratio Aspect    Min    Max    Min    Max
     }
 
     [Fact]
-    public void Test_S2Cell_GetDistanceToPoint()
+    internal void Test_S2Cell_GetDistanceToPoint()
     {
         S2Testing.Random.Reset(S2Testing.Random.RandomSeed);
         for (int iter = 0; iter < 1000; ++iter)
@@ -623,7 +623,7 @@ Level   Ratio  Ratio Aspect  Ratio Aspect    Min    Max    Min    Max
     }
 
     [Fact]
-    public void Test_S2Cell_GetDistanceToEdge()
+    internal void Test_S2Cell_GetDistanceToEdge()
     {
         S2Testing.Random.Reset(S2Testing.Random.RandomSeed);
         for (int iter = 0; iter < 1000; ++iter)
@@ -661,7 +661,7 @@ Level   Ratio  Ratio Aspect  Ratio Aspect    Min    Max    Min    Max
     }
 
     [Fact]
-    public void Test_S2Cell_GetMaxDistanceToEdge()
+    internal void Test_S2Cell_GetMaxDistanceToEdge()
     {
         // Test an edge for which its antipode crosses the cell. Validates both the
         // standard and brute force implementations for this case.
@@ -677,7 +677,7 @@ Level   Ratio  Ratio Aspect  Ratio Aspect    Min    Max    Min    Max
     }
 
     [Fact]
-    public void Test_S2Cell_GetMaxDistanceToCellAntipodal()
+    internal void Test_S2Cell_GetMaxDistanceToCellAntipodal()
     {
         S2Point p = MakePointOrDie("0:0");
         S2Cell cell = new(p);
@@ -687,7 +687,7 @@ Level   Ratio  Ratio Aspect  Ratio Aspect    Min    Max    Min    Max
     }
 
     [Fact]
-    public void Test_S2Cell_GetMaxDistanceToCell()
+    internal void Test_S2Cell_GetMaxDistanceToCell()
     {
         for (int i = 0; i < 1000; i++)
         {
@@ -704,14 +704,17 @@ Level   Ratio  Ratio Aspect  Ratio Aspect    Min    Max    Min    Max
     }
 
     [Fact]
-    public void Test_S2Cell_EncodeDecode()
+    internal void Test_S2Cell_EncodeDecode()
     {
         S2Cell orig_cell = new(S2LatLng.FromDegrees(40.7406264, -74.0029963));
         Encoder encoder = new();
         orig_cell.Encode(encoder);
+
+        S2Cell decoded_cell = new(S2LatLng.FromDegrees(51.494987, -0.146585));
         var decoder = encoder.Decoder();
-        var (_, decoded_cellNull) = S2Cell.Decode(decoder);
-        var decoded_cell = decoded_cellNull!.Value;
+        var (success, decoded_cellTmp) = S2Cell.Decode(decoder);
+        Assert.True(success);
+        decoded_cell = decoded_cellTmp;
 
         Assert.Equal(orig_cell, decoded_cell);
         Assert.Equal(orig_cell.Face, decoded_cell.Face);

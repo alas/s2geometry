@@ -1,8 +1,8 @@
 namespace S2Geometry;
 
-public static class S2TestingCheckDistance<Id, Distance> where Distance : IEquatable<Distance>, IComparable<Distance>, IDistance<Distance> where Id : IEquatable<Id>
+internal static class S2TestingCheckDistance<Id, Distance> where Distance : IEquatable<Distance>, IComparable<Distance>, IDistance<Distance> where Id : IEquatable<Id>
 {
-    public delegate void WriteLineDelegate(string s);
+    internal delegate void WriteLineDelegate(string s);
 
     // Compare two sets of "closest" items, where "expected" is computed via brute
     // force (i.e., considering every possible candidate) and "actual" is computed
@@ -10,7 +10,7 @@ public static class S2TestingCheckDistance<Id, Distance> where Distance : IEquat
     // number of items, "max_distance" is a limit on the distance to any item, and
     // "max_error" is the maximum error allowed when selecting which items are
     // closest (see S2ClosestEdgeQuery.Options.max_error).
-    public static bool CheckDistanceResults(List<(Distance, Id)> expected, List<(Distance, Id)> actual,
+    internal static bool CheckDistanceResults(List<(Distance, Id)> expected, List<(Distance, Id)> actual,
                     int max_size, Distance max_distance, S1ChordAngle max_error, WriteLineDelegate writeline)
     {
         return CheckResultSet(actual, expected, max_size, max_distance, max_error, kMaxPruningError, "Missing", writeline) & /*not &&*/

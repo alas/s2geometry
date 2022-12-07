@@ -1,9 +1,9 @@
 ﻿namespace S2Geometry;
 
-public class EncodedUintVectorTesting
+internal class EncodedUintVectorTesting
 {
     // TestEncodedUintVector
-    public static void TestEncodedUintVector_16(UInt16[] expected, int expected_bytes)
+    internal static void TestEncodedUintVector_16(UInt16[] expected, int expected_bytes)
     {
         Encoder encoder = new();
         EncodedUintVector.EncodeUintVector(expected, encoder);
@@ -15,7 +15,7 @@ public class EncodedUintVectorTesting
     }
 
     // TestLowerBound
-    public static void TestLowerBound_16(int bytes_per_value, int num_values)
+    internal static void TestLowerBound_16(int bytes_per_value, int num_values)
     {
         var v = MakeSortedTestVector_16(bytes_per_value, num_values);
         Encoder encoder = new();
@@ -46,7 +46,7 @@ public class EncodedUintVectorTesting
         return values.ToArray();
     }
 
-    public static EncodedUintVector_UInt16 MakeEncodedVector_16(UInt16[] values, Encoder encoder)
+    internal static EncodedUintVector_UInt16 MakeEncodedVector_16(UInt16[] values, Encoder encoder)
     {
         EncodedUintVector.EncodeUintVector(values, encoder);
         var decoder = encoder.Decoder();
@@ -56,7 +56,7 @@ public class EncodedUintVectorTesting
     }
 
     // TestEncodedUintVector
-    public static void TestEncodedUintVector_32(UInt32[] expected, int expected_bytes)
+    internal static void TestEncodedUintVector_32(UInt32[] expected, int expected_bytes)
     {
         Encoder encoder = new();
         EncodedUintVector.EncodeUintVector(expected, encoder);
@@ -68,7 +68,7 @@ public class EncodedUintVectorTesting
     }
 
     // TestLowerBound
-    public static void TestLowerBound_32(int bytes_per_value, int num_values)
+    internal static void TestLowerBound_32(int bytes_per_value, int num_values)
     {
         var v = MakeSortedTestVector_32(bytes_per_value, num_values);
         Encoder encoder = new();
@@ -99,7 +99,7 @@ public class EncodedUintVectorTesting
         return values.ToArray();
     }
 
-    public static EncodedUintVector_UInt32 MakeEncodedVector_32(UInt32[] values, Encoder encoder)
+    internal static EncodedUintVector_UInt32 MakeEncodedVector_32(UInt32[] values, Encoder encoder)
     {
         EncodedUintVector.EncodeUintVector(values, encoder);
         var decoder = encoder.Decoder();
@@ -109,7 +109,7 @@ public class EncodedUintVectorTesting
     }
 
     // TestEncodedUintVector
-    public static void TestEncodedUintVector_64(UInt64[] expected, int expected_bytes)
+    internal static void TestEncodedUintVector_64(UInt64[] expected, int expected_bytes)
     {
         Encoder encoder = new();
         EncodedUintVector.EncodeUintVector(expected, encoder);
@@ -121,7 +121,7 @@ public class EncodedUintVectorTesting
     }
 
     // TestLowerBound
-    public static void TestLowerBound_64(int bytes_per_value, int num_values)
+    internal static void TestLowerBound_64(int bytes_per_value, int num_values)
     {
         var v = MakeSortedTestVector_64(bytes_per_value, num_values);
         Encoder encoder = new();
@@ -152,7 +152,7 @@ public class EncodedUintVectorTesting
         return values.ToArray();
     }
 
-    public static EncodedUintVector_UInt64 MakeEncodedVector_64(UInt64[] values, Encoder encoder)
+    internal static EncodedUintVector_UInt64 MakeEncodedVector_64(UInt64[] values, Encoder encoder)
     {
         EncodedUintVector.EncodeUintVector(values, encoder);
         var decoder = encoder.Decoder();

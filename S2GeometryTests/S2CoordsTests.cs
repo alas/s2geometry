@@ -3,7 +3,7 @@ namespace S2Geometry;
 public class S2CoordsTests
 {
     [Fact]
-    public void Test_TraversalOrder()
+    internal void Test_TraversalOrder()
     {
         for (int r = 0; r < 4; ++r)
         {
@@ -29,7 +29,7 @@ public class S2CoordsTests
     }
 
     [Fact]
-    public void Test_ST_UV_Conversions()
+    internal void Test_ST_UV_Conversions()
     {
         // Check boundary conditions.
         for (double s = 0; s <= 1; s += 0.5)
@@ -53,7 +53,7 @@ public class S2CoordsTests
     }
 
     [Fact]
-    public void Test_FaceUVtoXYZ()
+    internal void Test_FaceUVtoXYZ()
     {
         // Check that each face appears exactly once.
         S2Point sum = S2Point.Empty;
@@ -86,7 +86,7 @@ public class S2CoordsTests
     }
 
     [Fact]
-    public void Test_FaceXYZtoUVW()
+    internal void Test_FaceXYZtoUVW()
     {
         for (int face = 0; face < 6; ++face)
         {
@@ -101,7 +101,7 @@ public class S2CoordsTests
     }
 
     [Fact]
-    public void Test_XYZToFaceSiTi()
+    internal void Test_XYZToFaceSiTi()
     {
         // Check the conversion of random cells to center points and back.
         for (int level = 0; level <= S2.kMaxCellLevel; ++level)
@@ -156,7 +156,7 @@ public class S2CoordsTests
     }
 
     [Fact]
-    public void Test_UVNorms()
+    internal void Test_UVNorms()
     {
         // Check that GetUNorm and GetVNorm compute right-handed normals for
         // an edge in the increasing U or V direction.
@@ -175,7 +175,7 @@ public class S2CoordsTests
     }
 
     [Fact]
-    public void Test_UVWAxis()
+    internal void Test_UVWAxis()
     {
         for (int face = 0; face < 6; ++face)
         {
@@ -198,7 +198,7 @@ public class S2CoordsTests
     }
 
     [Fact]
-    public void Test_UVWFace()
+    internal void Test_UVWFace()
     {
         // Check that GetUVWFace is consistent with GetUVWAxis.
         for (int face = 0; face < 6; ++face)

@@ -3,7 +3,7 @@ namespace S2Geometry;
 public class S2RegionUnionTests
 {
     [Fact]
-    public void Test_S2RegionUnionTest_Basic()
+    internal void Test_S2RegionUnionTest_Basic()
     {
         S2RegionUnion ru_empty = new(new List<IS2Region>());
         Assert.Equal(0, ru_empty.Count());

@@ -9,32 +9,32 @@ public class S2BuilderUtil_ClosedSetNormalizerTests
     private readonly NormalizeTest normalizeTest = new();
 
     [Fact]
-    public void Test_NormalizeTest_EmptyGraphs()
+    internal void Test_NormalizeTest_EmptyGraphs()
     {
         normalizeTest.Run("# #", "# #");
     }
 
     [Fact]
-    public void Test_NormalizeTest_NonDegenerateInputs()
+    internal void Test_NormalizeTest_NonDegenerateInputs()
     {
         normalizeTest.Run("0:0 # 1:0, 1:1 | 1:2, 1:3 # 2:2, 2:3, 3:2",
             "0:0 # 1:0, 1:1 | 1:2, 1:3 # 2:2, 2:3, 3:2");
     }
 
     [Fact]
-    public void Test_NormalizeTest_PointShell()
+    internal void Test_NormalizeTest_PointShell()
     {
         normalizeTest.Run("# # 0:0", "0:0 # #");
     }
 
     [Fact]
-    public void Test_NormalizeTest_PointHole()
+    internal void Test_NormalizeTest_PointHole()
     {
         normalizeTest.Run("# # 0:0, 0:3, 3:0 | 1:1", "# # 0:0, 0:3, 3:0");
     }
 
     [Fact]
-    public void Test_NormalizeTest_PointPolyline()
+    internal void Test_NormalizeTest_PointPolyline()
     {
         // Verify that a single degenerate polyline edge is transformed into a
         // single point.  Note that since the polyline layer is undirected while the
@@ -44,20 +44,20 @@ public class S2BuilderUtil_ClosedSetNormalizerTests
     }
 
     [Fact]
-    public void Test_NormalizeTest_SiblingPairShell()
+    internal void Test_NormalizeTest_SiblingPairShell()
     {
         normalizeTest.Run("# # 0:0, 1:0 ", "# 0:0, 1:0 #");
     }
 
     [Fact]
-    public void Test_NormalizeTest_SiblingPairHole()
+    internal void Test_NormalizeTest_SiblingPairHole()
     {
         normalizeTest.Run("# # 0:0, 0:3, 3:0; 0:0, 1:1",
             "# # 0:0, 0:3, 3:0");
     }
 
     [Fact]
-    public void Test_NormalizeTest_PointSuppressedByPolygonVertex()
+    internal void Test_NormalizeTest_PointSuppressedByPolygonVertex()
     {
         normalizeTest.Run("0:0 | 0:1 | 1:0 # # 0:0, 0:1, 1:0",
             "# # 0:0, 0:1, 1:0");
@@ -67,7 +67,7 @@ public class S2BuilderUtil_ClosedSetNormalizerTests
     }
 
     [Fact]
-    public void Test_NormalizeTest_PointSuppressedByPolylineVertex()
+    internal void Test_NormalizeTest_PointSuppressedByPolylineVertex()
     {
         normalizeTest.Run("0:0 | 0:1 # 0:0, 0:1 #", "# 0:0, 0:1 #");
         normalizeTest.SuppressLowerDimensions_ = false;
@@ -75,7 +75,7 @@ public class S2BuilderUtil_ClosedSetNormalizerTests
     }
 
     [Fact]
-    public void Test_NormalizeTest_PointShellSuppressedByPolylineEdge()
+    internal void Test_NormalizeTest_PointShellSuppressedByPolylineEdge()
     {
         // This tests the case where a single-point shell is demoted to a point
         // which is then suppressed by a matching polyline vertex.
@@ -85,7 +85,7 @@ public class S2BuilderUtil_ClosedSetNormalizerTests
     }
 
     [Fact]
-    public void Test_NormalizeTest_PolylineEdgeSuppressedByPolygonEdge()
+    internal void Test_NormalizeTest_PolylineEdgeSuppressedByPolygonEdge()
     {
         normalizeTest.Run("# 0:0, 0:1 # 0:0, 0:1, 1:0", "# # 0:0, 0:1, 1:0");
         normalizeTest.SuppressLowerDimensions_ = false;
@@ -93,7 +93,7 @@ public class S2BuilderUtil_ClosedSetNormalizerTests
     }
 
     [Fact]
-    public void Test_NormalizeTest_PolylineEdgeSuppressedByReversePolygonEdge()
+    internal void Test_NormalizeTest_PolylineEdgeSuppressedByReversePolygonEdge()
     {
         normalizeTest.GraphOptionsOut_[1].EdgeType_ = (EdgeType.DIRECTED);
         normalizeTest.Run("# 1:0, 0:0 # 0:0, 0:1, 1:0", "# # 0:0, 0:1, 1:0");
@@ -102,7 +102,7 @@ public class S2BuilderUtil_ClosedSetNormalizerTests
     }
 
     [Fact]
-    public void Test_NormalizeTest_DuplicateEdgeMerging()
+    internal void Test_NormalizeTest_DuplicateEdgeMerging()
     {
         // Verify that when DuplicateEdges.KEEP is specified, demoted edges are
         // added as new edges rather than being merged with existing ones.
@@ -117,7 +117,7 @@ public class S2BuilderUtil_ClosedSetNormalizerTests
     }
 
     [Fact]
-    public void Test_ComputeUnion_MixedGeometry()
+    internal void Test_ComputeUnion_MixedGeometry()
     {
         // Verifies that the code above works.  Features tested include:
         //  - Points and polylines in the interior of the other polygon are removed
@@ -146,11 +146,11 @@ public class S2BuilderUtil_ClosedSetNormalizerTests
     // and the S2Builder.GraphOptions for each of the three output layers.
     private class NormalizeTest
     {
-        public bool SuppressLowerDimensions_ { get; set; }
-        public List<GraphOptions> GraphOptionsOut_ { get; set; } = new();
-        public List<GraphClone> GraphClones { get; set; } = new();
+        internal bool SuppressLowerDimensions_ { get; set; }
+        internal List<GraphOptions> GraphOptionsOut_ { get; set; } = new();
+        internal List<GraphClone> GraphClones { get; set; } = new();
 
-        public NormalizeTest()
+        internal NormalizeTest()
         {
             SuppressLowerDimensions_ = true;
             // Set the default GraphOptions for building S2Points, S2Polylines, and
@@ -170,10 +170,12 @@ public class S2BuilderUtil_ClosedSetNormalizerTests
                              DuplicateEdges.KEEP, SiblingPairs.KEEP));
         }
 
-        public void Run(string input_str, string expected_str)
+        internal void Run(string input_str, string expected_str)
         {
-            ClosedSetNormalizer.Options options = new();
-            options.SuppressLowerDimensions = (SuppressLowerDimensions_);
+            ClosedSetNormalizer.Options options = new()
+            {
+                SuppressLowerDimensions = (SuppressLowerDimensions_)
+            };
             ClosedSetNormalizer normalizer = new(options, GraphOptionsOut_);
 
             S2Builder builder = new(new Options());

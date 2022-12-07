@@ -209,7 +209,7 @@ public class S2PolygonTests
 
     #endregion
 
-    public S2PolygonTests(ITestOutputHelper logger)
+    internal S2PolygonTests(ITestOutputHelper logger)
     {
         _logger = logger;
         empty_ = new S2Polygon();
@@ -276,7 +276,7 @@ public class S2PolygonTests
     }
 
     [Fact]
-    public void Test_S2Polygon_Init() {
+    internal void Test_S2Polygon_Init() {
         CheckContains(kNear1, kNear0);
         CheckContains(kNear2, kNear1);
         CheckContains(kNear3, kNear2);
@@ -306,7 +306,7 @@ public class S2PolygonTests
     }
 
     [Fact]
-    public void Test_S2Polygon_OverlapFractions() {
+    internal void Test_S2Polygon_OverlapFractions() {
         S2Polygon a = MakePolygon(kEmpty);
         S2Polygon b = MakePolygon(kEmpty);
         var result = S2Polygon.GetOverlapFractions(a, b);
@@ -325,7 +325,7 @@ public class S2PolygonTests
     }
 
     [Fact]
-    public void Test_S2Polygon_OriginNearPole() {
+    internal void Test_S2Polygon_OriginNearPole() {
         // S2Polygon operations are more efficient if S2.Origin is near a pole.
         // (Loops that contain a pole tend to have very loose bounding boxes because
         // they span the full longitude range.  S2Polygon canonicalizes all loops so
@@ -335,7 +335,7 @@ public class S2PolygonTests
     }
 
     [Fact]
-    public void Test_S2Polygon_TestApproxContainsAndDisjoint() {
+    internal void Test_S2Polygon_TestApproxContainsAndDisjoint() {
         // We repeatedly choose a random cell id and intersect its bounding polygon
         // "A" with the bounding polygon "B" of one its child cells.  The result may
         // not be contained by either A or B, because the vertices of B near the
@@ -401,7 +401,7 @@ public class S2PolygonTests
     }
 
     [Fact]
-    public void Test_S2PolygonTestBase_Relations() {
+    internal void Test_S2PolygonTestBase_Relations() {
         TestRelation(near_10_, empty_, true, false, false);
         TestRelation(near_10_, near_10_, true, true, true);
         TestRelation(full_, near_10_, true, false, true);
@@ -477,7 +477,7 @@ public class S2PolygonTests
     }
 
     [Fact]
-    public void Test_S2PolygonTestBase_EmptyAndFull() {
+    internal void Test_S2PolygonTestBase_EmptyAndFull() {
         Assert.True(empty_.IsEmpty());
         Assert.False(full_.IsEmpty());
         Assert.False(empty_.IsFull());
@@ -489,7 +489,42 @@ public class S2PolygonTests
     }
 
     [Fact]
-    public void Test_S2PolygonTestBase_Operations() {
+    internal void Test_S2PolygonTestBase_ValidAfterMove()
+    {
+        {
+            S2Polygon polygon=new();
+            polygon.Copy(near_10_);
+            Assert.True(polygon.IsValid());
+            S2Polygon moved = polygon;
+            Assert.True(!moved.IsEmpty());
+            Assert.True(moved.IsValid());
+        }
+
+        {
+            S2Polygon polygon=new();
+            polygon.Copy(near_10_);
+            Assert.True(polygon.IsValid());
+            S2Polygon moved;
+            moved = polygon;
+            Assert.True(!moved.IsEmpty());
+            Assert.True(moved.IsValid());
+        }
+
+        {
+            S2Polygon polygon=new();
+            S2Polygon moved=polygon;
+            Assert.True(moved.IsEmpty());
+        }
+
+        {
+            S2Polygon polygon=new();
+            S2Polygon moved = polygon;
+            Assert.True(moved.IsEmpty());
+        }
+    }
+
+    [Fact]
+    internal void Test_S2PolygonTestBase_Operations() {
         S2Polygon far_south = new();
         far_south.InitToIntersection(far_H_, south_H_);
         CheckEqual(far_south, far_H_south_H_, S1Angle.FromRadians(1e-15));
@@ -536,7 +571,7 @@ public class S2PolygonTests
     }
 
     [Fact]
-    public void Test_S2Polygon_IntersectionSnapFunction() {
+    internal void Test_S2Polygon_IntersectionSnapFunction() {
         // This tests that an intersection point is rounded to the nearest allowable
         // vertex position (using E0 coordinates, i.e. integer lat/lng values).
         var a = MakePolygon("0:0, 0:10, 1:10, 1:0");
@@ -548,7 +583,7 @@ public class S2PolygonTests
     }
 
     [Fact]
-    public void Test_S2Polygon_IntersectionPreservesLoopOrder() {
+    internal void Test_S2Polygon_IntersectionPreservesLoopOrder() {
         var a = MakePolygon("0:0, 0:10, 10:10, 10:0");
         var b = MakePolygon("1:1, 1:9, 9:5; 2:2, 2:8, 8:5");
         S2Polygon actual = new();
@@ -559,7 +594,7 @@ public class S2PolygonTests
     // Verifies that the bounding rectangle optimization in InitToIntersection()
     // resets the result polygon to be empty.
     [Fact]
-    public void Test_S2Polygon_EmptyIntersectionClearsResult()
+    internal void Test_S2Polygon_EmptyIntersectionClearsResult()
     {
         // The bounding rectangles of these two polygons do not intersect.
         var a = MakePolygon("0:0, 0:1, 1:0");
@@ -582,7 +617,7 @@ public class S2PolygonTests
     // Verifies that S2Polygon does not destroy or replace pointers to S2Loop, so
     // caller can rely on using raw pointers.
     [Fact]
-    public void Test_S2Polygon_LoopPointers() {
+    internal void Test_S2Polygon_LoopPointers() {
         var loops = new List<S2Loop>
         {
             MakeLoopOrDie("4:4, 4:6, 6:6, 6:4"),
@@ -609,7 +644,7 @@ public class S2PolygonTests
 
     // The "Bug" tests are regression tests from previous versions of the algorithm.
     [Fact]
-    public void Test_S2Polygon_Bug1() {
+    internal void Test_S2Polygon_Bug1() {
         var a_vertices = new S2Point[][]{
 new []{
   new S2Point(-0.10531193335759943, -0.80522214810955617, 0.58354664670985534),
@@ -641,7 +676,7 @@ new []{
     }
 
     [Fact]
-    public void Test_S2Polygon_Bug2() {
+    internal void Test_S2Polygon_Bug2() {
         S2Point[][] a_vertices = new S2Point[][]{
 new S2Point[]{
   new S2Point(-0.10618951389689163, -0.80546461394606728, 0.58305277875939732),
@@ -669,7 +704,7 @@ new S2Point[]{
     }
 
     [Fact]
-    public void Test_S2Polygon_Bug3() {
+    internal void Test_S2Polygon_Bug3() {
        var  a_vertices = new S2Point[][]{
 new S2Point[]{
   new S2Point(-0.10703494861068318, -0.80542232562508131, 0.58295659972299307),
@@ -713,7 +748,7 @@ new S2Point[]{
     }
 
     [Fact]
-    public void Test_S2Polygon_Bug4() {
+    internal void Test_S2Polygon_Bug4() {
         var a_vertices = new S2Point[][]{
 new S2Point[]{
   new S2Point(-0.10667065556339718, -0.80657502337947207, 0.58142764201754193),
@@ -753,7 +788,7 @@ new S2Point[]{
     }
 
     [Fact]
-    public void Test_S2Polygon_Bug5() {
+    internal void Test_S2Polygon_Bug5() {
         S2Point[][] a_vertices = new S2Point[][]{
 new S2Point[]{
   new S2Point(-0.10574444273627338, -0.80816264611829447, 0.57938868667714882),
@@ -789,7 +824,7 @@ new S2Point[]{
     }
 
     [Fact]
-    public void Test_S2Polygon_Bug6() {
+    internal void Test_S2Polygon_Bug6() {
         S2Point[][] a_vertices = new S2Point[][]{
 new S2Point[]{
   new S2Point(-0.10618849949725141, -0.80552159562437586, 0.58297423747304822),
@@ -825,7 +860,7 @@ new S2Point[]{
     }
 
     [Fact]
-    public void Test_S2Polygon_Bug7() {
+    internal void Test_S2Polygon_Bug7() {
         S2Point[][] a_vertices = new S2Point[][]{
 new S2Point[]{
   new S2Point(-0.10651728339354898, -0.80806023027835039, 0.57938996589599123),
@@ -908,7 +943,7 @@ new S2Point[]{
     }
 
     [Fact]
-    public void Test_S2Polygon_Bug8() {
+    internal void Test_S2Polygon_Bug8() {
         S2Point[][] a_vertices = new S2Point[][]{
 new S2Point[]{
   new S2Point(-0.10703872198218529, -0.80846112144645677, 0.57873424566545062),
@@ -941,7 +976,7 @@ new S2Point[]{
     }
 
     [Fact]
-    public void Test_S2Polygon_Bug9() {
+    internal void Test_S2Polygon_Bug9() {
         S2Point[][] a_vertices = new S2Point[][]{
 new S2Point[]{
   new S2Point(-0.10639937100501309, -0.80810205676564995, 0.57935329437301375),
@@ -969,7 +1004,7 @@ new S2Point[]{
     }
 
     [Fact]
-    public void Test_S2Polygon_Bug10() {
+    internal void Test_S2Polygon_Bug10() {
         S2Point[][] a_vertices = new S2Point[][]{
 new S2Point[]{
   new S2Point(-0.10592889932808099, -0.80701394501854917, 0.58095400922339757),
@@ -1089,7 +1124,7 @@ new S2Point[]{
     }
 
     [Fact]
-    public void Test_S2Polygon_Bug11() {
+    internal void Test_S2Polygon_Bug11() {
         S2Point[][] a_vertices = new S2Point[][]{
 new S2Point[]{
   new S2Point(-0.10727349803435572, -0.80875763107088172, 0.57827631008375979),
@@ -1162,7 +1197,7 @@ new S2Point[]{
     }
 
     [Fact]
-    public void Test_S2Polygon_Bug12() {
+    internal void Test_S2Polygon_Bug12() {
         S2Point[][] a_vertices = new S2Point[][]{
 new S2Point[]{
   new S2Point(-0.10772916872905106, -0.80699542608967267, 0.58064861015531188),
@@ -1193,7 +1228,7 @@ new S2Point[]{
     // It covers the same edge cases as TestOperations and also adds some
     // extra tests for shared edges.
     [Fact]
-    public void Test_S2PolygonTestBase_PolylineIntersection() {
+    internal void Test_S2PolygonTestBase_PolylineIntersection() {
         for (int v = 0; v < 3; ++v) {
             PolylineIntersectionSharedEdgeTest(cross1_, v, 1);
             PolylineIntersectionSharedEdgeTest(cross1_, v + 1, -1);
@@ -1250,7 +1285,7 @@ new S2Point[]{
     }
 
     [Fact]
-    public void Test_S2PolygonTestBase_Splitting() {
+    internal void Test_S2PolygonTestBase_Splitting() {
         // It takes too long to test all the polygons in debug mode, so we just pick
         // out some of the more interesting ones.
 
@@ -1268,7 +1303,7 @@ new S2Point[]{
     }
 
     [Fact]
-    public void Test_S2Polygon_InitToCellUnionBorder() {
+    internal void Test_S2Polygon_InitToCellUnionBorder() {
         // Test S2Polygon.InitToCellUnionBorder().
         // The main thing to check is that adjacent cells of different sizes get
         // merged correctly.  To do this we generate two random adjacent cells,
@@ -1318,7 +1353,7 @@ new S2Point[]{
     }
 
     [Fact]
-    public void Test_S2Polygon_UnionWithAmbgiuousCrossings() {
+    internal void Test_S2Polygon_UnionWithAmbgiuousCrossings() {
         S2Point[] a_vertices = {
 new S2Point(0.044856812877680216, -0.80679210859571904, 0.5891301722422051),
 new S2Point(0.044851868273159699, -0.80679240802900054, 0.5891301386444033),
@@ -1337,7 +1372,7 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
     }
 
     [Fact]
-    public void Test_S2Polygon_InitToSloppySupportsEmptyPolygons() {
+    internal void Test_S2Polygon_InitToSloppySupportsEmptyPolygons() {
         S2Polygon empty_polygon = new();
         S2Polygon polygon = new();
         polygon.InitToSnapped(empty_polygon);
@@ -1345,7 +1380,7 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
     }
 
     [Fact]
-    public void Test_S2Polygon_InitToSnappedDoesNotRotateVertices() {
+    internal void Test_S2Polygon_InitToSnappedDoesNotRotateVertices() {
         // This particular example came from MapFacts, but in fact InitToSnapped
         // used to cyclically rotate the vertices of all "hole" loops.
         var polygon = MakePolygonOrDie(
@@ -1368,7 +1403,7 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
     }
 
     [Fact]
-    public void Test_S2Polygon_InitToSnappedWithSnapLevel() {
+    internal void Test_S2Polygon_InitToSnappedWithSnapLevel() {
         var polygon = MakePolygonOrDie("0:0, 0:2, 2:0; 0:0, 0:-2, -2:-2, -2:0");
         for (int level = 0; level <= S2.kMaxCellLevel; ++level) {
             S2Polygon snapped_polygon = new();
@@ -1382,7 +1417,7 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
     }
 
     [Fact]
-    public void Test_S2Polygon_InitToSnappedIsValid_A() {
+    internal void Test_S2Polygon_InitToSnappedIsValid_A() {
         var poly = MakePolygonOrDie(
   "53.1328020478452:6.39444903453293, 53.1328019:6.394449, " +
   "53.1327091:6.3961766, 53.1313753:6.3958652, 53.1312825:6.3975924, " +
@@ -1394,7 +1429,7 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
     }
 
     [Fact]
-    public void Test_S2Polygon_InitToSnappedIsValid_B() {
+    internal void Test_S2Polygon_InitToSnappedIsValid_B() {
         var poly = MakePolygonOrDie(
   "51.6621651:4.9858102, 51.6620965:4.9874227, 51.662028:4.9890355, " +
   "51.6619796006122:4.99017864445347, 51.6622335420397:4.98419752545216, " +
@@ -1416,7 +1451,7 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
     }
 
     [Fact]
-    public void Test_S2Polygon_InitToSnappedIsValid_C() {
+    internal void Test_S2Polygon_InitToSnappedIsValid_C() {
         var poly = MakePolygonOrDie(
   "53.5316236236404:19.5841192796855, 53.5416584:19.5915903, " +
   "53.5416584189104:19.5915901888287; 53.5416584:19.5915903, " +
@@ -1432,7 +1467,7 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
     }
 
     [Fact]
-    public void Test_S2Polygon_InitToSnappedIsValid_D() {
+    internal void Test_S2Polygon_InitToSnappedIsValid_D() {
         var poly = (MakePolygonOrDie(
   "52.0909316:4.8673826, 52.0909317627574:4.86738262858533, " +
   "52.0911338452911:4.86248482549567, 52.0911337:4.8624848, " +
@@ -1444,7 +1479,7 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
     }
 
     [Fact]
-    public void Test_S2Polygon_MultipleInit() {
+    internal void Test_S2Polygon_MultipleInit() {
         var polygon = MakePolygonOrDie("0:0, 0:2, 2:0");
         Assert.Equal(1, polygon.NumLoops());
         Assert.Equal(3, polygon.NumVertices);
@@ -1463,7 +1498,7 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
     }
 
     [Fact]
-    public void Test_S2Polygon_InitSingleLoop() {
+    internal void Test_S2Polygon_InitSingleLoop() {
         S2Polygon polygon = new(S2Loop.kEmpty);
         Assert.True(polygon.IsEmpty());
         polygon = new S2Polygon(S2Loop.kFull);
@@ -1473,7 +1508,7 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
     }
 
     [Fact]
-    public void Test_S2PolygonTestBase_TestSimpleEncodeDecode() {
+    internal void Test_S2PolygonTestBase_TestSimpleEncodeDecode() {
         Encoder encoder = new();
         cross1_.Encode(encoder);
         var decoder = encoder.Decoder();
@@ -1484,13 +1519,13 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
     }
 
     [Fact]
-    public void Test_S2Polygon_TestEncodeDecodeDefaultPolygon() {
+    internal void Test_S2Polygon_TestEncodeDecodeDefaultPolygon() {
         S2Polygon polygon = new();
         Assert.True(TestEncodeDecode(polygon));
     }
 
     [Fact]
-    public void Test_S2Polygon_CompressedEmptyPolygonRequires3Bytes() {
+    internal void Test_S2Polygon_CompressedEmptyPolygonRequires3Bytes() {
         S2Polygon empty_polygon = new();
         Encoder encoder = new();
 
@@ -1506,7 +1541,7 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
     }
 
     [Fact]
-    public void Test_S2Polygon_CompressedEncodedPolygonRequires69Bytes() {
+    internal void Test_S2Polygon_CompressedEncodedPolygonRequires69Bytes() {
         var polygon = MakePolygonOrDie("0:0, 0:2, 2:0; 0:0, 0:-2, -2:-2, -2:0");
 
         S2Polygon snapped_polygon = new();
@@ -1527,7 +1562,7 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
     }
 
     [Fact]
-    public void Test_S2PolygonTestBase_CompressedEncodedPolygonDecodesApproxEqual() {
+    internal void Test_S2PolygonTestBase_CompressedEncodedPolygonDecodesApproxEqual() {
         // To compare the boundaries, etc we want to snap first.
         S2Polygon snapped = new();
         snapped.InitToSnapped(near_30_);
@@ -1557,7 +1592,7 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
     // rectangles slightly differently, and S2Polygons created from them just
     // copied the S2Cell bounds.
     [Fact]
-    public void Test_S2Polygon_TestS2CellConstructorAndContains() {
+    internal void Test_S2Polygon_TestS2CellConstructorAndContains() {
         S2LatLng latlng = new(S1Angle.FromE6(40565459), S1Angle.FromE6(-74645276));
         S2Cell cell = new(latlng);
         S2Polygon cell_as_polygon = new(cell);
@@ -1569,7 +1604,7 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
     }
 
     [Fact]
-    public void Test_S2PolygonTest_Project() {
+    internal void Test_S2PolygonTest_Project() {
         var polygon = MakePolygon(kNear0 + kNear2);
         S2Point point;
         S2Point projected;
@@ -1596,7 +1631,7 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
     }
 
     [Fact]
-    public void Test_S2PolygonTestBase_GetDistance() {
+    internal void Test_S2PolygonTestBase_GetDistance() {
         // The empty and full loops don't have boundaries.
         TestDistanceMethods(empty_, new S2Point(0, 1, 0), new S2Point());
         TestDistanceMethods(full_, new S2Point(0, 1, 0), new S2Point());
@@ -1639,7 +1674,7 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
     }
 
     [Fact]
-    public void Test_S2PolygonTestBase_Area() {
+    internal void Test_S2PolygonTestBase_Area() {
         Assert2.Near(0.0, empty_.GetArea());
         Assert2.Near(S2.M_4_PI, full_.GetArea());
         Assert2.Near(S2.M_2_PI, south_H_.GetArea());
@@ -1657,13 +1692,13 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
     }
 
     [Fact]
-    public void Test_S2Polygon_UninitializedIsValid() {
+    internal void Test_S2Polygon_UninitializedIsValid() {
         S2Polygon polygon = new();
         Assert.True(polygon.IsValid());
     }
 
     [Fact]
-    public void Test_IsValidTest_UnitLength() {
+    internal void Test_IsValidTest_UnitLength() {
         // This test can only be run in optimized builds because there are
         // Assert.True(IsUnitLength()) calls scattered throughout the S2 code.
 #if !DEBUG
@@ -1683,7 +1718,7 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
     }
 
     [Fact]
-    public void Test_IsValidTest_VertexCount() {
+    internal void Test_IsValidTest_VertexCount() {
         for (int iter = 0; iter < kIters; ++iter) {
             var vloop = new List<S2Point>();
             if (S2Testing.Random.OneIn(2)) {
@@ -1696,7 +1731,7 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
     }
 
     [Fact]
-    public void Test_IsValidTest_DuplicateVertex() {
+    internal void Test_IsValidTest_DuplicateVertex() {
         for (int iter = 0; iter < kIters; ++iter) {
             AddConcentricLoops(1, 3 /*min_vertices*/);
             var vloop = vloops_[0];
@@ -1709,7 +1744,7 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
     }
 
     [Fact]
-    public void Test_IsValidTest_SelfIntersection() {
+    internal void Test_IsValidTest_SelfIntersection() {
         for (int iter = 0; iter < kIters; ++iter) {
             // Use multiple loops so that we can test both holes and shells.  We need
             // at least 5 vertices so that the modified edges don't intersect any
@@ -1724,7 +1759,7 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
     }
 
     [Fact]
-    public void Test_IsValidTest_EmptyLoop() {
+    internal void Test_IsValidTest_EmptyLoop() {
         for (int iter = 0; iter < kIters; ++iter) {
             AddConcentricLoops(S2Testing.Random.Uniform(5), 3 /*min_vertices*/);
             AddLoop(S2Loop.kEmpty.Vertices);
@@ -1733,7 +1768,7 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
     }
 
     [Fact]
-    public void Test_IsValidTest_FullLoop() {
+    internal void Test_IsValidTest_FullLoop() {
         for (int iter = 0; iter < kIters; ++iter) {
             // This is only an error if there is at least one other loop.
             AddConcentricLoops(1 + S2Testing.Random.Uniform(5), 3 /*min_vertices*/);
@@ -1743,7 +1778,7 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
     }
 
     [Fact]
-    public void Test_IsValidTest_LoopsCrossing() {
+    internal void Test_IsValidTest_LoopsCrossing() {
         for (int iter = 0; iter < kIters; ++iter) {
             AddConcentricLoops(2, 4 /*min_vertices*/);
             // Both loops have the same number of vertices, and vertices at the same
@@ -1763,7 +1798,7 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
     }
 
     [Fact]
-    public void Test_IsValidTest_DuplicateEdge() {
+    internal void Test_IsValidTest_DuplicateEdge() {
         for (int iter = 0; iter < kIters; ++iter) {
             AddConcentricLoops(2, 4 /*min_vertices*/);
             int n = vloops_[0].Count;
@@ -1789,7 +1824,7 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
     }
 
     [Fact]
-    public void Test_IsValidTest_InconsistentOrientations() {
+    internal void Test_IsValidTest_InconsistentOrientations() {
         for (int iter = 0; iter < kIters; ++iter) {
             AddConcentricLoops(2 + S2Testing.Random.Uniform(5), 3 /*min_vertices*/);
             init_oriented_ = true;
@@ -1798,7 +1833,7 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
     }
 
     [Fact]
-    public void Test_IsValidTest_LoopDepthNegative() {
+    internal void Test_IsValidTest_LoopDepthNegative() {
         modify_polygon_hook_ = SetInvalidLoopDepth;
         for (int iter = 0; iter < kIters; ++iter) {
             AddConcentricLoops(1 + S2Testing.Random.Uniform(4), 3 /*min_vertices*/);
@@ -1807,7 +1842,7 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
     }
 
     [Fact]
-    public void Test_IsValidTest_LoopNestingInvalid() {
+    internal void Test_IsValidTest_LoopNestingInvalid() {
         modify_polygon_hook_ = SetInvalidLoopNesting;
         for (int iter = 0; iter < kIters; ++iter) {
             AddConcentricLoops(2 + S2Testing.Random.Uniform(4), 3 /*min_vertices*/);
@@ -1824,7 +1859,7 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
     }
 
     [Fact]
-    public void Test_IsValidTest_FuzzTest() {
+    internal void Test_IsValidTest_FuzzTest() {
         // Check that the S2Loop/S2Polygon constructors and IsValid() don't crash
         // when they receive arbitrary invalid input.  (We don't test large inputs;
         // it is assumed that the client enforces their own size limits before even
@@ -1875,7 +1910,7 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
     }
 
     [Fact]
-    public void Test_S2PolygonSimplifierTest_NoSimplification() {
+    internal void Test_S2PolygonSimplifierTest_NoSimplification() {
         SetInput("0:0, 0:20, 20:20, 20:0", 1.0);
         Assert.Equal(4, simplified.NumVertices);
 
@@ -1886,7 +1921,7 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
     // Here, 10:-2 will be removed and  0:0-20:0 will intersect two edges.
     // (The resulting polygon will in fact probably have more edges.)
     [Fact]
-    public void Test_S2PolygonSimplifierTest_SimplifiedLoopSelfIntersects() {
+    internal void Test_S2PolygonSimplifierTest_SimplifiedLoopSelfIntersects() {
         SetInput("0:0, 0:20, 10:-0.1, 20:20, 20:0, 10:-0.2", 0.22);
 
         // The simplified polygon has the same number of vertices but it should now
@@ -1897,7 +1932,7 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
     }
 
     [Fact]
-    public void Test_S2PolygonSimplifierTest_NoSimplificationManyLoops() {
+    internal void Test_S2PolygonSimplifierTest_NoSimplificationManyLoops() {
         SetInput("0:0,    0:1,   1:0;   0:20, 0:21, 1:20; " +
                  "20:20, 20:21, 21:20; 20:0, 20:1, 21:0", 0.01);
         Assert.Equal(0, MaximumDistanceInDegrees(simplified, original, 0));
@@ -1905,20 +1940,20 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
     }
 
     [Fact]
-    public void Test_S2PolygonSimplifierTest_TinyLoopDisappears() {
+    internal void Test_S2PolygonSimplifierTest_TinyLoopDisappears() {
         SetInput("0:0, 0:1, 1:1, 1:0", 1.1);
         Assert.True(simplified.IsEmpty());
     }
 
     [Fact]
-    public void Test_S2PolygonSimplifierTest_StraightLinesAreSimplified() {
+    internal void Test_S2PolygonSimplifierTest_StraightLinesAreSimplified() {
         SetInput("0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0," +
                  "6:1, 5:1, 4:1, 3:1, 2:1, 1:1, 0:1", 0.01);
         Assert.Equal(4, simplified.NumVertices);
     }
 
     [Fact]
-    public void Test_S2PolygonSimplifierTest_EdgeSplitInManyPieces() {
+    internal void Test_S2PolygonSimplifierTest_EdgeSplitInManyPieces() {
         // near_square's right four-point side will be simplified to a vertical
         // line at lng=7.9, that will cut the 9 teeth of the saw (the edge will
         // therefore be broken into 19 pieces).
@@ -1939,7 +1974,7 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
     }
 
     [Fact]
-    public void Test_S2PolygonSimplifierTest_EdgesOverlap() {
+    internal void Test_S2PolygonSimplifierTest_EdgesOverlap() {
         // Two loops, One edge of the second one ([0:1 - 0:2]) is part of an
         // edge of the first one..
         SetInput("0:0, 0:3, 1:0; 0:1, -1:1, 0:2", 0.01);
@@ -1948,7 +1983,7 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
     }
 
     [Fact]
-    public void Test_InitToSimplifiedInCell_PointsOnCellBoundaryKept() {
+    internal void Test_InitToSimplifiedInCell_PointsOnCellBoundaryKept() {
         S2Cell cell = new(S2CellId.FromToken("89c25c"));
         var polygon = MakeCellPolygon(cell, new[]{ "0.1:0, 0.2:0, 0.2:0.5"});
         S1Angle tolerance = new S1Angle(polygon.Loop(0).Vertex(0), polygon.Loop(0).Vertex(1)) * 1.1;
@@ -1963,7 +1998,7 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
     }
 
     [Fact]
-    public void Test_InitToSimplifiedInCell_PointsInsideCellSimplified() {
+    internal void Test_InitToSimplifiedInCell_PointsInsideCellSimplified() {
         S2CellId cell_id = S2CellId.FromToken("89c25c");
         S2Cell cell = new(cell_id);
         var polygon = MakeCellPolygon(
@@ -1977,7 +2012,7 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
     }
 
     [Fact]
-    public void Test_InitToSimplifiedInCell_CellCornerKept() {
+    internal void Test_InitToSimplifiedInCell_CellCornerKept() {
         S2Cell cell = new(S2CellId.FromToken("00001"));
         var input = MakeCellPolygon(cell, new[]{ "1:0, 1:0.05, 0.99:0"});
         S1Angle tolerance = 0.02 * new S1Angle(cell.Vertex(0), cell.Vertex(1));
@@ -1987,7 +2022,7 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
     }
 
     [Fact]
-    public void Test_InitToSimplifiedInCell_NarrowStripRemoved() {
+    internal void Test_InitToSimplifiedInCell_NarrowStripRemoved() {
         S2Cell cell = new(S2CellId.FromToken("00001"));
         var input = MakeCellPolygon(cell, new[]{ "0.9:0, 0.91:0, 0.91:1, 0.9:1"});
         S1Angle tolerance = 0.02 * new S1Angle(cell.Vertex(0), cell.Vertex(1));
@@ -1997,7 +2032,7 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
     }
 
     [Fact]
-    public void Test_InitToSimplifiedInCell_NarrowGapRemoved() {
+    internal void Test_InitToSimplifiedInCell_NarrowGapRemoved() {
         S2Cell cell = new(S2CellId.FromToken("00001"));
         var input = MakeCellPolygon(
             cell, new[] { "0.7:0, 0.75:0, 0.75:1, 0.7:1", "0.76:0, 0.8:0, 0.8:1, 0.76:1"});
@@ -2009,7 +2044,7 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
     }
 
     [Fact]
-    public void Test_InitToSimplifiedInCell_CloselySpacedEdgeVerticesKept() {
+    internal void Test_InitToSimplifiedInCell_CloselySpacedEdgeVerticesKept() {
         S2Cell cell = new(S2CellId.FromToken("00001"));
         var input = MakeCellPolygon(
             cell, new[]{ "0:0.303, 0:0.302, 0:0.301, 0:0.3, 0.1:0.3, 0.1:0.4"});
@@ -2020,7 +2055,7 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
     }
 
     [Fact]
-    public void Test_InitToSimplifiedInCell_PolylineAssemblyBug() {
+    internal void Test_InitToSimplifiedInCell_PolylineAssemblyBug() {
         S2Cell cell = new(S2CellId.FromToken("5701"));
         var polygon = MakePolygon(
             "55.8699252:-163.9412145, " + // South-west corner of 5701
@@ -2038,7 +2073,7 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
     }
 
     [Fact]
-    public void Test_InitToSimplifiedInCell_InteriorEdgesSnappedToBoundary() {
+    internal void Test_InitToSimplifiedInCell_InteriorEdgesSnappedToBoundary() {
         var polygon = MakePolygonOrDie(
             "37.8011672:-122.3247322, 37.8011648:-122.3247399, " +
             "37.8011647:-122.3247403, 37.8011646:-122.3247408, " +
@@ -2058,7 +2093,7 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
     // Tests that a regular polygon with many points gets simplified
     // enough.
     [Fact]
-    public void Test_S2PolygonSimplifierTest_LargeRegularPolygon() {
+    internal void Test_S2PolygonSimplifierTest_LargeRegularPolygon() {
         double kRadius = 2.0;  // in degrees
         int num_initial_points = 1000;
         int num_desired_points = 250;
@@ -2073,7 +2108,7 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
     }
 
     [Fact]
-    public void Test_S2PolygonDecodeTest_FuzzUncompressedEncoding() {
+    internal void Test_S2PolygonDecodeTest_FuzzUncompressedEncoding() {
         // Some parts of the S2 library S2_DCHECK on invalid data, even if we set
         // s2debug to false or use S2Polygon.set_s2debug_override. So we
         // only run this test in opt mode.
@@ -2085,8 +2120,9 @@ decodeTest.Test();
 #endif
     }
 
+    // TODO(b/231695412): Investigate further.
     [Fact]
-    public void Test_S2PolygonDecodeTest_FuzzCompressedEncoding() {
+    internal void Test_S2PolygonDecodeTest_FuzzCompressedEncoding() {
         // Some parts of the S2 library S2_DCHECK on invalid data, even if we set
         // s2debug to false or use S2Polygon.set_s2debug_override. So we
         // only run this test in opt mode.
@@ -2099,7 +2135,7 @@ for (int i = 0; i < 100000; ++i) {
     }
 
     [Fact]
-    public void Test_S2PolygonDecodeTest_FuzzEverything() {
+    internal void Test_S2PolygonDecodeTest_FuzzEverything() {
         // Some parts of the S2 library S2_DCHECK on invalid data, even if we set
         // s2debug to false or use S2Polygon.set_s2debug_override. So we
         // only run this test in opt mode.
@@ -2112,7 +2148,7 @@ for (int i = 0; i < 100000; ++i) {
     }
 
     [Fact]
-    public void Test_S2PolygonTestBase_FullPolygonShape() {
+    internal void Test_S2PolygonTestBase_FullPolygonShape() {
         var shape = new S2Polygon.Shape(full_);
         Assert.Equal(0, shape.NumEdges());
         Assert.Equal(2, shape.Dimension());
@@ -2125,7 +2161,7 @@ for (int i = 0; i < 100000; ++i) {
     }
 
     [Fact]
-    public void Test_S2PolygonTestBase_EmptyPolygonShape() {
+    internal void Test_S2PolygonTestBase_EmptyPolygonShape() {
         var shape = new S2Polygon.Shape(empty_);
         Assert.Equal(0, shape.NumEdges());
         Assert.Equal(2, shape.Dimension());
@@ -2136,17 +2172,17 @@ for (int i = 0; i < 100000; ++i) {
     }
 
     [Fact]
-    public void Test_S2PolygonTestBase_OneLoopPolygonShape() {
+    internal void Test_S2PolygonTestBase_OneLoopPolygonShape() {
         TestPolygonShape(near_0_);
     }
 
     [Fact]
-    public void Test_S2PolygonTestBase_SeveralLoopPolygonShape() {
+    internal void Test_S2PolygonTestBase_SeveralLoopPolygonShape() {
         TestPolygonShape(near_3210_);
     }
 
     [Fact]
-    public void Test_S2Polygon_ManyLoopPolygonShape() {
+    internal void Test_S2Polygon_ManyLoopPolygonShape() {
         int kNumLoops = 100;
         int kNumVerticesPerLoop = 6;
         S2Testing.ConcentricLoopsPolygon(new S2Point(1, 0, 0),
@@ -2155,7 +2191,7 @@ for (int i = 0; i < 100000; ++i) {
     }
 
     [Fact]
-    public void Test_S2PolygonOwningShape_Ownership() {
+    internal void Test_S2PolygonOwningShape_Ownership() {
         // Debug mode builds will catch any memory leak below.
         var loops = new List<S2Loop>();
         var polygon = new S2Polygon(loops);
@@ -2163,7 +2199,7 @@ for (int i = 0; i < 100000; ++i) {
     }
 
     [Fact]
-    public void Test_S2Polygon_PointInBigLoop() {
+    internal void Test_S2Polygon_PointInBigLoop() {
         // This code used to demonstrate a bug in S2ShapeIndex.
         S2LatLng center = S2LatLng.FromRadians(0.3, 2);
         S1Angle radius = S1Angle.FromDegrees(80);
@@ -2172,7 +2208,7 @@ for (int i = 0; i < 100000; ++i) {
     }
 
     [Fact]
-    public void Test_S2PolygonTestBase_IndexContainsOnePolygonShape() {
+    internal void Test_S2PolygonTestBase_IndexContainsOnePolygonShape() {
         MutableS2ShapeIndex index = near_0_.Index;
         Assert.Equal(1, index.NumShapeIds());
         var shape = (S2Polygon.Shape)index.Shape(0);
@@ -2180,7 +2216,7 @@ for (int i = 0; i < 100000; ++i) {
     }
 
     [Fact]
-    public void Test_S2PolygonTestBase_PolygonPolygonDistance() {
+    internal void Test_S2PolygonTestBase_PolygonPolygonDistance() {
         // Verify that the example code for S2Polygon.index() actually works.
         S2Polygon polygon1 = near_0_;
         S2Polygon polygon2 = far_10_;
@@ -2195,7 +2231,8 @@ for (int i = 0; i < 100000; ++i) {
         Encoder encoder = new();
         src.Encode(encoder);
         var decoder = encoder.Decoder();
-        var (_, dst) = S2Polygon.Decode(decoder);
+        var (success, dst) = S2Polygon.Decode(decoder);
+        Assert.True(success);
         return src == dst;
     }
 
@@ -2761,22 +2798,22 @@ for (int i = 0; i < 100000; ++i) {
 
     private class S2PolygonDecodeTest
     {
-        public S2PolygonDecodeTest() {
+        internal S2PolygonDecodeTest() {
             data_array_ = new byte[kMaxBytes];
             encoder_ = new Encoder(data_array_, kMaxBytes);
         }
 
-        public void AppendByte(int value)
+        internal void AppendByte(int value)
         {
             encoder_.Put8((sbyte)value);
         }
 
-        public void AppendInt32(int value)
+        internal void AppendInt32(int value)
         {
             encoder_.Put32(value);
         }
 
-        public void AppendRandomData(int size)
+        internal void AppendRandomData(int size)
         {
             for (int i = 0; i < size && encoder_.Avail() > 0; ++i)
             {
@@ -2784,12 +2821,12 @@ for (int i = 0; i < 100000; ++i) {
             }
         }
 
-        public void AppendRandomData()
+        internal void AppendRandomData()
         {
             AppendRandomData(S2Testing.Random.Uniform(kMaxBytes));
         }
 
-        public void AppendFakeUncompressedEncodingData()
+        internal void AppendFakeUncompressedEncodingData()
         {
             AppendByte(1);                      // polygon number
             AppendByte(0);                      // unused
@@ -2800,7 +2837,7 @@ for (int i = 0; i < 100000; ++i) {
             AppendRandomData();                 // junk to fill out the buffer
         }
 
-        public void AppendFakeCompressedEncodingData()
+        internal void AppendFakeCompressedEncodingData()
         {
             AppendByte(4);                      // polygon number
             AppendByte(S2Testing.Random.Uniform(50));    // snap level
@@ -2830,7 +2867,7 @@ for (int i = 0; i < 100000; ++i) {
             return S2Testing.Random.Uniform(1000);
         }
 
-        public bool Test()
+        internal bool Test()
         {
             decoder_ = new Decoder(data_array_, 0, encoder_.Length());
             encoder_.Clear();

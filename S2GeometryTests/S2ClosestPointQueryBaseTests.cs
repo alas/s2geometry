@@ -5,7 +5,7 @@ namespace S2Geometry;
 public class S2ClosestPointQueryBaseTests
 {
     [Fact]
-    public void Test_S2ClosestPointQueryBase_MaxDistance()
+    internal void Test_S2ClosestPointQueryBase_MaxDistance()
     {
         S2PointIndex<int> index = new();
         var points = ParsePointsOrDie("0:0, 1:0, 2:0, 3:0");
@@ -24,9 +24,9 @@ public class S2ClosestPointQueryBaseTests
         Assert2.Near(4, results[0].Distance.ToS1ChordAngle().ToAngle().GetDegrees(), 1e-13);
     }
 
-    public sealed class FurthestPointTarget : S2MaxDistancePointTarget
+    internal sealed class FurthestPointTarget : S2MaxDistancePointTarget
     {
-        public FurthestPointTarget(S2Point point) : base(point) { }
+        internal FurthestPointTarget(S2Point point) : base(point) { }
         public override int MaxBruteForceIndexSize => 10;  // Arbitrary.
     }
 
@@ -37,6 +37,6 @@ public class S2ClosestPointQueryBaseTests
         : S2ClosestPointQueryBase<S2MaxDistance, Data>
         where Data : IComparable<Data>
     {
-        public FurthestPointQuery(S2PointIndex<Data> index) : base(index) { }
+        internal FurthestPointQuery(S2PointIndex<Data> index) : base(index) { }
     }
 }

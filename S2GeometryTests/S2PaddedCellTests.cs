@@ -3,7 +3,7 @@ namespace S2Geometry;
 public class S2PaddedCellTests
 {
     [Fact]
-    public void Test_S2PaddedCell_S2CellMethods()
+    internal void Test_S2PaddedCell_S2CellMethods()
     {
         // Test the S2PaddedCell methods that have approximate S2Cell equivalents.
         int kIters = 1000;
@@ -28,7 +28,7 @@ public class S2PaddedCellTests
     }
 
     [Fact]
-    public void Test_S2PaddedCell_GetEntryExitVertices()
+    internal void Test_S2PaddedCell_GetEntryExitVertices()
     {
         int kIters = 1000;
         for (int iter = 0; iter < kIters; ++iter)
@@ -59,7 +59,7 @@ public class S2PaddedCellTests
     }
 
     [Fact]
-    public void Test_S2PaddedCell_ShrinkToFit()
+    internal void Test_S2PaddedCell_ShrinkToFit()
     {
         const int kIters = 1000;
         for (int iter = 0; iter < kIters; ++iter)

@@ -8,7 +8,7 @@ public class S2ShapeUtilConversionTests
     // ShapeToS2Points tests
 
     [Fact]
-    public void Test_S2ShapeConversionUtilTest_PointVectorShapeToPoints()
+    internal void Test_S2ShapeConversionUtilTest_PointVectorShapeToPoints()
     {
         var points = ParsePointsOrDie("11:11, 10:0, 5:5");
         S2PointVectorShape point_vector = new(points.ToArray());
@@ -24,7 +24,7 @@ public class S2ShapeUtilConversionTests
     // ShapeToS2Polyline tests
 
     [Fact]
-    public void Test_SS2ShapeConversionUtilTest_LineToS2Polyline()
+    internal void Test_SS2ShapeConversionUtilTest_LineToS2Polyline()
     {
         var points = ParsePointsOrDie("11:11, 10:0, 5:5");
         S2LaxPolylineShape lax_polyline = new(points.ToArray());
@@ -37,7 +37,7 @@ public class S2ShapeUtilConversionTests
     }
 
     [Fact]
-    public void Test_S2ShapeConversionUtilTest_ClosedLineToS2Polyline()
+    internal void Test_S2ShapeConversionUtilTest_ClosedLineToS2Polyline()
     {
         var points = ParsePointsOrDie("0:0, 0:10, 10:10, 0:0");
         S2LaxPolylineShape lax_polyline = new(points.ToArray());
@@ -72,7 +72,7 @@ public class S2ShapeUtilConversionTests
     }
 
     [Fact]
-    public void Test_S2ShapeConversionUtilTest_PolygonWithHoleToS2Polygon()
+    internal void Test_S2ShapeConversionUtilTest_PolygonWithHoleToS2Polygon()
     {
         // a polygon with one shell and one hole
         Loop shell = new(ParsePointsOrDie("0:0, 0:10, 10:10, 10:0"));
@@ -83,7 +83,7 @@ public class S2ShapeUtilConversionTests
     }
 
     [Fact]
-    public void Test_S2ShapeConversionUtilTest_MultiPolygonToS2Polygon()
+    internal void Test_S2ShapeConversionUtilTest_MultiPolygonToS2Polygon()
     {
         // a polygon with multiple shells
         Loop shell1 = new(ParsePointsOrDie("0:0, 0:2, 2:2, 2:0"));
@@ -94,7 +94,7 @@ public class S2ShapeUtilConversionTests
     }
 
     [Fact]
-    public void Test_S2ShapeConversionUtilTest_TwoHolesToS2Polygon()
+    internal void Test_S2ShapeConversionUtilTest_TwoHolesToS2Polygon()
     {
         // a polygon shell with two holes
         Loop shell = new(ParsePointsOrDie("0:0, 0:10, 10:10, 10:0"));
@@ -106,7 +106,7 @@ public class S2ShapeUtilConversionTests
     }
 
     [Fact]
-    public void Test_S2ShapeConversionUtilTest_FullPolygonToS2Polygon()
+    internal void Test_S2ShapeConversionUtilTest_FullPolygonToS2Polygon()
     {
         // verify that a full polygon is converted correctly
         Loop loop1 = new(S2Loop.kFull.CloneVertices());

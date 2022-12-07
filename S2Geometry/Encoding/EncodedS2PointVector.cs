@@ -437,8 +437,8 @@ public class EncodedS2PointVector
     private bool InitUncompressedFormat(Decoder decoder)
     {
 #if BIGENDIAN || ARM
-            // TODO(ericv): Make this work on platforms that don't support unaligned
-            // 64-bit little-endian reads, e.g. by falling back to
+            // TODO(b/231674214): Make this work on platforms that don't support
+            // unaligned 64-bit little-endian reads, e.g. by falling back to
             //
             //   bit_cast<double>(little_endian.Load64()).
             //
@@ -706,7 +706,7 @@ public class EncodedS2PointVector
         // 2. The format only allows us to represent up to 7 bytes (56 bits) of
         // "base", so we need to ensure that "base" conforms to this requirement.
         int min_delta_bits = (have_exceptions || values.Length == 1) ? 8 : 4;
-        int excluded_bits = Math.Max(BitsUtils.Log2Floor64(v_min ^ v_max) + 1,
+        int excluded_bits = Math.Max(BitsUtils.GetBitWidth(v_min ^ v_max),
                                 Math.Max(min_delta_bits, BaseShift(level, 56)));
         UInt64 base_ = v_min & ~BitMask(excluded_bits);
 
@@ -815,7 +815,7 @@ public class EncodedS2PointVector
         //
         // It is possible to show that this last example is the worst case, i.e.  we
         // do not need to consider increasing delta_bits or overlap_bits further.
-        int delta_bits = (Math.Max(1, BitsUtils.Log2Floor64(b_max - b_min)) + 3) & ~3;
+        int delta_bits = (Math.Max(1, BitsUtils.GetBitWidth(b_max - b_min) - 1) + 3) & ~3;
         int overlap_bits = 0;
         if (!CanEncode(b_min, b_max, delta_bits, 0, have_exceptions))
         {

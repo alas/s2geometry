@@ -4,9 +4,9 @@ using static S2ShapeUtil;
 
 public class S2ShapeUtilVisitCrossingEdgePairsTests
 {
-    public readonly record struct EdgePair(ShapeEdgeId Item1, ShapeEdgeId Item2)
+    internal readonly record struct EdgePair(ShapeEdgeId Item1, ShapeEdgeId Item2)
     {
-        public EdgePair(Int32Int32 id1, Int32Int32 id2)
+        internal EdgePair(Int32Int32 id1, Int32Int32 id2)
             : this(new ShapeEdgeId(id1.Item1, id1.Item2), new ShapeEdgeId(id2.Item1, id2.Item2))
         {
         }
@@ -16,10 +16,10 @@ public class S2ShapeUtilVisitCrossingEdgePairsTests
 
     private readonly ITestOutputHelper _logger;
 
-    public S2ShapeUtilVisitCrossingEdgePairsTests(ITestOutputHelper logger) { _logger = logger; }
+    internal S2ShapeUtilVisitCrossingEdgePairsTests(ITestOutputHelper logger) { _logger = logger; }
 
     [Fact]
-    public void Test_GetCrossingEdgePairs_NoIntersections()
+    internal void Test_GetCrossingEdgePairs_NoIntersections()
     {
         var index = new MutableS2ShapeIndex();
         TestGetCrossingEdgePairs(index, CrossingType.ALL);
@@ -27,7 +27,7 @@ public class S2ShapeUtilVisitCrossingEdgePairsTests
     }
 
     [Fact]
-    public void Test_GetCrossingEdgePairs_EdgeGrid()
+    internal void Test_GetCrossingEdgePairs_EdgeGrid()
     {
         var kGridSize = 10;  // (kGridSize + 1) * (kGridSize + 1) crossings
         var index = new MutableS2ShapeIndex();
@@ -45,7 +45,7 @@ public class S2ShapeUtilVisitCrossingEdgePairsTests
     }
 
     [Fact]
-    public void Test_FindSelfIntersection_Basic()
+    internal void Test_FindSelfIntersection_Basic()
     {
         // Coordinates are (lat,lng), which can be visualized as (y,x).
         TestHasCrossing("0:0, 0:1, 0:2, 1:2, 1:1, 1:0", false);

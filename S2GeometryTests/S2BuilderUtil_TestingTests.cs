@@ -6,7 +6,7 @@ using static S2Builder.GraphOptions;
 public class S2BuilderUtil_TestingTests
 {
     [Fact]
-    public void Test_GraphCloningLayer_MakeIndependentCopy()
+    internal void Test_GraphCloningLayer_MakeIndependentCopy()
     {
         // Also tests GraphClone.
         GraphClone gc = new();
@@ -33,7 +33,7 @@ public class S2BuilderUtil_TestingTests
     }
 
     [Fact]
-    public void Test_GraphAppendingLayer_AppendsTwoGraphs()
+    internal void Test_GraphAppendingLayer_AppendsTwoGraphs()
     {
         List<Graph> graphs = new();
         List<GraphClone> clones = new();
@@ -53,7 +53,7 @@ public class S2BuilderUtil_TestingTests
     }
 
     [Fact]
-    public void Test_IndexMatchingLayer_SameResult()
+    internal void Test_IndexMatchingLayer_SameResult()
     {
         // Two indices with the same edges in different orders.
         var expected = MakeIndexOrDie(
@@ -77,7 +77,7 @@ public class S2BuilderUtil_TestingTests
     }
 
     [Fact]
-    public void Test_IndexMatchingLayer_DifferentResult()
+    internal void Test_IndexMatchingLayer_DifferentResult()
     {
         // Two indices where edges have different multiplicities.
         var expected = S2TextFormat.MakeIndexOrDie(

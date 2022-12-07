@@ -58,7 +58,8 @@ public class S2LaxPolygonShape : S2Shape, IInitEncoder<S2LaxPolygonShape>
 
     // The loop that contained the edge returned by the previous call to the
     // edge() method.  This is used as a hint to speed up edge location when
-    // there are many loops.
+    // there are many loops.  Benchmarks indicate that the improved locality
+    // this provides can speed up chain position lookup by 1.7-4.7x.
     private int prev_loop_ = 0;
 
     public int NumVertices { get; private set; }
@@ -297,8 +298,8 @@ public class S2LaxPolygonShape : S2Shape, IInitEncoder<S2LaxPolygonShape>
         return ChainEdgeInternal(pos.ChainId, pos.Offset);
     }
     public sealed override int Dimension() => 2;
-    public sealed override ReferencePoint GetReferencePoint()
-        => S2ShapeUtil.GetReferencePoint(this);
+    public sealed override ReferencePoint GetReferencePoint() =>
+        S2ShapeUtil.GetReferencePoint(this);
     public sealed override int NumChains() => NumLoops;
     public sealed override Chain GetChain(int i)
     {

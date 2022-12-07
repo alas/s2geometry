@@ -7,57 +7,57 @@ namespace S2Geometry;
 public class S2WedgeRelationsTests
 {
     [Fact]
-    public void Test_IntersectionInOneWedge() =>
+    internal void Test_IntersectionInOneWedge() =>
         TestWedge(new S2Point(-1, 0, 10), new S2Point(0, 0, 1), new S2Point(1, 2, 10),
                   new S2Point(0, 1, 10), new S2Point(1, -2, 10),
                   false, true, WedgeRelation.WEDGE_PROPERLY_OVERLAPS);
     [Fact]
-    public void Test_IntersectionInTwoWedges() =>
+    internal void Test_IntersectionInTwoWedges() =>
         TestWedge(new S2Point(-1, -1, 10), new S2Point(0, 0, 1), new S2Point(1, -1, 10),
                   new S2Point(1, 0, 10), new S2Point(-1, 1, 10),
                   false, true, WedgeRelation.WEDGE_PROPERLY_OVERLAPS);
     [Fact]
-    public void Test_NormalContainment() =>
+    internal void Test_NormalContainment() =>
         TestWedge(new S2Point(-1, -1, 10), new S2Point(0, 0, 1), new S2Point(1, -1, 10),
                   new S2Point(-1, 0, 10), new S2Point(1, 0, 10),
                   true, true, WedgeRelation.WEDGE_PROPERLY_CONTAINS);
     [Fact]
-    public void Test_ContainmentWithEqualityOnOneSide() =>
+    internal void Test_ContainmentWithEqualityOnOneSide() =>
         TestWedge(new S2Point(2, 1, 10), new S2Point(0, 0, 1), new S2Point(-1, -1, 10),
                   new S2Point(2, 1, 10), new S2Point(1, -5, 10),
                   true, true, WedgeRelation.WEDGE_PROPERLY_CONTAINS);
     [Fact]
-    public void Test_ContainmentWithEqualityOnTheOtherSide() =>
+    internal void Test_ContainmentWithEqualityOnTheOtherSide() =>
         TestWedge(new S2Point(2, 1, 10), new S2Point(0, 0, 1), new S2Point(-1, -1, 10),
                   new S2Point(1, -2, 10), new S2Point(-1, -1, 10),
                   true, true, WedgeRelation.WEDGE_PROPERLY_CONTAINS);
     [Fact]
-    public void Test_ContainmentWithEqualityOnBothSides() =>
+    internal void Test_ContainmentWithEqualityOnBothSides() =>
         TestWedge(new S2Point(-2, 3, 10), new S2Point(0, 0, 1), new S2Point(4, -5, 10),
                   new S2Point(-2, 3, 10), new S2Point(4, -5, 10),
                   true, true, WedgeRelation.WEDGE_EQUALS);
     [Fact]
-    public void Test_DisjointWithEqualityOnOneSide() =>
+    internal void Test_DisjointWithEqualityOnOneSide() =>
         TestWedge(new S2Point(-2, 3, 10), new S2Point(0, 0, 1), new S2Point(4, -5, 10),
                   new S2Point(4, -5, 10), new S2Point(-2, -3, 10),
                   false, false, WedgeRelation.WEDGE_IS_DISJOINT);
     [Fact]
-    public void Test_DisjointWithEqualityOnTheOtherSide() =>
+    internal void Test_DisjointWithEqualityOnTheOtherSide() =>
         TestWedge(new S2Point(-2, 3, 10), new S2Point(0, 0, 1), new S2Point(0, 5, 10),
                   new S2Point(4, -5, 10), new S2Point(-2, 3, 10),
                   false, false, WedgeRelation.WEDGE_IS_DISJOINT);
     [Fact]
-    public void Test_DisjointWithEqualityOnBothSides() =>
+    internal void Test_DisjointWithEqualityOnBothSides() =>
         TestWedge(new S2Point(-2, 3, 10), new S2Point(0, 0, 1), new S2Point(4, -5, 10),
                   new S2Point(4, -5, 10), new S2Point(-2, 3, 10),
                   false, false, WedgeRelation.WEDGE_IS_DISJOINT);
     [Fact]
-    public void Test_BContainsAWithEqualityOnOneSide() =>
+    internal void Test_BContainsAWithEqualityOnOneSide() =>
         TestWedge(new S2Point(2, 1, 10), new S2Point(0, 0, 1), new S2Point(1, -5, 10),
                   new S2Point(2, 1, 10), new S2Point(-1, -1, 10),
                   false, true, WedgeRelation.WEDGE_IS_PROPERLY_CONTAINED);
     [Fact]
-    public void Test_BContainsAWithEequalityOnTheOtherSide() =>
+    internal void Test_BContainsAWithEequalityOnTheOtherSide() =>
         TestWedge(new S2Point(2, 1, 10), new S2Point(0, 0, 1), new S2Point(1, -5, 10),
                   new S2Point(-2, 1, 10), new S2Point(1, -5, 10),
                   false, true, WedgeRelation.WEDGE_IS_PROPERLY_CONTAINED);

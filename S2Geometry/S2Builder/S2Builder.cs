@@ -180,10 +180,10 @@ public partial class S2Builder
     // options, C++ syntax requires an extra layer of parentheses:
     //
     //   S2Builder builder{S2Builder.Options()};
-    public S2Builder(Options options)
+    public S2Builder(Options options = null)
     {
-        Options_ = options;
-        var snap_function = options.SnapFunction;
+        Options_ = options ?? new Options();
+        var snap_function = Options_.SnapFunction;
         var snap_radius = snap_function.SnapRadius;
         Debug.Assert(snap_radius <= SnapFunction.kMaxSnapRadius);
 
@@ -200,13 +200,13 @@ public partial class S2Builder
         // that both edges are snapped to a common vertex, we need to increase the
         // snap radius for edges to at least the sum of these two values (calculated
         // conservatively).
-        S1Angle edge_snap_radius = options.EdgeSnapRadius();
+        S1Angle edge_snap_radius = Options_.EdgeSnapRadius();
         edge_snap_radius_ca_ = RoundUp(edge_snap_radius);
         snapping_requested_ = edge_snap_radius > S1Angle.Zero;
 
         // Compute the maximum distance that a vertex can be separated from an
         // edge while still affecting how that edge is snapped.
-        max_edge_deviation_ = options.MaxEdgeDeviation();
+        max_edge_deviation_ = Options_.MaxEdgeDeviation();
         edge_site_query_radius_ca_ = new S1ChordAngle(
             max_edge_deviation_ + snap_function.MinEdgeVertexSeparation());
 
@@ -249,10 +249,10 @@ public partial class S2Builder
         // only true when intersection_tolerance() is non-zero (which causes
         // edge_snap_radius() to exceed snap_radius() by S2::kIntersectionError) and
         // snap_radius() is very small (at most S2::kIntersectionError / 1.19).
-        check_all_site_crossings_ = (options.MaxEdgeDeviation() >
-                                     options.EdgeSnapRadius() +
+        check_all_site_crossings_ = (Options_.MaxEdgeDeviation() >
+                                     Options_.EdgeSnapRadius() +
                                      snap_function.MinEdgeVertexSeparation());
-        if (options.IntersectionTolerance <= S1Angle.Zero)
+        if (Options_.IntersectionTolerance <= S1Angle.Zero)
         {
             Debug.Assert(!check_all_site_crossings_);
         }
@@ -296,7 +296,7 @@ public partial class S2Builder
         // input geometry needs to be modified, snapping_needed_ is set to true.
         snapping_needed_ = false;
 
-        tracker_.Init(options.MemoryTracker);
+        tracker_.Init(Options_.MemoryTracker);
     }
 
     // Starts a new output layer.  This method must be called before adding any

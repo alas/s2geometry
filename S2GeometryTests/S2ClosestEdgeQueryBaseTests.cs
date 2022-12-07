@@ -10,7 +10,7 @@ using FurthestEdgeQuery = S2ClosestEdgeQueryBase<S2MaxDistance>;
 public class S2ClosestEdgeQueryBaseTests
 {
     [Fact]
-    public void Test_S2ClosestEdgeQueryBase_MaxDistance()
+    internal void Test_S2ClosestEdgeQueryBase_MaxDistance()
     {
         var index = MakeIndexOrDie("0:0 | 1:0 | 2:0 | 3:0 # #");
         FurthestEdgeQuery query = new(index);
@@ -26,7 +26,7 @@ public class S2ClosestEdgeQueryBaseTests
 
     private sealed class FurthestPointTarget : S2MaxDistancePointTarget
     {
-        public FurthestPointTarget(S2Point point) : base(point) { }
+        internal FurthestPointTarget(S2Point point) : base(point) { }
 
         public override int MaxBruteForceIndexSize => 10;  // Arbitrary.
     }

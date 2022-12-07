@@ -6,25 +6,25 @@ using static S2Builder;
 public class S2BuilderUtil_S2PolygonLayerTests
 {
     [Fact]
-    public void Test_S2PolygonLayer_Empty()
+    internal void Test_S2PolygonLayer_Empty()
     {
         TestS2PolygonUnchanged("");
     }
 
     [Fact]
-    public void Test_S2PolygonLayer_Full()
+    internal void Test_S2PolygonLayer_Full()
     {
         TestS2PolygonUnchanged("full");
     }
 
     [Fact]
-    public void Test_S2PolygonLayer_SmallLoop()
+    internal void Test_S2PolygonLayer_SmallLoop()
     {
         TestS2PolygonUnchanged("0:0, 0:1, 1:1");
     }
 
     [Fact]
-    public void Test_S2PolygonLayer_ThreeLoops()
+    internal void Test_S2PolygonLayer_ThreeLoops()
     {
         // The second two loops are nested.
         TestS2PolygonUnchanged("0:1, 1:1, 0:0; " +
@@ -33,21 +33,21 @@ public class S2BuilderUtil_S2PolygonLayerTests
     }
 
     [Fact]
-    public void Test_S2PolygonLayer_PartialLoop()
+    internal void Test_S2PolygonLayer_PartialLoop()
     {
         TestS2PolygonError(new[] { "0:1, 2:3, 4:5" },
                            S2ErrorCode.BUILDER_EDGES_DO_NOT_FORM_LOOPS);
     }
 
     [Fact]
-    public void Test_S2PolygonLayer_InvalidPolygon()
+    internal void Test_S2PolygonLayer_InvalidPolygon()
     {
         TestS2PolygonError(new[] { "0:0, 0:10, 10:0, 10:10, 0:0" },
                            S2ErrorCode.LOOP_SELF_INTERSECTION);
     }
 
     [Fact]
-    public void Test_S2PolygonLayer_DuplicateInputEdges()
+    internal void Test_S2PolygonLayer_DuplicateInputEdges()
     {
         // Check that S2PolygonLayer can assemble polygons even when there are
         // duplicate edges (after sibling pairs are removed), and then report the
@@ -69,19 +69,19 @@ public class S2BuilderUtil_S2PolygonLayerTests
     }
 
     [Fact]
-    public void Test_S2PolygonLayer_DirectedEdgeLabels()
+    internal void Test_S2PolygonLayer_DirectedEdgeLabels()
     {
         TestEdgeLabels(EdgeType.DIRECTED);
     }
 
     [Fact]
-    public void Test_S2PolygonLayer_UndirectedEdgeLabels()
+    internal void Test_S2PolygonLayer_UndirectedEdgeLabels()
     {
         TestEdgeLabels(EdgeType.UNDIRECTED);
     }
 
     [Fact]
-    public void Test_S2PolygonLayer_LabelsRequestedButNotProvided()
+    internal void Test_S2PolygonLayer_LabelsRequestedButNotProvided()
     {
         // Tests the situation where labels are requested but none were provided.
         S2Builder builder=new(new S2Builder.Options());
@@ -102,7 +102,7 @@ public class S2BuilderUtil_S2PolygonLayerTests
     }
 
     [Fact]
-    public void Test_S2PolygonLayer_ThreeLoopsIntoOne()
+    internal void Test_S2PolygonLayer_ThreeLoopsIntoOne()
     {
         // Three loops (two shells and one hole) that combine into one.
         TestS2Polygon(new[]{
@@ -113,7 +113,7 @@ public class S2BuilderUtil_S2PolygonLayerTests
     }
 
     [Fact]
-    public void Test_S2PolygonLayer_TrianglePyramid()
+    internal void Test_S2PolygonLayer_TrianglePyramid()
     {
         // A big CCW triangle containing 3 CW triangular holes.  The whole thing
         // looks like a pyramid of nine triangles.  The output consists of 6
@@ -128,7 +128,7 @@ public class S2BuilderUtil_S2PolygonLayerTests
     }
 
     [Fact]
-    public void Test_S2PolygonLayer_ComplexNesting()
+    internal void Test_S2PolygonLayer_ComplexNesting()
     {
         // A complex set of nested polygons, with the loops in random order and the
         // vertices in random cyclic order within each loop.  This test checks that
@@ -149,7 +149,7 @@ public class S2BuilderUtil_S2PolygonLayerTests
     }
 
     [Fact]
-    public void Test_S2PolygonLayer_FiveLoopsTouchingAtOneCommonPoint()
+    internal void Test_S2PolygonLayer_FiveLoopsTouchingAtOneCommonPoint()
     {
         // Five nested loops that touch at one common point.
         TestS2PolygonUnchanged("0:0, 0:10, 10:10, 10:0; " +
@@ -160,7 +160,7 @@ public class S2BuilderUtil_S2PolygonLayerTests
     }
 
     [Fact]
-    public void Test_S2PolygonLayer_FourNestedDiamondsTouchingAtTwoPointsPerPair()
+    internal void Test_S2PolygonLayer_FourNestedDiamondsTouchingAtTwoPointsPerPair()
     {
         // Four diamonds nested inside each other, where each diamond shares two
         // vertices with the diamond inside it and shares its other two vertices
@@ -178,7 +178,7 @@ public class S2BuilderUtil_S2PolygonLayerTests
     }
 
     [Fact]
-    public void Test_S2PolygonLayer_SevenDiamondsTouchingAtOnePointPerPair()
+    internal void Test_S2PolygonLayer_SevenDiamondsTouchingAtOnePointPerPair()
     {
         // Seven diamonds nested within each other touching at one
         // point between each nested pair.
@@ -192,7 +192,7 @@ public class S2BuilderUtil_S2PolygonLayerTests
     }
 
     [Fact]
-    public void Test_IndexedS2PolygonLayer_AddsShape()
+    internal void Test_IndexedS2PolygonLayer_AddsShape()
     {
         S2Builder builder = new(new Options());
         MutableS2ShapeIndex index = new();
@@ -206,7 +206,7 @@ public class S2BuilderUtil_S2PolygonLayerTests
     }
 
     [Fact]
-    public void Test_IndexedS2PolygonLayer_IgnoresEmptyShape()
+    internal void Test_IndexedS2PolygonLayer_IgnoresEmptyShape()
     {
         S2Builder builder = new(new Options());
         MutableS2ShapeIndex index = new();

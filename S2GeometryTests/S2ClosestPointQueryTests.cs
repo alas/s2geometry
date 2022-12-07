@@ -14,10 +14,10 @@ public class S2ClosestPointQueryTests
     private const int kNumQueries = 50;
     private static ITestOutputHelper _logger;
 
-    public S2ClosestPointQueryTests(ITestOutputHelper logger) { _logger = logger; }
+    internal S2ClosestPointQueryTests(ITestOutputHelper logger) { _logger = logger; }
 
     [Fact]
-    public void Test_S2ClosestPointQuery_NoPoints() {
+    internal void Test_S2ClosestPointQuery_NoPoints() {
         TestIndex index=new();
         TestQuery query = new(index);
         TestQuery.PointTarget target = new(new S2Point(1, 0, 0));
@@ -26,7 +26,7 @@ public class S2ClosestPointQueryTests
     }
 
     [Fact]
-    public void Test_S2ClosestPointQuery_ManyDuplicatePoints() {
+    internal void Test_S2ClosestPointQuery_ManyDuplicatePoints() {
         const int kNumPoints = 10000;
         S2Point kTestPoint=new(1, 0, 0);
         TestIndex index=new();
@@ -40,7 +40,7 @@ public class S2ClosestPointQueryTests
     }
 
     [Fact]
-    public void Test_S2ClosestPointQuery_EmptyTargetOptimized() {
+    internal void Test_S2ClosestPointQuery_EmptyTargetOptimized() {
         // Ensure that the optimized algorithm handles empty targets when a distance
         // limit is specified.
         TestIndex index=new();
@@ -55,25 +55,25 @@ public class S2ClosestPointQueryTests
     }
 
     [Fact]
-    public void Test_S2ClosestPointQueryTest_CirclePoints() {
+    internal void Test_S2ClosestPointQueryTest_CirclePoints() {
         TestWithIndexFactory(new CirclePointIndexFactory(),
                              kNumIndexes, kNumPoints, kNumQueries);
     }
 
     [Fact]
-    public void Test_S2ClosestPointQueryTest_FractalPoints() {
+    internal void Test_S2ClosestPointQueryTest_FractalPoints() {
         TestWithIndexFactory(new FractalPointIndexFactory(),
                              kNumIndexes, kNumPoints, kNumQueries);
     }
 
     [Fact]
-    public void Test_S2ClosestPointQueryTest_GridPoints() {
+    internal void Test_S2ClosestPointQueryTest_GridPoints() {
         TestWithIndexFactory(new GridPointIndexFactory(),
                              kNumIndexes, kNumPoints, kNumQueries);
     }
 
     [Fact]
-    public void Test_S2ClosestPointQueryTest_ConservativeCellDistanceIsUsed() {
+    internal void Test_S2ClosestPointQueryTest_ConservativeCellDistanceIsUsed() {
         int saved_seed = S2Testing.Random.RandomSeed;
         // These specific test cases happen to fail if max_error() is not properly
         // taken into account when measuring distances to S2PointIndex cells.  They

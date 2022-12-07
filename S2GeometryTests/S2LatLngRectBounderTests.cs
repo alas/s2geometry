@@ -18,7 +18,7 @@ public class S2LatLngRectBounderTests
                      new S2Point(x2, y2, z2).Normalize());
 
     [Fact]
-    public void Test_RectBounder_MaxLatitudeSimple()
+    internal void Test_RectBounder_MaxLatitudeSimple()
     {
         // Check cases where the min/max latitude is attained at a vertex.
         var kCubeLat = Math.Asin(1 / Math.Sqrt(3));  // 35.26 degrees
@@ -52,7 +52,7 @@ public class S2LatLngRectBounderTests
     }
 
     [Fact]
-    public void Test_RectBounder_MaxLatitudeRandom()
+    internal void Test_RectBounder_MaxLatitudeRandom()
     {
         // Check that the maximum latitude of edges is computed accurately to within
         // 3 * S2Constants.DoubleEpsilon (the expected maximum error).  We concentrate on maximum
@@ -109,12 +109,12 @@ public class S2LatLngRectBounderTests
         if (choice < 0.5)
         {
             // Return a point such that the distance squared to A will underflow.
-            return S2.InterpolateAtDistance(S1Angle.FromRadians(1e-300), a, b);
+            return S2.GetPointOnLine(a, b, S1Angle.FromRadians(1e-300));
         }
         // Otherwise return a point whose distance from A is near S2Constants.DoubleEpsilon such
         // that the log of the pdf is uniformly distributed.
         double distance = S2.DoubleEpsilon * 1e-5 * Math.Pow(1e6, S2Testing.Random.RandDouble());
-        return S2.InterpolateAtDistance(S1Angle.FromRadians(distance), a, b);
+        return S2.GetPointOnLine(a, b, S1Angle.FromRadians(distance));
     }
 
     private static S2Point RandomPole() => new(0, 0, S2Testing.Random.OneIn(2) ? 1 : -1);
@@ -128,7 +128,7 @@ public class S2LatLngRectBounderTests
             RandomPole());
 
     [Fact]
-    public void Test_RectBounder_NearlyIdenticalOrAntipodalPoints()
+    internal void Test_RectBounder_NearlyIdenticalOrAntipodalPoints()
     {
         Assert.True(false); //TODO
 
@@ -216,7 +216,7 @@ public class S2LatLngRectBounderTests
     }
 
     [Fact]
-    public void Test_RectBounder_ExpandForSubregions()
+    internal void Test_RectBounder_ExpandForSubregions()
     {
         // First we check the various situations where the bound contains
         // nearly-antipodal points.  The tests are organized into pairs where the
@@ -291,7 +291,7 @@ public class S2LatLngRectBounderTests
     }
 
     [Fact]
-    public void Test_RectBounder_AccuracyBug()
+    internal void Test_RectBounder_AccuracyBug()
     {
         S2Point a=new(-0.99999999999998446, -1.2247195409833338e-16,
             1.756190424895897e-07);

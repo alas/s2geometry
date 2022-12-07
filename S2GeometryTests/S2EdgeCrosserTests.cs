@@ -34,7 +34,7 @@ public class S2EdgeCrosserTests
     }
 
     [Fact]
-    public void Test_S2_InvalidDefaultPoints()
+    internal void Test_S2_InvalidDefaultPoints()
     {
         // Check that default-constructed S2Point arguments don't cause crashes.
         S2Point point = new(0, 0, 0);
@@ -44,7 +44,7 @@ public class S2EdgeCrosserTests
     }
 
     [Fact]
-    public void Test_S2_InvalidNanPoints()
+    internal void Test_S2_InvalidNanPoints()
     {
         // Check that NaN S2Point arguments don't cause crashes.
         S2Point point = new(double.NaN, double.NaN, double.NaN);
@@ -159,7 +159,7 @@ public class S2EdgeCrosserTests
     }
 
     [Fact]
-    public void Test_S2_Crossings()
+    internal void Test_S2_Crossings()
     {
         // The real tests of edge crossings are in s2{loop,polygon}_test,
         // but we do a few simple tests here.
@@ -222,7 +222,7 @@ public class S2EdgeCrosserTests
     }
 
     [Fact]
-    public void Test_S2_CollinearEdgesThatDontTouch()
+    internal void Test_S2_CollinearEdgesThatDontTouch()
     {
         int kIters = 500;
         for (int iter = 0; iter < kIters; ++iter)
@@ -240,7 +240,7 @@ public class S2EdgeCrosserTests
     }
 
     [Fact]
-    public void Test_S2_CoincidentZeroLengthEdgesThatDontTouch()
+    internal void Test_S2_CoincidentZeroLengthEdgesThatDontTouch()
     {
         // It is important that the edge primitives can handle vertices that exactly
         // exactly proportional to each other, i.e. that are not identical but are

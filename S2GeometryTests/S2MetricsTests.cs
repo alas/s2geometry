@@ -5,7 +5,7 @@ using Metric = S2.Metric;
 public class S2MetricsTests
 {
     [Fact]
-    public void Test_S2_Metrics()
+    internal void Test_S2_Metrics()
     {
         var angle_span = new MetricBundle(S2.kMinAngleSpan, S2.kMaxAngleSpan, S2.kAvgAngleSpan);
         var widthBundle = new MetricBundle(S2.kMinWidth, S2.kMaxWidth, S2.kAvgWidth);
@@ -111,11 +111,11 @@ public class S2MetricsTests
     // one of these.
     private class MetricBundle
     {
-        public MetricBundle(Metric min, Metric max, Metric avg)
+        internal MetricBundle(Metric min, Metric max, Metric avg)
         { min_ = min; max_ = max; avg_ = avg; }
 
-        public Metric min_;
-        public Metric max_;
-        public Metric avg_;
+        internal Metric min_;
+        internal Metric max_;
+        internal Metric avg_;
     }
 }

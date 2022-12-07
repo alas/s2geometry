@@ -4,7 +4,9 @@ using System.Collections;
 
 // Ensure that we don't usually need to allocate memory.
 public class Array16<T> : ArrayN<T> { public Array16() : base() { } public Array16(Func<T> getDefault) : base(getDefault) { } public override int Size { get { return 16; } } }
+public class Array8<T> : ArrayN<T> { public Array8() : base() { } public Array8(Func<T> getDefault) : base(getDefault) { } public override int Size { get { return 8; } } }
 public class Array6<T> : ArrayN<T> { public Array6() : base() { } public Array6(Func<T> getDefault) : base(getDefault) { } public override int Size { get { return 6; } } }
+public class Array4<T> : ArrayN<T> { public Array4() : base() { } public Array4(Func<T> getDefault) : base(getDefault) { } public override int Size { get { return 4; } } }
 public class Array2<T> : ArrayN<T> { public Array2() : base() { } public Array2(Func<T> getDefault) : base(getDefault) { } public override int Size { get { return 2; } } }
 public abstract class ArrayN<T> : IEnumerable<T>
 {

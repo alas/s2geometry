@@ -3,19 +3,19 @@ namespace S2Geometry;
 public class S2BuilderUtil_S2PolylineVectorLayerTests
 {
     [Fact]
-    public void Test_S2PolylineVectorLayer_NoEdges()
+    internal void Test_S2PolylineVectorLayer_NoEdges()
     {
         TestS2PolylineVectorUnchanged(new List<string>());
     }
 
     [Fact]
-    public void Test_S2PolylineVectorLayer_TwoPolylines()
+    internal void Test_S2PolylineVectorLayer_TwoPolylines()
     {
         TestS2PolylineVectorUnchanged(new List<string> { "0:0, 1:1, 2:2", "4:4, 3:3" });
     }
 
     [Fact]
-    public void Test_S2PolylineVectorLayer_JoiningPolylines()
+    internal void Test_S2PolylineVectorLayer_JoiningPolylines()
     {
         // Check that polylines are joined together when possible, even if they were
         // not adjacent in the input.  For undirected edges, the polyline direction
@@ -28,7 +28,7 @@ public class S2BuilderUtil_S2PolylineVectorLayerTests
     }
 
     [Fact]
-    public void Test_S2PolylineVectorLayer_SegmentNetwork()
+    internal void Test_S2PolylineVectorLayer_SegmentNetwork()
     {
         // Test a complex network of polylines that meet at shared vertices.
         TestS2PolylineVectorUnchanged(new List<string>{
@@ -49,7 +49,7 @@ public class S2BuilderUtil_S2PolylineVectorLayerTests
     }
 
     [Fact]
-    public void Test_S2PolylineVectorLayer_MultipleIntersectingWalks()
+    internal void Test_S2PolylineVectorLayer_MultipleIntersectingWalks()
     {
         // This checks idempotency for directed edges in the case of several
         // polylines that share edges (and that even share loops).  The test
@@ -66,7 +66,7 @@ public class S2BuilderUtil_S2PolylineVectorLayerTests
     }
 
     [Fact]
-    public void Test_S2PolylineVectorLayer_EarlyWalkTermination()
+    internal void Test_S2PolylineVectorLayer_EarlyWalkTermination()
     {
         // This checks idempotency for cases where earlier polylines in the input
         // happen to terminate in the middle of later polylines.  This requires
@@ -84,7 +84,7 @@ public class S2BuilderUtil_S2PolylineVectorLayerTests
     }
 
     [Fact]
-    public void Test_S2PolylineVectorLayer_InputEdgeStartsMultipleLoops()
+    internal void Test_S2PolylineVectorLayer_InputEdgeStartsMultipleLoops()
     {
         // A single input edge is split into several segments by removing portions
         // of it, and then each of those segments becomes one edge of a loop.
@@ -114,7 +114,7 @@ public class S2BuilderUtil_S2PolylineVectorLayerTests
     }
 
     [Fact]
-    public void Test_S2PolylineVectorLayer_ValidateFalse()
+    internal void Test_S2PolylineVectorLayer_ValidateFalse()
     {
         // Verifies that calling set_validate(false) does not turn off s2 debugging.
         S2PolylineVectorLayer.Options layer_options=new();
@@ -123,7 +123,7 @@ public class S2BuilderUtil_S2PolylineVectorLayerTests
     }
 
     [Fact]
-    public void Test_S2PolylineVectorLayer_ValidateTrue()
+    internal void Test_S2PolylineVectorLayer_ValidateTrue()
     {
         // Verifies that the validate() option works.
         S2PolylineVectorLayer.Options layer_options=new();
@@ -140,7 +140,7 @@ public class S2BuilderUtil_S2PolylineVectorLayerTests
     }
 
     [Fact]
-    public void Test_S2PolylineVectorLayer_SimpleEdgeLabels()
+    internal void Test_S2PolylineVectorLayer_SimpleEdgeLabels()
     {
         S2Builder builder = new(new Options());
         List<S2Polyline> output = new();
@@ -185,7 +185,7 @@ public class S2BuilderUtil_S2PolylineVectorLayerTests
     }
 
     [Fact]
-    public void Test_IndexedS2PolylineVectorLayer_AddsShapes()
+    internal void Test_IndexedS2PolylineVectorLayer_AddsShapes()
     {
         S2Builder builder = new(new Options());
         MutableS2ShapeIndex index = new();

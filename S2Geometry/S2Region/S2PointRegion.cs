@@ -6,7 +6,7 @@
 
 namespace S2Geometry;
 
-public readonly record struct S2PointRegion : IS2Region<S2PointRegion>, IDecoderStruct<S2PointRegion>
+public readonly record struct S2PointRegion : IS2Region<S2PointRegion>, IDecoder<S2PointRegion>
 {
     #region Fields, Constants
 
@@ -62,14 +62,14 @@ public readonly record struct S2PointRegion : IS2Region<S2PointRegion>, IDecoder
 
     // Decodes an S2Point encoded with Encode().  Returns true on success.
     // (Returns false if the encoded point is not unit length.)
-    public static (bool, S2PointRegion?) Decode(Decoder decoder)
+    public static (bool, S2PointRegion) Decode(Decoder decoder)
     {
         if (decoder.Avail() < sizeof(byte) + 3 * sizeof(double))
-            return (false, null);
+            return (false, default);
 
         byte version = decoder.Get8();
         if (version > S2.kCurrentLosslessEncodingVersionNumber)
-            return (false, null);
+            return (false, default);
 
         var coords = new double[3];
         for (int i = 0; i < 3; ++i)
@@ -77,7 +77,7 @@ public readonly record struct S2PointRegion : IS2Region<S2PointRegion>, IDecoder
             coords[i] = decoder.GetDouble();
         }
         var p = new S2Point(coords);
-        if (!p.IsUnitLength()) return (false, null);
+        if (!p.IsUnitLength()) return (false, default);
 
         return (true, new S2PointRegion(p));
     }

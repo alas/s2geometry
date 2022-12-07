@@ -5,7 +5,7 @@ using Seq = List<Int64>;
 public class SequenceLexiconTests
 {
     [Fact]
-    public void Test_SequenceLexicon_int64()
+    internal void Test_SequenceLexicon_int64()
     {
         SequenceLexicon<Int64> lex = new();
         Assert.Equal(0, lex.Add(new Seq { }));
@@ -26,7 +26,7 @@ public class SequenceLexiconTests
     }
 
     [Fact]
-    public void Test_SequenceLexicon_Clear()
+    internal void Test_SequenceLexicon_Clear()
     {
         SequenceLexicon<Int64> lex = new();
         Assert.Equal(0, lex.Add(new Seq { 1 }));
@@ -37,7 +37,7 @@ public class SequenceLexiconTests
     }
 
     [Fact]
-    public void Test_SequenceLexicon_CopyConstructor()
+    internal void Test_SequenceLexicon_CopyConstructor()
     {
         var original = new SequenceLexicon<Int64>();
         Assert.Equal(0, original.Add(new Seq { 1, 2 }));
@@ -48,7 +48,7 @@ public class SequenceLexiconTests
     }
 
     [Fact]
-    public void Test_SequenceLexicon_MoveConstructor()
+    internal void Test_SequenceLexicon_MoveConstructor()
     {
         var original = new SequenceLexicon<Int64>();
         Assert.Equal(0, original.Add(new Seq { 1, 2}));
@@ -59,7 +59,7 @@ public class SequenceLexiconTests
     }
 
     [Fact]
-    public void Test_SequenceLexicon_CopyAssignmentOperator()
+    internal void Test_SequenceLexicon_CopyAssignmentOperator()
     {
         SequenceLexicon<Int64> original = new();
         Assert.Equal(0, original.Add(new Seq { 1, 2}));
@@ -73,7 +73,7 @@ public class SequenceLexiconTests
     }
 
     [Fact]
-    public void Test_SequenceLexicon_MoveAssignmentOperator()
+    internal void Test_SequenceLexicon_MoveAssignmentOperator()
     {
         SequenceLexicon<Int64> original = new();
         Assert.Equal(0, original.Add(new Seq { 1, 2}));

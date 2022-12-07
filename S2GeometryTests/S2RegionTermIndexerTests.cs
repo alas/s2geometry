@@ -5,13 +5,13 @@ public class S2RegionTermIndexerTests
     private const int iters = 400; // number of iterations for testing
     private readonly ITestOutputHelper _logger;
 
-    public S2RegionTermIndexerTests(ITestOutputHelper logger) { _logger = logger; }
+    internal S2RegionTermIndexerTests(ITestOutputHelper logger) { _logger = logger; }
 
     // We run one test case for each combination of space vs. time optimization,
     // and indexing regions vs. only points.
 
     [Fact]
-    public void Test_S2RegionTermIndexer_IndexRegionsQueryRegionsOptimizeTime()
+    internal void Test_S2RegionTermIndexer_IndexRegionsQueryRegionsOptimizeTime()
     {
         var options = new S2RegionTermIndexer.Options();
         options.OptimizeForSpace = false;       // Optimize for time.
@@ -22,7 +22,7 @@ public class S2RegionTermIndexerTests
     }
 
     [Fact]
-    public void Test_S2RegionTermIndexer_IndexRegionsQueryPointsOptimizeTime()
+    internal void Test_S2RegionTermIndexer_IndexRegionsQueryPointsOptimizeTime()
     {
         var options = new S2RegionTermIndexer.Options();
         options.OptimizeForSpace = (false);       // Optimize for time.
@@ -33,7 +33,7 @@ public class S2RegionTermIndexerTests
     }
 
     [Fact]
-    public void Test_S2RegionTermIndexer_IndexRegionsQueryRegionsOptimizeTimeWithLevelMod()
+    internal void Test_S2RegionTermIndexer_IndexRegionsQueryRegionsOptimizeTimeWithLevelMod()
     {
         var options = new S2RegionTermIndexer.Options();
         options.OptimizeForSpace = (false);       // Optimize for time.
@@ -44,7 +44,7 @@ public class S2RegionTermIndexerTests
     }
 
     [Fact]
-    public void Test_S2RegionTermIndexer_IndexRegionsQueryRegionsOptimizeSpace()
+    internal void Test_S2RegionTermIndexer_IndexRegionsQueryRegionsOptimizeSpace()
     {
         var options = new S2RegionTermIndexer.Options();
         options.OptimizeForSpace = (true);        // Optimize for space.
@@ -55,7 +55,7 @@ public class S2RegionTermIndexerTests
     }
 
     [Fact]
-    public void Test_S2RegionTermIndexer_IndexPointsQueryRegionsOptimizeTime()
+    internal void Test_S2RegionTermIndexer_IndexPointsQueryRegionsOptimizeTime()
     {
         var options = new S2RegionTermIndexer.Options();
         options.OptimizeForSpace = (false);       // Optimize for time.
@@ -68,7 +68,7 @@ public class S2RegionTermIndexerTests
     }
 
     [Fact]
-    public void Test_S2RegionTermIndexer_IndexPointsQueryRegionsOptimizeSpace()
+    internal void Test_S2RegionTermIndexer_IndexPointsQueryRegionsOptimizeSpace()
     {
         var options = new S2RegionTermIndexer.Options
         {
@@ -80,7 +80,7 @@ public class S2RegionTermIndexerTests
     }
 
     [Fact]
-    public void Test_S2RegionTermIndexer_MarkerCharacter()
+    internal void Test_S2RegionTermIndexer_MarkerCharacter()
     {
         S2RegionTermIndexer.Options options = new();
         options.MinLevel = 20;
@@ -99,7 +99,7 @@ public class S2RegionTermIndexerTests
     }
 
     [Fact]
-    public void Test_S2RegionTermIndexer_MaxLevelSetLoosely()
+    internal void Test_S2RegionTermIndexer_MaxLevelSetLoosely()
     {
         // Test that correct terms are generated even when (max_level - min_level)
         // is not a multiple of level_mod.
@@ -125,7 +125,7 @@ public class S2RegionTermIndexerTests
     }
 
     [Fact]
-    public void Test_S2RegionTermIndexer_MoveConstructor()
+    internal void Test_S2RegionTermIndexer_MoveConstructor()
     {
         var x = new S2RegionTermIndexer(new S2RegionTermIndexer.Options());
         x.Options_.MaxCells = (12345);
@@ -134,7 +134,7 @@ public class S2RegionTermIndexerTests
     }
 
     [Fact]
-    public void Test_S2RegionTermIndexer_MoveAssignmentOperator()
+    internal void Test_S2RegionTermIndexer_MoveAssignmentOperator()
     {
         var x = new S2RegionTermIndexer(new S2RegionTermIndexer.Options());
         x.Options_.MaxCells = (12345);

@@ -1086,7 +1086,7 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
             {
                 return (false, null);
             }
-            bound = bound2!.Value;
+            bound = bound2;
             subregionBound = S2LatLngRectBounder.ExpandForSubregions(bound);
         }
         else
@@ -1548,14 +1548,14 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
         var (success_bound, bound) = S2LatLngRect.Decode(decoder);
         if (!success_bound) return (false, null);
 
-        var subregionBound = S2LatLngRectBounder.ExpandForSubregions(bound!.Value);
+        var subregionBound = S2LatLngRectBounder.ExpandForSubregions(bound);
         var loop = new S2Loop()
         {
             NumVertices = num_vertices,
             Vertices = newVertices,
             ContainsOrigin = originInside,
             Depth = depth_,
-            _bound = bound.Value,
+            _bound = bound,
             _subregionBound = subregionBound,
         };
         loop.InitFirstLogicalVertex();

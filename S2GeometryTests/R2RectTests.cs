@@ -6,7 +6,7 @@ namespace S2Geometry;
 public class R2RectTests
 {
     [Fact]
-    public void Test_R2Rect_EmptyRectangles()
+    internal void Test_R2Rect_EmptyRectangles()
     {
         // Test basic properties of empty rectangles.
         R2Rect empty = R2Rect.Empty;
@@ -16,7 +16,7 @@ public class R2RectTests
     }
 
     [Fact]
-    public void Test_R2Rect_ConstructorsAndAccessors()
+    internal void Test_R2Rect_ConstructorsAndAccessors()
     {
         // Check various constructors and accessor methods.
         R2Rect r = new(new R2Point(0.1, 0), new R2Point(0.25, 1));
@@ -49,7 +49,7 @@ public class R2RectTests
     }
 
     [Fact]
-    public void Test_R2Rect_FromCenterSize()
+    internal void Test_R2Rect_FromCenterSize()
     {
         // FromCenterSize()
         Assert.True(R2Rect.FromCenterSize(new R2Point(0.3, 0.5), new R2Point(0.2, 0.4)).
@@ -59,7 +59,7 @@ public class R2RectTests
     }
 
     [Fact]
-    public void Test_R2Rect_FromPoint()
+    internal void Test_R2Rect_FromPoint()
     {
         // FromPoint(), FromPointPair()
         R2Rect d1 = new(new R2Point(0.1, 0), new R2Point(0.25, 1));
@@ -71,7 +71,7 @@ public class R2RectTests
     }
 
     [Fact]
-    public void Test_R2Rect_SimplePredicates()
+    internal void Test_R2Rect_SimplePredicates()
     {
         // GetCenter(), GetVertex(), Contains(R2Point), InteriorContains(R2Point).
         R2Point sw1 = new(0, 0.25);
@@ -103,7 +103,7 @@ public class R2RectTests
     }
 
     [Fact]
-    public void Test_R2Rect_IntervalOperations()
+    internal void Test_R2Rect_IntervalOperations()
     {
         // Contains(R2Rect), InteriorContains(R2Rect),
         // Intersects(), InteriorIntersects(), Union(), Intersection().
@@ -150,7 +150,7 @@ public class R2RectTests
     }
 
     [Fact]
-    public void Test_R2Rect_AddPoint()
+    internal void Test_R2Rect_AddPoint()
     {
         // AddPoint()
         R2Point sw1 = new(0, 0.25);
@@ -166,7 +166,7 @@ public class R2RectTests
     }
 
     [Fact]
-    public void Test_R2Rect_Project()
+    internal void Test_R2Rect_Project()
     {
         R2Rect r1 = new(new R1Interval(0, 0.5), new R1Interval(0.25, 0.75));
 
@@ -182,7 +182,7 @@ public class R2RectTests
     }
 
     [Fact]
-    public void Test_R2Rect_Expanded()
+    internal void Test_R2Rect_Expanded()
     {
         // Expanded()
         Assert.True(R2Rect.Empty.Expanded(new R2Point(0.1, 0.3)).IsEmpty());

@@ -3,25 +3,25 @@ namespace S2Geometry;
 public class S2TestingTests
 {
     [Fact]
-    public void Test_TriangleFractal() => TestFractal(7, 7, 1.0);
+    internal void Test_TriangleFractal() => TestFractal(7, 7, 1.0);
 
     [Fact]
-    public void Test_TriangleMultiFractal() => TestFractal(2, 6, 1.0);
+    internal void Test_TriangleMultiFractal() => TestFractal(2, 6, 1.0);
 
     [Fact]
-    public void Test_SpaceFillingFractal() => TestFractal(4, 4, 1.999);
+    internal void Test_SpaceFillingFractal() => TestFractal(4, 4, 1.999);
 
     [Fact]
-    public void Test_KochCurveFractal() => TestFractal(7, 7, Math.Log(4) / Math.Log(3));
+    internal void Test_KochCurveFractal() => TestFractal(7, 7, Math.Log(4) / Math.Log(3));
 
     [Fact]
-    public void Test_KochCurveMultiFractal() => TestFractal(4, 8, Math.Log(4) / Math.Log(3));
+    internal void Test_KochCurveMultiFractal() => TestFractal(4, 8, Math.Log(4) / Math.Log(3));
 
     [Fact]
-    public void Test_CesaroFractal() => TestFractal(7, 7, 1.8);
+    internal void Test_CesaroFractal() => TestFractal(7, 7, 1.8);
 
     [Fact]
-    public void Test_CesaroMultiFractal() => TestFractal(3, 6, 1.8);
+    internal void Test_CesaroMultiFractal() => TestFractal(3, 6, 1.8);
 
     private static void TestFractal(int min_level, int max_level, double dimension)
     {

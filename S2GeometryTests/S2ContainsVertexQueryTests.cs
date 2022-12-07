@@ -3,7 +3,7 @@ namespace S2Geometry;
 public class S2ContainsVertexQueryTests
 {
     [Fact]
-    public void Test_S2ContainsVertexQuery_Undetermined()
+    internal void Test_S2ContainsVertexQuery_Undetermined()
     {
         S2ContainsVertexQuery q = new(MakePointOrDie("1:2"));
         q.AddEdge(MakePointOrDie("3:4"), 1);
@@ -12,7 +12,7 @@ public class S2ContainsVertexQueryTests
     }
 
     [Fact]
-    public void Test_S2ContainsVertexQuery_ContainedWithDuplicates()
+    internal void Test_S2ContainsVertexQuery_ContainedWithDuplicates()
     {
         // The S2::RefDir reference direction points approximately due west.
         // Containment is determined by the unmatched edge immediately clockwise.
@@ -25,7 +25,7 @@ public class S2ContainsVertexQueryTests
     }
 
     [Fact]
-    public void Test_S2ContainsVertexQuery_NotContainedWithDuplicates()
+    internal void Test_S2ContainsVertexQuery_NotContainedWithDuplicates()
     {
         // The S2::RefDir reference direction points approximately due west.
         // Containment is determined by the unmatched edge immediately clockwise.
@@ -39,7 +39,7 @@ public class S2ContainsVertexQueryTests
 
     // Tests that S2ContainsVertexQuery is compatible with S2::AngleContainsVertex.
     [Fact]
-    public void Test_S2ContainsVertexQuery_CompatibleWithAngleContainsVertex()
+    internal void Test_S2ContainsVertexQuery_CompatibleWithAngleContainsVertex()
     {
         var points = S2Testing.MakeRegularPoints(MakePointOrDie("89:1"),
             S1Angle.FromDegrees(5), 10);
@@ -58,7 +58,7 @@ public class S2ContainsVertexQueryTests
 
     // Tests compatibility with S2::AngleContainsVertex() for a degenerate edge.
     [Fact]
-    public void Test_S2ContainsVertexQuery_CompatibleWithAngleContainsVertexDegenerate()
+    internal void Test_S2ContainsVertexQuery_CompatibleWithAngleContainsVertexDegenerate()
     {
         S2Point a=new(1, 0, 0), b=new(0, 1, 0);
         S2ContainsVertexQuery q=new(b);

@@ -3,7 +3,7 @@ namespace S2Geometry;
 public class S1ChordAngleTests
 {
     [Fact]
-    public void Test_S1ChordAngle_DefaultConstructor()
+    internal void Test_S1ChordAngle_DefaultConstructor()
     {
         // Check that the default constructor returns an angle of 0.
         S1ChordAngle a = S1ChordAngle.Zero;
@@ -11,7 +11,7 @@ public class S1ChordAngleTests
     }
 
     [Fact]
-    public void Test_S1ChordAngle_TwoPointConstructor()
+    internal void Test_S1ChordAngle_TwoPointConstructor()
     {
         for (int iter = 0; iter < 100; ++iter)
         {
@@ -25,7 +25,7 @@ public class S1ChordAngleTests
     }
 
     [Fact]
-    public void Test_S1ChordAngle_FromLength2()
+    internal void Test_S1ChordAngle_FromLength2()
     {
         Assert.Equal(0, S1ChordAngle.FromLength2(0).Degrees());
         Assert2.DoubleEqual(60, S1ChordAngle.FromLength2(1).Degrees());
@@ -35,25 +35,25 @@ public class S1ChordAngleTests
     }
 
     [Fact]
-    public void Test_S1ChordAngle_Zero()
+    internal void Test_S1ChordAngle_Zero()
     {
         Assert.Equal(S1Angle.Zero, S1ChordAngle.Zero.ToAngle());
     }
 
     [Fact]
-    public void Test_S1ChordAngle_Right()
+    internal void Test_S1ChordAngle_Right()
     {
         Assert2.DoubleEqual(90, S1ChordAngle.Right.Degrees());
     }
 
     [Fact]
-    public void Test_S1ChordAngle_Straight()
+    internal void Test_S1ChordAngle_Straight()
     {
         Assert.True(S1Angle.FromDegrees(180) == S1ChordAngle.Straight.ToAngle());
     }
 
     [Fact]
-    public void Test_S1ChordAngle_Infinity()
+    internal void Test_S1ChordAngle_Infinity()
     {
         Assert.True(S1ChordAngle.Straight < S1ChordAngle.Infinity);
         Assert.True(S1ChordAngle.Infinity == new S1ChordAngle(S1Angle.Infinity));
@@ -61,7 +61,7 @@ public class S1ChordAngleTests
     }
 
     [Fact]
-    public void Test_S1ChordAngle_Negative()
+    internal void Test_S1ChordAngle_Negative()
     {
         Assert.True(S1ChordAngle.Negative < S1ChordAngle.Zero);
         Assert.True(S1ChordAngle.Negative == S1ChordAngle.FromLength2(-1));
@@ -69,7 +69,7 @@ public class S1ChordAngleTests
     }
 
     [Fact]
-    public void Test_S1ChordAngle_Predicates()
+    internal void Test_S1ChordAngle_Predicates()
     {
         Assert.True(S1ChordAngle.Zero.IsZero());
         Assert.False(S1ChordAngle.Zero.IsNegative());
@@ -82,7 +82,7 @@ public class S1ChordAngleTests
     }
 
     [Fact]
-    public void Test_S1ChordAngle_ToFromS1Angle()
+    internal void Test_S1ChordAngle_ToFromS1Angle()
     {
         Assert.Equal(0, new S1ChordAngle(S1Angle.Zero).Radians());
         Assert.Equal(4, new S1ChordAngle(S1Angle.FromRadians(Math.PI)).Length2);
@@ -93,7 +93,7 @@ public class S1ChordAngleTests
     }
 
     [Fact]
-    public void Test_S1ChordAngle_Successor()
+    internal void Test_S1ChordAngle_Successor()
     {
         Assert.Equal(S1ChordAngle.Zero, S1ChordAngle.Negative.Successor());
         Assert.Equal(S1ChordAngle.Infinity, S1ChordAngle.Straight.Successor());
@@ -107,7 +107,7 @@ public class S1ChordAngleTests
     }
 
     [Fact]
-    public void Test_S1ChordAngle_Predecessor()
+    internal void Test_S1ChordAngle_Predecessor()
     {
         Assert.Equal(S1ChordAngle.Straight, S1ChordAngle.Infinity.Predecessor());
         Assert.Equal(S1ChordAngle.Negative, S1ChordAngle.Zero.Predecessor());
@@ -121,7 +121,7 @@ public class S1ChordAngleTests
     }
 
     [Fact]
-    public void Test_S1ChordAngle_Arithmetic()
+    internal void Test_S1ChordAngle_Arithmetic()
     {
         S1ChordAngle zero = S1ChordAngle.Zero;
         S1ChordAngle degree30 = S1ChordAngle.FromDegrees(30);   //0.26794919243112264
@@ -154,7 +154,7 @@ public class S1ChordAngleTests
     }
 
     [Fact]
-    public void Test_S1ChordAngle_ArithmeticPrecision()
+    internal void Test_S1ChordAngle_ArithmeticPrecision()
     {
         // Verifies that S1ChordAngle is capable of adding and subtracting angles
         // extremely accurately up to Pi/2 radians.  (Accuracy continues to be good
@@ -172,7 +172,7 @@ public class S1ChordAngleTests
     }
 
     [Fact]
-    public void Test_S1ChordAngle_Trigonometry()
+    internal void Test_S1ChordAngle_Trigonometry()
     {
         const int kIters = 20;
         for (int iter = 0; iter <= kIters; ++iter)
@@ -199,7 +199,7 @@ public class S1ChordAngleTests
     }
 
     [Fact]
-    public void Test_S1ChordAngle_PlusError()
+    internal void Test_S1ChordAngle_PlusError()
     {
         Assert.Equal(S1ChordAngle.Negative, S1ChordAngle.Negative.PlusError(5));
         Assert.Equal(S1ChordAngle.Infinity, S1ChordAngle.Infinity.PlusError(-5));
@@ -212,7 +212,7 @@ public class S1ChordAngleTests
     }
 
     [Fact]
-    public void Test_S1ChordAngle_GetS2PointConstructorMaxError()
+    internal void Test_S1ChordAngle_GetS2PointConstructorMaxError()
     {
         // Check that the error bound returned by GetS2PointConstructorMaxError() is
         // large enough.

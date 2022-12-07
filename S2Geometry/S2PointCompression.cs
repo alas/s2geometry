@@ -31,6 +31,7 @@ namespace S2Geometry;
 
 using System.Collections;
 using System.Runtime.InteropServices;
+using System.Text;
 
 public static class S2PointCompression
 {
@@ -45,7 +46,7 @@ public static class S2PointCompression
     /// <summary>
     /// Pair of face number and count for run-length encoding.
     /// </summary>
-    private class FaceRun
+    private class FaceRun : IDecoder<FaceRun>
     {
         public readonly int Face;
         public int Count;
@@ -66,7 +67,7 @@ public static class S2PointCompression
         /// 21 faces can fit in a single byte.  Varint64 is used so that 4G faces
         /// can be encoded instead of just 4G / 6 = ~700M.
         /// </summary>
-        public void Encode(Encoder encoder)
+        public void Encode(Encoder encoder, CodingHint hint = CodingHint.COMPACT)
         {
             encoder.Ensure(Encoder.kVarintMax64);
 
@@ -77,10 +78,9 @@ public static class S2PointCompression
             System.Diagnostics.Debug.Assert(encoder.Avail() >= 0);
         }
 
-        public static bool Decode(Decoder decoder, out FaceRun fr)
+        public static (bool, FaceRun?) Decode(Decoder decoder)
         {
-            fr = null;
-            if (!decoder.TryGetVarUInt64(out var face_and_count)) return false;
+            if (!decoder.TryGetVarUInt64(out var face_and_count)) return (false, null);
 
             var face = (int)(face_and_count % S2CellId.kNumFaces);
             // Make sure large counts don't wrap on malicious or random input.
@@ -88,10 +88,9 @@ public static class S2PointCompression
             var count = (int)count64;
 
             var res = count > 0 && (UInt64)count == count64;
-            if (!res) return false;
+            if (!res) return (false, null);
 
-            fr = new FaceRun(face, count);
-            return true;
+            return (true, new FaceRun(face, count));
         }
     }
 
@@ -174,10 +173,11 @@ public static class S2PointCompression
             int num_faces_parsed = 0;
             while (num_faces_parsed < num_vertices)
             {
-                if (!FaceRun.Decode(decoder, out var face_run)) return false;
+                var (success, face_run) = FaceRun.Decode(decoder);
+                if (!success) return false;
 
-                faces_.Add(face_run);
-                num_faces_parsed += face_run.Count;
+                faces_.Add(face_run!);
+                num_faces_parsed += face_run!.Count;
             }
 
             return true;

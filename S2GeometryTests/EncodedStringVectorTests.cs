@@ -3,27 +3,27 @@ namespace S2Geometry;
 public class EncodedStringVectorTests
 {
     [Fact]
-    public void Test_EncodedStringVectorTest_Empty() =>
+    internal void Test_EncodedStringVectorTest_Empty() =>
         TestEncodedStringVector(Array.Empty<string>(), 1);
 
     [Fact]
-    public void Test_EncodedStringVectorTest_EmptyString() =>
+    internal void Test_EncodedStringVectorTest_EmptyString() =>
         TestEncodedStringVector(new[] { "" }, 2);
 
     [Fact]
-    public void Test_EncodedStringVectorTest_RepeatedEmptyStrings() =>
+    internal void Test_EncodedStringVectorTest_RepeatedEmptyStrings() =>
         TestEncodedStringVector(new[] { "", "", "" }, 4);
 
     [Fact]
-    public void Test_EncodedStringVectorTest_OneString() =>
+    internal void Test_EncodedStringVectorTest_OneString() =>
         TestEncodedStringVector(new[] { "apples" }, 8);
 
     [Fact]
-    public void Test_EncodedStringVectorTest_TwoStrings() =>
+    internal void Test_EncodedStringVectorTest_TwoStrings() =>
         TestEncodedStringVector(new[] { "fuji", "mutsu" }, 12);
 
     [Fact]
-    public void Test_EncodedStringVectorTest_TwoBigStrings() =>
+    internal void Test_EncodedStringVectorTest_TwoBigStrings() =>
         TestEncodedStringVector(new[] { new string('x', 10000), new string('y', 100000) }, 110007);
 
     private static void TestEncodedStringVector(string[] input, int expected_bytes)
@@ -35,5 +35,11 @@ public class EncodedStringVectorTests
         var (success, actual) = EncodedStringVector.Init(decoder);
         Assert.True(success);
         Assert.Equal(actual!.Decode(), input);
+
+        // Check that `EncodedStringVector::Encode` produces the same result as
+        // `StringVectorEncoder::Encode`, as documented.
+        Encoder reencoder=new();
+        actual.Encode(reencoder);
+        Assert.True(encoder.Equals(reencoder));
     }
 }

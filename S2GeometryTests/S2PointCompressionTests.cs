@@ -41,7 +41,7 @@ public class S2PointCompressionTests
     #endregion
 
     [Fact]
-    public void Test_S2PointCompressionTest_RoundtripsEmpty()
+    internal void Test_S2PointCompressionTest_RoundtripsEmpty()
     {
         // Just check this doesn't crash.
         Encode(Array.Empty<S2Point>(), S2.kMaxCellLevel);
@@ -49,19 +49,19 @@ public class S2PointCompressionTests
     }
 
     [Fact]
-    public void Test_S2PointCompressionTest_RoundtripsFourVertexLoop()
+    internal void Test_S2PointCompressionTest_RoundtripsFourVertexLoop()
     {
         Roundtrip(loop_4_, S2.kMaxCellLevel);
     }
 
     [Fact]
-    public void Test_S2PointCompressionTest_RoundtripsFourVertexLoopUnsnapped()
+    internal void Test_S2PointCompressionTest_RoundtripsFourVertexLoopUnsnapped()
     {
         Roundtrip(loop_4_unsnapped_, S2.kMaxCellLevel);
     }
 
     [Fact]
-    public void Test_S2PointCompressionTest_FourVertexLoopSize()
+    internal void Test_S2PointCompressionTest_FourVertexLoopSize()
     {
         Encode(loop_4_, S2.kMaxCellLevel);
         // It would take 32 bytes uncompressed.
@@ -69,14 +69,14 @@ public class S2PointCompressionTests
     }
 
     [Fact]
-    public void Test_S2PointCompressionTest_RoundtripsFourVertexLevel14Loop()
+    internal void Test_S2PointCompressionTest_RoundtripsFourVertexLevel14Loop()
     {
         int level = 14;
         Roundtrip(loop_4_level_14_, level);
     }
 
     [Fact]
-    public void Test_S2PointCompressionTest_FourVertexLevel14LoopSize()
+    internal void Test_S2PointCompressionTest_FourVertexLevel14LoopSize()
     {
         int level = 14;
         Encode(loop_4_level_14_, level);
@@ -85,67 +85,67 @@ public class S2PointCompressionTests
     }
 
     [Fact]
-    public void Test_S2PointCompressionTest_Roundtrips100VertexLoop()
+    internal void Test_S2PointCompressionTest_Roundtrips100VertexLoop()
     {
         Roundtrip(loop_100_, S2.kMaxCellLevel);
     }
 
     [Fact]
-    public void Test_S2PointCompressionTest_Roundtrips100VertexLoopUnsnapped()
+    internal void Test_S2PointCompressionTest_Roundtrips100VertexLoopUnsnapped()
     {
         Roundtrip(loop_100_unsnapped_, S2.kMaxCellLevel);
     }
 
     [Fact]
-    public void Test_S2PointCompressionTest_Roundtrips100VertexLoopMixed15()
+    internal void Test_S2PointCompressionTest_Roundtrips100VertexLoopMixed15()
     {
         Roundtrip(loop_100_mixed_15_, S2.kMaxCellLevel);
         Assert.Equal(2381, encoder_.Length());
     }
 
     [Fact]
-    public void Test_S2PointCompressionTest_Roundtrips100VertexLoopMixed25()
+    internal void Test_S2PointCompressionTest_Roundtrips100VertexLoopMixed25()
     {
         Roundtrip(loop_100_mixed_25_, S2.kMaxCellLevel);
         Assert.Equal(2131, encoder_.Length());
     }
 
     [Fact]
-    public void Test_S2PointCompressionTest_OneHundredVertexLoopSize()
+    internal void Test_S2PointCompressionTest_OneHundredVertexLoopSize()
     {
         Encode(loop_100_, S2.kMaxCellLevel);
         Assert.Equal(257, encoder_.Length());
     }
 
     [Fact]
-    public void Test_S2PointCompressionTest_OneHundredVertexLoopUnsnappedSize()
+    internal void Test_S2PointCompressionTest_OneHundredVertexLoopUnsnappedSize()
     {
         Encode(loop_100_unsnapped_, S2.kMaxCellLevel);
         Assert.Equal(2756, encoder_.Length());
     }
 
     [Fact]
-    public void Test_S2PointCompressionTest_Roundtrips100VertexLevel22Loop()
+    internal void Test_S2PointCompressionTest_Roundtrips100VertexLevel22Loop()
     {
         int level = 22;
         Roundtrip(loop_100_level_22_, level);
     }
 
     [Fact]
-    public void Test_S2PointCompressionTest_OneHundredVertexLoopLevel22Size()
+    internal void Test_S2PointCompressionTest_OneHundredVertexLoopLevel22Size()
     {
         Encode(loop_100_level_22_, 22);
         Assert.Equal(148, encoder_.Length());
     }
 
     [Fact]
-    public void Test_S2PointCompressionTest_MultiFaceLoop()
+    internal void Test_S2PointCompressionTest_MultiFaceLoop()
     {
         Roundtrip(loop_multi_face_, S2.kMaxCellLevel);
     }
 
     [Fact]
-    public void Test_S2PointCompressionTest_StraightLineCompressesWell()
+    internal void Test_S2PointCompressionTest_StraightLineCompressesWell()
     {
         Roundtrip(line_, S2.kMaxCellLevel);
         // About 1 byte / vertex.
@@ -153,7 +153,7 @@ public class S2PointCompressionTests
     }
 
     [Fact]
-    public void Test_S2PointCompressionTest_FirstPointOnFaceEdge()
+    internal void Test_S2PointCompressionTest_FirstPointOnFaceEdge()
     {
         // This test used to trigger a bug in which EncodeFirstPointFixedLength()
         // tried to encode a pi/qi value of (2**level) in "level" bits (which did
@@ -183,7 +183,7 @@ new S2PointCompression.S2XYZFaceSiTi(
         S2PointCompression.S2EncodePointsCompressed(points, 8, encoder);
         var decoder = encoder.Decoder();
         var result = new S2Point[2];
-        S2PointCompression.S2DecodePointsCompressed(decoder, 8, result, 0);
+        Assert.True(S2PointCompression.S2DecodePointsCompressed(decoder, 8, result, 0));
         Assert.True(result[0] == points[0].XYZ);
         Assert.True(result[1] == points[1].XYZ);
     }

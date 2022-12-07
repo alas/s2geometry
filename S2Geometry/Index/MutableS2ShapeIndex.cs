@@ -802,7 +802,6 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
             }
         }
 
-
         BatchGenerator batch_gen = new(num_edges_removed, num_edges_added,
                                  pending_additions_begin_);
         for (int id = pending_additions_begin_; id < shapes_.Count; ++id)
@@ -811,65 +810,6 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
             if (shape != null) batch_gen.AddShape(id, shape.NumEdges());
         }
         return batch_gen.Finish();
-
-
-        /*
-         -- deleted code
-
-
-        var num_edges = num_edges_removed + num_edges_added;
-
-        if (num_edges * kTmpBytesPerEdge <= kTmpMemoryBudgetBytes)
-        {
-            // We can update all edges at once without exceeding kTmpMemoryBudgetBytes.
-            res.Add(new BatchDescriptor { AdditionsEnd = shapesCount, NumEdges = num_edges });
-            return res;
-        }
-        // Otherwise, break the updates into up to several batches, where the size
-        // of each batch is chosen so that all batches use approximately the same
-        // high-water memory.  GetBatchSizes() returns the recommended number of
-        // edges in each batch.
-        var batch_sizes = new List<int>();
-        GetBatchSizes(num_edges, kMaxUpdateBatches, kFinalBytesPerEdge,
-                      kTmpBytesPerEdge, kTmpMemoryBudgetBytes, batch_sizes);
-
-        // We always process removed edges in a single batch, since (1) they already
-        // take up a lot of memory because we have copied all their edges, and (2)
-        // AbsorbIndexCell() uses (shapes_[id] == null) to detect when a shape is
-        // being removed, so in order to split the removals into batches we would
-        // need a different approach (e.g., temporarily add fake entries to shapes_
-        // and restore them back to null as shapes are actually removed).
-        num_edges = 0;
-        if (pending_removals_ != null)
-        {
-            num_edges += num_edges_removed;
-            if (num_edges >= batch_sizes[0])
-            {
-                res.Add(new BatchDescriptor { AdditionsEnd = pending_additions_begin_, NumEdges = num_edges });
-                num_edges = 0;
-            }
-        }
-        // Keep adding shapes to each batch until the recommended number of edges
-        // for that batch is reached, then move on to the next batch.
-        for (var id = pending_additions_begin_; id < shapesCount; ++id)
-        {
-            var shape = shapes_[id];
-            if (shape == null) continue;
-            num_edges += shape.NumEdges;
-            if (num_edges >= batch_sizes[res.Count])
-            {
-                res.Add(new BatchDescriptor { AdditionsEnd = id + 1, NumEdges = num_edges });
-                num_edges = 0;
-            }
-        }
-        // Some shapes have no edges.  If a shape with no edges is the last shape to
-        // be added or removed, then the final batch may not include it, so we fix
-        // that problem here.
-        res[^1] = new BatchDescriptor { AdditionsEnd = shapesCount, NumEdges = res[^1].NumEdges };
-        System.Diagnostics.Debug.Assert(res.Count <= kMaxUpdateBatches);
-        return res;
-
-         */
     }
 
     // The following memory estimates are based on heap profiling.

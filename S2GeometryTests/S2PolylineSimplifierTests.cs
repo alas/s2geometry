@@ -3,7 +3,7 @@ namespace S2Geometry;
 public class S2PolylineSimplifierTests
 {
     [Fact]
-    public void Test_S2PolylineSimplifier_Reuse() {
+    internal void Test_S2PolylineSimplifier_Reuse() {
         // Check that Init() can be called more than once.
         S1ChordAngle radius = new(S1Angle.FromDegrees(10));
         var s = new S2PolylineSimplifier(new S2Point(1, 0, 0));
@@ -18,7 +18,7 @@ public class S2PolylineSimplifierTests
     }
 
     [Fact]
-    public void Test_S2PolylineSimplifier_NoConstraints() {
+    internal void Test_S2PolylineSimplifier_NoConstraints() {
         // Noraints, dst == src.
         CheckSimplify("0:1", "0:1", "", "", Array.Empty<bool>(), 0, true);
 
@@ -30,7 +30,7 @@ public class S2PolylineSimplifierTests
     }
 
     [Fact]
-    public void Test_S2PolylineSimplifier_TargetOnePoint() {
+    internal void Test_S2PolylineSimplifier_TargetOnePoint() {
         // Three points on a straight line.  In theory zero tolerance should work,
         // but in practice there are floating point errors.
         CheckSimplify("0:0", "0:2", "0:1", "", Array.Empty<bool>(), 1e-10, true);
@@ -46,7 +46,7 @@ public class S2PolylineSimplifierTests
     }
 
     [Fact]
-    public void Test_S2PolylineSimplifier_AvoidOnePoint() {
+    internal void Test_S2PolylineSimplifier_AvoidOnePoint() {
         // Three points on a straight line, attempting to avoid the middle point.
         CheckSimplify("0:0", "0:2", "", "0:1", new[] { true}, 1e-10, false);
 
@@ -66,7 +66,7 @@ public class S2PolylineSimplifierTests
     }
 
     [Fact]
-    public void Test_S2PolylineSimplifier_AvoidSeveralPoints()
+    internal void Test_S2PolylineSimplifier_AvoidSeveralPoints()
     {
         // Tests that when several discs are avoided but none are targeted, the
         // range of acceptable edge directions is not represented a single interval.
@@ -89,7 +89,7 @@ public class S2PolylineSimplifierTests
     }
 
     [Fact]
-    public void Test_S2PolylineSimplifier_TargetAndAvoid() {
+    internal void Test_S2PolylineSimplifier_TargetAndAvoid() {
         // Target several points that are separated from the proposed edge by about
         // 0.7 degrees, and avoid several points that are separated from the
         // proposed edge by about 1.4 degrees.
@@ -106,7 +106,7 @@ public class S2PolylineSimplifierTests
     }
 
     [Fact]
-    public void Test_S2PolylineSimplifier_Precision() {
+    internal void Test_S2PolylineSimplifier_Precision() {
         // This is a rough upper bound on both the error in constructing the disc
         // locations (i.e., S2.InterpolateAtDistance, etc), and also on the
         // padding that S2PolylineSimplifier uses to ensure that its results are
@@ -122,9 +122,9 @@ public class S2PolylineSimplifierTests
             S2Testing.Random.Reset(iter + 1);  // Easier to reproduce a specific case.
             S2Point src = S2Testing.RandomPoint();
             var simplifier = new S2PolylineSimplifier(src);
-            S2Point dst = S2.InterpolateAtDistance(
-                S1Angle.FromRadians(S2Testing.Random.RandDouble()),
-                src, S2Testing.RandomPoint());
+            S2Point dst = S2.GetPointOnLine(
+                src, S2Testing.RandomPoint(),
+                S1Angle.FromRadians(S2Testing.Random.RandDouble()));
             S2Point n = S2.RobustCrossProd(src, dst).Normalize();
 
             // If bad_disc >= 0, then we make targeting fail for that disc.
@@ -138,7 +138,7 @@ public class S2PolylineSimplifierTests
                 S2Point a = ((1 - f) * src + f * dst).Normalize();
                 S1Angle r = S1Angle.FromRadians(S2Testing.Random.RandDouble());
                 bool on_left = S2Testing.Random.OneIn(2);
-                S2Point x = S2.InterpolateAtDistance(r, a, on_left ? n : -n);
+                S2Point x = S2.GetPointOnLine(a, on_left ? n : -n, r);
                 // If the disc is behind "src", adjust its radius so that it just
                 // touches "src" rather than just touching the line through (src, dst).
                 if (f < 0) r = new S1Angle(src, x);

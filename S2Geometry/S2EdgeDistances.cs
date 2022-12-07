@@ -301,12 +301,6 @@ public static partial class S2
         return Interpolate(a, b, t);
     }
 
-    [Obsolete("Inline the implementation")]
-    public static S2Point InterpolateAtDistance(S1Angle ax, S2Point a, S2Point b)
-    {
-        return GetPointOnLine(a, b, ax);
-    }
-
     // Returns the point X along the line segment AB whose distance from A is the
     // given fraction "t" of the distance AB (where "t" is not necessarily in the
     // range [0, 1]).  Note that all distances are measured on the surface of the

@@ -23,7 +23,7 @@
 
 namespace S2Geometry;
 
-public readonly record struct S2LatLngRect : IS2Region<S2LatLngRect>, IDecoderStruct<S2LatLngRect>
+public readonly record struct S2LatLngRect : IS2Region<S2LatLngRect>, IDecoder<S2LatLngRect>
 {
     #region Fields, Constants
 
@@ -1018,14 +1018,14 @@ public readonly record struct S2LatLngRect : IS2Region<S2LatLngRect>, IDecoderSt
     }
 
     // Decodes an S2LatLngRect encoded with Encode().  Returns true on success.
-    public static (bool, S2LatLngRect?) Decode(Decoder decoder)
+    public static (bool, S2LatLngRect) Decode(Decoder decoder)
     {
         if (decoder.Avail() < sizeof(byte) + 4 * sizeof(double))
-            return (false, null);
+            return (false, default);
 
         byte version = decoder.Get8();
         if (version > S2.kCurrentLosslessEncodingVersionNumber)
-            return (false, null);
+            return (false, default);
 
         double lat_lo = decoder.GetDouble();
         double lat_hi = decoder.GetDouble();
@@ -1039,7 +1039,7 @@ public readonly record struct S2LatLngRect : IS2Region<S2LatLngRect>, IDecoderSt
 #if s2debug
             System.Diagnostics.Debug.WriteLine($"Invalid result in S2LatLngRect.Decode: {result}");
 #endif
-            return (false, null);
+            return (false, default);
         }
 
         return (true, result);

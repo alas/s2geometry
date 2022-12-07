@@ -3,7 +3,7 @@ namespace S2Geometry;
 public class S2ContainsPointQueryTests
 {
     [Fact]
-    public void Test_S2ContainsPointQuery_VertexModelOpen()
+    internal void Test_S2ContainsPointQuery_VertexModelOpen()
     {
         var index = MakeIndexOrDie("0:0 # -1:1, 1:1 # 0:5, 0:7, 2:6");
         S2ContainsPointQueryOptions options = new(S2VertexModel.OPEN);
@@ -28,7 +28,7 @@ public class S2ContainsPointQueryTests
     }
 
     [Fact]
-    public void Test_S2ContainsPointQuery_VertexModelSemiOpen()
+    internal void Test_S2ContainsPointQuery_VertexModelSemiOpen()
     {
         var index = MakeIndexOrDie("0:0 # -1:1, 1:1 # 0:5, 0:7, 2:6");
         S2ContainsPointQueryOptions options = new(S2VertexModel.SEMI_OPEN);
@@ -52,7 +52,7 @@ public class S2ContainsPointQueryTests
     }
 
     [Fact]
-    public void Test_S2ContainsPointQuery_VertexModelClosed()
+    internal void Test_S2ContainsPointQuery_VertexModelClosed()
     {
         var index = MakeIndexOrDie("0:0 # -1:1, 1:1 # 0:5, 0:7, 2:6");
         S2ContainsPointQueryOptions options = new(S2VertexModel.CLOSED);
@@ -76,7 +76,7 @@ public class S2ContainsPointQueryTests
     }
 
     [Fact]
-    public void Test_S2ContainsPointQuery_GetContainingShapes()
+    internal void Test_S2ContainsPointQuery_GetContainingShapes()
     {
         // Also tests ShapeContains().
         int kNumVerticesPerLoop = 10;
@@ -114,7 +114,7 @@ public class S2ContainsPointQueryTests
     }
 
     [Fact]
-    public void Test_S2ContainsPointQuery_VisitIncidentEdges()
+    internal void Test_S2ContainsPointQuery_VisitIncidentEdges()
     {
         var index = MakeIndexOrDie("0:0 | 1:1 # 1:1, 1:2 # 1:2, 1:3, 2:2");
         ExpectIncidentEdgeIds(new EdgeVector { new(0, 0) }, index, MakePointOrDie("0:0"));

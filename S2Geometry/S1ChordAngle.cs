@@ -89,9 +89,9 @@
 // the default copy constructor and assignment operator.
 // </summary>
 // <Remarks>
-// When S1ChordAngle is used as a key in one of the btree container types
-// (util/btree), indicate that linear rather than binary search should be
-// used.  This is much faster when the comparison function is cheap.
+// When S1ChordAngle is used as a key in one of the absl::btree container
+// types, indicate that linear rather than binary search should be used.
+// This is much faster when the comparison function is cheap.
 
 namespace S2Geometry;
 

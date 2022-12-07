@@ -21,7 +21,7 @@ public class S2ShapeIndexRegionTests
     }
 
     [Fact]
-    public void Test_S2ShapeIndexRegion_GetCapBound()
+    internal void Test_S2ShapeIndexRegion_GetCapBound()
     {
         var id = S2CellId.FromDebugString("3/0123012301230123012301230123");
 
@@ -38,7 +38,7 @@ public class S2ShapeIndexRegionTests
     }
 
     [Fact]
-    public void Test_S2ShapeIndexRegion_GetRectBound()
+    internal void Test_S2ShapeIndexRegion_GetRectBound()
     {
         var id = S2CellId.FromDebugString("3/0123012301230123012301230123");
 
@@ -51,7 +51,7 @@ public class S2ShapeIndexRegionTests
     }
 
     [Fact]
-    public void Test_S2ShapeIndexRegion_GetCellUnionBoundMultipleFaces()
+    internal void Test_S2ShapeIndexRegion_GetCellUnionBoundMultipleFaces()
     {
         var ids = new List<S2CellId> { MakeCellId("3/00123"), MakeCellId("2/11200013") };
         MutableS2ShapeIndex index = new();
@@ -63,7 +63,7 @@ public class S2ShapeIndexRegionTests
     }
 
     [Fact]
-    public void Test_S2ShapeIndexRegion_GetCellUnionBoundOneFace()
+    internal void Test_S2ShapeIndexRegion_GetCellUnionBoundOneFace()
     {
         // This tests consists of 3 pairs of S2CellIds.  Each pair is located within
         // one of the children of face 5, namely the cells 5/0, 5/1, and 5/3.
@@ -94,7 +94,7 @@ public class S2ShapeIndexRegionTests
     }
 
     [Fact]
-    public void Test_S2ShapeIndexRegion_ContainsCellMultipleShapes()
+    internal void Test_S2ShapeIndexRegion_ContainsCellMultipleShapes()
     {
         Assert.True(false); //TODO
 
@@ -118,7 +118,7 @@ public class S2ShapeIndexRegionTests
     }
 
     [Fact]
-    public void Test_S2ShapeIndexRegion_IntersectsShrunkenCell()
+    internal void Test_S2ShapeIndexRegion_IntersectsShrunkenCell()
     {
         var target = S2CellId.FromDebugString("3/0123012301230123012301230123");
 
@@ -139,7 +139,7 @@ public class S2ShapeIndexRegionTests
     }
 
     [Fact]
-    public void Test_S2ShapeIndexRegion_IntersectsExactCell()
+    internal void Test_S2ShapeIndexRegion_IntersectsExactCell()
     {
         var target = S2CellId.FromDebugString("3/0123012301230123012301230123");
 
@@ -161,9 +161,9 @@ public class S2ShapeIndexRegionTests
     // with MayIntersect() and Contains() for the given S2ShapeIndex.  It tests
     // all cells in the given index, all ancestors of those cells, and a randomly
     // chosen subset of descendants of those cells.
-    public class VisitIntersectingShapesTest
+    internal class VisitIntersectingShapesTest
     {
-        public VisitIntersectingShapesTest(S2ShapeIndex index)
+        internal VisitIntersectingShapesTest(S2ShapeIndex index)
         {
             index_ = index;
             iter_ = new(index);
@@ -179,7 +179,7 @@ public class S2ShapeIndexRegionTests
             }
         }
 
-        public void Run()
+        internal void Run()
         {
             for (S2CellId id = S2CellId.Begin(0);
                  id != S2CellId.End(0); id = id.Next())
@@ -241,7 +241,7 @@ public class S2ShapeIndexRegionTests
     }
 
     [Fact]
-    public void Test_VisitIntersectingShapes_Points()
+    internal void Test_VisitIntersectingShapes_Points()
     {
         List<S2Point> vertices = new();
         for (int i = 0; i < 100; ++i)
@@ -254,7 +254,7 @@ public class S2ShapeIndexRegionTests
     }
 
     [Fact]
-    public void Test_VisitIntersectingShapes_Polylines() {
+    internal void Test_VisitIntersectingShapes_Polylines() {
         MutableS2ShapeIndex index = new();
         S2Cap center_cap=new(new S2Point(1, 0, 0), S1Angle.FromRadians(0.5));
         for (int i = 0; i < 50; ++i)
@@ -277,7 +277,7 @@ public class S2ShapeIndexRegionTests
     }
 
     [Fact]
-    public void Test_VisitIntersectingShapes_Polygons() {
+    internal void Test_VisitIntersectingShapes_Polygons() {
         MutableS2ShapeIndex index = new();
         S2Cap center_cap = new(new(1, 0, 0), S1Angle.FromRadians(0.5));
         S2Testing.Fractal fractal = new();

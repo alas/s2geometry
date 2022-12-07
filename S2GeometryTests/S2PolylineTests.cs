@@ -7,10 +7,10 @@ public class S2PolylineTests
 {
     private readonly ITestOutputHelper _logger;
 
-    public S2PolylineTests(ITestOutputHelper logger) => _logger = logger;
+    internal S2PolylineTests(ITestOutputHelper logger) => _logger = logger;
 
     [Fact]
-    public void Test_S2Polyline_Basic()
+    internal void Test_S2Polyline_Basic()
     {
         var vertices = Array.Empty<S2Point>();
         S2Polyline empty = new(vertices);
@@ -30,7 +30,7 @@ public class S2PolylineTests
     }
 
     [Fact]
-    public void Test_S2Polyline_NoData()
+    internal void Test_S2Polyline_NoData()
     {
         S2Polyline poly = new();
 
@@ -41,7 +41,7 @@ public class S2PolylineTests
     }
 
     [Fact]
-    public void Test_S2Polyline_NoDataClone()
+    internal void Test_S2Polyline_NoDataClone()
     {
         S2Polyline poly = new();
         var cloned_poly = poly.CustomClone();
@@ -49,7 +49,7 @@ public class S2PolylineTests
     }
 
     [Fact]
-    public void Test_S2Polyline_MoveConstruct()
+    internal void Test_S2Polyline_MoveConstruct()
     {
         var line = MakePolyline("1:1, 4:4");
         //S2Polyline moved = new(line);
@@ -60,7 +60,7 @@ public class S2PolylineTests
     }
 
     [Fact]
-    public void Test_S2Polyline_MoveAssign()
+    internal void Test_S2Polyline_MoveAssign()
     {
         var line = MakePolyline("1:1, 4:4");
         S2Polyline copied;
@@ -71,7 +71,7 @@ public class S2PolylineTests
     }
 
     [Fact]
-    public void Test_S2Polyline_GetLengthAndCentroid()
+    internal void Test_S2Polyline_GetLengthAndCentroid()
     {
         // Construct random great circles and divide them randomly into segments.
         // Then make sure that the length and centroid are correct.  Note that
@@ -102,7 +102,7 @@ public class S2PolylineTests
     }
 
     [Fact]
-    public void Test_S2Polyline_GetSnapLevel()
+    internal void Test_S2Polyline_GetSnapLevel()
     {
         // Points snapped to the same level.
         Assert.Equal(new S2Polyline(new[]{
@@ -121,7 +121,7 @@ public class S2PolylineTests
     }
 
     [Fact]
-    public void Test_S2Polyline_MayIntersect()
+    internal void Test_S2Polyline_MayIntersect()
     {
         S2Point[] vertices = {new S2Point(1, -1.1, 0.8).Normalize(),
                               new S2Point(1, -0.8, 1.1).Normalize()};
@@ -134,7 +134,7 @@ public class S2PolylineTests
     }
 
     [Fact]
-    public void Test_S2Polyline_Interpolate()
+    internal void Test_S2Polyline_Interpolate()
     {
         S2Point[] vertices = {new S2Point(1, 0, 0),
                               new S2Point(0, 1, 0),
@@ -168,7 +168,7 @@ public class S2PolylineTests
     }
 
     [Fact]
-    public void Test_S2Polyline_UnInterpolate()
+    internal void Test_S2Polyline_UnInterpolate()
     {
         var vertices = new List<S2Point> { new S2Point(1, 0, 0) };
         S2Polyline point_line = new(vertices.ToArray());
@@ -196,7 +196,7 @@ public class S2PolylineTests
     }
 
     [Fact]
-    public void Test_S2Polyline_Project()
+    internal void Test_S2Polyline_Project()
     {
         S2LatLng[] latlngs = {
                 S2LatLng.FromDegrees(0, 0), S2LatLng.FromDegrees(0, 1),
@@ -237,7 +237,7 @@ public class S2PolylineTests
     }
 
     [Fact]
-    public void Test_S2Polyline_IsOnRight()
+    internal void Test_S2Polyline_IsOnRight()
     {
         S2LatLng[] latlngs = {
                 S2LatLng.FromDegrees(0, 0), S2LatLng.FromDegrees(0, 1),
@@ -263,7 +263,7 @@ public class S2PolylineTests
     }
 
     [Fact]
-    public void Test_S2Polyline_IntersectsEmptyPolyline()
+    internal void Test_S2Polyline_IntersectsEmptyPolyline()
     {
         var line1 = MakePolyline("1:1, 4:4");
         S2Polyline empty_polyline = new();
@@ -271,7 +271,7 @@ public class S2PolylineTests
     }
 
     [Fact]
-    public void Test_S2Polyline_IntersectsOnePointPolyline()
+    internal void Test_S2Polyline_IntersectsOnePointPolyline()
     {
         var line1 = MakePolyline("1:1, 4:4");
         var line2 = MakePolyline("1:1");
@@ -279,7 +279,7 @@ public class S2PolylineTests
     }
 
     [Fact]
-    public void Test_S2Polyline_Intersects()
+    internal void Test_S2Polyline_Intersects()
     {
         var line1 = MakePolyline("1:1, 4:4");
         var small_crossing = MakePolyline("1:2, 2:1");
@@ -292,7 +292,7 @@ public class S2PolylineTests
     }
 
     [Fact]
-    public void Test_S2Polyline_IntersectsAtVertex()
+    internal void Test_S2Polyline_IntersectsAtVertex()
     {
         var line1 = MakePolyline("1:1, 4:4, 4:6");
         var line2 = MakePolyline("1:1, 1:2");
@@ -302,7 +302,7 @@ public class S2PolylineTests
     }
 
     [Fact]
-    public void Test_S2Polyline_IntersectsVertexOnEdge()
+    internal void Test_S2Polyline_IntersectsVertexOnEdge()
     {
         var horizontal_left_to_right = MakePolyline("0:1, 0:3");
         var vertical_bottom_to_top = MakePolyline("-1:2, 0:2, 1:2");
@@ -315,21 +315,21 @@ public class S2PolylineTests
     }
 
     [Fact]
-    public void Test_S2Polyline_SpaceUsedEmptyPolyline()
+    internal void Test_S2Polyline_SpaceUsedEmptyPolyline()
     {
         var line = MakePolyline("");
         Assert.True(line.SpaceUsed() > 0);
     }
 
     [Fact]
-    public void Test_S2Polyline_SpaceUsedNonEmptyPolyline()
+    internal void Test_S2Polyline_SpaceUsedNonEmptyPolyline()
     {
         var line = MakePolyline("1:1, 4:4, 4:6");
         Assert.True(line.SpaceUsed() > 3 * Marshal.SizeOf(typeof(S2Point)));
     }
 
     [Fact]
-    public void Test_S2Polyline_SubsampleVerticesTrivialInputs()
+    internal void Test_S2Polyline_SubsampleVerticesTrivialInputs()
     {
         // No vertices.
         CheckSubsample("", 1.0, "");
@@ -354,7 +354,7 @@ public class S2PolylineTests
     }
 
     [Fact]
-    public void Test_S2Polyline_SubsampleVerticesSimpleExample()
+    internal void Test_S2Polyline_SubsampleVerticesSimpleExample()
     {
         var poly_str = "0:0, 0:1, -1:2, 0:3, 0:4, 1:4, 2:4.5, 3:4, 3.5:4, 4:4";
         CheckSubsample(poly_str, 3.0, "0,9");
@@ -365,7 +365,7 @@ public class S2PolylineTests
     }
 
     [Fact]
-    public void Test_S2Polyline_SubsampleVerticesGuarantees()
+    internal void Test_S2Polyline_SubsampleVerticesGuarantees()
     {
         // Check that duplicate vertices are never generated.
         CheckSubsample("10:10, 12:12, 10:10", 5.0, "0");
@@ -388,7 +388,7 @@ public class S2PolylineTests
     }
 
     [Fact]
-    public void Test_S2Polyline_InitToSnapped()
+    internal void Test_S2Polyline_InitToSnapped()
     {
         var original = MakePolyline("10:10, 10:20, 10:30, 10:15, 10:40");
         S2Polyline snapped = new();
@@ -404,7 +404,7 @@ public class S2PolylineTests
     }
 
     [Fact]
-    public void Test_S2Polyline_InitToSimplified()
+    internal void Test_S2Polyline_InitToSimplified()
     {
         var original = MakePolyline("10:10, 20:20, 20:30, 10:40");
         S2Polyline snapped = new();
@@ -422,7 +422,7 @@ public class S2PolylineTests
     }
 
     [Fact]
-    public void Test_S2Polyline_ApproxEquals()
+    internal void Test_S2Polyline_ApproxEquals()
     {
         var degree = S1Angle.FromDegrees(1);
 
@@ -444,7 +444,7 @@ public class S2PolylineTests
     }
 
     [Fact]
-    public void Test_S2Polyline_EncodeDecode()
+    internal void Test_S2Polyline_EncodeDecode()
     {
         var polyline = MakePolyline("0:0, 0:10, 10:20, 20:30");
         Encoder encoder = new();
@@ -452,11 +452,11 @@ public class S2PolylineTests
         var decoder = encoder.Decoder();
         var (success, decoded_polyline) = S2Polyline.Decode(decoder);
         Assert.True(success);
-        Assert.True(decoded_polyline!.Value.ApproxEquals(polyline, S1Angle.Zero));
+        Assert.True(decoded_polyline.ApproxEquals(polyline, S1Angle.Zero));
     }
 
     [Fact]
-    public void Test_S2Polyline_EncodeDecodeCompressed()
+    internal void Test_S2Polyline_EncodeDecodeCompressed()
     {
         S2Polyline polyline = MakePolyline("0:0, 0:10, 10:20, 20:30");
         Encoder compact_encoder = new();
@@ -467,11 +467,11 @@ public class S2PolylineTests
         var decoder = compact_encoder.Decoder();
         var (success, decoded_polyline) = S2Polyline.Decode(decoder);
         Assert.True(success);
-        Assert.True(decoded_polyline!.Value.ApproxEquals(polyline, S1Angle.FromE7(1)));
+        Assert.True(decoded_polyline.ApproxEquals(polyline, S1Angle.FromE7(1)));
     }
 
     [Fact]
-    public void Test_S2Polyline_EncodeMostCompactEmpty()
+    internal void Test_S2Polyline_EncodeMostCompactEmpty()
     {
         S2Polyline polyline = new();
         Encoder encoder = new();
@@ -479,11 +479,11 @@ public class S2PolylineTests
         var decoder = encoder.Decoder();
         var (success, decoded_polyline) = S2Polyline.Decode(decoder);
         Assert.True(success);
-        Assert.Equal(decoded_polyline!.Value.NumVertices(), 0);
+        Assert.Equal(decoded_polyline.NumVertices(), 0);
     }
 
     [Fact]
-    public void Test_S2Polyline_EncodeUncompressedEmpty()
+    internal void Test_S2Polyline_EncodeUncompressedEmpty()
     {
         S2Polyline polyline = new();
         Encoder encoder = new();
@@ -491,11 +491,11 @@ public class S2PolylineTests
         var decoder = encoder.Decoder();
         var (success, decoded_polyline) = S2Polyline.Decode(decoder);
         Assert.True(success);
-        Assert.Equal(decoded_polyline!.Value.NumVertices(), 0);
+        Assert.Equal(decoded_polyline.NumVertices(), 0);
     }
 
     [Fact]
-    public void Test_S2Polyline_DecodeCompressedBadData()
+    internal void Test_S2Polyline_DecodeCompressedBadData()
     {
         var data = Encoding.ASCII.GetBytes("bad data");
         Decoder decoder = new(data, 0, data.Length);
@@ -504,7 +504,7 @@ public class S2PolylineTests
     }
 
     [Fact]
-    public void Test_S2PolylineShape_Basic()
+    internal void Test_S2PolylineShape_Basic()
     {
         var polyline = MakePolyline("0:0, 1:0, 1:1, 2:1");
         var shape = new S2Polyline.Shape(polyline);
@@ -523,7 +523,7 @@ public class S2PolylineTests
     }
 
     [Fact]
-    public void Test_S2PolylineShape_EmptyPolyline()
+    internal void Test_S2PolylineShape_EmptyPolyline()
     {
         S2Polyline polyline = new();
         S2Polyline.Shape shape = new(polyline);
@@ -535,7 +535,7 @@ public class S2PolylineTests
     }
 
     [Fact]
-    public void Test_S2PolylineOwningShape_Ownership()
+    internal void Test_S2PolylineOwningShape_Ownership()
     {
         // Debug mode builds will catch any memory leak below.
         var polyline = new S2Polyline(Array.Empty<S2Point>());
@@ -543,20 +543,20 @@ public class S2PolylineTests
     }
 
     [Fact]
-    public void Test_S2PolylineCoveringTest_PolylineOverlapsSelf()
+    internal void Test_S2PolylineCoveringTest_PolylineOverlapsSelf()
     {
         string pline = "1:1, 2:2, -1:10";
         TestNearlyCovers(pline, pline, 1e-10, true, true);
     }
 
     [Fact]
-    public void Test_S2PolylineCoveringTest_PolylineDoesNotOverlapReverse()
+    internal void Test_S2PolylineCoveringTest_PolylineDoesNotOverlapReverse()
     {
         TestNearlyCovers("1:1, 2:2, -1:10", "-1:10, 2:2, 1:1", 1e-10, false, false);
     }
 
     [Fact]
-    public void Test_S2PolylineCoveringTest_PolylineOverlapsEquivalent()
+    internal void Test_S2PolylineCoveringTest_PolylineOverlapsEquivalent()
     {
         // These two polylines trace the exact same polyline, but the second one uses
         // three points instead of two.
@@ -564,7 +564,7 @@ public class S2PolylineTests
     }
 
     [Fact]
-    public void Test_S2PolylineCoveringTest_ShortCoveredByLong()
+    internal void Test_S2PolylineCoveringTest_ShortCoveredByLong()
     {
         // The second polyline is always within 0.001 degrees of the first polyline,
         // but the first polyline is too long to be covered by the second.
@@ -573,7 +573,7 @@ public class S2PolylineTests
     }
 
     [Fact]
-    public void Test_S2PolylineCoveringTest_PartialOverlapOnly()
+    internal void Test_S2PolylineCoveringTest_PartialOverlapOnly()
     {
         // These two polylines partially overlap each other, but neither fully
         // overlaps the other.
@@ -581,7 +581,7 @@ public class S2PolylineTests
     }
 
     [Fact]
-    public void Test_S2PolylineCoveringTest_ShortBacktracking()
+    internal void Test_S2PolylineCoveringTest_ShortBacktracking()
     {
         // Two lines that backtrack a bit (less than 1.5 degrees) on different edges.
         // A simple greedy matching algorithm would fail on this example.
@@ -592,7 +592,7 @@ public class S2PolylineTests
     }
 
     [Fact]
-    public void Test_S2PolylineCoveringTest_LongBacktracking()
+    internal void Test_S2PolylineCoveringTest_LongBacktracking()
     {
         // Two arcs with opposite direction do not overlap if the shorter arc is
         // longer than max_error, but do if the shorter arc is shorter than max-error.
@@ -601,7 +601,7 @@ public class S2PolylineTests
     }
 
     [Fact]
-    public void Test_S2PolylineCoveringTest_IsResilientToDuplicatePoints()
+    internal void Test_S2PolylineCoveringTest_IsResilientToDuplicatePoints()
     {
         // S2Polyines are not generally supposed to contain adjacent, identical
         // points, but it happens in practice.  We also set S2Debug.DISABLE so
@@ -611,7 +611,7 @@ public class S2PolylineTests
     }
 
     [Fact]
-    public void Test_S2PolylineCoveringTest_CanChooseBetweenTwoPotentialStartingPoints()
+    internal void Test_S2PolylineCoveringTest_CanChooseBetweenTwoPotentialStartingPoints()
     {
         // Can handle two possible starting points, only one of which leads to finding
         // a correct path.  In the first polyline, the edge from 0:1.1 to 0:0 and the
@@ -622,7 +622,7 @@ public class S2PolylineTests
     }
 
     [Fact]
-    public void Test_S2PolylineCoveringTest_StraightAndWigglyPolylinesCoverEachOther()
+    internal void Test_S2PolylineCoveringTest_StraightAndWigglyPolylinesCoverEachOther()
     {
         TestNearlyCovers("40:1, 20:1",
             "39.9:0.9, 40:1.1, 30:1.15, 29:0.95, 28:1.1, 27:1.15, " +
@@ -631,7 +631,7 @@ public class S2PolylineTests
     }
 
     [Fact]
-    public void Test_S2PolylineCoveringTest_MatchStartsAtLastVertex()
+    internal void Test_S2PolylineCoveringTest_MatchStartsAtLastVertex()
     {
         // The first polyline covers the second, but the matching segment starts at
         // the last vertex of the first polyline.
@@ -640,14 +640,14 @@ public class S2PolylineTests
     }
 
     [Fact]
-    public void Test_S2PolylineCoveringTest_MatchStartsAtDuplicatedLastVertex()
+    internal void Test_S2PolylineCoveringTest_MatchStartsAtDuplicatedLastVertex()
     {
         TestNearlyCovers(
             "0:0, 0:2, 0:2, 0:2", "0:2, 0:3", 1.5, false, true, false);
     }
 
     [Fact]
-    public void Test_S2PolylineCoveringTest_EmptyPolylines()
+    internal void Test_S2PolylineCoveringTest_EmptyPolylines()
     {
         // We expect:
         //    anything.covers(empty) = true
@@ -663,8 +663,9 @@ public class S2PolylineTests
         Encoder encoder = new();
         polyline.Encode(encoder);
         var decoder = encoder.Decoder();
-        var (_, decoded_polyline) = S2Polyline.Decode(decoder);
-        return decoded_polyline!.Value;
+        var (success, decoded_polyline) = S2Polyline.Decode(decoder);
+        Assert.True(success); // << str
+        return decoded_polyline;
     }
 
     private static string JoinInts(int[] ints)

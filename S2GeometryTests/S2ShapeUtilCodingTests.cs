@@ -2,39 +2,41 @@
 // and s2polyline_measures_test.  This file only checks the handling of shapes
 // of different dimensions and shapes with multiple edge chains.
 
+using static S2Geometry.S2ShapeUtilCoding;
+
 namespace S2Geometry;
 
 public class S2ShapeUtilCodingTests
 {
     [Fact]
-    public void Test_FastEncodeShape_S2Polygon()
+    internal void Test_FastEncodeShape_S2Polygon()
     {
         var polygon = MakePolygonOrDie("0:0, 0:1, 1:0");
         var shape = new S2Polygon.Shape(polygon);
         Encoder encoder = new();
-        S2ShapeUtilCoding.FastEncodeShape(shape, encoder);
+        Assert.True(S2ShapeUtilCoding.FastEncodeShape(shape, encoder));
         var decoder = encoder.Decoder();
         var shape2 = S2ShapeUtilCoding.FullDecodeShape(S2Shape.TypeTag.S2Polygon, decoder);
         Assert.True(shape.Polygon == ((S2Polygon.Shape)shape2).Polygon);
     }
 
     [Fact]
-    public void Test_FastEncodeTaggedShapes_MixedShapes()
+    internal void Test_FastEncodeTaggedShapes_MixedShapes()
     {
         // Tests encoding/decoding a collection of points, polylines, and polygons.
         var index = MakeIndexOrDie(
             "0:0 | 0:1 # 1:1, 1:2, 1:3 # 2:2; 2:3, 2:4, 3:3");
         Encoder encoder = new();
-        S2ShapeUtilCoding.FastEncodeTaggedShapes(index, encoder);
+        Assert.True(S2ShapeUtilCoding.FastEncodeTaggedShapes(index, encoder));
         index.Encode(encoder);
         var decoder = encoder.Decoder();
         MutableS2ShapeIndex decoded_index = new();
-        decoded_index.Init(decoder, S2ShapeUtilCoding.FullDecodeShapeFactory(decoder));
+        Assert.True(decoded_index.Init(decoder, S2ShapeUtilCoding.FullDecodeShapeFactory(decoder)));
         Assert.Equal(index.ToDebugString(), decoded_index.ToDebugString());
     }
 
     [Fact]
-    public void Test_DecodeTaggedShapes_DecodeFromByteString()
+    internal void Test_DecodeTaggedShapes_DecodeFromByteString()
     {
         var index = MakeIndexOrDie(
             "0:0 | 0:1 # 1:1, 1:2, 1:3 # 2:2; 2:3, 2:4, 3:3");
@@ -59,13 +61,13 @@ public class S2ShapeUtilCodingTests
             "04020400020113082106110A4113000111030101");
         Decoder decoder=new(bytes, 0, bytes.Length);
         MutableS2ShapeIndex decoded_index=new();
-        decoded_index.Init(decoder, S2ShapeUtilCoding.FullDecodeShapeFactory(decoder));
+        Assert.True(decoded_index.Init(decoder, S2ShapeUtilCoding.FullDecodeShapeFactory(decoder)));
         Assert.Equal(S2TextFormat.ToDebugString(index),
             S2TextFormat.ToDebugString(decoded_index));
     }
 
     [Fact]
-    public void Test_DecodeTaggedShapes_DecodeFromEncoded()
+    internal void Test_DecodeTaggedShapes_DecodeFromEncoded()
     {
         Encoder encoder=new();
 
@@ -88,5 +90,21 @@ public class S2ShapeUtilCodingTests
         encoded_decoder = reencoder.Decoder();
         var lazy_shape = S2ShapeUtilCoding.LazyDecodeShape(S2PointVectorShape.kTypeTag, encoded_decoder);
         Assert.Equal(lazy_shape!.GetTypeTag(), S2PointVectorShape.kTypeTag);
+    }
+
+    [Fact]
+    internal void Test_SingletonShapeFactory_S2Polygon()
+    {
+        var polygon = MakePolygonOrDie("0:0, 0:1, 1:0");
+        var shape = new S2Polygon.Shape(polygon);
+        var shape_factory = SingletonShapeFactory(shape);
+
+        // Returns the shape the first time.
+        var shape2 = shape_factory[0];
+        Assert.True(polygon.Equals(((S2Polygon.Shape)shape2).Polygon));
+
+        // And nullptr after that.
+        var shape3 = shape_factory[0];
+        Assert.True(shape3 == null);
     }
 }

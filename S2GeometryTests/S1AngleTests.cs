@@ -3,7 +3,7 @@ namespace S2Geometry;
 public class S1AngleTests
 {
     [Fact]
-    public void Test_S1Angle_DefaultConstructor()
+    internal void Test_S1Angle_DefaultConstructor()
     {
         // Check that the default constructor returns an angle of 0.
         S1Angle a = S1Angle.FromRadians(0);
@@ -11,7 +11,7 @@ public class S1AngleTests
     }
 
     [Fact]
-    public void Test_S1Angle_Infinity()
+    internal void Test_S1Angle_Infinity()
     {
         Assert.True(S1Angle.FromRadians(1e30) < S1Angle.Infinity);
         Assert.True(-S1Angle.Infinity < S1Angle.Zero);
@@ -19,13 +19,13 @@ public class S1AngleTests
     }
 
     [Fact]
-    public void Test_S1Angle_Zero()
+    internal void Test_S1Angle_Zero()
     {
         Assert.Equal(S1Angle.FromRadians(0), S1Angle.Zero);
     }
 
     [Fact]
-    public void Test_S1Angle_PiRadiansExactly180Degrees()
+    internal void Test_S1Angle_PiRadiansExactly180Degrees()
     {
         // Check that the conversion between Pi radians and 180 degrees is exact.
         Assert.Equal(Math.PI, S1Angle.FromRadians(Math.PI).Radians);
@@ -41,7 +41,7 @@ public class S1AngleTests
     }
 
     [Fact]
-    public void Test_S1Angle_E5E6E7Representations()
+    internal void Test_S1Angle_E5E6E7Representations()
     {
         // Check that E5/E6/E7 representations work as expected.
         Assert2.DoubleEqual(S1Angle.FromDegrees(-45).Radians,
@@ -56,7 +56,7 @@ public class S1AngleTests
     }
 
     [Fact]
-    public void Test_S1Angle_E6E7RepresentationsUnsigned()
+    internal void Test_S1Angle_E6E7RepresentationsUnsigned()
     {
         // Check that unsigned E6/E7 representations work as expected.
         Assert2.DoubleEqual(
@@ -74,7 +74,7 @@ public class S1AngleTests
     }
 
     [Fact]
-    public void Test_S1Angle_NormalizeCorrectlyCanonicalizesAngles()
+    internal void Test_S1Angle_NormalizeCorrectlyCanonicalizesAngles()
     {
         Assert2.DoubleEqual(0.0, S1Angle.FromDegrees(360.0).Normalize().GetDegrees());
         Assert2.DoubleEqual(-90.0, S1Angle.FromDegrees(-90.0).Normalize().GetDegrees());
@@ -85,7 +85,7 @@ public class S1AngleTests
     }
 
     [Fact]
-    public void Test_S1Angle_ArithmeticOperationsOnAngles()
+    internal void Test_S1Angle_ArithmeticOperationsOnAngles()
     {
         Assert2.DoubleEqual(0.3, S1Angle.FromRadians(-0.3).Abs());
         Assert2.DoubleEqual(-0.1, (-S1Angle.FromRadians(0.1)).Radians);
@@ -108,7 +108,7 @@ public class S1AngleTests
     }
 
     [Fact]
-    public void Test_S1Angle_Trigonometry()
+    internal void Test_S1Angle_Trigonometry()
     {
         // Spot check a few angles to ensure that the correct function is called.
         Assert2.DoubleEqual(1, S1Angle.FromDegrees(0).Cos());
@@ -117,7 +117,7 @@ public class S1AngleTests
     }
 
     [Fact]
-    public void Test_S1Angle_ConstructorsThatMeasureAngles()
+    internal void Test_S1Angle_ConstructorsThatMeasureAngles()
     {
         Assert2.DoubleEqual(S2.M_PI_2, new S1Angle(new S2Point(1, 0, 0), new S2Point(0, 0, 2)).Radians);
         Assert2.DoubleEqual(0.0, new S1Angle(new S2Point(1, 0, 0), new S2Point(1, 0, 0)).Radians);
@@ -125,7 +125,7 @@ public class S1AngleTests
     }
 
     [Fact]
-    public void Test_S1Angle_TestFormatting()
+    internal void Test_S1Angle_TestFormatting()
     {
         Assert.Equal("180d", S1Angle.FromDegrees(180).ToString()); // 180.0000000
     }
@@ -133,7 +133,7 @@ public class S1AngleTests
     // The current implementation guarantees exact conversions between
     // Degrees() and E6() when the Degrees() argument is an integer.
     [Fact]
-    public void Test_S1Angle_DegreesVsE6()
+    internal void Test_S1Angle_DegreesVsE6()
     {
         for (int i = 0; i <= 180; ++i)
         {
@@ -144,7 +144,7 @@ public class S1AngleTests
     // The current implementation guarantees exact conversions between
     // Degrees() and E7() when the Degrees() argument is an integer.
     [Fact]
-    public void Test_S1Angle_DegreesVsE7()
+    internal void Test_S1Angle_DegreesVsE7()
     {
         for (int i = 0; i <= 180; ++i)
         {
@@ -155,7 +155,7 @@ public class S1AngleTests
     // The current implementation guarantees exact conversions between
     // E6() and E7() when the E6() argument is an integer.
     [Fact]
-    public void Test_S1Angle_E6VsE7()
+    internal void Test_S1Angle_E6VsE7()
     {
         S2Testing.Random.Reset(S2Testing.Random.RandomSeed);
         for (int iter = 0; iter < 1000; ++iter)
@@ -168,7 +168,7 @@ public class S1AngleTests
     // The current implementation guarantees certain exact conversions between
     // degrees and radians (see the header file for details).
     [Fact]
-    public void Test_S1Angle_DegreesVsRadians()
+    internal void Test_S1Angle_DegreesVsRadians()
     {
         for (int k = -8; k <= 8; ++k)
         {

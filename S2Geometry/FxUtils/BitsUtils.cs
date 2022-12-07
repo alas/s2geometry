@@ -1,4 +1,6 @@
-﻿namespace S2Geometry;
+﻿using System.Numerics;
+
+namespace S2Geometry;
 
 public static class BitsUtils
 {
@@ -19,20 +21,6 @@ public static class BitsUtils
         {
             // Top bits are zero, so scan in bottom bits
             return Log2FloorNonZero((UInt32)n);
-        }
-        else
-        {
-            return 32 + Log2FloorNonZero(topbits);
-        }
-    }
-
-    public static int Log2Floor64(UInt64 n)
-    {
-        var topbits = (UInt32)(n >> 32);
-        if (topbits == 0)
-        {
-            // Top bits are zero, so scan in bottom bits
-            return Log2Floor((UInt32)n);
         }
         else
         {
@@ -61,6 +49,10 @@ public static class BitsUtils
         //System.Diagnostics.Debug.Assert(value == 1);
         return log;
     }
+
+    public static int GetBitWidth(uint value) => 32 - BitOperations.LeadingZeroCount(value);
+
+    public static int GetBitWidth(ulong value) => 64 - BitOperations.LeadingZeroCount(value);
 
     #endregion
 

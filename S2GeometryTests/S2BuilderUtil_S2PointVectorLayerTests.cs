@@ -3,7 +3,7 @@ namespace S2Geometry;
 public class S2BuilderUtil_S2PointVectorLayerTests
 {
     [Fact]
-    public void Test_S2PointVectorLayer_MergeDuplicates() {
+    internal void Test_S2PointVectorLayer_MergeDuplicates() {
         S2Builder builder=new(new Options());
         List<S2Point> output=new();
         IdSetLexicon label_set_lexicon = new();
@@ -33,7 +33,7 @@ public class S2BuilderUtil_S2PointVectorLayerTests
     }
 
     [Fact]
-    public void Test_S2PointVectorLayer_KeepDuplicates() {
+    internal void Test_S2PointVectorLayer_KeepDuplicates() {
         S2Builder builder=new(new Options());
         List<S2Point> output=new();
         IdSetLexicon label_set_lexicon=new();
@@ -63,7 +63,7 @@ public class S2BuilderUtil_S2PointVectorLayerTests
     }
 
     [Fact]
-    public void Test_S2PointVectorLayer_Error() {
+    internal void Test_S2PointVectorLayer_Error() {
         S2Builder builder=new(new Options());
         List<S2Point> output=new();
         builder.StartLayer(new S2PointVectorLayer(
@@ -83,7 +83,7 @@ public class S2BuilderUtil_S2PointVectorLayerTests
     }
 
     [Fact]
-    public void Test_IndexedS2PointVectorLayer_AddsShapes() {
+    internal void Test_IndexedS2PointVectorLayer_AddsShapes() {
         S2Builder builder=new(new Options());
         MutableS2ShapeIndex index=new();
         builder.StartLayer(new IndexedS2PointVectorLayer(index));
@@ -100,7 +100,7 @@ public class S2BuilderUtil_S2PointVectorLayerTests
     }
 
     [Fact]
-    public void Test_IndexedS2PointVectorLayer_AddsEmptyShape() {
+    internal void Test_IndexedS2PointVectorLayer_AddsEmptyShape() {
         S2Builder builder=new(new Options());
         MutableS2ShapeIndex index=new();
         builder.StartLayer(new IndexedS2PointVectorLayer(index));

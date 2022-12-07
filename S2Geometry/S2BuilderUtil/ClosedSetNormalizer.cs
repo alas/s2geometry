@@ -119,13 +119,14 @@ public class ClosedSetNormalizer
     // Note that the input graphs, their contents, and the ClosedSetNormalizer
     // itself must persist until the output of this class is no longer needed.
     // (To emphasize this requirement, a reference is returned.)
-    public List<Graph> Run(List<Graph?> g, out S2Error error)
+    public List<Graph> Run(List<Graph> g, out S2Error error)
     {
         // Ensure that the input graphs were built with our requested options.
         for (var dim = 0; dim < 3; ++dim)
         {
             System.Diagnostics.Debug.Assert(g[dim].Options == GraphOptions_[dim]);
         }
+
         if (Options_.SuppressLowerDimensions)
         {
             // Build the auxiliary data needed to suppress lower-dimensional edges.
@@ -161,6 +162,7 @@ public class ClosedSetNormalizer
             if (new_edges_[dim].Count != g[dim].NumEdges) any_modified = true;
             modified[dim] = any_modified;
         }
+
         if (!any_modified)
         {
             for (var dim = 0; dim < 3; ++dim)
@@ -194,6 +196,7 @@ public class ClosedSetNormalizer
                     g[dim].IsFullPolygonPredicate()));
             }
         }
+
         return new_graphs_;
     }
 

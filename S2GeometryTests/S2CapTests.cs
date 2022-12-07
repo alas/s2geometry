@@ -10,7 +10,7 @@ public class S2CapTests
     private static readonly double kFaceRadius = Math.Atan(Math.Sqrt(2));
 
     [Fact]
-    public void Test_S2Cap_Basic()
+    internal void Test_S2Cap_Basic()
     {
         // Test basic properties of empty and full caps.
         S2Cap empty = S2Cap.Empty;
@@ -126,7 +126,7 @@ public class S2CapTests
     }
 
     [Fact]
-    public void Test_S2Cap_AddEmptyCapToNonEmptyCap()
+    internal void Test_S2Cap_AddEmptyCapToNonEmptyCap()
     {
         S2Cap non_empty_cap = new(new S2Point(1, 0, 0), S1Angle.FromDegrees(10));
         double initial_area = non_empty_cap.Area();
@@ -135,7 +135,7 @@ public class S2CapTests
     }
 
     [Fact]
-    public void Test_S2Cap_AddNonEmptyCapToEmptyCap()
+    internal void Test_S2Cap_AddNonEmptyCapToEmptyCap()
     {
         S2Cap empty = S2Cap.Empty;
         S2Cap non_empty_cap = new(new S2Point(1, 0, 0), S1Angle.FromDegrees(10));
@@ -144,7 +144,7 @@ public class S2CapTests
     }
 
     [Fact]
-    public void Test_S2Cap_GetRectBound()
+    internal void Test_S2Cap_GetRectBound()
     {
         // Empty and full caps.
         Assert.True(S2Cap.Empty.GetRectBound().IsEmpty());
@@ -196,7 +196,7 @@ public class S2CapTests
     }
 
     [Fact]
-    public void Test_S2Cap_S2CellMethods()
+    internal void Test_S2Cap_S2CellMethods()
     {
         // For each cube face, we construct some cells on
         // that face and some caps whose positions are relative to that face,
@@ -263,7 +263,7 @@ public class S2CapTests
     }
 
     [Fact]
-    public void Test_S2Cap_GetCellUnionBoundLevel1Radius() {
+    internal void Test_S2Cap_GetCellUnionBoundLevel1Radius() {
         // Check that a cap whose radius is approximately the width of a level 1
         // S2Cell can be covered by only 3 faces.
         S2Cap cap = new(new S2Point(1, 1, 1).Normalize(),
@@ -274,7 +274,7 @@ public class S2CapTests
     }
 
     [Fact]
-    public void Test_S2Cap_Expanded() {
+    internal void Test_S2Cap_Expanded() {
         Assert.True(S2Cap.Empty.Expanded(S1Angle.FromRadians(2)).IsEmpty());
         Assert.True(S2Cap.Full.Expanded(S1Angle.FromRadians(2)).IsFull());
         S2Cap cap50 = new(new S2Point(1, 0, 0), S1Angle.FromDegrees(50));
@@ -286,7 +286,7 @@ public class S2CapTests
     }
 
     [Fact]
-    public void Test_S2Cap_GetCentroid() {
+    internal void Test_S2Cap_GetCentroid() {
         // Empty and full caps.
         Assert.Equal(new S2Point(), S2Cap.Empty.Centroid());
         Assert.True(S2Cap.Full.Centroid().Norm() <= S2.DoubleError);
@@ -303,7 +303,7 @@ public class S2CapTests
     }
 
     [Fact]
-    public void Test_S2Cap_Union() {
+    internal void Test_S2Cap_Union() {
         // Two caps which have the same center but one has a larger radius.
         S2Cap a = new(GetLatLngPoint(50.0, 10.0), S1Angle.FromDegrees(0.2));
         S2Cap b = new(GetLatLngPoint(50.0, 10.0), S1Angle.FromDegrees(0.3));
@@ -352,7 +352,7 @@ public class S2CapTests
     }
 
     [Fact]
-    public void Test_S2Cap_EncodeDecode() {
+    internal void Test_S2Cap_EncodeDecode() {
         S2Cap cap = S2Cap.FromCenterHeight(new S2Point(3, 2, 1).Normalize(), 1);
         Encoder encoder = new();
         cap.Encode(encoder);
@@ -362,7 +362,7 @@ public class S2CapTests
         Assert.Equal(cap, decoded_cap);
     }
 
-    public static S2Point GetLatLngPoint(double lat_degrees, double lng_degrees)
+    internal static S2Point GetLatLngPoint(double lat_degrees, double lng_degrees)
     {
         return S2LatLng.FromDegrees(lat_degrees, lng_degrees).ToPoint();
     }

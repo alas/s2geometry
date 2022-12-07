@@ -6,7 +6,7 @@ namespace S2Geometry;
 public class S2ShapeMeasuresTests
 {
     [Fact]
-    public void Test_GetLength_WrongDimension()
+    internal void Test_GetLength_WrongDimension()
     {
         Assert.Equal(S1Angle.Zero, S2.GetLength(MakeIndexOrDie("0:0 # #").Shape(0)));
         Assert.Equal(S1Angle.Zero,
@@ -14,13 +14,13 @@ public class S2ShapeMeasuresTests
     }
 
     [Fact]
-    public void Test_GetLength_NoPolylines()
+    internal void Test_GetLength_NoPolylines()
     {
         Assert.Equal(S1Angle.Zero, S2ShapeIndexMeasures.GetLength(MakeIndexOrDie("")));
     }
 
     [Fact]
-    public void Test_GetLength_ThreePolylinesInOneShape()
+    internal void Test_GetLength_ThreePolylinesInOneShape()
     {
         // S2EdgeVectorShape is the only standard S2Shape that can have more than
         // one edge chain of dimension 1.
@@ -30,7 +30,7 @@ public class S2ShapeMeasuresTests
     }
 
     [Fact]
-    public void Test_GetPerimeter_WrongDimension()
+    internal void Test_GetPerimeter_WrongDimension()
     {
         Assert.Equal(S1Angle.Zero,
                   S2.GetPerimeter(MakeIndexOrDie("0:0 # #").Shape(0)));
@@ -39,19 +39,19 @@ public class S2ShapeMeasuresTests
     }
 
     [Fact]
-    public void Test_GetPerimeter_EmptyPolygon()
+    internal void Test_GetPerimeter_EmptyPolygon()
     {
         Assert.Equal(S1Angle.Zero, S2.GetPerimeter(MakeLaxPolygonOrDie("empty")));
     }
 
     [Fact]
-    public void Test_GetPerimeter_FullPolygon()
+    internal void Test_GetPerimeter_FullPolygon()
     {
         Assert.Equal(S1Angle.Zero, S2.GetPerimeter(MakeLaxPolygonOrDie("full")));
     }
 
     [Fact]
-    public void Test_GetPerimeter_TwoLoopPolygon()
+    internal void Test_GetPerimeter_TwoLoopPolygon()
     {
         // To ensure that all edges are 1 degree long, we use degenerate loops.
         Assert.Equal(S1Angle.FromDegrees(6),
@@ -59,20 +59,20 @@ public class S2ShapeMeasuresTests
     }
 
     [Fact]
-    public void Test_GetArea_WrongDimension()
+    internal void Test_GetArea_WrongDimension()
     {
         Assert.Equal(0.0, S2.GetArea(MakeIndexOrDie("0:0 # #").Shape(0)));
         Assert.Equal(0.0, S2.GetArea(MakeLaxPolylineOrDie("0:0, 0:1, 1:0")));
     }
 
     [Fact]
-    public void Test_GetArea_EmptyPolygon()
+    internal void Test_GetArea_EmptyPolygon()
     {
         Assert.Equal(0.0, S2.GetArea(MakeLaxPolygonOrDie("empty")));
     }
 
     [Fact]
-    public void Test_GetArea_FullPolygon()
+    internal void Test_GetArea_FullPolygon()
     {
         Assert.Equal(4 * Math.PI, S2.GetArea(MakeLaxPolygonOrDie("full")));
         Assert.Equal(4 * Math.PI,
@@ -80,7 +80,7 @@ public class S2ShapeMeasuresTests
     }
 
     [Fact]
-    public void Test_GetArea_TwoTinyShells()
+    internal void Test_GetArea_TwoTinyShells()
     {
         // Two small squares with sides about 10 um (micrometers) long.
         double side = S1Angle.FromDegrees(1e-10).Radians;
@@ -90,7 +90,7 @@ public class S2ShapeMeasuresTests
     }
 
     [Fact]
-    public void Test_GetArea_TinyShellAndHole()
+    internal void Test_GetArea_TinyShellAndHole()
     {
         // A square about 20 um on each side with a hole 10 um on each side.
         double side = S1Angle.FromDegrees(1e-10).Radians;
@@ -100,7 +100,7 @@ public class S2ShapeMeasuresTests
     }
 
     [Fact]
-    public void Test_GetApproxArea_LargeShellAndHolePolygon()
+    internal void Test_GetApproxArea_LargeShellAndHolePolygon()
     {
         // Make sure that GetApproxArea works well for large polygons.
         Assert2.Near(S2.GetApproxArea(MakeLaxPolygonOrDie(
@@ -109,7 +109,7 @@ public class S2ShapeMeasuresTests
     }
 
     [Fact]
-    public void Test_GetCentroid_Points()
+    internal void Test_GetCentroid_Points()
     {
         // GetCentroid() returns the centroid multiplied by the number of points.
         Assert.Equal(new S2Point(1, 1, 0),
@@ -117,7 +117,7 @@ public class S2ShapeMeasuresTests
     }
 
     [Fact]
-    public void Test_GetCentroid_Polyline()
+    internal void Test_GetCentroid_Polyline()
     {
         // GetCentroid returns the centroid multiplied by the length of the polyline.
         Assert.True(S2.ApproxEquals(
@@ -126,7 +126,7 @@ public class S2ShapeMeasuresTests
     }
 
     [Fact]
-    public void Test_GetCentroid_Polygon()
+    internal void Test_GetCentroid_Polygon()
     {
         // GetCentroid returns the centroid multiplied by the area of the polygon.
         Assert.True(S2.ApproxEquals(

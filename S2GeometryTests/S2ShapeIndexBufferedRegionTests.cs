@@ -3,7 +3,7 @@ namespace S2Geometry;
 public class S2ShapeIndexBufferedRegionTests
 {
     [Fact]
-    public void Test_S2ShapeIndexBufferedRegion_EmptyIndex()
+    internal void Test_S2ShapeIndexBufferedRegion_EmptyIndex()
     {
         // Test buffering an empty S2ShapeIndex.
         var index = new MutableS2ShapeIndex();
@@ -15,7 +15,20 @@ public class S2ShapeIndexBufferedRegionTests
     }
 
     [Fact]
-    public void Test_S2ShapeIndexBufferedRegion_FullPolygon()
+    internal void Test_S2ShapeIndexBufferedRegion_InitEmptyIndex()
+    {
+        // As above, but with Init().  This is mainly to prevent Init() from being
+        // detected as dead code.
+        MutableS2ShapeIndex index=new();
+        S1ChordAngle radius=new(S1Angle.FromDegrees(2));
+        S2ShapeIndexBufferedRegion region=new(index, radius);
+        S2RegionCoverer coverer=new();
+        S2CellUnion covering = coverer.GetCovering(region);
+        Assert.True(covering.IsEmpty());
+    }
+
+    [Fact]
+    internal void Test_S2ShapeIndexBufferedRegion_FullPolygon()
     {
         // Test buffering an S2ShapeIndex that contains a full polygon.
         var index = MakeIndexOrDie("# # full");
@@ -31,7 +44,7 @@ public class S2ShapeIndexBufferedRegionTests
     }
 
     [Fact]
-    public void Test_S2ShapeIndexBufferedRegion_FullAfterBuffering()
+    internal void Test_S2ShapeIndexBufferedRegion_FullAfterBuffering()
     {
         // Test a region that becomes the full polygon after buffering.
         var index = MakeIndexOrDie("0:0 | 0:90 | 0:180 | 0:-90 | 90:0 | -90:0 # #");
@@ -48,7 +61,7 @@ public class S2ShapeIndexBufferedRegionTests
     }
 
     [Fact]
-    public void Test_S2ShapeIndexBufferedRegion_PointZeroRadius()
+    internal void Test_S2ShapeIndexBufferedRegion_PointZeroRadius()
     {
         // Test that buffering a point using a zero radius produces a non-empty
         // covering.  (This requires using "less than or equal to" distance tests.)
@@ -64,7 +77,7 @@ public class S2ShapeIndexBufferedRegionTests
     }
 
     [Fact]
-    public void Test_S2ShapeIndexBufferedRegion_BufferedPointVsCap()
+    internal void Test_S2ShapeIndexBufferedRegion_BufferedPointVsCap()
     {
         // Compute an S2Cell covering of a buffered S2Point, then make sure that the
         // covering is equivalent to the corresponding S2Cap.
@@ -80,7 +93,7 @@ public class S2ShapeIndexBufferedRegionTests
     }
 
     [Fact]
-    public void Test_S2ShapeIndexBufferedRegion_PointSet()
+    internal void Test_S2ShapeIndexBufferedRegion_PointSet()
     {
         // Test buffering a set of points.
         var coverer = new S2RegionCoverer();
@@ -89,7 +102,7 @@ public class S2ShapeIndexBufferedRegionTests
     }
 
     [Fact]
-    public void Test_S2ShapeIndexBufferedRegion_Polyline()
+    internal void Test_S2ShapeIndexBufferedRegion_Polyline()
     {
         // Test buffering a polyline.
         S2RegionCoverer coverer = new();
@@ -99,7 +112,7 @@ public class S2ShapeIndexBufferedRegionTests
     }
 
     [Fact]
-    public void Test_S2ShapeIndexBufferedRegion_PolygonWithHole()
+    internal void Test_S2ShapeIndexBufferedRegion_PolygonWithHole()
     {
         // Test buffering a polygon with a hole.
         S2RegionCoverer coverer = new();
@@ -109,7 +122,7 @@ public class S2ShapeIndexBufferedRegionTests
     }
 
     [Fact]
-    public void Test_S2ShapeIndexBufferedRegion_HugeBufferRadius()
+    internal void Test_S2ShapeIndexBufferedRegion_HugeBufferRadius()
     {
         // Test buffering a set of points.
         S2RegionCoverer coverer = new();

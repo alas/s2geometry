@@ -12,47 +12,47 @@ public class EncodedUintVectorTests
     }
 
     [Fact]
-    public void Test_EncodedUintVectorTest_Empty() {
+    internal void Test_EncodedUintVectorTest_Empty() {
         TestEncodedUintVector(Array.Empty<uint>(), 1);
     }
 
     [Fact]
-    public void Test_EncodedUintVectorTest_Zero() {
+    internal void Test_EncodedUintVectorTest_Zero() {
         TestEncodedUintVector(new UInt64[] { 0 }, 2);
     }
 
     [Fact]
-    public void Test_EncodedUintVectorTest_RepeatedZeros() {
+    internal void Test_EncodedUintVectorTest_RepeatedZeros() {
         TestEncodedUintVector(new UInt16[] { 0, 0, 0}, 4);
     }
 
     [Fact]
-    public void Test_EncodedUintVectorTest_MaxInt() {
+    internal void Test_EncodedUintVectorTest_MaxInt() {
         TestEncodedUintVector(new UInt64[]{ ~0UL}, 9);
     }
 
     [Fact]
-    public void Test_EncodedUintVectorTest_OneByte() {
+    internal void Test_EncodedUintVectorTest_OneByte() {
         TestEncodedUintVector(new UInt64[]{ 0, 255, 1, 254}, 5);
     }
 
     [Fact]
-    public void Test_EncodedUintVectorTest_TwoBytes() {
+    internal void Test_EncodedUintVectorTest_TwoBytes() {
         TestEncodedUintVector(new UInt64[]{ 0, 255, 256, 254}, 9);
     }
 
     [Fact]
-    public void Test_EncodedUintVectorTest_ThreeBytes() {
+    internal void Test_EncodedUintVectorTest_ThreeBytes() {
         TestEncodedUintVector(new UInt64[]{ 0xffffff, 0x0102, 0, 0x050403}, 13);
     }
 
     [Fact]
-    public void Test_EncodedUintVectorTest_EightBytes() {
+    internal void Test_EncodedUintVectorTest_EightBytes() {
         TestEncodedUintVector(new UInt64[]{ ~0UL, 0, 0x0102030405060708}, 25);
     }
 
     [Fact]
-    public void Test_EncodedUintVector_LowerBound()
+    internal void Test_EncodedUintVector_LowerBound()
     {
         for (int bytes_per_value = 8; bytes_per_value <= 8; ++bytes_per_value)
         {
@@ -69,7 +69,7 @@ public class EncodedUintVectorTests
     }
 
     [Fact]
-    public void Test_EncodedUintVectorTest_RoundtripEncoding()
+    internal void Test_EncodedUintVectorTest_RoundtripEncoding()
     {
         var values = new ulong[] { 10, 20, 30, 40 };
 

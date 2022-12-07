@@ -9,10 +9,10 @@ public class S2PointIndexTests
     private readonly List<PointData> contents_ = new();
 
     [Fact]
-    public void Test_S2PointIndexTest_NoPoints() => Verify();
+    internal void Test_S2PointIndexTest_NoPoints() => Verify();
 
     [Fact]
-    public void Test_S2PointIndexTest_DuplicatePoints()
+    internal void Test_S2PointIndexTest_DuplicatePoints()
     {
         for (int i = 0; i < 10; ++i)
         {
@@ -28,7 +28,7 @@ public class S2PointIndexTests
     }
 
     [Fact]
-    public void Test_S2PointIndexTest_RandomPoints()
+    internal void Test_S2PointIndexTest_RandomPoints()
     {
         for (int i = 0; i < 100; ++i)
         {
@@ -50,7 +50,7 @@ public class S2PointIndexTests
     }
 
     [Fact]
-    public void Test_S2PointIndex_EmptyData()
+    internal void Test_S2PointIndex_EmptyData()
     {
         // Verify that points can be added and removed with an empty Data class.
         var index = new Index

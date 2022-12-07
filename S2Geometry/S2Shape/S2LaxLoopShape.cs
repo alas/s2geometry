@@ -62,9 +62,6 @@ public class S2LaxLoopShape : S2Shape
     public S2Point Vertex(int i) => vertices_[i];
 
     #endregion
-    #region S2Shape
-
-    #endregion
 
     #region S2Shape
 
@@ -168,9 +165,6 @@ public class S2VertexIdLaxLoopShape : S2Shape
     public int NumVertices { get; private set; }
     public Int32 VertexId(int i) => vertex_ids_[i];
     public S2Point Vertex(int i) => vertex_array_[VertexId(i)];
-
-    #endregion
-    #region S2Shape
 
     #endregion
 

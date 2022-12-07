@@ -6,7 +6,7 @@
 <#@ output extension=".cs" #>
 namespace S2Geometry;
 
-public class EncodedUintVectorTesting
+internal class EncodedUintVectorTesting
 {<#
 var types = new List<(Type typename, int typesize, int typebitsize)>
 {
@@ -22,7 +22,7 @@ foreach (var tuple in types) {
     if (type != typeof(Byte)) Write(Environment.NewLine);
 #>
     // TestEncodedUintVector
-    public static void TestEncodedUintVector_<#= bitsize #>(<#= type.Name #>[] expected, int expected_bytes)
+    internal static void TestEncodedUintVector_<#= bitsize #>(<#= type.Name #>[] expected, int expected_bytes)
     {
         Encoder encoder = new();
         EncodedUintVector.EncodeUintVector(expected, encoder);
@@ -34,7 +34,7 @@ foreach (var tuple in types) {
     }
 
     // TestLowerBound
-    public static void TestLowerBound_<#= bitsize #>(int bytes_per_value, int num_values)
+    internal static void TestLowerBound_<#= bitsize #>(int bytes_per_value, int num_values)
     {
         var v = MakeSortedTestVector_<#= bitsize #>(bytes_per_value, num_values);
         Encoder encoder = new();
@@ -65,7 +65,7 @@ foreach (var tuple in types) {
         return values.ToArray();
     }
 
-    public static EncodedUintVector_UInt<#= bitsize #> MakeEncodedVector_<#= bitsize #>(<#= type.Name #>[] values, Encoder encoder)
+    internal static EncodedUintVector_UInt<#= bitsize #> MakeEncodedVector_<#= bitsize #>(<#= type.Name #>[] values, Encoder encoder)
     {
         EncodedUintVector.EncodeUintVector(values, encoder);
         var decoder = encoder.Decoder();

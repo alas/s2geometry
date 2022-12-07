@@ -40,7 +40,7 @@ public class S2LoopTests
     private readonly S2Loop loop_i_;
     private readonly S2Loop snapped_loop_a_;
 
-    public S2LoopTests(ITestOutputHelper logger)
+    internal S2LoopTests(ITestOutputHelper logger)
     {
         _logger = logger;
         // The empty loop.
@@ -158,7 +158,7 @@ public class S2LoopTests
     }
 
     [Fact]
-    public void Test_S2LoopTestBase_GetRectBound()
+    internal void Test_S2LoopTestBase_GetRectBound()
     {
         Assert.True(empty_.GetRectBound().IsEmpty());
         Assert.True(full_.GetRectBound().IsFull());
@@ -187,7 +187,7 @@ public class S2LoopTests
     }
 
     [Fact]
-    public void Test_S2LoopTestBase_AreaConsistentWithCurvature()
+    internal void Test_S2LoopTestBase_AreaConsistentWithCurvature()
     {
         // Check that the area computed using GetArea() is consistent with the
         // curvature of the loop computed using GetTurnAngle().  According to
@@ -204,7 +204,7 @@ public class S2LoopTests
     }
 
     [Fact]
-    public void Test_S2LoopTestBase_GetAreaConsistentWithSign()
+    internal void Test_S2LoopTestBase_GetAreaConsistentWithSign()
     {
         // Test that GetArea() returns an area near 0 for degenerate loops that
         // contain almost no points, and an area near 4*Pi for degenerate loops that
@@ -238,14 +238,14 @@ public class S2LoopTests
     }
 
     [Fact]
-    public void Test_S2LoopTestBase_GetAreaAccuracy()
+    internal void Test_S2LoopTestBase_GetAreaAccuracy()
     {
         // TODO(b/200091211): Test that GetArea() has an accuracy significantly better
         // than 1e-15 on loops whose area is small.
     }
 
     [Fact]
-    public void Test_S2LoopTestBase_GetAreaAndCentroid()
+    internal void Test_S2LoopTestBase_GetAreaAndCentroid()
     {
         Assert.Equal(0.0, empty_.Area());
         Assert.Equal(S2.M_4_PI, full_.Area());
@@ -297,7 +297,7 @@ public class S2LoopTests
     }
 
     [Fact]
-    public void Test_S2LoopTestBase_GetCurvature()
+    internal void Test_S2LoopTestBase_GetCurvature()
     {
         Assert.Equal(S2.M_2_PI, empty_.Curvature());
         Assert.Equal(-S2.M_2_PI, full_.Curvature());
@@ -351,14 +351,14 @@ public class S2LoopTests
     }
 
     [Fact]
-    public void Test_S2LoopTestBase_NormalizedCompatibleWithContains()
+    internal void Test_S2LoopTestBase_NormalizedCompatibleWithContains()
     {
         CheckNormalizeAndContains(line_triangle_);
         CheckNormalizeAndContains(skinny_chevron_);
     }
 
     [Fact]
-    public void Test_S2LoopTestBase_Contains()
+    internal void Test_S2LoopTestBase_Contains()
     {
         // Check the full and empty loops have the correct containment relationship
         // with the special "vertex" that defines them.
@@ -421,7 +421,7 @@ public class S2LoopTests
     }
 
     [Fact]
-    public void Test_S2Loop_ContainsMatchesCrossingSign()
+    internal void Test_S2Loop_ContainsMatchesCrossingSign()
     {
         // This test demonstrates a former incompatibility between CrossingSign()
         // and Contains(S2Point).  Itructs an S2Cell-based loop L and
@@ -492,7 +492,7 @@ public class S2LoopTests
     }
 
     [Fact]
-    public void Test_S2LoopTestBase_LoopRelations()
+    internal void Test_S2LoopTestBase_LoopRelations()
     {
         // Check full and empty relationships with normal loops and each other.
         TestRelation(full_, full_, RelationFlags.CONTAINS | RelationFlags.CONTAINED | RelationFlags.COVERS, true);
@@ -586,7 +586,7 @@ public class S2LoopTests
     // Make sure the relations are correct if the loop crossing happens on
     // two ends of a shared boundary segment.
     [Fact]
-    public void Test_S2LoopTestBase_LoopRelationsWhenSameExceptPiecesStickingOutAndIn()
+    internal void Test_S2LoopTestBase_LoopRelationsWhenSameExceptPiecesStickingOutAndIn()
     {
         TestRelation(loop_a_, loop_c_, 0, true);
         TestRelation(loop_c_, loop_a_, 0, true);
@@ -606,7 +606,7 @@ public class S2LoopTests
     }
 
     [Fact]
-    public void Test_S2Loop_LoopRelations2()
+    internal void Test_S2Loop_LoopRelations2()
     {
         // Construct polygons consisting of a sequence of adjacent cell ids
         // at some fixed level.  Comparing two polygons at the same level
@@ -639,7 +639,7 @@ public class S2LoopTests
     }
 
     [Fact]
-    public void Test_S2Loop_BoundsForLoopContainment()
+    internal void Test_S2Loop_BoundsForLoopContainment()
     {
         // To reliably test whether one loop contains another, the bounds of the
         // outer loop are expanded slightly.  This testructs examples where
@@ -677,7 +677,7 @@ public class S2LoopTests
     }
 
     [Fact]
-    public void Test_S2Loop_BoundaryNear()
+    internal void Test_S2Loop_BoundaryNear()
     {
         S1Angle degree = S1Angle.FromDegrees(1);
 
@@ -704,7 +704,7 @@ public class S2LoopTests
     }
 
     [Fact]
-    public void Test_S2Loop_EncodeDecode()
+    internal void Test_S2Loop_EncodeDecode()
     {
         var l = MakeLoopOrDie("30:20, 40:20, 39:43, 33:35");
         l.Depth = 3;
@@ -720,7 +720,33 @@ public class S2LoopTests
     }
 
     [Fact]
-    public void Test_S2Loop_EmptyFullLossyConversions()
+    internal void Test_S2Loop_Moveable()
+    {
+        // We'll need a couple identical copies of a reference loop to compare.
+        var loop_factory = () => {
+            var loop = MakeLoopOrDie("30:20, 40:20, 39:43, 33:35");
+            loop!.Depth = 3;
+            return loop;
+        };
+
+        // Check for move-constructability.
+        {
+            var loop = loop_factory();
+            S2Loop a = loop;
+            CheckIdentical(a, loop_factory());
+        }
+
+        // Check for move-assignability.
+        {
+            var loop = loop_factory();
+            S2Loop a;
+            a = loop;
+            CheckIdentical(a, loop_factory());
+        }
+    }
+
+    [Fact]
+    internal void Test_S2Loop_EmptyFullLossyConversions()
     {
         // Verify that the empty and full loops can be encoded lossily.
         S2Loop empty = S2Loop.kEmpty;
@@ -731,7 +757,7 @@ public class S2LoopTests
     }
 
     [Fact]
-    public void Test_S2Loop_EncodeDecodeWithinScope()
+    internal void Test_S2Loop_EncodeDecodeWithinScope()
     {
         S2Loop l = MakeLoopOrDie("30:20, 40:20, 39:43, 33:35");
         l.Depth = 3;
@@ -776,7 +802,7 @@ public class S2LoopTests
     }
 
     [Fact]
-    public void Test_S2LoopTestBase_FourVertexCompressedLoopRequires36Bytes()
+    internal void Test_S2LoopTestBase_FourVertexCompressedLoopRequires36Bytes()
     {
         Encoder encoder = new();
         TestEncodeCompressed(snapped_loop_a_, S2.kMaxCellLevel, encoder);
@@ -793,7 +819,7 @@ public class S2LoopTests
     }
 
     [Fact]
-    public void Test_S2LoopTestBase_CompressedEncodedLoopDecodesApproxEqual()
+    internal void Test_S2LoopTestBase_CompressedEncodedLoopDecodesApproxEqual()
     {
         var loop = (S2Loop)snapped_loop_a_.CustomClone();
         loop.Depth = 3;
@@ -810,7 +836,7 @@ public class S2LoopTests
     // rectangles slightly differently, and S2Loops created from them just copied
     // the S2Cell bounds.
     [Fact]
-    public void Test_S2Loop_S2CellConstructorAndContains()
+    internal void Test_S2Loop_S2CellConstructorAndContains()
     {
         S2Cell cell = new(new S2CellId(S2LatLng.FromE6(40565459, -74645276)));
         S2Loop cell_as_loop = new(cell);
@@ -830,7 +856,7 @@ public class S2LoopTests
     }
 
     [Fact]
-    public void Test_S2Loop_IsValidDetectsInvalidLoops()
+    internal void Test_S2Loop_IsValidDetectsInvalidLoops()
     {
         // Not enough vertices.  Note that all single-vertex loops are valid; they
         // are interpreted as being either empty or full.
@@ -847,15 +873,21 @@ public class S2LoopTests
         // Some edges cross
         CheckLoopIsInvalid("20:20, 21:21, 21:20.5, 21:20, 20:21", "crosses");
 
-        // Points with non-unit length (triggers S2_DCHECK failure in debug)
-        //EXPECT_DEBUG_DEATH(CheckLoopIsInvalid({S2Point(2, 0, 0), S2Point(0, 1, 0), S2Point(0, 0, 1)}, "unit length"), "IsUnitLength");
-
         // Adjacent antipodal vertices
         CheckLoopIsInvalid(new[] { new S2Point(1, 0, 0), new S2Point(-1, 0, 0), new S2Point(0, 0, 1) }, "antipodal");
     }
 
+#if GTEST_HAS_DEATH_TEST
     [Fact]
-    public void Test_S2LoopTestBase_DistanceMethods()
+    internal void Test_S2LoopDeathTest_IsValidDetectsInvalidLoops()
+    {
+        // Points with non-unit length (triggers S2_DCHECK failure in debug)
+        EXPECT_DEBUG_DEATH(CheckLoopIsInvalid(new[] { new S2Point(2, 0, 0), new S2Point(0, 1, 0), new S2Point(0, 0, 1) }, "unit length"), "IsUnitLength");
+    }
+#endif
+
+    [Fact]
+    internal void Test_S2LoopTestBase_DistanceMethods()
     {
         // S2ClosestEdgeQuery is already tested, so just do a bit of sanity checking.
 
@@ -883,7 +915,7 @@ public class S2LoopTests
     }
 
     [Fact]
-    public void Test_S2LoopTestBase_MakeRegularLoop()
+    internal void Test_S2LoopTestBase_MakeRegularLoop()
     {
         S2Point center = S2LatLng.FromDegrees(80, 135).ToPoint();
         S1Angle radius = S1Angle.FromDegrees(20);
@@ -923,7 +955,7 @@ public class S2LoopTests
     }
 
     [Fact]
-    public void Test_S2LoopShape_Basic()
+    internal void Test_S2LoopShape_Basic()
     {
         var loop = MakeLoopOrDie("0:0, 0:1, 1:0");
         S2Loop.Shape shape = new(loop);
@@ -942,7 +974,7 @@ public class S2LoopTests
     }
 
     [Fact]
-    public void Test_S2LoopShape_EmptyLoop()
+    internal void Test_S2LoopShape_EmptyLoop()
     {
         S2Loop loop = S2Loop.kEmpty;
         var shape = new S2Loop.Shape(loop);
@@ -954,7 +986,7 @@ public class S2LoopTests
     }
 
     [Fact]
-    public void Test_S2LoopShape_FullLoop()
+    internal void Test_S2LoopShape_FullLoop()
     {
         S2Loop loop = S2Loop.kFull;
         S2Loop.Shape shape = new(loop);
@@ -966,7 +998,7 @@ public class S2LoopTests
     }
 
     [Fact]
-    public void Test_S2LoopOwningShape_Ownership()
+    internal void Test_S2LoopOwningShape_Ownership()
     {
         // Debug mode builds will catch any memory leak below.
         var loop = S2Loop.kEmpty;

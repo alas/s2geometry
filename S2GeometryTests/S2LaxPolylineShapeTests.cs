@@ -3,7 +3,7 @@ namespace S2Geometry;
 public class S2LaxPolylineShapeTests
 {
     [Fact]
-    public void Test_S2LaxPolylineShape_NoVertices()
+    internal void Test_S2LaxPolylineShape_NoVertices()
     {
         var vertices = Array.Empty<S2Point>();
         var shape = new S2LaxPolylineShape(vertices);
@@ -16,7 +16,7 @@ public class S2LaxPolylineShapeTests
     }
 
     [Fact]
-    public void Test_S2LaxPolylineShape_OneVertex()
+    internal void Test_S2LaxPolylineShape_OneVertex()
     {
         S2Point[] vertices = { new S2Point(1, 0, 0) };
         var shape = new S2LaxPolylineShape(vertices);
@@ -28,27 +28,37 @@ public class S2LaxPolylineShapeTests
     }
 
     [Fact]
-    public void Test_S2LaxPolylineShape_MoveConstructor()
+    internal void Test_S2LaxPolylineShape_Move()
     {
-        var original = MakeLaxPolylineOrDie("1:1, 4:4");
-        S2LaxPolylineShape moved = new(original);
-        Assert.Equal(0, original.NumVertices());
-        Assert.Equal(2, moved.NumVertices());
+        // Construct a shape to use as the correct answer and a second identical shape
+        // to be moved.
+        List<S2Point> vertices = ParsePointsOrDie("1:1, 4:4, 2:2, 3:3");
+        S2LaxPolylineShape correct=new(vertices);
+        S2LaxPolylineShape to_move=new(vertices);
+
+        // Test the move constructor.
+        S2LaxPolylineShape move1=to_move;
+        Assert.Equal(correct, move1);
+        Assert.Equal(correct.Id, move1.Id);
+        Assert.Equal(vertices.Count, move1.NumVertices());
+        for (int i = 0; i < move1.NumVertices(); ++i)
+        {
+            Assert.Equal(vertices[i], move1.Vertex(i));
+        }
+        // Test the move-assignment operator.
+        S2LaxPolylineShape move2;
+        move2 = move1;
+        Assert.Equal(correct, move2);
+        Assert.Equal(correct.Id, move2.Id);
+        Assert.Equal(vertices.Count, move2.NumVertices());
+        for (int i = 0; i < move2.NumVertices(); ++i)
+        {
+            Assert.Equal(vertices[i], move2.Vertex(i));
+        }
     }
 
     [Fact]
-    public void Test_S2LaxPolylineShape_MoveAssignmentOperator()
-    {
-        var original = MakeLaxPolylineOrDie("1:1, 4:4");
-        S2LaxPolylineShape moved;
-        moved = original;
-        original = new();
-        Assert.Equal(0, original.NumVertices());
-        Assert.Equal(2, moved.NumVertices());
-    }
-
-    [Fact]
-    public void Test_S2LaxPolylineShape_EdgeAccess()
+    internal void Test_S2LaxPolylineShape_EdgeAccess()
     {
         var vertices = ParsePointsOrDie("0:0, 0:1, 1:1").ToArray();
         S2LaxPolylineShape shape = new(vertices);
@@ -68,7 +78,7 @@ public class S2LaxPolylineShapeTests
     }
 
     [Fact]
-    public void Test_EncodedS2LaxPolylineShape_RoundtripEncoding()
+    internal void Test_EncodedS2LaxPolylineShape_RoundtripEncoding()
     {
         var vertices = ParsePointsOrDie("0:0, 0:1, 1:1");
         S2LaxPolylineShape shape=new(vertices.ToArray());

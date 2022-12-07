@@ -10,7 +10,7 @@ public class S2BufferOperationTests
 {
     private readonly ITestOutputHelper _logger;
 
-    public S2BufferOperationTests(ITestOutputHelper logger) { _logger = logger; }
+    internal S2BufferOperationTests(ITestOutputHelper logger) { _logger = logger; }
 
     // Convenience function that calls the given lambda expression to add input to
     // an S2BufferOperation and returns the buffered result.
@@ -53,13 +53,13 @@ public class S2BufferOperationTests
     }
 
     [Fact]
-    public void Test_S2BufferOperation_NoInput()
+    internal void Test_S2BufferOperation_NoInput()
     {
         TestBufferEmpty((S2BufferOperation op) => { });
     }
 
     [Fact]
-    public void Test_S2BufferOperation_EmptyPolyline()
+    internal void Test_S2BufferOperation_EmptyPolyline()
     {
         // Note that polylines with 1 vertex are defined to have no edges.
         TestBufferEmpty((S2BufferOperation op) =>
@@ -67,21 +67,21 @@ public class S2BufferOperationTests
     }
 
     [Fact]
-    public void Test_S2BufferOperation_EmptyLoop()
+    internal void Test_S2BufferOperation_EmptyLoop()
     {
         TestBufferEmpty((S2BufferOperation op) =>
             op.AddLoop(new S2PointLoopSpan()));
     }
 
     [Fact]
-    public void Test_S2BufferOperation_EmptyPointShape()
+    internal void Test_S2BufferOperation_EmptyPointShape()
     {
         TestBufferEmpty((S2BufferOperation op) =>
             op.AddShape(new S2PointVectorShape()));
     }
 
     [Fact]
-    public void Test_S2BufferOperation_EmptyPolylineShape()
+    internal void Test_S2BufferOperation_EmptyPolylineShape()
     {
         TestBufferEmpty((S2BufferOperation op) =>
         {
@@ -90,7 +90,7 @@ public class S2BufferOperationTests
     }
 
     [Fact]
-    public void Test_S2BufferOperation_EmptyPolygonShape()
+    internal void Test_S2BufferOperation_EmptyPolygonShape()
     {
         TestBufferEmpty((S2BufferOperation op) =>
         {
@@ -99,7 +99,7 @@ public class S2BufferOperationTests
     }
 
     [Fact]
-    public void Test_S2BufferOperation_EmptyShapeIndex()
+    internal void Test_S2BufferOperation_EmptyShapeIndex()
     {
         TestBufferEmpty((S2BufferOperation op) =>
         {
@@ -108,7 +108,17 @@ public class S2BufferOperationTests
     }
 
     [Fact]
-    public void Test_S2BufferOperation_PoorlyNormalizedPoint()
+    internal void Test_S2BufferOperation_Options()
+    {
+        // Provide test coverage for `options()`.
+        S2BufferOperation.Options options=new(S1Angle.FromRadians(1e-12));
+        S2LaxPolygonShape output=new();
+        S2BufferOperation op = new(new LaxPolygonLayer(output), options);
+        Assert.Equal(options.buffer_radius_, op.Options_.buffer_radius_);
+    }
+
+    [Fact]
+    internal void Test_S2BufferOperation_PoorlyNormalizedPoint()
     {
         // Verify that debugging assertions are not triggered when an input point is
         // not unit length (but within the limits guaranteed by S2Point.Normalize).
@@ -137,7 +147,7 @@ public class S2BufferOperationTests
     }
 
     [Fact]
-    public void Test_S2BufferOperation_FullPolygonShape()
+    internal void Test_S2BufferOperation_FullPolygonShape()
     {
         TestBufferFull((S2BufferOperation op) =>
         {
@@ -146,7 +156,7 @@ public class S2BufferOperationTests
     }
 
     [Fact]
-    public void Test_S2BufferOperation_FullShapeIndex()
+    internal void Test_S2BufferOperation_FullShapeIndex()
     {
         TestBufferFull((S2BufferOperation op) =>
         {
@@ -155,7 +165,7 @@ public class S2BufferOperationTests
     }
 
     [Fact]
-    public void Test_S2BufferOperation_PointsAndPolylinesAreRemoved()
+    internal void Test_S2BufferOperation_PointsAndPolylinesAreRemoved()
     {
         // Test that points and polylines are removed with a negative buffer radius.
         var output = DoBuffer((S2BufferOperation op) =>
@@ -166,7 +176,7 @@ public class S2BufferOperationTests
     }
 
     [Fact]
-    public void Test_S2BufferOperation_BufferedPointsAreSymmetric()
+    internal void Test_S2BufferOperation_BufferedPointsAreSymmetric()
     {
         // Test that points are buffered into regular polygons.  (This is not
         // guaranteed by the API but makes the output nicer to look at. :)
@@ -187,7 +197,7 @@ public class S2BufferOperationTests
     }
 
     [Fact]
-    public void Test_S2BufferOperation_SetCircleSegments()
+    internal void Test_S2BufferOperation_SetCircleSegments()
     {
         // Test that when a point is buffered with a small radius the number of
         // edges matches options.circle_segments().  (This is not true for large
@@ -197,6 +207,7 @@ public class S2BufferOperationTests
         for (int circle_segments = 3; circle_segments <= 20; ++circle_segments)
         {
             options.circle_segments_ = circle_segments;
+            Assert.Equal(circle_segments, options.circle_segments_);
             var output = DoBuffer((S2BufferOperation op) =>
             {
                 op.AddPoint(new S2Point(1, 0, 0));
@@ -206,7 +217,7 @@ public class S2BufferOperationTests
     }
 
     [Fact]
-    public void Test_S2BufferOperation_SetSnapFunction()
+    internal void Test_S2BufferOperation_SetSnapFunction()
     {
         // Verify that the snap function is passed through to S2Builder.
         // We use a buffer radius of zero to make the test simpler.
@@ -221,7 +232,7 @@ public class S2BufferOperationTests
     }
 
     [Fact]
-    public void Test_S2BufferOperation_NegativeBufferRadiusMultipleLayers()
+    internal void Test_S2BufferOperation_NegativeBufferRadiusMultipleLayers()
     {
         // Verify that with a negative buffer radius, at most one polygon layer is
         // allowed.
@@ -411,46 +422,46 @@ output = {S2TextFormat.ToDebugString(output)}");
     }
 
     [Fact]
-    public void Test_S2BufferOperation_PointShell()
+    internal void Test_S2BufferOperation_PointShell()
     {
         TestSignedBuffer("# # 0:0", S1Angle.FromRadians(S2.M_PI_2), 0.01);
     }
 
     [Fact]
-    public void Test_S2BufferOperation_SiblingPairShell()
+    internal void Test_S2BufferOperation_SiblingPairShell()
     {
         TestSignedBuffer("# # 0:0, 0:5", S1Angle.FromRadians(S2.M_PI_2), 0.01);
     }
 
     [Fact]
-    public void Test_S2BufferOperation_SiblingPairHole()
+    internal void Test_S2BufferOperation_SiblingPairHole()
     {
         TestSignedBuffer("# # 0:0, 0:10, 7:7; 3:4, 3:6", S1Angle.FromDegrees(1), 0.01);
     }
 
     [Fact]
-    public void Test_S2BufferOperation_Square()
+    internal void Test_S2BufferOperation_Square()
     {
         TestSignedBuffer("# # -3:-3, -3:3, 3:3, 3:-3", S1Angle.FromDegrees(1), 0.01);
         TestSignedBuffer("# # -3:-3, -3:3, 3:3, 3:-3", S1Angle.FromDegrees(170), 1e-4);
     }
 
     [Fact]
-    public void Test_S2BufferOperation_HollowSquare()
+    internal void Test_S2BufferOperation_HollowSquare()
     {
         TestSignedBuffer("# # -3:-3, -3:3, 3:3, 3:-3; 2:2, -2:2, -2:-2, 2:-2",
                             S1Angle.FromDegrees(1), 0.01);
     }
 
     [Fact]
-    public void Test_S2BufferOperation_ZigZagLoop()
+    internal void Test_S2BufferOperation_ZigZagLoop()
     {
         TestSignedBuffer("# # 0:0, 0:7, 5:3, 5:10, 6:10, 6:1, 1:5, 1:0",
                             S1Angle.FromDegrees(0.2), 0.01);
     }
 
     [Fact]
-    public void Test_S2BufferOperation_Fractals()
+    internal void Test_S2BufferOperation_Fractals()
     {
         foreach (double dimension in new[] { 1.02, 1.8 })
         {
@@ -466,7 +477,7 @@ output = {S2TextFormat.ToDebugString(output)}");
     }
 
     [Fact]
-    public void Test_S2BufferOperation_S2Curve()
+    internal void Test_S2BufferOperation_S2Curve()
     {
         // Tests buffering the S2 curve by an amount that yields the full polygon.
         const int kLevel = 2;  // Number of input edges == 6 * (4 ** kLevel)
@@ -531,7 +542,7 @@ output = {S2TextFormat.ToDebugString(output)}");
     }
 
     [Fact]
-    public void Test_S2BufferOperation_RadiiAndErrorFractionCoverage()
+    internal void Test_S2BufferOperation_RadiiAndErrorFractionCoverage()
     {
         // Test buffering simple shapes with a wide range of different buffer radii
         // and error fractions.
@@ -549,14 +560,14 @@ output = {S2TextFormat.ToDebugString(output)}");
         TestRadiiAndErrorFractions("# # 0:0, 0:179.99999999999, 1e-300:0");
     }
 
-    public class TestBufferPolyline
+    internal class TestBufferPolyline
     {
         // Tests buffering a polyline with the given options.  This method is intended
         // only for testing Options.EndCapStyle and Options.PolylineSide; if these
         // options have their default values then TestBuffer() should be used
         // instead.  Similarly TestBuffer should be used to test negative buffer radii
         // and polylines with 0 or 1 vertices.
-        public TestBufferPolyline(string input_str,
+        internal TestBufferPolyline(string input_str,
                             Options options)
         {
             polyline_ = ParsePointsOrDie(input_str);
@@ -715,7 +726,7 @@ output = {S2TextFormat.ToDebugString(output)}");
     }
 
     [Fact]
-    public void Test_S2BufferOperation_ZigZagPolyline()
+    internal void Test_S2BufferOperation_ZigZagPolyline()
     {
         Options options = new(S1Angle.FromDegrees(1));
         foreach (var polyline_side in new[] { PolylineSide.LEFT, PolylineSide.RIGHT, PolylineSide.BOTH })

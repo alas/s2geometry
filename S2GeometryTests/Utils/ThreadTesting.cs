@@ -8,10 +8,10 @@
 
 namespace S2GeometryTests.Utils;
 
-public abstract class ReaderWriterTest
+internal abstract class ReaderWriterTest
 {
     // The main loop of each reader thread.
-    public void ReaderLoop()
+    internal void ReaderLoop()
     {
         lock_.WaitOne();
         for (int last_write = 0; ; last_write = num_writes_)
@@ -39,7 +39,7 @@ public abstract class ReaderWriterTest
 
     // Create the given number of reader threads and execute the given number of
     // (write, read) iterations.
-    public void Run(int num_readers, int iters)
+    internal void Run(int num_readers, int iters)
     {
         using ReaderThreadPool pool = new(ReaderLoop, num_readers);
         lock_.WaitOne();
@@ -69,10 +69,10 @@ public abstract class ReaderWriterTest
     }
 
     // The writer thread calls the following function once between reads.
-    public abstract void WriteOp();
+    internal abstract void WriteOp();
 
     // Each reader thread calls the following function once between writes.
-    public abstract void ReadOp();
+    internal abstract void ReadOp();
 
     // The following fields are guarded by lock_.
     private readonly Mutex lock_ = new();

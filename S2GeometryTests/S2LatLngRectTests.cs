@@ -7,7 +7,7 @@ namespace S2Geometry;
 public class S2LatLngRectTests
 {
     [Fact]
-    public void Test_S2LatLngRect_EmptyAndFull()
+    internal void Test_S2LatLngRect_EmptyAndFull()
     {
         // Test basic properties of empty and full rectangles.
         S2LatLngRect empty = S2LatLngRect.Empty;
@@ -27,7 +27,7 @@ public class S2LatLngRectTests
     }
 
     [Fact]
-    public void Test_S2LatLngRect_Accessors()
+    internal void Test_S2LatLngRect_Accessors()
     {
         // Check various accessor methods.
         S2LatLngRect d1 = RectFromDegrees(-90, 0, -45, 180);
@@ -40,7 +40,7 @@ public class S2LatLngRectTests
     }
 
     [Fact]
-    public void Test_S2LatLngRect_ApproxEquals()
+    internal void Test_S2LatLngRect_ApproxEquals()
     {
         // S1Interval and R1Interval have additional testing.
 
@@ -58,7 +58,7 @@ public class S2LatLngRectTests
     }
 
     [Fact]
-    public void Test_S2LatLngRect_FromCenterSize()
+    internal void Test_S2LatLngRect_FromCenterSize()
     {
         Assert.True(S2LatLngRect.FromCenterSize(S2LatLng.FromDegrees(80, 170), S2LatLng.FromDegrees(40, 60)).ApproxEquals(RectFromDegrees(60, 140, 90, -160)));
         Assert.True(S2LatLngRect.FromCenterSize(S2LatLng.FromDegrees(10, 40), S2LatLng.FromDegrees(210, 400)).IsFull());
@@ -66,7 +66,7 @@ public class S2LatLngRectTests
     }
 
     [Fact]
-    public void Test_S2LatLngRect_FromPoint()
+    internal void Test_S2LatLngRect_FromPoint()
     {
         S2LatLng p = S2LatLng.FromDegrees(23, 47);
         Assert.Equal(S2LatLngRect.FromPoint(p), new S2LatLngRect(p, p));
@@ -74,14 +74,14 @@ public class S2LatLngRectTests
     }
 
     [Fact]
-    public void Test_S2LatLngRect_FromPointPair()
+    internal void Test_S2LatLngRect_FromPointPair()
     {
         Assert.Equal(S2LatLngRect.FromPointPair(S2LatLng.FromDegrees(-35, -140), S2LatLng.FromDegrees(15, 155)), RectFromDegrees(-35, 155, 15, -140));
         Assert.Equal(S2LatLngRect.FromPointPair(S2LatLng.FromDegrees(25, -70), S2LatLng.FromDegrees(-90, 80)), RectFromDegrees(-90, -70, 25, 80));
     }
 
     [Fact]
-    public void Test_S2LatLngRect_GetCenterSize()
+    internal void Test_S2LatLngRect_GetCenterSize()
     {
         S2LatLngRect r1 = new(new R1Interval(0, S2.M_PI_2), new S1Interval(-Math.PI, 0));
         Assert.Equal(r1.Center(), S2LatLng.FromRadians(S2.M_PI_4, -S2.M_PI_2));
@@ -91,7 +91,7 @@ public class S2LatLngRectTests
     }
 
     [Fact]
-    public void Test_S2LatLngRect_GetVertex()
+    internal void Test_S2LatLngRect_GetVertex()
     {
         S2LatLngRect r1 = new(new R1Interval(0, S2.M_PI_2), new S1Interval(-Math.PI, 0));
         Assert.Equal(r1.Vertex(0), S2LatLng.FromRadians(0, Math.PI));
@@ -120,7 +120,7 @@ public class S2LatLngRectTests
     }
 
     [Fact]
-    public void Test_S2LatLngRect_Contains()
+    internal void Test_S2LatLngRect_Contains()
     {
         // Contains(S2LatLng), InteriorContains(S2LatLng), Contains()
         S2LatLng eq_m180 = S2LatLng.FromRadians(0, -Math.PI);
@@ -140,7 +140,7 @@ public class S2LatLngRectTests
     }
 
     [Fact]
-    public void Test_S2LatLngRect_IntervalOps()
+    internal void Test_S2LatLngRect_IntervalOps()
     {
         // Contains(S2LatLngRect), InteriorContains(S2LatLngRect),
         // Intersects(), InteriorIntersects(), Union(), Intersection().
@@ -191,7 +191,7 @@ public class S2LatLngRectTests
     }
 
     [Fact]
-    public void Test_BoundaryIntersects_EmptyRectangle()
+    internal void Test_BoundaryIntersects_EmptyRectangle()
     {
         S2LatLngRect rect = S2LatLngRect.Empty;
         var lo = rect.Lo().ToPoint();
@@ -201,7 +201,7 @@ public class S2LatLngRectTests
     }
 
     [Fact]
-    public void Test_BoundaryIntersects_FullRectangle()
+    internal void Test_BoundaryIntersects_FullRectangle()
     {
         S2LatLngRect rect = S2LatLngRect.Full;
         S2Point lo = rect.Lo().ToPoint();
@@ -211,7 +211,7 @@ public class S2LatLngRectTests
     }
 
     [Fact]
-    public void Test_BoundaryIntersects_SphericalLune()
+    internal void Test_BoundaryIntersects_SphericalLune()
     {
         // This rectangle only has two non-degenerate sides.
         S2LatLngRect rect = RectFromDegrees(-90, 100, 90, 120);
@@ -226,7 +226,7 @@ public class S2LatLngRectTests
     }
 
     [Fact]
-    public void Test_BoundaryIntersects_NorthHemisphere()
+    internal void Test_BoundaryIntersects_NorthHemisphere()
     {
         // This rectangle only has only one non-degenerate side.
         S2LatLngRect rect = RectFromDegrees(0, -180, 90, 180);
@@ -239,7 +239,7 @@ public class S2LatLngRectTests
     }
 
     [Fact]
-    public void Test_BoundaryIntersects_SouthHemisphere()
+    internal void Test_BoundaryIntersects_SouthHemisphere()
     {
         // This rectangle only has only one non-degenerate side.
         S2LatLngRect rect = RectFromDegrees(-90, -180, 0, 180);
@@ -252,7 +252,7 @@ public class S2LatLngRectTests
     }
 
     [Fact]
-    public void Test_BoundaryIntersects_RectCrossingAntiMeridian()
+    internal void Test_BoundaryIntersects_RectCrossingAntiMeridian()
     {
         S2LatLngRect rect = RectFromDegrees(20, 170, 40, -170);
         Assert.True(rect.Contains(MakePointOrDie("30:180")));
@@ -280,7 +280,7 @@ public class S2LatLngRectTests
     }
 
     [Fact]
-    public void Test_S2LatLngRect_AddPoint()
+    internal void Test_S2LatLngRect_AddPoint()
     {
         S2LatLngRect p = S2LatLngRect.Empty;
         p = p.AddPoint(S2LatLng.FromDegrees(0, 0));
@@ -293,7 +293,7 @@ public class S2LatLngRectTests
     }
 
     [Fact]
-    public void Test_S2LatLngRect_Expanded()
+    internal void Test_S2LatLngRect_Expanded()
     {
         Assert.True(RectFromDegrees(70, 150, 80, 170).
                     Expanded(S2LatLng.FromDegrees(20, 30)).
@@ -350,7 +350,7 @@ public class S2LatLngRectTests
     }
 
     [Fact]
-    public void Test_S2LatLngRect_PolarClosure()
+    internal void Test_S2LatLngRect_PolarClosure()
     {
         Assert.Equal(RectFromDegrees(-89, 0, 89, 1),
                   RectFromDegrees(-89, 0, 89, 1).PolarClosure());
@@ -363,7 +363,7 @@ public class S2LatLngRectTests
     }
 
     [Fact]
-    public void Test_ExpandedByDistance_PositiveDistance()
+    internal void Test_ExpandedByDistance_PositiveDistance()
     {
         Assert.True(RectFromDegrees(0, 170, 0, -170).
                     ExpandedByDistance(S1Angle.FromDegrees(15)).ApproxEquals(
@@ -374,7 +374,7 @@ public class S2LatLngRectTests
     }
 
     [Fact]
-    public void Test_ExpandedByDistance_NegativeDistanceNorthEast()
+    internal void Test_ExpandedByDistance_NegativeDistanceNorthEast()
     {
         S2LatLngRect in_rect = RectFromDegrees(0.0, 0.0, 30.0, 90.0);
         S1Angle distance = S1Angle.FromDegrees(5.0);
@@ -383,7 +383,7 @@ public class S2LatLngRectTests
     }
 
     [Fact]
-    public void Test_ExpandedByDistance_NegativeDistanceSouthWest()
+    internal void Test_ExpandedByDistance_NegativeDistanceSouthWest()
     {
         S2LatLngRect in_rect = RectFromDegrees(-30.0, -90.0, 0.0, 0.0);
         S1Angle distance = S1Angle.FromDegrees(5.0);
@@ -395,7 +395,7 @@ public class S2LatLngRectTests
     }
 
     [Fact]
-    public void Test_ExpandedByDistance_NegativeDistanceLatWithNorthPole()
+    internal void Test_ExpandedByDistance_NegativeDistanceLatWithNorthPole()
     {
         S2LatLngRect rect = RectFromDegrees(0.0, -90.0, 90.0, 180.0)
             .ExpandedByDistance(-S1Angle.FromDegrees(5.0));
@@ -404,7 +404,7 @@ public class S2LatLngRectTests
     }
 
     [Fact]
-    public void Test_ExpandedByDistance_NegativeDistanceLatWithNorthPoleAndLngFull()
+    internal void Test_ExpandedByDistance_NegativeDistanceLatWithNorthPoleAndLngFull()
     {
         S2LatLngRect rect = RectFromDegrees(0.0, -180.0, 90.0, 180.0)
             .ExpandedByDistance(-S1Angle.FromDegrees(5.0));
@@ -413,7 +413,7 @@ public class S2LatLngRectTests
     }
 
     [Fact]
-    public void Test_ExpandedByDistance_NegativeDistanceLatWithSouthPole()
+    internal void Test_ExpandedByDistance_NegativeDistanceLatWithSouthPole()
     {
         S2LatLngRect rect = RectFromDegrees(-90.0, -90.0, 0.0, 180.0)
             .ExpandedByDistance(-S1Angle.FromDegrees(5.0));
@@ -422,7 +422,7 @@ public class S2LatLngRectTests
     }
 
     [Fact]
-    public void Test_ExpandedByDistance_NegativeDistanceLatWithSouthPoleAndLngFull()
+    internal void Test_ExpandedByDistance_NegativeDistanceLatWithSouthPoleAndLngFull()
     {
         S2LatLngRect rect = RectFromDegrees(-90.0, -180.0, 0.0, 180.0)
             .ExpandedByDistance(-S1Angle.FromDegrees(5.0));
@@ -431,7 +431,7 @@ public class S2LatLngRectTests
     }
 
     [Fact]
-    public void Test_ExpandedByDistance_NegativeDistanceLngFull()
+    internal void Test_ExpandedByDistance_NegativeDistanceLngFull()
     {
         S2LatLngRect rect = RectFromDegrees(0.0, -180.0, 30.0, 180.0)
             .ExpandedByDistance(-S1Angle.FromDegrees(5.0));
@@ -440,7 +440,7 @@ public class S2LatLngRectTests
     }
 
     [Fact]
-    public void Test_ExpandedByDistance_NegativeDistanceLatResultEmpty()
+    internal void Test_ExpandedByDistance_NegativeDistanceLatResultEmpty()
     {
         S2LatLngRect rect = RectFromDegrees(0.0, 0.0, 9.9, 90.0)
             .ExpandedByDistance(-S1Angle.FromDegrees(5.0));
@@ -449,7 +449,7 @@ public class S2LatLngRectTests
     }
 
     [Fact]
-    public void Test_ExpandedByDistance_NegativeDistanceLngResultEmpty()
+    internal void Test_ExpandedByDistance_NegativeDistanceLngResultEmpty()
     {
         S2LatLngRect rect = RectFromDegrees(0.0, 0.0, 30.0, 11.0)
             .ExpandedByDistance(-S1Angle.FromDegrees(5.0));
@@ -462,7 +462,7 @@ public class S2LatLngRectTests
     }
 
     [Fact]
-    public void Test_S2LatLngRect_GetCapBound()
+    internal void Test_S2LatLngRect_GetCapBound()
     {
         // Bounding cap at center is smaller:
         Assert.True(RectFromDegrees(-45, -45, 45, 45).GetCapBound().
@@ -482,7 +482,7 @@ public class S2LatLngRectTests
     }
 
     [Fact]
-    public void Test_S2LatLngRect_CellOps()
+    internal void Test_S2LatLngRect_CellOps()
     {
         // Contains(S2Cell), MayIntersect(S2Cell), Intersects(S2Cell)
 
@@ -537,7 +537,7 @@ public class S2LatLngRectTests
     }
 
     [Fact]
-    public void Test_S2LatLngRect_EncodeDecode()
+    internal void Test_S2LatLngRect_EncodeDecode()
     {
         S2LatLngRect r = RectFromDegrees(-20, -80, 10, 20);
         Encoder encoder = new();
@@ -549,7 +549,7 @@ public class S2LatLngRectTests
     }
 
     [Fact]
-    public void Test_S2LatLngRect_Area()
+    internal void Test_S2LatLngRect_Area()
     {
         Assert.Equal(0.0, S2LatLngRect.Empty.Area());
         Assert2.DoubleEqual(S2.M_4_PI, S2LatLngRect.Full.Area());
@@ -557,7 +557,7 @@ public class S2LatLngRectTests
     }
 
     [Fact]
-    public void Test_S2LatLngRect_GetCentroid()
+    internal void Test_S2LatLngRect_GetCentroid()
     {
 
         // Empty and full rectangles.
@@ -601,7 +601,7 @@ public class S2LatLngRectTests
     }
 
     [Fact]
-    public void Test_S2LatLngRect_GetDistanceOverlapping()
+    internal void Test_S2LatLngRect_GetDistanceOverlapping()
     {
         // Check pairs of rectangles that overlap: (should all return 0):
         S2LatLngRect a = RectFromDegrees(0, 0, 2, 2);
@@ -618,7 +618,7 @@ public class S2LatLngRectTests
         Assert.Equal(S1Angle.FromRadians(0), a.GetDistance(RectFromDegrees(2, 2, 4, 4)));
     }
     [Fact]
-    public void Test_S2LatLngRect_GetDistanceRectVsPoint()
+    internal void Test_S2LatLngRect_GetDistanceRectVsPoint()
     {
         // Rect that spans 180.
         S2LatLngRect a = RectFromDegrees(-1, -1, 2, 1);
@@ -667,7 +667,7 @@ public class S2LatLngRectTests
         VerifyGetDistance(PointRectFromDegrees(89, 181), c);
     }
     [Fact]
-    public void Test_S2LatLngRect_GetDistanceRectVsRect()
+    internal void Test_S2LatLngRect_GetDistanceRectVsRect()
     {
         // Rect that spans 180.
         S2LatLngRect a = RectFromDegrees(-1, -1, 2, 1);
@@ -684,7 +684,7 @@ public class S2LatLngRectTests
         VerifyGetDistance(b, RectFromDegrees(-84, 181, -83, 182));
     }
     [Fact]
-    public void Test_S2LatLngRect_GetDistanceRandomPairs()
+    internal void Test_S2LatLngRect_GetDistanceRandomPairs()
     {
         // Test random pairs.
         for (int i = 0; i < 10000; ++i)
@@ -705,7 +705,7 @@ public class S2LatLngRectTests
     }
 
     [Fact]
-    public void Test_S2LatLngRect_GetDirectedHausdorffDistanceRandomPairs()
+    internal void Test_S2LatLngRect_GetDirectedHausdorffDistanceRandomPairs()
     {
         // Test random pairs.
         int kIters = 1000;
@@ -732,7 +732,7 @@ public class S2LatLngRectTests
         }
     }
     [Fact]
-    public void Test_S2LatLngRect_GetDirectedHausdorffDistanceContained()
+    internal void Test_S2LatLngRect_GetDirectedHausdorffDistanceContained()
     {
         // Caller rect is contained in callee rect. Should return 0.
         S2LatLngRect a = RectFromDegrees(-10, 20, -5, 90);
@@ -746,7 +746,7 @@ public class S2LatLngRectTests
                   a.GetDirectedHausdorffDistance(RectFromDegrees(-11, 19, -4, 91)));
     }
     [Fact]
-    public void Test_S2LatLngRect_GetDirectHausdorffDistancePointToRect()
+    internal void Test_S2LatLngRect_GetDirectHausdorffDistancePointToRect()
     {
         // The Hausdorff distance from a point to a rect should be the same as its
         // distance to the rect.
@@ -772,7 +772,7 @@ public class S2LatLngRectTests
                          a2.GetDistance(b).Radians);
     }
     [Fact]
-    public void Test_S2LatLngRect_GetDirectedHausdorffDistanceRectToPoint()
+    internal void Test_S2LatLngRect_GetDirectedHausdorffDistanceRectToPoint()
     {
         S2LatLngRect a = RectFromDegrees(1, -8, 10, 20);
         VerifyGetDirectedHausdorffDistance(a, PointRectFromDegrees(5, 8));
@@ -783,7 +783,7 @@ public class S2LatLngRectTests
         VerifyGetDirectedHausdorffDistance(a, PointRectFromDegrees(90, 0));
     }
     [Fact]
-    public void Test_S2LatLngRect_GetDirectedHausdorffDistanceRectToRectNearPole()
+    internal void Test_S2LatLngRect_GetDirectedHausdorffDistanceRectToRectNearPole()
     {
         // Tests near south pole.
         S2LatLngRect a = RectFromDegrees(-87, 0, -85, 3);
@@ -795,7 +795,7 @@ public class S2LatLngRectTests
         VerifyGetDirectedHausdorffDistance(a, RectFromDegrees(-84, 181, -83, 182));
     }
     [Fact]
-    public void Test_S2LatLngRect_GetDirectedHausdorffDistanceRectToRectDegenerateCases()
+    internal void Test_S2LatLngRect_GetDirectedHausdorffDistanceRectToRectDegenerateCases()
     {
         // Rectangles that contain poles.
         VerifyGetDirectedHausdorffDistance(

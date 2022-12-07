@@ -3,7 +3,7 @@ namespace S2Geometry;
 public class S2MeasuresTests
 {
     [Fact]
-    public void Test_S2_AngleMethods()
+    internal void Test_S2_AngleMethods()
     {
         S2Point pz = new(0, 0, 1);
         S2Point p000 = new(1, 0, 0);
@@ -28,7 +28,7 @@ public class S2MeasuresTests
     }
 
     [Fact]
-    public void Test_S2_AreaMethods()
+    internal void Test_S2_AreaMethods()
     {
         S2Point pz = new(0, 0, 1);
         S2Point p000 = new(1, 0, 0);

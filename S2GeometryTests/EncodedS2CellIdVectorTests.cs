@@ -3,31 +3,31 @@ namespace S2Geometry;
 public class EncodedS2CellIdVectorTests
 {
     [Fact]
-    public void Test_EncodedS2CellIdVector_Empty()
+    internal void Test_EncodedS2CellIdVector_Empty()
     {
         TestEncodedS2CellIdVector(new List<S2CellId> { }, 2);
     }
 
     [Fact]
-    public void Test_EncodedS2CellIdVector_None()
+    internal void Test_EncodedS2CellIdVector_None()
     {
         TestEncodedS2CellIdVector(new List<S2CellId> { S2CellId.None }, 3);
     }
 
     [Fact]
-    public void Test_EncodedS2CellIdVector_NoneNone()
+    internal void Test_EncodedS2CellIdVector_NoneNone()
     {
         TestEncodedS2CellIdVector(new List<S2CellId> { S2CellId.None, S2CellId.None }, 4);
     }
 
     [Fact]
-    public void Test_EncodedS2CellIdVector_Sentinel()
+    internal void Test_EncodedS2CellIdVector_Sentinel()
     {
         TestEncodedS2CellIdVector(new List<S2CellId> { S2CellId.Sentinel }, 10);
     }
 
     [Fact]
-    public void Test_EncodedS2CellIdVector_MaximumShiftCell()
+    internal void Test_EncodedS2CellIdVector_MaximumShiftCell()
     {
         // Tests the encoding of a single cell at level 2, which corresponds the
         // maximum encodable shift value (56).
@@ -35,27 +35,27 @@ public class EncodedS2CellIdVectorTests
     }
 
     [Fact]
-    public void Test_EncodedS2CellIdVector_SentinelSentinel()
+    internal void Test_EncodedS2CellIdVector_SentinelSentinel()
     {
         TestEncodedS2CellIdVector(new List<S2CellId> { S2CellId.Sentinel, S2CellId.Sentinel }, 11);
     }
 
     [Fact]
-    public void Test_EncodedS2CellIdVector_NoneSentinelNone()
+    internal void Test_EncodedS2CellIdVector_NoneSentinelNone()
     {
         TestEncodedS2CellIdVector(new List<S2CellId>
             { S2CellId.None, S2CellId.Sentinel, S2CellId.None}, 26);
     }
 
     [Fact]
-    public void Test_EncodedS2CellIdVector_InvalidCells()
+    internal void Test_EncodedS2CellIdVector_InvalidCells()
     {
         // Tests that cells with an invalid LSB can be encoded.
         TestEncodedS2CellIdVector(new List<UInt64> { 0x6, 0xe, 0x7e }, 5);
     }
 
     [Fact]
-    public void Test_EncodedS2CellIdVector_OneByteLeafCells()
+    internal void Test_EncodedS2CellIdVector_OneByteLeafCells()
     {
         // Tests that (1) if all cells are leaf cells, the low bit is not encoded,
         // and (2) this can be indicated using the standard 1-byte header.
@@ -63,7 +63,7 @@ public class EncodedS2CellIdVectorTests
     }
 
     [Fact]
-    public void Test_EncodedS2CellIdVector_OneByteLevel29Cells()
+    internal void Test_EncodedS2CellIdVector_OneByteLevel29Cells()
     {
         // Tests that (1) if all cells are at level 29, the low bit is not encoded,
         // and (2) this can be indicated using the standard 1-byte header.
@@ -71,7 +71,7 @@ public class EncodedS2CellIdVectorTests
     }
 
     [Fact]
-    public void Test_EncodedS2CellIdVector_OneByteLevel28Cells()
+    internal void Test_EncodedS2CellIdVector_OneByteLevel28Cells()
     {
         // Tests that (1) if all cells are at level 28, the low bit is not encoded,
         // and (2) this can be indicated using the extended 2-byte header.
@@ -79,14 +79,14 @@ public class EncodedS2CellIdVectorTests
     }
 
     [Fact]
-    public void Test_EncodedS2CellIdVector_OneByteMixedCellLevels()
+    internal void Test_EncodedS2CellIdVector_OneByteMixedCellLevels()
     {
         // Tests that cells at mixed levels can be encoded in one byte.
         TestEncodedS2CellIdVector(new List<UInt64> { 0x300, 0x1c00, 0x7000, 0xff00 }, 6);
     }
 
     [Fact]
-    public void Test_EncodedS2CellIdVector_OneByteMixedCellLevelsWithPrefix()
+    internal void Test_EncodedS2CellIdVector_OneByteMixedCellLevelsWithPrefix()
     {
         // Tests that cells at mixed levels can be encoded in one byte even when
         // they share a multi-byte prefix.
@@ -96,7 +96,7 @@ public class EncodedS2CellIdVectorTests
     }
 
     [Fact]
-    public void Test_EncodedS2CellIdVector_OneByteRangeWithBaseValue()
+    internal void Test_EncodedS2CellIdVector_OneByteRangeWithBaseValue()
     {
         // Tests that cells can be encoded in one byte by choosing a base value
         // whose bit range overlaps the delta values.
@@ -107,7 +107,7 @@ public class EncodedS2CellIdVectorTests
     }
 
     [Fact]
-    public void Test_EncodedS2CellIdVector_MaxShiftRange()
+    internal void Test_EncodedS2CellIdVector_MaxShiftRange()
     {
         byte[] bytes = {
             (31 << 3)  // 31 -> add 29 to bytes[1].
@@ -121,7 +121,7 @@ public class EncodedS2CellIdVectorTests
     }
 
     [Fact]
-    public void Test_EncodedS2CellIdVector_ShiftOutOfRange()
+    internal void Test_EncodedS2CellIdVector_ShiftOutOfRange()
     {
         byte[] bytes = {
             (31 << 3)  // 31 -> add 29 to bytes[1].
@@ -135,7 +135,7 @@ public class EncodedS2CellIdVectorTests
     }
 
     [Fact]
-    public void Test_EncodedS2CellIdVector_SixFaceCells()
+    internal void Test_EncodedS2CellIdVector_SixFaceCells()
     {
         List<S2CellId> ids = new();
         for (int face = 0; face < 6; ++face)
@@ -146,7 +146,7 @@ public class EncodedS2CellIdVectorTests
     }
 
     [Fact]
-    public void Test_EncodedS2CellIdVector_FourLevel10Children()
+    internal void Test_EncodedS2CellIdVector_FourLevel10Children()
     {
         List<S2CellId> ids = new();
         var parent = MakeCellIdOrDie("3/012301230");
@@ -159,7 +159,7 @@ public class EncodedS2CellIdVectorTests
     }
 
     [Fact]
-    public void Test_EncodedS2CellIdVector_FractalS2ShapeIndexCells()
+    internal void Test_EncodedS2CellIdVector_FractalS2ShapeIndexCells()
     {
         S2Testing.Fractal fractal = new();
         fractal.SetLevelForApproxMaxEdges(3 * 1024);
@@ -177,7 +177,7 @@ public class EncodedS2CellIdVectorTests
     }
 
     [Fact]
-    public void Test_EncodedS2CellIdVector_CoveringCells()
+    internal void Test_EncodedS2CellIdVector_CoveringCells()
     {
         List<UInt64> ids = new()
         {
@@ -220,7 +220,7 @@ public class EncodedS2CellIdVectorTests
     }
 
     [Fact]
-    public void Test_EncodedS2CellIdVector_LowerBoundLimits()
+    internal void Test_EncodedS2CellIdVector_LowerBoundLimits()
     {
         // Test seeking before the beginning and past the end of the vector.
         var first = S2CellId.Begin(S2.kMaxCellLevel);

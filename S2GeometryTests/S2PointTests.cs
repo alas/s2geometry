@@ -3,7 +3,7 @@ namespace S2Geometry;
 public class S2PointTests
 {
     [Fact]
-    public void Test_S2_GoodFastHashSpreads()
+    internal void Test_S2_GoodFastHashSpreads()
     {
         int kTestPoints = 1 << 16;
         var set = new List<int>();

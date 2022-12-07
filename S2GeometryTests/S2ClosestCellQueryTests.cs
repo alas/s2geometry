@@ -12,10 +12,10 @@ public class S2ClosestCellQueryTests
     private const int kNumQueries = 100;
     private static ITestOutputHelper _logger;
 
-    public S2ClosestCellQueryTests(ITestOutputHelper logger) { _logger = logger; }
+    internal S2ClosestCellQueryTests(ITestOutputHelper logger) { _logger = logger; }
 
     [Fact]
-    public void Test_S2ClosestCellQuery_NoCells() {
+    internal void Test_S2ClosestCellQuery_NoCells() {
         S2CellIndex index = new();
         index.Build();
         S2ClosestCellQuery query = new(index);
@@ -29,7 +29,7 @@ public class S2ClosestCellQueryTests
     }
 
     [Fact]
-    public void Test_S2ClosestCellQuery_OptionsNotModified() {
+    internal void Test_S2ClosestCellQuery_OptionsNotModified() {
         // Tests that FindClosestCell(), GetDistance(), and IsDistanceLess() do not
         // modify query.Options_, even though all of these methods have their own
         // specific options requirements.
@@ -57,7 +57,27 @@ public class S2ClosestCellQueryTests
     }
 
     [Fact]
-    public void Test_S2ClosestCellQuery_DistanceEqualToLimit() {
+    internal void Test_S2ClosestCellQuery_OptionsS1AngleSetters()
+    {
+        // Verify that the S1Angle and S1ChordAngle versions do the same thing.
+        // This is mainly to prevent the (so far unused) S1Angle versions from
+        // being detected as dead code.
+        S2ClosestCellQuery.Options angle_options=new(), chord_angle_options=new();
+        angle_options.MaxDistance = new (S1Angle.FromDegrees(1));
+        chord_angle_options.MaxDistance = S1ChordAngle.FromDegrees(1);
+        Assert.Equal(chord_angle_options.MaxDistance, angle_options.MaxDistance);
+
+        angle_options.InclusiveMaxDistance = new(S1Angle.FromDegrees(1));
+        chord_angle_options.InclusiveMaxDistance = S1ChordAngle.FromDegrees(1);
+        Assert.Equal(chord_angle_options.MaxDistance, angle_options.MaxDistance);
+
+        angle_options.ConservativeMaxDistance = new(S1Angle.FromDegrees(1));
+        chord_angle_options.ConservativeMaxDistance = S1ChordAngle.FromDegrees(1);
+        Assert.Equal(chord_angle_options.MaxDistance, angle_options.MaxDistance);
+    }
+
+    [Fact]
+    internal void Test_S2ClosestCellQuery_DistanceEqualToLimit() {
         // Tests the behavior of IsDistanceLess, IsDistanceLessOrEqual, and
         // IsConservativeDistanceLessOrEqual (and the corresponding Options) when
         // the distance to the target exactly equals the chosen limit.
@@ -83,7 +103,7 @@ public class S2ClosestCellQueryTests
     }
 
     [Fact]
-    public void Test_S2ClosestCellQuery_TargetPointInsideIndexedCell() {
+    internal void Test_S2ClosestCellQuery_TargetPointInsideIndexedCell() {
         // Tests a target point in the interior of an indexed cell.
         S2CellId cell_id = MakeCellIdOrDie("4/012");
         S2CellIndex index = new();
@@ -98,7 +118,7 @@ public class S2ClosestCellQueryTests
     }
 
     [Fact]
-    public void Test_S2ClosestCellQuery_EmptyTargetOptimized() {
+    internal void Test_S2ClosestCellQuery_EmptyTargetOptimized() {
         // Ensure that the optimized algorithm handles empty targets when a distance
         // limit is specified.
         S2CellIndex index = new();
@@ -114,7 +134,7 @@ public class S2ClosestCellQueryTests
     }
 
     [Fact]
-    public void Test_S2ClosestCellQuery_EmptyCellUnionTarget() {
+    internal void Test_S2ClosestCellQuery_EmptyCellUnionTarget() {
         // Verifies that distances are measured correctly to empty S2CellUnion
         // targets.
         S2ClosestCellQuery.CellUnionTarget target = new(new S2CellUnion());
@@ -132,19 +152,19 @@ public class S2ClosestCellQueryTests
     }
 
     [Fact]
-    public void Test_S2ClosestCellQuery_PointCloudCells() {
+    internal void Test_S2ClosestCellQuery_PointCloudCells() {
         TestWithIndexFactory(new PointCloudCellIndexFactory(),
                              kNumIndexes, kNumCells, kNumQueries);
     }
 
     [Fact]
-    public void Test_S2ClosestCellQuery_CapsCells() {
+    internal void Test_S2ClosestCellQuery_CapsCells() {
         TestWithIndexFactory(new CapsCellIndexFactory(16 /*max_cells_per_cap*/, 0.1 /*density*/),
             kNumIndexes, kNumCells, kNumQueries);
     }
 
     [Fact]
-    public void Test_S2ClosestCellQuery_ConservativeCellDistanceIsUsed() {
+    internal void Test_S2ClosestCellQuery_ConservativeCellDistanceIsUsed() {
         // Don't use google.FlagSaver, so it works in opensource without gflags.
         int saved_seed = S2Testing.Random.RandomSeed;
         // These specific test cases happen to fail if max_error() is not properly
@@ -352,7 +372,7 @@ public class S2ClosestCellQueryTests
     // coverings (within a factor of 2 or so).
     private struct CapsCellIndexFactory : ICellIndexFactory
     {
-        public CapsCellIndexFactory(int max_cells_per_cap, double cap_density)
+        internal CapsCellIndexFactory(int max_cells_per_cap, double cap_density)
         {
             max_cells_per_cap_ = max_cells_per_cap;
             cap_density_ = cap_density;

@@ -6,7 +6,7 @@ using Meters = Single;
 public class S2EarthTests
 {
     [Fact]
-    public void Test_S2EarthTest_TestAngleConversion()
+    internal void Test_S2EarthTest_TestAngleConversion()
     {
         // Functions that use meters:
         Assert2.DoubleEqual(MetersToAngle(RadiusMeters).Radians, 1);
@@ -35,7 +35,7 @@ public class S2EarthTests
     }
 
     [Fact]
-    public void Test_S2EarthTest_TestSolidAngleConversion()
+    internal void Test_S2EarthTest_TestSolidAngleConversion()
     {
         Assert2.DoubleEqual(1, SquareKmToSteradians(Math.Pow(RadiusMeters / 1000, 2)));
         Assert2.DoubleEqual(Math.Pow(0.5 * RadiusKm, 2),
@@ -47,7 +47,7 @@ public class S2EarthTests
     }
 
     [Fact]
-    public void Test_S2EarthTest_TestToLongitudeRadians()
+    internal void Test_S2EarthTest_TestToLongitudeRadians()
     {
         var earth_radius = Radius;
 
@@ -78,7 +78,7 @@ public class S2EarthTests
     }
 
     [Fact]
-    public void Test_S2EarthTest_TestGetInitialBearing()
+    internal void Test_S2EarthTest_TestGetInitialBearing()
     {
         List<(string description, S2LatLng a, S2LatLng b, S1Angle bearing)> test_configs = new()
         {
@@ -111,7 +111,7 @@ public class S2EarthTests
     }
 
     [Fact]
-    public void Test_S2EarthTest_TestGetDistance()
+    internal void Test_S2EarthTest_TestGetDistance()
     {
         S2Point north = new(0, 0, 1);
         S2Point south = new(0, 0, -1);

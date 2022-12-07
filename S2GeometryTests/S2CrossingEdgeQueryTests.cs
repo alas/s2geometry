@@ -6,7 +6,7 @@ public class S2CrossingEdgeQueryTests
 {
     private readonly ITestOutputHelper _logger;
 
-    public S2CrossingEdgeQueryTests(ITestOutputHelper logger) { _logger = logger; }
+    internal S2CrossingEdgeQueryTests(ITestOutputHelper logger) { _logger = logger; }
 
     // Test edges that lie in the plane of one of the S2 cube edges.  Such edges
     // may lie on the boundary between two cube faces, or pass through a cube
@@ -16,7 +16,7 @@ public class S2CrossingEdgeQueryTests
     // necessary for correctness.  (It fails if MutableS2ShapeIndex.kCellPadding
     // is set to zero.)
     [Fact]
-    public void Test_GetCrossingCandidates_PerturbedCubeEdges()
+    internal void Test_GetCrossingCandidates_PerturbedCubeEdges()
     {
         List<(S2Point, S2Point)> edges = new();
         for (int iter = 0; iter < 10; ++iter)
@@ -37,7 +37,7 @@ public class S2CrossingEdgeQueryTests
     // edges are special because one coordinate is zero, and they lie on the
     // boundaries between the immediate child cells of the cube face.
     [Fact]
-    public void Test_GetCrossingCandidates_PerturbedCubeFaceAxes()
+    internal void Test_GetCrossingCandidates_PerturbedCubeFaceAxes()
     {
         List<(S2Point, S2Point)> edges = new();
         for (int iter = 0; iter < 5; ++iter)
@@ -53,7 +53,7 @@ public class S2CrossingEdgeQueryTests
     }
 
     [Fact]
-    public void Test_GetCrossingCandidates_CapEdgesNearCubeVertex()
+    internal void Test_GetCrossingCandidates_CapEdgesNearCubeVertex()
     {
         // Test a random collection of edges near the S2 cube vertex where the
         // Hilbert curve starts and ends.
@@ -64,7 +64,7 @@ public class S2CrossingEdgeQueryTests
     }
 
     [Fact]
-    public void Test_GetCrossingCandidates_DegenerateEdgeOnCellVertexIsItsOwnCandidate()
+    internal void Test_GetCrossingCandidates_DegenerateEdgeOnCellVertexIsItsOwnCandidate()
     {
         for (int i = 0; i < 100; ++i)
         {
@@ -76,7 +76,7 @@ public class S2CrossingEdgeQueryTests
     }
 
     [Fact]
-    public void Test_GetCrossingCandidates_CollinearEdgesOnCellBoundaries()
+    internal void Test_GetCrossingCandidates_CollinearEdgesOnCellBoundaries()
     {
         int kNumEdgeIntervals = 8;  // 9*8/2 = 36 edges
         for (int level = 0; level <= S2.kMaxCellLevel; ++level)
@@ -100,7 +100,7 @@ public class S2CrossingEdgeQueryTests
     }
 
     [Fact]
-    public void Test_GetCrossings_PolylineCrossings()
+    internal void Test_GetCrossings_PolylineCrossings()
     {
         MutableS2ShapeIndex index = new();
         // Three zig-zag lines near the equator.
@@ -115,7 +115,7 @@ public class S2CrossingEdgeQueryTests
     }
 
     [Fact]
-    public void Test_GetCrossings_ShapeIdsAreCorrect()
+    internal void Test_GetCrossings_ShapeIdsAreCorrect()
     {
         // This tests that when some index cells contain only one shape, the
         // intersecting edges are returned with the correct shape id.
@@ -137,7 +137,7 @@ public class S2CrossingEdgeQueryTests
     // specifed root cell.  The code now uses an appropriate amount of padding,
     // i.e. S2EdgeClipping.kFaceClipErrorUVCoord.)
     [Fact]
-    public void Test_VisitCells_QueryEdgeOnFaceBoundary()
+    internal void Test_VisitCells_QueryEdgeOnFaceBoundary()
     {
         int kIters = 100;
         for (int iter = 0; iter < kIters; ++iter)
@@ -186,7 +186,7 @@ public class S2CrossingEdgeQueryTests
 
     private static S2Point PerturbAtDistance(S1Angle distance, S2Point a0, S2Point b0)
     {
-        S2Point x = S2.InterpolateAtDistance(distance, a0, b0);
+        S2Point x = S2.GetPointOnLine(a0, b0, distance);
         if (S2Testing.Random.OneIn(2))
         {
             for (int i = 0; i < 3; ++i)

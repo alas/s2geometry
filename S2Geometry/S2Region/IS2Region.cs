@@ -20,12 +20,7 @@ public interface IInitEncoder<T> : IEncoder where T : IInitEncoder<T>
     public abstract static (bool success, T? shape) Init(Decoder decoder);
 }
 
-public interface IDecoder<T> : IEncoder where T : class, IDecoder<T>
-{
-    public abstract static (bool success, T? shape) Decode(Decoder decoder);
-}
-
-public interface IDecoderStruct<T> : IEncoder where T : struct, IDecoderStruct<T>
+public interface IDecoder<T> : IEncoder where T : IDecoder<T>
 {
     public abstract static (bool success, T? shape) Decode(Decoder decoder);
 }
@@ -60,12 +55,13 @@ public interface IS2Region : ICustomCloneable
     void GetCellUnionBound(List<S2CellId> cell_ids) => GetCapBound().GetCellUnionBound(cell_ids);
 
     // Returns true if the region completely contains the given cell, otherwise
-    // returns false.
+    // either the region does not contain the cell or the containment relationship
+    // could not be determined.
     bool Contains(S2Cell cell);
 
     // If this method returns false, the region does not intersect the given
-    // cell.  Otherwise, either region intersects the cell, or the intersection
-    // relationship could not be determined.
+    // cell.  Otherwise, either the region intersects the cell, or the
+    // intersection relationship could not be determined.
     //
     // Note that there is currently exactly one implementation of this method
     // (S2LatLngRect.MayIntersect) that takes advantage of the semantics above

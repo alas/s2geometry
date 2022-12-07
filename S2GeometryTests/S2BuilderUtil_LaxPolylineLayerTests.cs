@@ -6,7 +6,7 @@ public class S2BuilderUtil_LaxPolylineLayerTests
 {
     private static ITestOutputHelper _logger;
 
-    public S2BuilderUtil_LaxPolylineLayerTests(ITestOutputHelper logger) { _logger = logger; }
+    internal S2BuilderUtil_LaxPolylineLayerTests(ITestOutputHelper logger) { _logger = logger; }
 
     private static void TestS2LaxPolylineShape(
                     List<string> input_strs,
@@ -43,12 +43,12 @@ public class S2BuilderUtil_LaxPolylineLayerTests
     }
 
     [Fact]
-    public void LaxPolylineLayer_NoEdges() {
+    internal void LaxPolylineLayer_NoEdges() {
         TestS2LaxPolylineShape(new List<string>(), "");
     }
 
     [Fact]
-    public void LaxPolylineLayer_OneEdge() {
+    internal void LaxPolylineLayer_OneEdge() {
         // Even with undirected edges, LaxPolylineLayer prefers to reconstruct edges
         // in their original direction.
         TestS2LaxPolylineShapeUnchanged("3:4, 1:1");
@@ -56,13 +56,13 @@ public class S2BuilderUtil_LaxPolylineLayerTests
     }
 
     [Fact]
-    public void LaxPolylineLayer_StraightLineWithBacktracking() {
+    internal void LaxPolylineLayer_StraightLineWithBacktracking() {
         TestS2LaxPolylineShapeUnchanged(
             "0:0, 1:0, 2:0, 3:0, 2:0, 1:0, 2:0, 3:0, 4:0");
     }
 
     [Fact]
-    public void LaxPolylineLayer_EarlyWalkTerminationWithEndLoop1() {
+    internal void LaxPolylineLayer_EarlyWalkTerminationWithEndLoop1() {
         // Test that the "early walk termination" code (which is needed by
         // S2LaxPolylineShapeVectorLayer in order to implement idempotency) does not
         // create two polylines when it is possible to assemble the edges into one.
@@ -75,7 +75,7 @@ public class S2BuilderUtil_LaxPolylineLayerTests
     }
 
     [Fact]
-    public void LaxPolylineLayer_EarlyWalkTerminationWithEndLoop2() {
+    internal void LaxPolylineLayer_EarlyWalkTerminationWithEndLoop2() {
         // This tests a different code path where the walk is terminated early
         // (yield a polyline with one edge), and then the walk is "maximimzed" by
         // appending a two-edge loop to the end.
@@ -84,12 +84,12 @@ public class S2BuilderUtil_LaxPolylineLayerTests
     }
 
     [Fact]
-    public void LaxPolylineLayer_SimpleLoop() {
+    internal void LaxPolylineLayer_SimpleLoop() {
         TestS2LaxPolylineShapeUnchanged("0:0, 0:5, 5:5, 5:0, 0:0");
     }
 
     [Fact]
-    public void LaxPolylineLayer_ManyLoops() {
+    internal void LaxPolylineLayer_ManyLoops() {
         // This polyline consists of many overlapping loops that keep returning to
         // the same starting vertex (2:2).  This tests whether the implementation is
         // able to assemble the polyline in the original order.
@@ -100,7 +100,7 @@ public class S2BuilderUtil_LaxPolylineLayerTests
     }
 
     [Fact]
-    public void LaxPolylineLayer_UnorderedLoops() {
+    internal void LaxPolylineLayer_UnorderedLoops() {
         // This test consists of 5 squares that touch diagonally, similar to the 5
         // white squares of a 3x3 chessboard.  The edges of these squares need to be
         // reordered to assemble them into a single unbroken polyline.
@@ -116,7 +116,7 @@ public class S2BuilderUtil_LaxPolylineLayerTests
     }
 
     [Fact]
-    public void LaxPolylineLayer_SplitEdges() {
+    internal void LaxPolylineLayer_SplitEdges() {
         // Test reconstruction of a polyline where two edges have been split into
         // many pieces by crossing edges.  This example is particularly challenging
         // because (1) the edges form a loop, and (2) the first and last edges are
@@ -133,7 +133,7 @@ public class S2BuilderUtil_LaxPolylineLayerTests
     }
 
     [Fact]
-    public void LaxPolylineLayer_SimpleEdgeLabels() {
+    internal void LaxPolylineLayer_SimpleEdgeLabels() {
         S2Builder builder=new(new Options());
         S2LaxPolylineShape output=new();
         LabelSetIds label_set_ids=new();
@@ -166,7 +166,7 @@ public class S2BuilderUtil_LaxPolylineLayerTests
     }
 
     [Fact]
-    public void LaxPolylineLayer_AntipodalVertices() {
+    internal void LaxPolylineLayer_AntipodalVertices() {
         S2Builder builder=new(new S2Builder.Options());
         S2LaxPolylineShape output=new();
         builder.StartLayer(new LaxPolylineLayer(output));
@@ -179,7 +179,7 @@ public class S2BuilderUtil_LaxPolylineLayerTests
     }
 
     [Fact]
-    public void IndexedLaxPolylineLayer_AddsShape() {
+    internal void IndexedLaxPolylineLayer_AddsShape() {
         S2Builder builder=new(new Options());
         MutableS2ShapeIndex index=new();
         builder.StartLayer(new LaxPolylineLayer.IndexedLaxPolylineLayer(index));
@@ -193,7 +193,7 @@ public class S2BuilderUtil_LaxPolylineLayerTests
     }
 
     [Fact]
-    public void IndexedLaxPolylineLayer_AddsEmptyShape() {
+    internal void IndexedLaxPolylineLayer_AddsEmptyShape() {
         S2Builder builder=new(new Options());
         MutableS2ShapeIndex index=new();
         builder.StartLayer(new LaxPolylineLayer.IndexedLaxPolylineLayer(index));

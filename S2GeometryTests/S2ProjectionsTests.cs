@@ -3,7 +3,7 @@ namespace S2Geometry;
 public class S2ProjectionsTests
 {
     [Fact]
-    public void Test_PlateCarreeProjection_Interpolate()
+    internal void Test_PlateCarreeProjection_Interpolate()
     {
         PlateCarreeProjection proj = new(180);
 
@@ -30,7 +30,7 @@ public class S2ProjectionsTests
     }
 
     [Fact]
-    public void Test_PlateCarreeProjection_ProjectUnproject()
+    internal void Test_PlateCarreeProjection_ProjectUnproject()
     {
         PlateCarreeProjection proj = new(180);
         TestProjectUnproject(proj, new R2Point(0, 0), new S2Point(1, 0, 0));
@@ -42,7 +42,7 @@ public class S2ProjectionsTests
     }
 
     [Fact]
-    public void Test_MercatorProjection_ProjectUnproject()
+    internal void Test_MercatorProjection_ProjectUnproject()
     {
         MercatorProjection proj = new(180);
         double inf = double.PositiveInfinity;

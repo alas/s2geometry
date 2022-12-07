@@ -12,10 +12,10 @@ public class S2BuilderTests
     private const S2ErrorCode INPUT_EDGE_ID_MISMATCH = S2ErrorCode.USER_DEFINED_START;
     private readonly ITestOutputHelper _logger;
 
-    public S2BuilderTests(ITestOutputHelper logger) { _logger = logger; }
+    internal S2BuilderTests(ITestOutputHelper logger) { _logger = logger; }
 
     [Fact]
-    public void Test_S2Builder_AddShape()
+    internal void Test_S2Builder_AddShape()
     {
         S2Builder builder = new(new Options());
         S2Polygon output = new();
@@ -27,7 +27,7 @@ public class S2BuilderTests
     }
 
     [Fact]
-    public void Test_S2Builder_SimpleVertexMerging()
+    internal void Test_S2Builder_SimpleVertexMerging()
     {
         // When IdentitySnapFunction is used (i.e., no special requirements on
         // vertex locations), check that vertices closer together than the snap
@@ -46,7 +46,7 @@ public class S2BuilderTests
     }
 
     [Fact]
-    public void Test_S2Builder_SimpleS2CellIdSnapping()
+    internal void Test_S2Builder_SimpleS2CellIdSnapping()
     {
         // When S2CellIdSnapFunction is used, check that all output vertices are the
         // centers of S2CellIds at the specified level level.
@@ -71,7 +71,7 @@ public class S2BuilderTests
     }
 
     [Fact]
-    public void Test_S2Builder_SimpleIntLatLngSnapping()
+    internal void Test_S2Builder_SimpleIntLatLngSnapping()
     {
         S2Builder builder = new(new Options(new IntLatLngSnapFunction(0)));  // E0 coords
         S2Polygon output = new();
@@ -88,7 +88,7 @@ public class S2BuilderTests
     }
 
     [Fact]
-    public void Test_S2Builder_VerticesMoveLessThanSnapRadius()
+    internal void Test_S2Builder_VerticesMoveLessThanSnapRadius()
     {
         // Check that chains of closely spaced vertices do not collapse into a
         // single vertex.
@@ -111,7 +111,7 @@ public class S2BuilderTests
     }
 
     [Fact]
-    public void Test_S2Builder_MinEdgeVertexSeparation()
+    internal void Test_S2Builder_MinEdgeVertexSeparation()
     {
         // Check that edges are separted from non-incident vertices by at least
         // min_edge_vertex_separation().  This requires adding new vertices (not
@@ -140,7 +140,7 @@ public class S2BuilderTests
     }
 
     [Fact]
-    public void Test_S2Builder_MaxEdgeDeviation()
+    internal void Test_S2Builder_MaxEdgeDeviation()
     {
         // Test that when long edges are snapped to nearby sites, appropriate extra
         // vertices are added so that the snapped edge chain stays within
@@ -201,7 +201,7 @@ public class S2BuilderTests
     }
 
     [Fact]
-    public void Test_S2Builder_IdempotencySnapsInadequatelySeparatedVertices()
+    internal void Test_S2Builder_IdempotencySnapsInadequatelySeparatedVertices()
     {
         // This test checks that when vertices are closer together than
         // min_vertex_separation() then they are snapped together even when
@@ -217,7 +217,7 @@ public class S2BuilderTests
     }
 
     [Fact]
-    public void Test_S2Builder_IdempotencySnapsIdenticalVerticesWithZeroSnapRadius()
+    internal void Test_S2Builder_IdempotencySnapsIdenticalVerticesWithZeroSnapRadius()
     {
         // This test checks that even when the snap radius is zero, identical
         // vertices are snapped together.
@@ -234,7 +234,7 @@ public class S2BuilderTests
     }
 
     [Fact]
-    public void Test_S2Builder_IdempotencySnapsIdenticalVerticesWithZeroSnapRadiusEdgeSplitting()
+    internal void Test_S2Builder_IdempotencySnapsIdenticalVerticesWithZeroSnapRadiusEdgeSplitting()
     {
         // This test checks that identical vertices are snapped together even when
         // the snap radius is zero and options.split_crossing_edges() is true.
@@ -253,7 +253,7 @@ public class S2BuilderTests
     }
 
     [Fact]
-    public void Test_S2Builder_IdempotencySnapsUnsnappedVertices()
+    internal void Test_S2Builder_IdempotencySnapsUnsnappedVertices()
     {
         // When idempotency is requested, no snapping is done unless S2Builder finds
         // at least one vertex or edge that could not be the output of a previous
@@ -300,7 +300,7 @@ public class S2BuilderTests
     }
 
     [Fact]
-    public void Test_S2Builder_IdempotencySnapsEdgesWithTinySnapRadius()
+    internal void Test_S2Builder_IdempotencySnapsEdgesWithTinySnapRadius()
     {
         // When idempotency is requested, no snapping is done unless S2Builder finds
         // at least one vertex or edge that could not be the output of a previous
@@ -332,7 +332,7 @@ public class S2BuilderTests
     }
 
     [Fact]
-    public void Test_S2Builder_IdempotencyDoesNotSnapAdequatelySeparatedEdges()
+    internal void Test_S2Builder_IdempotencyDoesNotSnapAdequatelySeparatedEdges()
     {
         // When idempotency is requested, no snapping is done unless S2Builder finds
         // at least one vertex or edge that could not be the output of a previous
@@ -354,7 +354,7 @@ public class S2BuilderTests
     }
 
     [Fact]
-    public void Test_S2Builder_NearbyVerticesSnappedWithZeroSnapRadiusEdgeSplitting()
+    internal void Test_S2Builder_NearbyVerticesSnappedWithZeroSnapRadiusEdgeSplitting()
     {
         // Verify that even when the split_crossing_edges() option is used with a snap
         // radius of zero, edges are snapped to nearby vertices (those within a
@@ -386,7 +386,7 @@ public class S2BuilderTests
     }
 
     [Fact]
-    public void Test_S2Builder_NearbyIntersectionSnappedWithZeroSnapRadius()
+    internal void Test_S2Builder_NearbyIntersectionSnappedWithZeroSnapRadius()
     {
         // A simpler version of the test above that uses AddIntersection() rather
         // than split_crossing_edges().
@@ -403,7 +403,7 @@ public class S2BuilderTests
     }
 
     [Fact]
-    public void Test_S2Builder_TopologyPreservedWithZeroSnapRadiusEdgeSplitting()
+    internal void Test_S2Builder_TopologyPreservedWithZeroSnapRadiusEdgeSplitting()
     {
         // Verify that even when the split_crossing_edges() option is used with a snap
         // radius of zero, snapped edges do not cross vertices (i.e., the input
@@ -466,7 +466,7 @@ public class S2BuilderTests
     }
 
     [Fact]
-    public void Test_S2Builder_TopologyPreservedWithForcedVertices()
+    internal void Test_S2Builder_TopologyPreservedWithForcedVertices()
     {
         // Verify that the input topology is preserved around vertices added using
         // ForceVertex (even though there are no minimum separation guarantees for
@@ -510,7 +510,7 @@ public class S2BuilderTests
     }
 
     [Fact]
-    public void Test_S2Builder_kMaxSnapRadiusCanSnapAtLevel0()
+    internal void Test_S2Builder_kMaxSnapRadiusCanSnapAtLevel0()
     {
         // Verify that kMaxSnapRadius will allow snapping at S2CellId level 0.
         Assert.True(S2CellIdSnapFunction.MinSnapRadiusForLevel(0) <=
@@ -518,7 +518,7 @@ public class S2BuilderTests
     }
 
     [Fact]
-    public void Test_S2Builder_S2CellIdSnappingAtAllLevels()
+    internal void Test_S2Builder_S2CellIdSnappingAtAllLevels()
     {
         S2Polygon input = MakePolygonOrDie(
             "0:0, 0:2, 2:0; 0:0, 0:-2, -2:-2, -2:0");
@@ -550,7 +550,7 @@ public class S2BuilderTests
     }
 
     [Fact]
-    public void Test_S2Builder_SnappingDoesNotRotateVertices()
+    internal void Test_S2Builder_SnappingDoesNotRotateVertices()
     {
         // This is already tested extensively elsewhere.
         var input = MakePolygonOrDie(
@@ -578,7 +578,7 @@ public class S2BuilderTests
     }
 
     [Fact]
-    public void Test_S2Builder_SelfIntersectingPolyline()
+    internal void Test_S2Builder_SelfIntersectingPolyline()
     {
         // Check that when two edges of a polyline cross, the intersection point is
         // added to both edges.
@@ -598,7 +598,7 @@ public class S2BuilderTests
     }
 
     [Fact]
-    public void Test_S2Builder_SelfIntersectingPolygon()
+    internal void Test_S2Builder_SelfIntersectingPolygon()
     {
         // Check that when two edge of a polygon cross, the intersection point is
         // added to both edges, and that the resulting (undirected) edges can be
@@ -620,7 +620,7 @@ public class S2BuilderTests
     }
 
     [Fact]
-    public void Test_S2Builder_TieBreakingIsConsistent()
+    internal void Test_S2Builder_TieBreakingIsConsistent()
     {
         // Check that when an edge passes between two equally distant vertices, that
         // the choice of which one to snap to does not depend on the edge direction.
@@ -645,7 +645,7 @@ public class S2BuilderTests
     }
 
     [Fact]
-    public void Test_S2Builder_GraphPersistence()
+    internal void Test_S2Builder_GraphPersistence()
     {
         // Ensure that the Graph objects passed to S2Builder.Layer.Build() methods
         // remain valid until all layers have been built.
@@ -665,7 +665,7 @@ public class S2BuilderTests
     }
 
     [Fact]
-    public void Test_S2Builder_SimplifyOneEdge()
+    internal void Test_S2Builder_SimplifyOneEdge()
     {
         // Simplify a perturbed edge chain into a single edge.
 
@@ -677,7 +677,7 @@ public class S2BuilderTests
     }
 
     [Fact]
-    public void Test_S2Builder_SimplifyNearlyAntipodal()
+    internal void Test_S2Builder_SimplifyNearlyAntipodal()
     {
         // Verify that nothing goes wrong when attempting to simplify a nearly
         // antipodal edge.
@@ -690,7 +690,7 @@ public class S2BuilderTests
     }
 
     [Fact]
-    public void Test_S2Builder_SimplifyTwoLayers()
+    internal void Test_S2Builder_SimplifyTwoLayers()
     {
         // Construct two layers, each containing a polyline that could be simplified
         // to a single edge on its own.  However the two polylines actually cross,
@@ -706,7 +706,7 @@ public class S2BuilderTests
     }
 
     [Fact]
-    public void Test_S2Builder_SimplifyOneLoop()
+    internal void Test_S2Builder_SimplifyOneLoop()
     {
         // Simplify a regular loop with 1000 vertices and a radius of 20 degrees.
         // Turning on edge chain simplification yields a dramatically smaller number
@@ -738,7 +738,7 @@ public class S2BuilderTests
     }
 
     [Fact]
-    public void Test_S2Builder_SimplifyOppositeDirections()
+    internal void Test_S2Builder_SimplifyOppositeDirections()
     {
         // We build two layers with two polylines that follow the same circular arc
         // in opposite directions, and verify that they are snapped identically.
@@ -756,7 +756,7 @@ public class S2BuilderTests
     }
 
     [Fact]
-    public void Test_S2Builder_SimplifyKeepsEdgeVertexSeparation()
+    internal void Test_S2Builder_SimplifyKeepsEdgeVertexSeparation()
     {
         // We build two layers each containing a polyline, such that the polyline in
         // the first layer could be simplified to a straight line except that then
@@ -771,7 +771,7 @@ public class S2BuilderTests
     }
 
     [Fact]
-    public void Test_S2Builder_SimplifyBacktrackingEdgeChain()
+    internal void Test_S2Builder_SimplifyBacktrackingEdgeChain()
     {
         // Test simplifying an edge chain that backtracks on itself.  (This should
         // prevent simplification, since edge chains are approximated parametrically
@@ -787,7 +787,7 @@ public class S2BuilderTests
     }
 
     [Fact]
-    public void Test_S2Builder_SimplifyAvoidsBacktrackingVertices()
+    internal void Test_S2Builder_SimplifyAvoidsBacktrackingVertices()
     {
         // As noted above, edge chains must proceed monotonically away from the
         // source vertex in order to be simplified.  However in rare cases, adding a
@@ -812,7 +812,7 @@ public class S2BuilderTests
     }
 
     [Fact]
-    public void Test_S2Builder_SimplifyLimitsEdgeDeviation()
+    internal void Test_S2Builder_SimplifyLimitsEdgeDeviation()
     {
         // Make sure that simplification does not create long edges such that the
         // midpoint of the edge might be further than max_edge_deviation() from an
@@ -837,7 +837,7 @@ public class S2BuilderTests
     }
 
     [Fact]
-    public void Test_S2Builder_SimplifyPreservesTopology()
+    internal void Test_S2Builder_SimplifyPreservesTopology()
     {
         // Crate several nested concentric loops, and verify that the loops are
         // still nested after simplification.
@@ -869,7 +869,7 @@ public class S2BuilderTests
     }
 
     [Fact]
-    public void Test_S2Builder_SimplifyRemovesSiblingPairs()
+    internal void Test_S2Builder_SimplifyRemovesSiblingPairs()
     {
         Options options = new(new IntLatLngSnapFunction(0));  // E0 coords
         S2PolylineVectorLayer.Options layer_options = new();
@@ -889,7 +889,7 @@ new List<string> { }, layer_options, options);
     }
 
     [Fact]
-    public void Test_S2Builder_SimplifyMergesDuplicateEdges()
+    internal void Test_S2Builder_SimplifyMergesDuplicateEdges()
     {
         Options options = new(new IntLatLngSnapFunction(0));  // E0 coords
         S2PolylineVectorLayer.Options layer_options = new();
@@ -909,7 +909,7 @@ new List<string> { }, layer_options, options);
     }
 
     [Fact]
-    public void Test_S2Builder_SimplifyKeepsForcedVertices()
+    internal void Test_S2Builder_SimplifyKeepsForcedVertices()
     {
         Options options = new(new IdentitySnapFunction(S1Angle.FromRadians(S2.DoubleError)));
         options.SimplifyEdgeChains = (true);
@@ -923,7 +923,7 @@ new List<string> { }, layer_options, options);
     }
 
     [Fact]
-    public void Test_S2Builder_InputEdgeIdAssignment()
+    internal void Test_S2Builder_InputEdgeIdAssignment()
     {
         // Check that input edge ids are assigned in order.
         TestInputEdgeIds(new List<string> { "0:0, 0:1, 0:2" }, new EdgeInputEdgeIds {
@@ -932,7 +932,7 @@ new List<string> { }, layer_options, options);
     }
 
     [Fact]
-    public void Test_S2Builder_UndirectedSiblingsDontHaveInputEdgeIds()
+    internal void Test_S2Builder_UndirectedSiblingsDontHaveInputEdgeIds()
     {
         // Check that the siblings of undirected edges do not have InputEdgeIds.
         GraphOptions graph_options = new();
@@ -944,7 +944,7 @@ new List<string> { }, layer_options, options);
     }
 
     [Fact]
-    public void Test_S2Builder_CreatedSiblingsDontHaveInputEdgeIds()
+    internal void Test_S2Builder_CreatedSiblingsDontHaveInputEdgeIds()
     {
         // Check that edges created by SiblingPairs.CREATE do not have
         // InputEdgeIds.
@@ -956,7 +956,7 @@ new List<string> { }, layer_options, options);
     }
 
     [Fact]
-    public void Test_S2Builder_EdgeMergingDirected()
+    internal void Test_S2Builder_EdgeMergingDirected()
     {
         // Tests that input edge ids are merged when directed edges are merged.
         GraphOptions graph_options = new();
@@ -966,7 +966,7 @@ new List<string> { }, layer_options, options);
     }
 
     [Fact]
-    public void Test_S2Builder_EdgeMergingUndirected()
+    internal void Test_S2Builder_EdgeMergingUndirected()
     {
         // Tests that input edge ids are merged when undirected edges are merged.
         GraphOptions graph_options = new();
@@ -978,7 +978,7 @@ new List<string> { }, layer_options, options);
     }
 
     [Fact]
-    public void Test_S2Builder_SimplifyDegenerateEdgeMergingEasy()
+    internal void Test_S2Builder_SimplifyDegenerateEdgeMergingEasy()
     {
         // Check that when an input edge is snapped to a chain that includes
         // degenerate edges, and the edge chain is simplified, that the InputEdgeIds
@@ -1003,7 +1003,7 @@ new List<string> { }, layer_options, options);
     }
 
     [Fact]
-    public void Test_S2Builder_SimplifyDegenerateEdgeMergingHard()
+    internal void Test_S2Builder_SimplifyDegenerateEdgeMergingHard()
     {
         // This is a harder version of the test above.  Now there are several edge
         // chains that overlap each other in both directions, and several degenerate
@@ -1036,7 +1036,7 @@ new List<string> { }, layer_options, options);
     }
 
     [Fact]
-    public void Test_S2Builder_SimplifyDegenerateEdgeMergingMultipleLayers()
+    internal void Test_S2Builder_SimplifyDegenerateEdgeMergingMultipleLayers()
     {
         // Check that degenerate edges are assigned to an edge in the correct layer
         // when multiple edge chains in different layers are simplified in the same
@@ -1082,7 +1082,7 @@ new List<string> { }, layer_options, options);
     }
 
     [Fact]
-    public void Test_S2Builder_HighPrecisionPredicates()
+    internal void Test_S2Builder_HighPrecisionPredicates()
     {
         // To produce correct output in this example, the algorithm needs fall back
         // to high precision predicates when the output of the normal predicates is
@@ -1106,7 +1106,7 @@ new S2Point(-0.10531192039116592, -0.80522217309701472, 0.58354661457028933),
     }
 
     [Fact]
-    public void Test_S2Builder_HighPrecisionStressTest()
+    internal void Test_S2Builder_HighPrecisionStressTest()
     {
         // This testructs many small, random inputs such that the output is
         // likely to be inconsistent unless high-precision predicates are used.
@@ -1136,9 +1136,9 @@ new S2Point(-0.10531192039116592, -0.80522217309701472, 0.58354661457028933),
             // v2 is located along (v0,v1) but is perturbed by up to 2 * snap_radius.
             S2Point v1 = ChoosePoint(), v0_dir = ChoosePoint();
             double d0 = Math.Pow(1e-16, S2Testing.Random.RandDouble());
-            S2Point v0 = S2.InterpolateAtDistance(S1Angle.FromRadians(d0), v1, v0_dir);
+            S2Point v0 = S2.GetPointOnLine(v1, v0_dir, S1Angle.FromRadians(d0));
             double d2 = 0.5 * d0 * Math.Pow(1e-16, Math.Pow(S2Testing.Random.RandDouble(), 2));
-            S2Point v2 = S2.InterpolateAtDistance(S1Angle.FromRadians(d2), v1, v0_dir);
+            S2Point v2 = S2.GetPointOnLine(v1, v0_dir, S1Angle.FromRadians(d2));
             v2 = S2Testing.SamplePoint(new S2Cap(v2, 2 * snap_radius));
             // Vary the edge directions by randomly swapping v0 and v2.
             if (S2Testing.Random.OneIn(2)) { var tmp = v0; v0 = v2; v2 = tmp; }
@@ -1152,12 +1152,12 @@ new S2Point(-0.10531192039116592, -0.80522217309701472, 0.58354661457028933),
             if (S2Testing.Random.OneIn(5))
             {
                 v3 = S2Testing.Random.OneIn(2) ? v1 : v2;
-                v3 = S2.InterpolateAtDistance(d3, v3, ChoosePoint());
+                v3 = S2.GetPointOnLine(v3, ChoosePoint(), d3);
             }
             else
             {
                 v3 = S2.Interpolate(Math.Pow(1e-16, S2Testing.Random.RandDouble()), v1, v2);
-                v3 = S2.InterpolateAtDistance(d3, v3, v1.CrossProd(v2).Normalize());
+                v3 = S2.GetPointOnLine(v3, v1.CrossProd(v2).Normalize(), d3);
             }
             Options options = new(new IdentitySnapFunction(snap_radius));
             options.Idempotent = (false);
@@ -1186,7 +1186,7 @@ new S2Point(-0.10531192039116592, -0.80522217309701472, 0.58354661457028933),
     }
 
     [Fact]
-    public void Test_S2Builder_SelfIntersectionStressTest()
+    internal void Test_S2Builder_SelfIntersectionStressTest()
     {
         int kIters = 50 * iteration_multiplier;
         for (int iter = 0; iter < kIters; ++iter)
@@ -1245,7 +1245,7 @@ new S2Point(-0.10531192039116592, -0.80522217309701472, 0.58354661457028933),
     }
 
     [Fact]
-    public void Test_S2Builder_FractalStressTest()
+    internal void Test_S2Builder_FractalStressTest()
     {
 #if DEBUG
         int kIters = 100 * iteration_multiplier;
@@ -1298,7 +1298,7 @@ new S2Point(-0.10531192039116592, -0.80522217309701472, 0.58354661457028933),
     }
 
     [Fact]
-    public void Test_S2Builder_AdjacentCoverageIntervalsSpanMoreThan90Degrees()
+    internal void Test_S2Builder_AdjacentCoverageIntervalsSpanMoreThan90Degrees()
     {
         // The test for whether one Voronoi site excludes another along a given
         // input edge boils down to a test of whether two angle intervals "a" and
@@ -1365,7 +1365,7 @@ new S2Point(-0.10531192039116592, -0.80522217309701472, 0.58354661457028933),
 #if true///NDEBUG
 
     [Fact]
-    public void Test_S2Builder_NaNVertices()
+    internal void Test_S2Builder_NaNVertices()
     {
         // Test that S2Builder operations don't crash when some vertices are NaN.
         List<List<S2Point>> loops = new(){
@@ -1389,7 +1389,7 @@ new(){ new(double.NaN, double.NaN, double.NaN), new(double.NaN, double.NaN, doub
 #endif
 
     [Fact]
-    public void Test_S2Builder_OldS2PolygonBuilderBug()
+    internal void Test_S2Builder_OldS2PolygonBuilderBug()
     {
         // This is a polygon that caused the obsolete S2PolygonBuilder class to
         // generate an invalid output polygon (duplicate edges).
@@ -1420,7 +1420,7 @@ new(){ new(double.NaN, double.NaN, double.NaN), new(double.NaN, double.NaN, doub
     }
 
     [Fact]
-    public void Test_S2Builder_SeparationSitesRegressionBug()
+    internal void Test_S2Builder_SeparationSitesRegressionBug()
     {
         // This test uses a snap radius of zero with edge splitting, and has some very
         // closely spaced vertices (much smaller than S2::kIntersectionError).  It
@@ -1466,7 +1466,7 @@ new(){ new(double.NaN, double.NaN, double.NaN), new(double.NaN, double.NaN, doub
     }
 
     [Fact]
-    public void Test_S2Builder_VoronoiSiteExclusionBug1()
+    internal void Test_S2Builder_VoronoiSiteExclusionBug1()
     {
         // This reproduces a former bug where the input edge could sometimes snap
         // incorrectly to an extra vertex.  This could only happen when the sum of
@@ -1487,7 +1487,7 @@ new(){ new(double.NaN, double.NaN, double.NaN), new(double.NaN, double.NaN, doub
     }
 
     [Fact]
-    public void Test_S2Builder_VoronoiSiteExclusionBug2()
+    internal void Test_S2Builder_VoronoiSiteExclusionBug2()
     {
         // This reproduces a former bug where the input edge could sometimes snap
         // incorrectly to an extra vertex.  This could only happen when the sum of
@@ -1509,7 +1509,7 @@ new(){ new(double.NaN, double.NaN, double.NaN), new(double.NaN, double.NaN, doub
     }
 
     [Fact]
-    public void Test_S2Builder_HausdorffDistanceBug()
+    internal void Test_S2Builder_HausdorffDistanceBug()
     {
         // This reproduces a former bug where a very long edge (close to 180
         // degrees) could sometimes snap incorrectly due to a bug in
@@ -1526,7 +1526,7 @@ new(){ new(double.NaN, double.NaN, double.NaN), new(double.NaN, double.NaN, doub
     }
 
     [Fact]
-    public void Test_S2Builder_IncorrectSeparationSiteBug()
+    internal void Test_S2Builder_IncorrectSeparationSiteBug()
     {
         // This reproduces a bug that used to attempt to create a separation site
         // where none was necessary.
@@ -1543,6 +1543,15 @@ new(){ new(double.NaN, double.NaN, double.NaN), new(double.NaN, double.NaN, doub
             new S2Point(1, 2.2603503297237029e-320, 4.7729929394856619e-65));
         S2Error error;
         Assert.True(builder.Build(out error));
+    }
+
+    [Fact]
+    internal void Test_S2Builder_PushPopLabel()
+    {
+        // TODO(b/232074544): Test more thoroughly.
+        S2Builder builder=new();
+        builder.PushLabel(1);
+        builder.PopLabel();
     }
 
     private static void ExpectPolygonsEqual(S2Polygon expected, S2Polygon actual)
@@ -1653,7 +1662,7 @@ new(){ new(double.NaN, double.NaN, double.NaN), new(double.NaN, double.NaN, doub
 
     private class InputEdgeIdCheckingLayer : Layer
     {
-        public InputEdgeIdCheckingLayer(EdgeInputEdgeIds expected, GraphOptions graph_options)
+        internal InputEdgeIdCheckingLayer(EdgeInputEdgeIds expected, GraphOptions graph_options)
         { expected_ = expected; graph_options_ = graph_options; }
 
         public override GraphOptions GraphOptions_()

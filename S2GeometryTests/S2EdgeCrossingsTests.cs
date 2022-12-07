@@ -9,21 +9,21 @@ public class S2EdgeCrossingsTests
     // The approximate maximum error in GetDistance() for small distances.
     private static readonly S1Angle kGetDistanceAbsError = S1Angle.FromRadians(3 * S2.DoubleEpsilon);
     private readonly ITestOutputHelper _logger;
-    public enum Precision { DOUBLE, LONG_DOUBLE, EXACT, SYMBOLIC, NUM_PRECISIONS }
+    internal enum Precision { DOUBLE, LONG_DOUBLE, EXACT, SYMBOLIC, NUM_PRECISIONS }
     private static readonly string[] kPrecisionNames = new[] { "double", "long double", "exact", "symbolic" };
 
-    public S2EdgeCrossingsTests(ITestOutputHelper logger) { _logger = logger; }
+    internal S2EdgeCrossingsTests(ITestOutputHelper logger) { _logger = logger; }
 
     // A helper class that keeps track of how often each precision was used and
     // generates a string for logging purposes.
-    public class PrecisionStats
+    internal class PrecisionStats
     {
-        public PrecisionStats()
+        internal PrecisionStats()
         {
             for (int i = 0; i < counts_.Length; i++)
                 counts_[i] = 0;
         }
-        public void Tally(Precision precision) { ++counts_[(int)precision]; }
+        internal void Tally(Precision precision) { ++counts_[(int)precision]; }
         public override string ToString()
         {
             System.Text.StringBuilder result = new();
@@ -130,10 +130,11 @@ public class S2EdgeCrossingsTests
         Assert.Equal(S2Pred.Sign(a, b, expected_result), 1);
         Assert.Equal(S2.RobustCrossProd(a, b).Normalize(), expected_result);
         Assert.Equal(TestRobustCrossProdError(a, b), expected_prec);
+            //<< "a: " << a << " b: " << b;
     }
 
     [Fact]
-    public void Test_S2_RobustCrossProdCoverage()
+    internal void Test_S2_RobustCrossProdCoverage()
     {
         // Note that RobustCrossProd() returns a non-unit length result.  In "double"
         // and "long double" precision the magnitude is twice the usual cross product.
@@ -143,15 +144,19 @@ public class S2EdgeCrossingsTests
         // used, the result magnitude is arbitrary.  For this reason we only check
         // the result after calling Normalize().
         TestRobustCrossProd(new S2Point(1, 0, 0), new S2Point(0, 1, 0),
-                        new S2Point(0, 0, 1), Precision.DOUBLE);
+                            new S2Point(0, 0, 1), Precision.DOUBLE);
         TestRobustCrossProd(new S2Point(20 * S2Pred.DBL_ERR, 1, 0), new S2Point(0, 1, 0),
                             new S2Point(0, 0, 1), Precision.DOUBLE);
+        // If `long double` is the same as `double`, such as on armv7, we'll
+        // get `EXACT` instead of `LONG_DOUBLE`.
+        const Precision kLongDoublePrecision =
+            S2Pred.kHasLongDouble ? Precision.LONG_DOUBLE : Precision.EXACT;
         TestRobustCrossProd(new S2Point(16 * S2Pred.DBL_ERR, 1, 0), new S2Point(0, 1, 0),
-                            new S2Point(0, 0, 1), Precision.LONG_DOUBLE);
+                            new S2Point(0, 0, 1), kLongDoublePrecision);
 
         // The following bounds hold for both 80-bit and "double double" precision.
         TestRobustCrossProd(new S2Point(5 * S2Pred.LD_ERR, 1, 0), new S2Point(0, 1, 0),
-                            new S2Point(0, 0, 1), Precision.LONG_DOUBLE);
+                            new S2Point(0, 0, 1), kLongDoublePrecision);
         TestRobustCrossProd(new S2Point(4 * S2Pred.LD_ERR, 1, 0), new S2Point(0, 1, 0),
                             new S2Point(0, 0, 1), Precision.EXACT);
 
@@ -183,7 +188,7 @@ public class S2EdgeCrossingsTests
     }
 
     [Fact]
-    public void Test_S2_SymbolicCrossProdConsistentWithSign()
+    internal void Test_S2_SymbolicCrossProdConsistentWithSign()
     {
         // Tests that RobustCrossProd() is consistent with s2pred::Sign() when
         // symbolic perturbations are necessary.  This implies that the two vectors
@@ -210,7 +215,7 @@ public class S2EdgeCrossingsTests
     }
 
     [Fact]
-    public void Test_S2_RobustCrossProdMagnitude()
+    internal void Test_S2_RobustCrossProdMagnitude()
     {
         // Test that angles can be measured between vectors returned by
         // RobustCrossProd without loss of precision due to underflow.  The following
@@ -279,7 +284,7 @@ public class S2EdgeCrossingsTests
     }
 
     [Fact]
-    public void Test_S2_RobustCrossProdError()
+    internal void Test_S2_RobustCrossProdError()
     {
         // We repeatedly choose two points (usually linearly dependent, or almost so)
         // and measure the distance between the cross product returned by
@@ -296,7 +301,7 @@ public class S2EdgeCrossingsTests
                 S1Angle r = S1Angle.FromRadians(S2.M_PI_2 * Math.Pow(2, -53 * S2Testing.Random.RandDouble()));
                 // Occasionally perturb the point by a tiny distance.
                 if (S2Testing.Random.OneIn(3)) r *= Math.Pow(2, -1022 * S2Testing.Random.RandDouble());
-                b = PerturbLength(S2.InterpolateAtDistance(r, a, dir));
+                b = PerturbLength(S2.GetPointOnLine(a, dir, r));
                 if (S2Testing.Random.OneIn(2)) b = -b;
             } while (a == b);
             var prec = TestRobustCrossProdError(a, b);
@@ -307,7 +312,7 @@ public class S2EdgeCrossingsTests
     }
 
     [Fact]
-    public void Test_S2_AngleContainsVertex()
+    internal void Test_S2_AngleContainsVertex()
     {
         S2Point a = new(1, 0, 0), b = new(0, 1, 0);
         S2Point ref_b = S2.RefDir(b);
@@ -337,7 +342,7 @@ public class S2EdgeCrossingsTests
     // are tested in s2edge_crosser_test.cc.
 
     [Fact]
-    public void Test_S2_IntersectionError()
+    internal void Test_S2_IntersectionError()
     {
         // We repeatedly construct two edges that cross near a random point "p", and
         // measure the distance from the actual intersection point "x" to the
@@ -410,7 +415,7 @@ public class S2EdgeCrossingsTests
     }
 
     [Fact]
-    public void Test_S2_GrazingIntersections()
+    internal void Test_S2_GrazingIntersections()
     {
         // This test choose 5 points along a great circle (i.e., as collinear as
         // possible), and uses them to construct an edge AB and a triangle CDE such
@@ -448,7 +453,7 @@ public class S2EdgeCrossingsTests
     }
 
     [Fact]
-    public void Test_S2_ExactIntersectionUnderflow()
+    internal void Test_S2_ExactIntersectionUnderflow()
     {
         // Tests that a correct intersection is computed even when two edges are
         // exactly collinear and the normals of both edges underflow in double
@@ -459,7 +464,7 @@ public class S2EdgeCrossingsTests
     }
 
     [Fact]
-    public void Test_S2_ExactIntersectionSign()
+    internal void Test_S2_ExactIntersectionSign()
     {
         // Tests that a correct intersection is computed even when two edges are
         // exactly collinear and both edges have nearly antipodal endpoints.
@@ -472,7 +477,7 @@ public class S2EdgeCrossingsTests
     }
 
     [Fact]
-    public void Test_S2_GetIntersectionInvariants()
+    internal void Test_S2_GetIntersectionInvariants()
     {
         // Test that the result of GetIntersection does not change when the edges
         // are swapped and/or reversed.  The number of iterations is high because it

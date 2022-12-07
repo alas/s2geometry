@@ -3,7 +3,7 @@ namespace S2Geometry;
 public class R1IntervalTests
 {
     [Fact]
-    public void Test_R1Interval_TestBasic() {
+    internal void Test_R1Interval_TestBasic() {
         // Constructors and accessors.
         R1Interval unit = new(0, 1);
         R1Interval negunit = new(-1, 0);
@@ -111,7 +111,7 @@ public class R1IntervalTests
     }
 
     [Fact]
-    public void Test_R1Interval_ApproxEquals()
+    internal void Test_R1Interval_ApproxEquals()
     {
         // Choose two values kLo and kHi such that it's okay to shift an endpoint by
         // kLo (i.e., the resulting interval is equivalent) but not by kHi.

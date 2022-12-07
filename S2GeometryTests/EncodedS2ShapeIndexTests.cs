@@ -6,7 +6,7 @@ public class EncodedS2ShapeIndexTests
 {
     private readonly ITestOutputHelper _logger;
 
-    public EncodedS2ShapeIndexTests(ITestOutputHelper logger) { _logger = logger; }
+    internal EncodedS2ShapeIndexTests(ITestOutputHelper logger) { _logger = logger; }
 
     private static void TestEncodedS2ShapeIndex<Shape>(MutableS2ShapeIndex expected, int expected_bytes)
          where Shape : S2Shape, IInitEncoder<Shape>, new()
@@ -26,14 +26,14 @@ public class EncodedS2ShapeIndexTests
     }
 
     [Fact]
-    public void Test_EncodedS2ShapeIndex_Empty()
+    internal void Test_EncodedS2ShapeIndex_Empty()
     {
         MutableS2ShapeIndex index = new();
         TestEncodedS2ShapeIndex<S2LaxPolylineShape>(index, 4); // S2LaxPolylineShape
     }
 
     [Fact]
-    public void Test_EncodedS2ShapeIndex_OneEdge()
+    internal void Test_EncodedS2ShapeIndex_OneEdge()
     {
         MutableS2ShapeIndex index = new();
         index.Add(MakeLaxPolylineOrDie("1:1, 2:2"));
@@ -41,17 +41,18 @@ public class EncodedS2ShapeIndexTests
     }
 
     [Fact]
-    public void Test_EncodedS2ShapeIndex_RegularLoops()
+    internal void Test_EncodedS2ShapeIndex_RegularLoops()
     {
         (int num_edges, int expected_bytes)[] test_cases = {
-    (4, 8),
-    (8, 8),
-    ( 16, 16),
-    ( 64, 77),
-    ( 256, 327),
-    ( 4096, 8813),
-    ( 65536, 168291),
-  };
+            (4, 8),
+            (8, 8),
+            ( 16, 16),
+            ( 64, 77),
+            ( 256, 327),
+            ( 4096, 8813),
+            ( 65536, 168291),
+        };
+
         foreach (var (num_edges, expected_bytes) in test_cases)
         {
             MutableS2ShapeIndex index = new();
@@ -66,14 +67,19 @@ public class EncodedS2ShapeIndexTests
         }
     }
 
+    // TODO(b/232496949): This test relies on `random()` return values because
+    // it tests an exact encoded byte size.  Either change it to accept a range
+    // of sizes, or decode and check either the number of shapes, or possibly
+    // the points themselves by resetting the RNG state.
     [Fact]
-    public void Test_EncodedS2ShapeIndex_OverlappingPointClouds()
+    internal void Test_EncodedS2ShapeIndex_OverlappingPointClouds()
     {
         (int num_shapes, int num_points_per_shape, int expected_bytes)[] test_cases = {
-    (1, 50, 83),
-    (2, 100, 583),
-    (4, 100, 1383),
-  };
+            (1, 50, 83),
+            (2, 100, 583),
+            (4, 100, 1383),
+        };
+
         S2Cap cap = new(new S2Point(0.1, -0.4, 0.3).Normalize(), S1Angle.FromDegrees(1));
         foreach (var (num_shapes, num_points_per_shape, expected_bytes) in test_cases)
         {
@@ -94,14 +100,16 @@ public class EncodedS2ShapeIndexTests
         }
     }
 
+    // TODO(b/232496949): This test relies on `random()` return values.
     [Fact]
-    public void Test_EncodedS2ShapeIndex_OverlappingPolylines()
+    internal void Test_EncodedS2ShapeIndex_OverlappingPolylines()
     {
         (int num_shapes, int num_shape_edges, int expected_bytes)[] test_cases = {
-    (2, 50, 139),
-    (10, 50, 777),
-    (20, 50, 2219),
-  };
+            (2, 50, 139),
+            (10, 50, 777),
+            (20, 50, 2219),
+        };
+
         S2Cap cap = new(new S2Point(-0.2, -0.3, 0.4).Normalize(), S1Angle.FromDegrees(0.1));
         foreach (var (num_shapes, num_shape_edges, expected_bytes) in test_cases)
         {
@@ -116,7 +124,7 @@ public class EncodedS2ShapeIndexTests
                 int n = num_shape_edges;
                 for (int j = 0; j <= n; ++j)
                 {
-                    vertices.Add(S2.InterpolateAtDistance(j * edge_len, a, b));
+                    vertices.Add(S2.GetPointOnLine(a, b, j * edge_len));
                 }
                 index.Add(new S2LaxPolylineShape(vertices.ToArray()));
             }
@@ -125,14 +133,16 @@ public class EncodedS2ShapeIndexTests
         }
     }
 
+    // TODO(b/232496949): This test relies on `random()` return values.
     [Fact]
-    public void Test_EncodedS2ShapeIndex_OverlappingLoops()
+    internal void Test_EncodedS2ShapeIndex_OverlappingLoops()
     {
         (int num_shapes, int max_edges_per_loop, int expected_bytes)[] test_cases = {
-    (2, 250, 138),
-    (5, 250, 1084),
-    (25, 50, 3673),
-  };
+            (2, 250, 138),
+            (5, 250, 1084),
+            (25, 50, 3673),
+        };
+
         S2Cap cap = new(new S2Point(-0.1, 0.25, 0.2).Normalize(), S1Angle.FromDegrees(3));
         foreach (var (num_shapes, max_edges_per_loop, expected_bytes) in test_cases)
         {
@@ -156,7 +166,7 @@ public class EncodedS2ShapeIndexTests
     }
 
     [Fact]
-    public void Test_EncodedS2ShapeIndex_SnappedFractalPolylines()
+    internal void Test_EncodedS2ShapeIndex_SnappedFractalPolylines()
     {
         MutableS2ShapeIndex index = new();
         S2Builder builder = new(new S2Builder.Options(new S2CellIdSnapFunction()));
@@ -178,7 +188,7 @@ public class EncodedS2ShapeIndexTests
     }
 
     [Fact]
-    public void Test_EncodedS2ShapeIndex_LazyDecode()
+    internal void Test_EncodedS2ShapeIndex_LazyDecode()
     {
         // Ensure that lazy decoding is thread-safe.  In other words, make sure that
         // nothing bad happens when multiple threads call "const" methods that cause
@@ -193,7 +203,7 @@ public class EncodedS2ShapeIndexTests
     }
 
     [Fact]
-    public void Test_EncodedS2ShapeIndex_JavaByteCompatibility()
+    internal void Test_EncodedS2ShapeIndex_JavaByteCompatibility()
     {
         MutableS2ShapeIndex expected = new();
         expected.Add(new S2Polyline.OwningShape(MakePolylineOrDie("0:0, 1:1")));
@@ -208,7 +218,7 @@ public class EncodedS2ShapeIndexTests
             "B805F6EF3F28516A6D8FDBA13F27DCF7C958DEA13F28C809010408020010");
         Decoder decoder = new(bytes, 0, bytes.Length);
         MutableS2ShapeIndex actual = new();
-        actual.Init(decoder, S2ShapeUtilCoding.FullDecodeShapeFactory(decoder));
+        Assert.True(actual.Init(decoder, S2ShapeUtilCoding.FullDecodeShapeFactory(decoder)));
 
         S2ShapeUtil_Testing.ExpectEqual(expected, actual);
     }
@@ -219,11 +229,11 @@ public class EncodedS2ShapeIndexTests
     //
     // Note that Minimize() is non-const and therefore does not need to be tested
     // concurrently with the const methods.
-    public class LazyDecodeTest : ReaderWriterTest
+    internal class LazyDecodeTest : ReaderWriterTest
     {
         private readonly EncodedS2ShapeIndex index_;
 
-        public LazyDecodeTest()
+        internal LazyDecodeTest()
         {
             // We generate one shape per dimension.  Each shape has vertices uniformly
             // distributed across the sphere, and the vertices for each dimension are
@@ -250,20 +260,21 @@ public class EncodedS2ShapeIndexTests
                 }
             }
             Encoder encoder = new();
-            S2ShapeUtilCoding.CompactEncodeTaggedShapes(input, encoder);
+            Assert.True(S2ShapeUtilCoding.CompactEncodeTaggedShapes(input, encoder));
             input.Encode(encoder);
             var decoder = encoder.Decoder();
-            var (_, index) = EncodedS2ShapeIndex.Factory(decoder,
+            var (success, index) = EncodedS2ShapeIndex.Factory(decoder,
                 S2ShapeUtilCoding.LazyDecodeShapeFactory(decoder));
+            Assert.True(success);
             index_ = index!;
         }
 
-        public override void WriteOp()
+        internal override void WriteOp()
         {
             index_.Minimize();
         }
 
-        public override void ReadOp()
+        internal override void ReadOp()
         {
             S2ClosestEdgeQuery query = new(index_);
             for (int iter = 0; iter < 10; ++iter)
@@ -282,7 +293,7 @@ public class EncodedS2ShapeIndexTests
         private readonly S2Polyline polyline_;
         private readonly S2PolylineLayer layer_;
 
-        public IndexedLaxPolylineLayer(MutableS2ShapeIndex index, Options? options = null)
+        internal IndexedLaxPolylineLayer(MutableS2ShapeIndex index, Options? options = null)
         {
             index_ = index;
             polyline_ = new();

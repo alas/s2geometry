@@ -3,7 +3,7 @@ namespace S2Geometry;
 public class S2EdgeVectorShapeTests
 {
     [Fact]
-    public void Test_S2EdgeVectorShape_Empty()
+    internal void Test_S2EdgeVectorShape_Empty()
     {
         S2EdgeVectorShape shape = new();
         Assert.Equal(0, shape.NumEdges());
@@ -15,7 +15,36 @@ public class S2EdgeVectorShapeTests
     }
 
     [Fact]
-    public void Test_S2EdgeVectorShape_EdgeAccess()
+    internal void Test_S2EdgeVectorShape_Move()
+    {
+        // Construct a shape to use as the correct answer and a second identical shape
+        // to be moved.
+        S2EdgeVectorShape correct=new();
+        S2EdgeVectorShape to_move=new();
+        S2Testing.Random.Reset(S2Testing.Random.RandomSeed);
+        const int kNumEdges = 100;
+        for (int i = 0; i < kNumEdges; ++i)
+        {
+            var start_point = S2Testing.RandomPoint();
+            var end_point = S2Testing.RandomPoint();
+            correct.Add(start_point, end_point);
+            to_move.Add(start_point, end_point);
+        }
+
+        // Test the move constructor.
+        S2EdgeVectorShape move1 = to_move;
+        Assert.Equal(correct, move1);
+        Assert.Equal(correct.Id, move1.Id);
+
+        // Test the move-assignment operator.
+        S2EdgeVectorShape move2;
+        move2 = move1;
+        Assert.Equal(correct, move2);
+        Assert.Equal(correct.Id, move2.Id);
+    }
+
+    [Fact]
+    internal void Test_S2EdgeVectorShape_EdgeAccess()
     {
         S2EdgeVectorShape shape = new();
         S2Testing.Random.Reset(S2Testing.Random.RandomSeed);
@@ -43,7 +72,7 @@ public class S2EdgeVectorShapeTests
     }
 
     [Fact]
-    public void Test_S2EdgeVectorShape_SingletonConstructor()
+    internal void Test_S2EdgeVectorShape_SingletonConstructor()
     {
         S2Point a = new(1, 0, 0), b = new(0, 1, 0);
         S2EdgeVectorShape shape = new(a, b);

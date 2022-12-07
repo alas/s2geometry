@@ -5,7 +5,7 @@ using static S2ShapeUtil;
 public class S2ShapeUtilRangeEnumeratorTests
 {
     [Fact]
-    public void Test_RangeEnumerator_Next()
+    internal void Test_RangeEnumerator_Next()
     {
         // Create an index with one point each on S2CellId faces 0, 1, and 2.
         var index = MakeIndexOrDie("0:0 | 0:90 | 90:0 # #");
@@ -21,7 +21,7 @@ public class S2ShapeUtilRangeEnumeratorTests
     }
 
     [Fact]
-    public void Test_RangeEnumerator_EmptyIndex()
+    internal void Test_RangeEnumerator_EmptyIndex()
     {
         var empty = MakeIndexOrDie("# #");
         var non_empty = MakeIndexOrDie("0:0 # #");

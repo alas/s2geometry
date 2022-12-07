@@ -6,7 +6,7 @@ public class S2WindingOperationTests
 {
     private readonly ITestOutputHelper _logger;
 
-    public S2WindingOperationTests(ITestOutputHelper logger) => _logger = logger;
+    internal S2WindingOperationTests(ITestOutputHelper logger) => _logger = logger;
 
     // Verifies that the S2WindingOperation with the given arguments produces the
     // given result.  In order to ensure that results are not affected by the
@@ -43,10 +43,10 @@ public class S2WindingOperationTests
     // Like ExpectWindingResult(), but with two different expected results
     // depending on whether options.include_degeneracies() is false or true.
     private void ExpectDegenerateWindingResult(
-        Options options, List<string> loop_strs,
-        string ref_point_str, int ref_winding,
-        WindingRule rule,
-        string expected_str_false, string expected_str_true)
+                    Options options, List<string> loop_strs,
+                    string ref_point_str, int ref_winding,
+                    WindingRule rule,
+                    string expected_str_false, string expected_str_true)
     {
         options.include_degeneracies_ = false;
         ExpectWindingResult(options, loop_strs, ref_point_str, ref_winding, rule,
@@ -57,7 +57,7 @@ public class S2WindingOperationTests
     }
 
     [Fact]
-    public void Test_S2WindingOperation_Empty()
+    internal void Test_S2WindingOperation_Empty()
     {
         ExpectWindingResult(
             new(),
@@ -68,7 +68,7 @@ public class S2WindingOperationTests
     }
 
     [Fact]
-    public void Test_S2WindingOperation_PointLoop()
+    internal void Test_S2WindingOperation_PointLoop()
     {
         ExpectDegenerateWindingResult(
             new(),
@@ -77,7 +77,7 @@ public class S2WindingOperationTests
     }
 
     [Fact]
-    public void Test_S2WindingOperation_S2WindingOperation_SiblingPairLoop()
+    internal void Test_S2WindingOperation_S2WindingOperation_SiblingPairLoop()
     {
         ExpectDegenerateWindingResult(
             new(),
@@ -86,7 +86,7 @@ public class S2WindingOperationTests
     }
 
     [Fact]
-    public void Test_S2WindingOperation_Rectangle()
+    internal void Test_S2WindingOperation_Rectangle()
     {
         ExpectWindingResult(
             new(),
@@ -107,7 +107,7 @@ public class S2WindingOperationTests
     }
 
     [Fact]
-    public void Test_S2WindingOperation_BowTie()
+    internal void Test_S2WindingOperation_BowTie()
     {
         // Note that NEGATIVE, NON_ZERO, and ODD effectively reverse the orientation
         // of one of the two triangles that form the bow tie.
@@ -130,7 +130,7 @@ public class S2WindingOperationTests
     }
 
     [Fact]
-    public void Test_S2WindingOperation_CollapsingShell()
+    internal void Test_S2WindingOperation_CollapsingShell()
     {
         ExpectDegenerateWindingResult(
             new(new IdentitySnapFunction(S1Angle.FromDegrees(5))),
@@ -152,7 +152,7 @@ public class S2WindingOperationTests
 
     // Two triangles that touch along a common boundary.
     [Fact]
-    public void Test_S2WindingOperation_TouchingTriangles()
+    internal void Test_S2WindingOperation_TouchingTriangles()
     {
         // The touch edges are considered to form a degenerate hole.  Such holes are
         // removed by WindingRule::POSITIVE since they are not needed for computing
@@ -170,7 +170,7 @@ public class S2WindingOperationTests
 
     // Like the test above, but the triangles only touch after snapping.
     [Fact]
-    public void Test_S2WindingOperation_TouchingTrianglesAfterSnapping()
+    internal void Test_S2WindingOperation_TouchingTrianglesAfterSnapping()
     {
         // The snap function below rounds coordinates to the nearest degree.
         ExpectWindingResult(
@@ -195,7 +195,7 @@ public class S2WindingOperationTests
 
     // This tests an N-way union of 5 overlapping squares forming a "staircase".
     [Fact]
-    public void Test_S2WindingOperation_UnionOfSquares()
+    internal void Test_S2WindingOperation_UnionOfSquares()
     {
         ExpectWindingResult(
             new(new IntLatLngSnapFunction(1)),
@@ -284,7 +284,7 @@ public class S2WindingOperationTests
     // difference even for input geometries with degeneracies, e.g. one geometry
     // has a degenerate hole or degenerate shell that the other does not.
     [Fact]
-    public void Test_S2WindingOperation_SymmetricDifferenceDegeneracies()
+    internal void Test_S2WindingOperation_SymmetricDifferenceDegeneracies()
     {
         ExpectDegenerateWindingResult(
             new(new IntLatLngSnapFunction(1)),
@@ -301,5 +301,14 @@ public class S2WindingOperationTests
             },  // Geometry 2
             "10:10", 0, WindingRule.ODD,
             "", "2:2; 5:5");
+    }
+
+    [Fact]
+    internal void Test_S2WindingOperationOptions_SetGetSnapFunction()
+    {
+        // Prevent these from being detected as dead code.
+        S2WindingOperation.Options opts=new();
+        opts.snap_function_ = new IdentitySnapFunction();
+        Assert.Equal(opts.snap_function_.SnapRadius, S1Angle.Zero);
     }
 }

@@ -5,7 +5,7 @@
 // The class supports adding or removing points dynamically, and provides a
 // seekable iterator interface for navigating the index.
 //
-// You can use this class in conjuction with S2ClosestPointQuery to find the
+// You can use this class in conjunction with S2ClosestPointQuery to find the
 // closest index points to a given query point.  For example:
 //
 // void Test(S2Point[] index_points,

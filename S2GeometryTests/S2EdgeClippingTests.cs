@@ -7,7 +7,7 @@ public class S2EdgeClippingTests
 {
     private readonly ITestOutputHelper _logger;
 
-    public S2EdgeClippingTests(ITestOutputHelper logger) { _logger = logger; }
+    internal S2EdgeClippingTests(ITestOutputHelper logger) { _logger = logger; }
 
     private void TestFaceClipping(S2Point a_raw, S2Point b_raw)
     {
@@ -36,6 +36,14 @@ public class S2EdgeClippingTests
                   kErrorRadians);
         Assert.True(b.Angle(S2.FaceUVtoXYZ(segments[n - 1].face, segments[n - 1].b)) <=
                   kErrorRadians);
+
+        // Similarly, in UV space.
+        R2Point a_uv_, b_uv_;
+        Assert.True(S2.FaceXYZtoUV(segments[0].face, a, out a_uv_));
+        Assert.True(S2.FaceXYZtoUV(segments[n-1].face, b, out b_uv_));
+        Assert.True((a_uv_ - segments[0].a).GetNorm() <= S2EdgeClipping.kFaceClipErrorUVDist);
+        Assert.True((b_uv_ - segments[n-1].b).GetNorm() <= S2EdgeClipping.kFaceClipErrorUVDist);
+
 
         S2Point norm = S2.RobustCrossProd(a, b).Normalize();
         S2Point a_tangent = norm.CrossProd(a);
@@ -143,7 +151,7 @@ public class S2EdgeClippingTests
     }
 
     [Fact]
-    public void Test_S2_FaceClipping()
+    internal void Test_S2_FaceClipping()
     {
         // Start with a few simple cases.
         // An edge that is entirely contained within one cube face:
@@ -321,7 +329,7 @@ public class S2EdgeClippingTests
     }
 
     [Fact]
-    public void Test_S2_EdgeClipping()
+    internal void Test_S2_EdgeClipping()
     {
         // Test clipping against random rectangles.
         for (int i = 0; i < 5; ++i)

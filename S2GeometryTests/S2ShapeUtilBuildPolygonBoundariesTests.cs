@@ -3,7 +3,7 @@ namespace S2Geometry;
 public class S2ShapeUtilBuildPolygonBoundariesTests
 {
     [Fact]
-    public void Test_BuildPolygonBoundaries_NoComponents()
+    internal void Test_BuildPolygonBoundaries_NoComponents()
     {
         List<List<S2Shape>> faces = new ();
         List<List<S2Shape>> components = new ();
@@ -12,7 +12,7 @@ public class S2ShapeUtilBuildPolygonBoundariesTests
     }
 
     [Fact]
-    public void Test_BuildPolygonBoundaries_OneLoop()
+    internal void Test_BuildPolygonBoundaries_OneLoop()
     {
         TestLaxLoop a0 = new("0:0, 1:0, 0:1");  // Outer face
         TestLaxLoop a1 = new("0:0, 0:1, 1:0");
@@ -23,7 +23,7 @@ public class S2ShapeUtilBuildPolygonBoundariesTests
     }
 
     [Fact]
-    public void Test_BuildPolygonBoundaries_TwoLoopsSameComponent()
+    internal void Test_BuildPolygonBoundaries_TwoLoopsSameComponent()
     {
         TestLaxLoop a0 = new("0:0, 1:0, 0:1");  // Outer face
         TestLaxLoop a1 = new("0:0, 0:1, 1:0");
@@ -35,7 +35,7 @@ public class S2ShapeUtilBuildPolygonBoundariesTests
     }
 
     [Fact]
-    public void Test_BuildPolygonBoundaries_TwoNestedLoops()
+    internal void Test_BuildPolygonBoundaries_TwoNestedLoops()
     {
         TestLaxLoop a0 = new("0:0, 3:0, 0:3");  // Outer face
         TestLaxLoop a1 = new("0:0, 0:3, 3:0");
@@ -49,7 +49,7 @@ public class S2ShapeUtilBuildPolygonBoundariesTests
     }
 
     [Fact]
-    public void Test_BuildPolygonBoundaries_TwoLoopsDifferentComponents()
+    internal void Test_BuildPolygonBoundaries_TwoLoopsDifferentComponents()
     {
         TestLaxLoop a0 = new("0:0, 1:0, 0:1");  // Outer face
         TestLaxLoop a1 = new("0:0, 0:1, 1:0");
@@ -63,7 +63,7 @@ public class S2ShapeUtilBuildPolygonBoundariesTests
     }
 
     [Fact]
-    public void Test_BuildPolygonBoundaries_OneDegenerateLoop()
+    internal void Test_BuildPolygonBoundaries_OneDegenerateLoop()
     {
         TestLaxLoop a0 = new("0:0, 1:0, 0:0");
         var faces = new List<List<S2Shape>>();
@@ -73,7 +73,7 @@ public class S2ShapeUtilBuildPolygonBoundariesTests
     }
 
     [Fact]
-    public void Test_BuildPolygonBoundaries_TwoDegenerateLoops()
+    internal void Test_BuildPolygonBoundaries_TwoDegenerateLoops()
     {
         TestLaxLoop a0 = new("0:0, 1:0, 0:0");
         TestLaxLoop b0 = new("2:0, 3:0, 2:0");
@@ -85,7 +85,7 @@ public class S2ShapeUtilBuildPolygonBoundariesTests
     }
 
     [Fact]
-    public void Test_BuildPolygonBoundaries_ComplexTest1()
+    internal void Test_BuildPolygonBoundaries_ComplexTest1()
     {
         // Loops at index 0 are the outer (clockwise) loops.
         // Component "a" consists of 4 adjacent squares forming a larger square.
@@ -161,9 +161,9 @@ public class S2ShapeUtilBuildPolygonBoundariesTests
         faces.Sort();
     }
 
-    public class TestLaxLoop : S2LaxLoopShape
+    internal class TestLaxLoop : S2LaxLoopShape
     {
-        public TestLaxLoop(string vertex_str)
+        internal TestLaxLoop(string vertex_str)
         {
             var vertices = ParsePointsOrDie(vertex_str);
             Init(vertices.ToArray());

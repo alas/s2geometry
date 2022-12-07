@@ -22,7 +22,7 @@
 
 namespace S2Geometry;
 
-public readonly record struct S2Cap : IS2Region<S2Cap>, IDecoderStruct<S2Cap>
+public readonly record struct S2Cap : IS2Region<S2Cap>, IDecoder<S2Cap>
 {
     #region Fields, Constants
 
@@ -504,9 +504,9 @@ public readonly record struct S2Cap : IS2Region<S2Cap>, IDecoderStruct<S2Cap>
     }
 
     // Decodes an S2Cap encoded with Encode().  Returns true on success.
-    public static (bool, S2Cap?) Decode(Decoder d)
+    public static (bool, S2Cap) Decode(Decoder d)
     {
-        if (d.Avail() < 4 * sizeof(double)) return (false, null);
+        if (d.Avail() < 4 * sizeof(double)) return (false, default);
 
         var x = d.GetDouble();
         var y = d.GetDouble();

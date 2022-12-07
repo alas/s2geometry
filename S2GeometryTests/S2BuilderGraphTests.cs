@@ -10,7 +10,7 @@ using static S2Builder.Graph;
 public class S2BuilderGraphTests
 {
     [Fact]
-    public void Test_Graph_LabelsRequestedButNotProvided()
+    internal void Test_Graph_LabelsRequestedButNotProvided()
     {
         // Tests the situation where labels are requested but none were provided.
         GraphOptions options=new(EdgeType.DIRECTED, DegenerateEdges.KEEP,
@@ -33,7 +33,7 @@ public class S2BuilderGraphTests
     }
 
     [Fact]
-    public void Test_GetDirectedLoops_DegenerateEdges()
+    internal void Test_GetDirectedLoops_DegenerateEdges()
     {
         GraphClone gc = new();
         S2Builder builder = new(new Options());
@@ -55,7 +55,7 @@ public class S2BuilderGraphTests
     }
 
     [Fact]
-    public void Test_GetDirectedComponents_DegenerateEdges()
+    internal void Test_GetDirectedComponents_DegenerateEdges()
     {
         GraphClone gc = new();
         S2Builder builder = new(new Options());
@@ -78,7 +78,7 @@ public class S2BuilderGraphTests
     }
 
     [Fact]
-    public void Test_GetUndirectedComponents_DegenerateEdges()
+    internal void Test_GetUndirectedComponents_DegenerateEdges()
     {
         GraphClone gc = new();
         S2Builder builder = new(new Options());
@@ -108,7 +108,7 @@ public class S2BuilderGraphTests
     }
 
     [Fact]
-    public void Test_GetPolylines_UndirectedDegeneratePaths()
+    internal void Test_GetPolylines_UndirectedDegeneratePaths()
     {
         GraphClone gc = new();
         S2Builder builder = new(new Options());
@@ -126,7 +126,7 @@ public class S2BuilderGraphTests
     }
 
     [Fact]
-    public void Test_GetPolylines_UndirectedDegenerateWalks()
+    internal void Test_GetPolylines_UndirectedDegenerateWalks()
     {
         GraphClone gc = new();
         S2Builder builder = new(new Options());
@@ -146,7 +146,7 @@ public class S2BuilderGraphTests
     }
 
     [Fact]
-    public void Test_ProcessEdges_DiscardDegenerateEdges()
+    internal void Test_ProcessEdges_DiscardDegenerateEdges()
     {
         GraphOptions options = new(EdgeType.DIRECTED, DegenerateEdges.DISCARD,
                              DuplicateEdges.KEEP, SiblingPairs.KEEP);
@@ -154,7 +154,7 @@ public class S2BuilderGraphTests
     }
 
     [Fact]
-    public void Test_ProcessEdges_KeepDuplicateDegenerateEdges()
+    internal void Test_ProcessEdges_KeepDuplicateDegenerateEdges()
     {
         GraphOptions options = new(EdgeType.DIRECTED, DegenerateEdges.KEEP,
                              DuplicateEdges.KEEP, SiblingPairs.KEEP);
@@ -162,7 +162,7 @@ public class S2BuilderGraphTests
     }
 
     [Fact]
-    public void Test_ProcessEdges_MergeDuplicateDegenerateEdges()
+    internal void Test_ProcessEdges_MergeDuplicateDegenerateEdges()
     {
         GraphOptions options = new(EdgeType.DIRECTED, DegenerateEdges.KEEP,
                              DuplicateEdges.MERGE, SiblingPairs.KEEP);
@@ -171,7 +171,7 @@ public class S2BuilderGraphTests
     }
 
     [Fact]
-    public void Test_ProcessEdges_MergeUndirectedDuplicateDegenerateEdges()
+    internal void Test_ProcessEdges_MergeUndirectedDuplicateDegenerateEdges()
     {
         // Edge count should be reduced to 2 (i.e., one undirected edge), and all
         // labels should be merged.
@@ -182,7 +182,7 @@ public class S2BuilderGraphTests
     }
 
     [Fact]
-    public void Test_ProcessEdges_ConvertedUndirectedDegenerateEdges()
+    internal void Test_ProcessEdges_ConvertedUndirectedDegenerateEdges()
     {
         // Converting from UNDIRECTED to DIRECTED cuts the edge count in half and
         // merges any edge labels.
@@ -195,7 +195,7 @@ public class S2BuilderGraphTests
     }
 
     [Fact]
-    public void Test_ProcessEdges_MergeConvertedUndirectedDuplicateDegenerateEdges()
+    internal void Test_ProcessEdges_MergeConvertedUndirectedDuplicateDegenerateEdges()
     {
         // Like the test above, except that we also merge duplicates.
         GraphOptions options = new(EdgeType.UNDIRECTED, DegenerateEdges.KEEP,
@@ -206,7 +206,7 @@ public class S2BuilderGraphTests
     }
 
     [Fact]
-    public void Test_ProcessEdges_DiscardExcessConnectedDegenerateEdges()
+    internal void Test_ProcessEdges_DiscardExcessConnectedDegenerateEdges()
     {
         GraphOptions options = new(EdgeType.DIRECTED, DegenerateEdges.DISCARD_EXCESS,
                              DuplicateEdges.KEEP, SiblingPairs.KEEP);
@@ -220,7 +220,7 @@ public class S2BuilderGraphTests
     }
 
     [Fact]
-    public void Test_ProcessEdges_DiscardExcessIsolatedDegenerateEdges()
+    internal void Test_ProcessEdges_DiscardExcessIsolatedDegenerateEdges()
     {
         GraphOptions options = new(EdgeType.DIRECTED, DegenerateEdges.DISCARD_EXCESS,
                              DuplicateEdges.KEEP, SiblingPairs.KEEP);
@@ -231,7 +231,7 @@ public class S2BuilderGraphTests
     }
 
     [Fact]
-    public void Test_ProcessEdges_DiscardExcessUndirectedIsolatedDegenerateEdges()
+    internal void Test_ProcessEdges_DiscardExcessUndirectedIsolatedDegenerateEdges()
     {
         GraphOptions options = new(EdgeType.UNDIRECTED, DegenerateEdges.DISCARD_EXCESS,
                              DuplicateEdges.KEEP, SiblingPairs.KEEP);
@@ -243,7 +243,7 @@ public class S2BuilderGraphTests
     }
 
     [Fact]
-    public void Test_ProcessEdges_DiscardExcessConvertedUndirectedIsolatedDegenerateEdges()
+    internal void Test_ProcessEdges_DiscardExcessConvertedUndirectedIsolatedDegenerateEdges()
     {
         GraphOptions options = new(EdgeType.UNDIRECTED, DegenerateEdges.DISCARD_EXCESS,
                              DuplicateEdges.KEEP, SiblingPairs.REQUIRE);
@@ -256,7 +256,7 @@ public class S2BuilderGraphTests
     }
 
     [Fact]
-    public void Test_ProcessEdges_SiblingPairsDiscardMergesDegenerateEdgeLabels()
+    internal void Test_ProcessEdges_SiblingPairsDiscardMergesDegenerateEdgeLabels()
     {
         // Test that when SiblingPairs.DISCARD or SiblingPairs.DISCARD_EXCESS
         // is specified, the edge labels of degenerate edges are merged together
@@ -274,7 +274,7 @@ public class S2BuilderGraphTests
     }
 
     [Fact]
-    public void Test_ProcessEdges_KeepSiblingPairs()
+    internal void Test_ProcessEdges_KeepSiblingPairs()
     {
         GraphOptions options = new(EdgeType.DIRECTED, DegenerateEdges.DISCARD,
                              DuplicateEdges.KEEP, SiblingPairs.KEEP);
@@ -282,7 +282,7 @@ public class S2BuilderGraphTests
     }
 
     [Fact]
-    public void Test_ProcessEdges_MergeDuplicateSiblingPairs()
+    internal void Test_ProcessEdges_MergeDuplicateSiblingPairs()
     {
         GraphOptions options = new(EdgeType.DIRECTED, DegenerateEdges.DISCARD,
                              DuplicateEdges.MERGE, SiblingPairs.KEEP);
@@ -290,7 +290,7 @@ public class S2BuilderGraphTests
     }
 
     [Fact]
-    public void Test_ProcessEdges_DiscardSiblingPairs()
+    internal void Test_ProcessEdges_DiscardSiblingPairs()
     {
         // Check that matched pairs are discarded, leaving behind any excess edges.
         GraphOptions options = new(EdgeType.DIRECTED, DegenerateEdges.DISCARD,
@@ -304,7 +304,7 @@ public class S2BuilderGraphTests
     }
 
     [Fact]
-    public void Test_ProcessEdges_DiscardSiblingPairsMergeDuplicates()
+    internal void Test_ProcessEdges_DiscardSiblingPairsMergeDuplicates()
     {
         // Check that matched pairs are discarded, and then any remaining edges
         // are merged.
@@ -316,7 +316,7 @@ public class S2BuilderGraphTests
     }
 
     [Fact]
-    public void Test_ProcessEdges_DiscardUndirectedSiblingPairs()
+    internal void Test_ProcessEdges_DiscardUndirectedSiblingPairs()
     {
         // An undirected sibling pair consists of four edges, two in each direction
         // (see s2builder.h).  Since undirected edges always come in pairs, this
@@ -330,7 +330,7 @@ public class S2BuilderGraphTests
     }
 
     [Fact]
-    public void Test_ProcessEdges_DiscardExcessSiblingPairs()
+    internal void Test_ProcessEdges_DiscardExcessSiblingPairs()
     {
         // Like SiblingPairs.DISCARD, except that one sibling pair is kept if the
         // result would otherwise be empty.
@@ -346,7 +346,7 @@ public class S2BuilderGraphTests
     }
 
     [Fact]
-    public void Test_ProcessEdges_DiscardExcessSiblingPairsMergeDuplicates()
+    internal void Test_ProcessEdges_DiscardExcessSiblingPairsMergeDuplicates()
     {
         // Like SiblingPairs.DISCARD, except that one sibling pair is kept if the
         // result would otherwise be empty.
@@ -359,7 +359,7 @@ public class S2BuilderGraphTests
     }
 
     [Fact]
-    public void Test_ProcessEdges_DiscardExcessUndirectedSiblingPairs()
+    internal void Test_ProcessEdges_DiscardExcessUndirectedSiblingPairs()
     {
         // Like SiblingPairs.DISCARD, except that one undirected sibling pair
         // (4 edges) is kept if the result would otherwise be empty.
@@ -373,7 +373,7 @@ public class S2BuilderGraphTests
     }
 
     [Fact]
-    public void Test_ProcessEdges_CreateSiblingPairs()
+    internal void Test_ProcessEdges_CreateSiblingPairs()
     {
         GraphOptions options = new(EdgeType.DIRECTED, DegenerateEdges.DISCARD,
                              DuplicateEdges.KEEP, SiblingPairs.CREATE);
@@ -383,7 +383,7 @@ public class S2BuilderGraphTests
     }
 
     [Fact]
-    public void Test_ProcessEdges_RequireSiblingPairs()
+    internal void Test_ProcessEdges_RequireSiblingPairs()
     {
         // Like SiblingPairs.CREATE, but generates an error.
         GraphOptions options = new(EdgeType.DIRECTED, DegenerateEdges.DISCARD,
@@ -394,7 +394,7 @@ public class S2BuilderGraphTests
     }
 
     [Fact]
-    public void Test_ProcessEdges_CreateUndirectedSiblingPairs()
+    internal void Test_ProcessEdges_CreateUndirectedSiblingPairs()
     {
         // An undirected sibling pair consists of 4 edges, but SiblingPairs.CREATE
         // also converts the graph to EdgeType.DIRECTED and cuts the number of
@@ -417,7 +417,7 @@ public class S2BuilderGraphTests
     }
 
     [Fact]
-    public void Test_ProcessEdges_CreateSiblingPairsMergeDuplicates()
+    internal void Test_ProcessEdges_CreateSiblingPairsMergeDuplicates()
     {
         GraphOptions options = new(EdgeType.DIRECTED, DegenerateEdges.DISCARD,
                              DuplicateEdges.MERGE, SiblingPairs.CREATE);
@@ -426,7 +426,7 @@ public class S2BuilderGraphTests
     }
 
     [Fact]
-    public void Test_ProcessEdges_CreateUndirectedSiblingPairsMergeDuplicates()
+    internal void Test_ProcessEdges_CreateUndirectedSiblingPairsMergeDuplicates()
     {
         GraphOptions options = new(EdgeType.DIRECTED, DegenerateEdges.DISCARD,
                              DuplicateEdges.MERGE, SiblingPairs.CREATE);
@@ -510,7 +510,7 @@ public class S2BuilderGraphTests
     }
 
     [Fact]
-    public void Test_MakeSubgraph_UndirectedToUndirected()
+    internal void Test_MakeSubgraph_UndirectedToUndirected()
 {
     // Test that MakeSubgraph() doesn't transform edges into edge pairs when
     // creating an undirected subgraph of an undirected graph.
@@ -537,7 +537,7 @@ public class S2BuilderGraphTests
     }
 
     [Fact]
-    public void Test_MakeSubgraph_DirectedToUndirected()
+    internal void Test_MakeSubgraph_DirectedToUndirected()
 {
     // Test transforming directed edges into undirected edges (which doubles the
     // number of edges).

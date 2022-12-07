@@ -841,7 +841,7 @@ public record class S2CellUnion : IS2Region<S2CellUnion>, IEnumerable<S2CellId>,
             var (success, id) = S2CellId.Decode(decoder);
             if (!success)
                 return (false, null);
-            temp_cell_ids.Add(id!.Value);
+            temp_cell_ids.Add(id);
         }
         var result = new S2CellUnion(temp_cell_ids);
         return (true, result);

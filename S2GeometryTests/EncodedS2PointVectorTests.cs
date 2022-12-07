@@ -5,10 +5,10 @@ public class EncodedS2PointVectorTests
     private const int kBlockSize = 16;  // Number of deltas per block in implementation.
     private readonly ITestOutputHelper _logger;
 
-    public EncodedS2PointVectorTests(ITestOutputHelper logger) { _logger = logger; }
+    internal EncodedS2PointVectorTests(ITestOutputHelper logger) { _logger = logger; }
 
     [Fact]
-    public void Test_EncodedS2PointVectorTest_Empty()
+    internal void Test_EncodedS2PointVectorTest_Empty()
     {
         TestEncodedS2PointVector(Array.Empty<S2Point>(), CodingHint.FAST, 1);
 
@@ -17,7 +17,7 @@ public class EncodedS2PointVectorTests
     }
 
     [Fact]
-    public void Test_EncodedS2PointVectorTest_OnePoint()
+    internal void Test_EncodedS2PointVectorTest_OnePoint()
     {
         TestEncodedS2PointVector(new S2Point[] { new S2Point(1, 0, 0) }, CodingHint.FAST, 25);
 
@@ -27,7 +27,7 @@ public class EncodedS2PointVectorTests
     }
 
     [Fact]
-    public void Test_EncodedS2PointVectorTest_OnePointWithExceptionsNoOverlap()
+    internal void Test_EncodedS2PointVectorTest_OnePointWithExceptionsNoOverlap()
     {
         // Test encoding a block with one point when other blocks have exceptions
         // (which changes the encoding for all blocks).  The case below yields
@@ -45,7 +45,7 @@ public class EncodedS2PointVectorTests
     }
 
     [Fact]
-    public void Test_EncodedS2PointVectorTest_OnePointWithExceptionsWithOverlap()
+    internal void Test_EncodedS2PointVectorTest_OnePointWithExceptionsWithOverlap()
     {
         // Test encoding a block with one point when other blocks have exceptions
         // (which changes the encoding for all blocks).  The case below yields
@@ -66,7 +66,7 @@ public class EncodedS2PointVectorTests
     }
 
     [Fact]
-    public void Test_EncodedS2PointVectorTest_CellIdWithException()
+    internal void Test_EncodedS2PointVectorTest_CellIdWithException()
     {
         // Test one point encoded as an S2CellId with one point encoded as an
         // exception.
@@ -79,7 +79,7 @@ public class EncodedS2PointVectorTests
     }
 
     [Fact]
-    public void Test_EncodedS2PointVectorTest_PointsAtMultipleLevels()
+    internal void Test_EncodedS2PointVectorTest_PointsAtMultipleLevels()
     {
         // Test that when points at multiple levels are present, the level with the
         // most points is chosen (preferring the smallest level in case of ties).
@@ -104,7 +104,7 @@ public class EncodedS2PointVectorTests
     }
 
     [Fact]
-    public void Test_EncodedS2PointVectorTest_NoOverlapOrExtraDeltaBitsNeeded()
+    internal void Test_EncodedS2PointVectorTest_NoOverlapOrExtraDeltaBitsNeeded()
     {
         // This function tests the case in GetBlockCodes() where values can be
         // encoded using the minimum number delta bits and no overlap.  From the
@@ -136,7 +136,7 @@ public class EncodedS2PointVectorTests
     }
 
     [Fact]
-    public void Test_EncodedS2PointVectorTest_OverlapNeeded()
+    internal void Test_EncodedS2PointVectorTest_OverlapNeeded()
     {
         // Like the above, but tests the following case:
         //
@@ -164,7 +164,7 @@ public class EncodedS2PointVectorTests
     }
 
     [Fact]
-    public void Test_EncodedS2PointVectorTest_ExtraDeltaBitsNeeded()
+    internal void Test_EncodedS2PointVectorTest_ExtraDeltaBitsNeeded()
     {
         // Like the above, but tests the following case:
         //
@@ -191,7 +191,7 @@ public class EncodedS2PointVectorTests
     }
 
     [Fact]
-    public void Test_EncodedS2PointVectorTest_ExtraDeltaBitsAndOverlapNeeded()
+    internal void Test_EncodedS2PointVectorTest_ExtraDeltaBitsAndOverlapNeeded()
     {
         // Like the above, but tests the following case:
         //
@@ -221,7 +221,7 @@ public class EncodedS2PointVectorTests
     }
 
     [Fact]
-    public void Test_EncodedS2PointVectorTest_SixtyFourBitOffset()
+    internal void Test_EncodedS2PointVectorTest_SixtyFourBitOffset()
     {
         // Tests a case where a 64-bit block offset is needed.
         //
@@ -240,7 +240,7 @@ public class EncodedS2PointVectorTests
     }
 
     [Fact]
-    public void Test_EncodedS2PointVectorTest_AllExceptionsBlock()
+    internal void Test_EncodedS2PointVectorTest_AllExceptionsBlock()
     {
         // The encoding consists of two blocks; the first contains 16 encodable
         // values, while the second contains two exceptions.
@@ -260,7 +260,7 @@ public class EncodedS2PointVectorTests
     }
 
     [Fact]
-    public void Test_EncodedS2PointVectorTest_FirstAtAllLevels()
+    internal void Test_EncodedS2PointVectorTest_FirstAtAllLevels()
     {
         // Test encoding the first S2CellId at each level (which also happens to have
         // the maximum face, si, and ti values).  All such S2CellIds can be encoded in
@@ -274,7 +274,7 @@ public class EncodedS2PointVectorTests
     }
 
     [Fact]
-    public void Test_EncodedS2PointVectorTest_LastAtAllLevels()
+    internal void Test_EncodedS2PointVectorTest_LastAtAllLevels()
     {
         // Test encoding the last S2CellId at each level.  It turns out that such
         // S2CellIds have the largest possible face and ti values, and the minimum
@@ -292,7 +292,7 @@ public class EncodedS2PointVectorTests
     }
 
     [Fact]
-    public void Test_EncodedS2PointVectorTest_MaxFaceSiTiAtAllLevels()
+    internal void Test_EncodedS2PointVectorTest_MaxFaceSiTiAtAllLevels()
     {
         // Similar to the test above, but tests encoding the S2CellId at each level
         // whose face, si, and ti values are all maximal.  This turns out to be the
@@ -317,7 +317,7 @@ public class EncodedS2PointVectorTests
     }
 
     [Fact]
-    public void Test_EncodedS2PointVectorTest_LastTwoPointsAtAllLevels()
+    internal void Test_EncodedS2PointVectorTest_LastTwoPointsAtAllLevels()
     {
         // Test encoding the last two S2CellIds at each level.
         for (int level = 0; level <= S2.kMaxCellLevel; ++level)
@@ -335,7 +335,7 @@ public class EncodedS2PointVectorTests
     }
 
     [Fact]
-    public void Test_EncodedS2PointVectorTest_ManyDuplicatePointsAtAllLevels()
+    internal void Test_EncodedS2PointVectorTest_ManyDuplicatePointsAtAllLevels()
     {
         // Test encoding 32 copies of the last S2CellId at each level.  This uses
         // between 27 and 38 bytes depending on the level.  (Note that the encoding
@@ -357,7 +357,7 @@ public class EncodedS2PointVectorTests
     }
 
     [Fact]
-    public void Test_EncodedS2PointVectorTest_SnappedFractalLoops()
+    internal void Test_EncodedS2PointVectorTest_SnappedFractalLoops()
     {
         S2Testing.Random.Reset(S2Testing.Random.RandomSeed);
 #if DEBUG
@@ -368,7 +368,7 @@ public class EncodedS2PointVectorTests
 
         for (int num_points = 3; num_points <= kMaxPoints; num_points *= 4)
         {
-            int s2polygon_size = 0, lax_polygon_size = 0;
+            uint s2polygon_size = 0, lax_polygon_size = 0;
             for (int i = 0; i < 10; ++i)
             {
                 S2Testing.Fractal fractal = new();
@@ -383,23 +383,23 @@ public class EncodedS2PointVectorTests
                 S2Polygon s2polygon = new(new S2Loop(points));
                 Encoder encoder = new();
                 s2polygon.Encode(encoder);
-                s2polygon_size += encoder.Length();
+                s2polygon_size += (uint)encoder.Length();
                 // S2LaxPolygonShape has 2 extra bytes of overhead to encode one loop.
                 lax_polygon_size +=
-                    TestEncodedS2PointVector(points.ToArray(), CodingHint.COMPACT, -1) + 2;
+                    (uint)TestEncodedS2PointVector(points.ToArray(), CodingHint.COMPACT, -1) + 2;
             }
-            _logger.WriteLine($"n={num_points:d5}  s2={s2polygon_size:d9}  lax={lax_polygon_size:9}");
+            _logger.WriteLine($"n={num_points:d5}  s2={s2polygon_size:d9}  lax={lax_polygon_size:d9}");
         }
     }
 
     [Fact]
-    public void Test_EncodedS2PointVectorTest_RoundtripEncodingFast()
+    internal void Test_EncodedS2PointVectorTest_RoundtripEncodingFast()
     {
         TestRoundtripEncoding(CodingHint.FAST);
     }
 
     [Fact]
-    public void Test_EncodedS2PointVectorTest_RoundtripEncodingCompact()
+    internal void Test_EncodedS2PointVectorTest_RoundtripEncodingCompact()
     {
         TestRoundtripEncoding(CodingHint.COMPACT);
     }
@@ -412,6 +412,13 @@ public class EncodedS2PointVectorTests
         {
             Assert.Equal(expected_bytes, encoder.Length());
         }
+
+        //// Allocate storage aligned to double.  Since there is a varint at the
+        //// beginning of the encoding, the following S2Points will be unaligned,
+        //// so we test unaligned S2Point access for UNCOMPRESSED encodings.
+        //auto aligned = make_unique<double[]>(encoder.length() / sizeof(double) + 1);
+        //std::memcpy(aligned.get(), encoder.base(), encoder.length());
+
         var decoder = encoder.Decoder();
         EncodedS2PointVector actual = new();
         Assert.True(actual.Init(decoder));
@@ -458,7 +465,7 @@ public class EncodedS2PointVectorTests
         {
             EncodedS2PointVector.EncodeS2PointVector(pointsArray, hint, a_encoder);
             var decoder = a_encoder.Decoder();
-            a_vector.Init(decoder);
+            Assert.True(a_vector.Init(decoder));
         }
         Assert.Equal(pointsList, a_vector.Decode());
 
@@ -466,7 +473,7 @@ public class EncodedS2PointVectorTests
         {
             a_vector.Encode(b_encoder);
             var decoder = b_encoder.Decoder();
-            b_vector.Init(decoder);
+            Assert.True(b_vector.Init(decoder));
         }
         Assert.Equal(pointsList, b_vector.Decode());
     }

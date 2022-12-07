@@ -269,10 +269,12 @@ public class S2BooleanOperation
     // The following field is set if and only if there are no output layers.
     private readonly Action<bool>? result_empty_;
 
-    // Specifies that the output boundary edges should be sent to a single
-    // S2Builder layer.  This version can be used when the dimension of the
-    // output geometry is known (e.g., intersecting two polygons to yield a
-    // third polygon).
+    /// <summary>
+    /// Specifies that the output boundary edges should be sent to a single
+    /// S2Builder layer.  This version can be used when the dimension of the
+    /// output geometry is known (e.g., intersecting two polygons to yield a
+    /// third polygon).
+    /// </summary>
     public S2BooleanOperation(OpType op_type, Layer layer, Options? options = null)
     {
         Options_ = options ?? new Options();

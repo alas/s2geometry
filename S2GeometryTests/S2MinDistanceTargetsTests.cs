@@ -3,7 +3,7 @@ namespace S2Geometry;
 public class S2MinDistanceTargetsTests
 {
     [Fact]
-    public void Test_PointTarget_UpdateMinDistanceToEdgeWhenEqual() {
+    internal void Test_PointTarget_UpdateMinDistanceToEdgeWhenEqual() {
         // Verifies that UpdateMinDistance only returns true when the new distance
         // is less than the old distance (not less than or equal to).
         var target = new S2MinDistancePointTarget(MakePointOrDie("1:0"));
@@ -14,7 +14,7 @@ public class S2MinDistanceTargetsTests
     }
 
     [Fact]
-    public void Test_PointTarget_UpdateMinDistanceToCellWhenEqual() {
+    internal void Test_PointTarget_UpdateMinDistanceToCellWhenEqual() {
         // Verifies that UpdateMinDistance only returns true when the new distance
         // is less than the old distance (not less than or equal to).
         var target = new S2MinDistancePointTarget(MakePointOrDie("1:0"));
@@ -25,7 +25,7 @@ public class S2MinDistanceTargetsTests
     }
 
     [Fact]
-    public void Test_EdgeTarget_UpdateMinDistanceToEdgeWhenEqual() {
+    internal void Test_EdgeTarget_UpdateMinDistanceToEdgeWhenEqual() {
         var target = new S2MinDistanceEdgeTarget(
             MakePointOrDie("1:0"), MakePointOrDie("1:1"));
         var dist = S1ChordAngle.Infinity;
@@ -35,7 +35,7 @@ public class S2MinDistanceTargetsTests
     }
 
     [Fact]
-    public void Test_EdgeTarget_UpdateMinDistanceToCellWhenEqual() {
+    internal void Test_EdgeTarget_UpdateMinDistanceToCellWhenEqual() {
         var target = new S2MinDistanceEdgeTarget(
             MakePointOrDie("1:0"), MakePointOrDie("1:1"));
         var dist = S1ChordAngle.Infinity;
@@ -45,7 +45,7 @@ public class S2MinDistanceTargetsTests
     }
 
     [Fact]
-    public void Test_CellTarget_UpdateMinDistanceToEdgeWhenEqual() {
+    internal void Test_CellTarget_UpdateMinDistanceToEdgeWhenEqual() {
         var target = new S2MinDistanceCellTarget(new S2Cell(
             new S2CellId(MakePointOrDie("0:1"))));
         var dist = S1ChordAngle.Infinity;
@@ -55,7 +55,7 @@ public class S2MinDistanceTargetsTests
     }
 
     [Fact]
-    public void Test_CellTarget_UpdateMinDistanceToCellWhenEqual() {
+    internal void Test_CellTarget_UpdateMinDistanceToCellWhenEqual() {
         var target = new S2MinDistanceCellTarget(new S2Cell(
             new S2CellId(MakePointOrDie("0:1"))));
         var dist = S1ChordAngle.Infinity;
@@ -65,7 +65,7 @@ public class S2MinDistanceTargetsTests
     }
 
     [Fact]
-    public void Test_CellUnionTarget_UpdateMinDistanceToEdgeWhenEqual() {
+    internal void Test_CellUnionTarget_UpdateMinDistanceToEdgeWhenEqual() {
         var target = new S2MinDistanceCellUnionTarget(new S2CellUnion(
             new List<S2CellId>{new S2CellId(MakePointOrDie("0:1"))}));
         var dist = S1ChordAngle.Infinity;
@@ -75,7 +75,7 @@ public class S2MinDistanceTargetsTests
     }
 
     [Fact]
-    public void Test_CellUnionTarget_UpdateMinDistanceToCellWhenEqual()
+    internal void Test_CellUnionTarget_UpdateMinDistanceToCellWhenEqual()
     {
         var target = new S2MinDistanceCellUnionTarget(new S2CellUnion(
             new List<S2CellId>{new S2CellId(MakePointOrDie("0:1"))}));
@@ -86,7 +86,7 @@ public class S2MinDistanceTargetsTests
     }
 
     [Fact]
-    public void Test_ShapeIndexTarget_UpdateMinDistanceToEdgeWhenEqual() {
+    internal void Test_ShapeIndexTarget_UpdateMinDistanceToEdgeWhenEqual() {
         var target_index = MakeIndexOrDie("1:0 # #");
         var target = new S2MinDistanceShapeIndexTarget(target_index);
         var dist = S1ChordAngle.Infinity;
@@ -96,7 +96,7 @@ public class S2MinDistanceTargetsTests
     }
 
     [Fact]
-    public void Test_ShapeIndexTarget_UpdateMinDistanceToCellWhenEqual() {
+    internal void Test_ShapeIndexTarget_UpdateMinDistanceToCellWhenEqual() {
         var target_index = MakeIndexOrDie("1:0 # #");
         var target = new S2MinDistanceShapeIndexTarget(target_index);
         var dist = S1ChordAngle.Infinity;
@@ -106,7 +106,7 @@ public class S2MinDistanceTargetsTests
     }
 
     [Fact]
-    public void Test_PointTarget_VisitContainingShapes() {
+    internal void Test_PointTarget_VisitContainingShapes() {
         // Only shapes 2 and 4 should contain the target point.
         var index = MakeIndexOrDie(
             "1:1 # 1:1, 2:2 # 0:0, 0:3, 3:0 | 6:6, 6:9, 9:6 | 0:0, 0:4, 4:0");
@@ -117,7 +117,7 @@ public class S2MinDistanceTargetsTests
     }
 
     [Fact]
-    public void Test_EdgeTarget_VisitContainingShapes() {
+    internal void Test_EdgeTarget_VisitContainingShapes() {
         // Only shapes 2 and 4 should contain the target point.
         var index = MakeIndexOrDie(
             "1:1 # 1:1, 2:2 # 0:0, 0:3, 3:0 | 6:6, 6:9, 9:6 | 0:0, 0:4, 4:0");
@@ -128,7 +128,7 @@ public class S2MinDistanceTargetsTests
     }
 
     [Fact]
-    public void Test_CellTarget_VisitContainingShapes() {
+    internal void Test_CellTarget_VisitContainingShapes() {
         var index = MakeIndexOrDie(
             "1:1 # 1:1, 2:2 # 0:0, 0:3, 3:0 | 6:6, 6:9, 9:6 | -1:-1, -1:5, 5:-1");
         // Only shapes 2 and 4 should contain a very small cell near 1:1.
@@ -148,7 +148,7 @@ public class S2MinDistanceTargetsTests
     }
 
     [Fact]
-    public void Test_CellUnionTarget_VisitContainingShapes() {
+    internal void Test_CellUnionTarget_VisitContainingShapes() {
         var index = MakeIndexOrDie(
             "1:1 # 1:1, 2:2 # 0:0, 0:3, 3:0 | 6:6, 6:9, 9:6 | -1:-1, -1:5, 5:-1");
         // Shapes 2 and 4 contain the leaf cell near 1:1, while shape 3 contains the
@@ -163,7 +163,7 @@ public class S2MinDistanceTargetsTests
     }
 
     [Fact]
-    public void Test_ShapeIndexTarget_VisitContainingShapes() {
+    internal void Test_ShapeIndexTarget_VisitContainingShapes() {
         // Create an index containing a repeated grouping of one point, one
         // polyline, and one polygon.
         var index = MakeIndexOrDie("1:1 | 4:4 | 7:7 | 10:10 # " +
@@ -183,7 +183,7 @@ public class S2MinDistanceTargetsTests
     }
 
     [Fact]
-    public void Test_ShapeIndexTarget_VisitContainingShapesEmptyAndFull() {
+    internal void Test_ShapeIndexTarget_VisitContainingShapesEmptyAndFull() {
         // Verify that VisitContainingShapes never returns empty polygons and always
         // returns full polygons (i.e., those containing the entire sphere).
 

@@ -13,10 +13,10 @@ public class S2BuilderUtil_SnapFunctionsTests
     private static readonly S2CellId kSearchFocusId = S2CellId.FromFace(0).Child(3);
     private readonly ITestOutputHelper _logger;
 
-    public S2BuilderUtil_SnapFunctionsTests(ITestOutputHelper logger) { _logger = logger; }
+    internal S2BuilderUtil_SnapFunctionsTests(ITestOutputHelper logger) { _logger = logger; }
 
     [Fact]
-    public void Test_S2CellIdSnapFunction_LevelToFromSnapRadius()
+    internal void Test_S2CellIdSnapFunction_LevelToFromSnapRadius()
     {
         for (int level = 0; level <= S2.kMaxCellLevel; ++level)
         {
@@ -34,7 +34,7 @@ public class S2BuilderUtil_SnapFunctionsTests
     }
 
     [Fact]
-    public void Test_S2CellIdSnapFunction_SnapPoint()
+    internal void Test_S2CellIdSnapFunction_SnapPoint()
     {
         for (int iter = 0; iter < 1000; ++iter)
         {
@@ -50,7 +50,7 @@ public class S2BuilderUtil_SnapFunctionsTests
     }
 
     [Fact]
-    public void Test_IntLatLngSnapFunction_ExponentToFromSnapRadius()
+    internal void Test_IntLatLngSnapFunction_ExponentToFromSnapRadius()
     {
         for (int exponent = IntLatLngSnapFunction.kMinExponent;
              exponent <= IntLatLngSnapFunction.kMaxExponent; ++exponent)
@@ -70,7 +70,7 @@ public class S2BuilderUtil_SnapFunctionsTests
     }
 
     [Fact]
-    public void Test_IntLatLngSnapFunction_SnapPoint()
+    internal void Test_IntLatLngSnapFunction_SnapPoint()
     {
         for (int iter = 0; iter < 1000; ++iter)
         {
@@ -94,7 +94,7 @@ public class S2BuilderUtil_SnapFunctionsTests
     }
 
     [Fact]
-    public void Test_S2CellIdSnapFunction_MinVertexSeparationSnapRadiusRatio()
+    internal void Test_S2CellIdSnapFunction_MinVertexSeparationSnapRadiusRatio()
     {
         // The purpose of this "test" is to compute a lower bound to the fraction
         // (min_vertex_separation() / snap_radius()).  Essentially this involves
@@ -126,7 +126,7 @@ public class S2BuilderUtil_SnapFunctionsTests
     }
 
     [Fact]
-    public void Test_S2CellIdSnapFunction_MinEdgeVertexSeparationForLevel()
+    internal void Test_S2CellIdSnapFunction_MinEdgeVertexSeparationForLevel()
     {
         // Computes the minimum edge separation (as a fraction of kMinDiag) for any
         // snap radius at each level.
@@ -137,7 +137,7 @@ public class S2BuilderUtil_SnapFunctionsTests
     }
     
     [Fact]
-    public void Test_S2CellIdSnapFunction_MinEdgeVertexSeparationAtMinSnapRadius()
+    internal void Test_S2CellIdSnapFunction_MinEdgeVertexSeparationAtMinSnapRadius()
     {
         // Computes the minimum edge separation (as a fraction of kMinDiag) for the
         // special case where the minimum snap radius is being used.
@@ -152,7 +152,7 @@ public class S2BuilderUtil_SnapFunctionsTests
     }
 
     [Fact]
-    public void Test_S2CellIdSnapFunction_MinEdgeVertexSeparationSnapRadiusRatio()
+    internal void Test_S2CellIdSnapFunction_MinEdgeVertexSeparationSnapRadiusRatio()
     {
         // Computes the minimum edge separation expressed as a fraction of the
         // maximum snap radius that could yield that edge separation.
@@ -165,7 +165,7 @@ public class S2BuilderUtil_SnapFunctionsTests
     }
 
     [Fact]
-    public void Test_IntLatLngSnapFunction_MinVertexSeparationSnapRadiusRatio()
+    internal void Test_IntLatLngSnapFunction_MinVertexSeparationSnapRadiusRatio()
     {
         double best_score = 1e10;
         List<IntLatLng> best_configs = new();
@@ -183,7 +183,7 @@ public class S2BuilderUtil_SnapFunctionsTests
     }
 
     [Fact]
-    public void Test_IntLatLngSnapFunction_MinEdgeVertexSeparationForLevel()
+    internal void Test_IntLatLngSnapFunction_MinEdgeVertexSeparationForLevel()
     {
         // Computes the minimum edge separation (as a fraction of kMinDiag) for any
         // snap radius at each level.
@@ -197,7 +197,7 @@ public class S2BuilderUtil_SnapFunctionsTests
     }
 
     [Fact]
-    public void Test_IntLatLngSnapFunction_MinEdgeVertexSeparationSnapRadiusRatio()
+    internal void Test_IntLatLngSnapFunction_MinEdgeVertexSeparationSnapRadiusRatio()
     {
         // Computes the minimum edge separation expressed as a fraction of the
         // maximum snap radius that could yield that edge separation.

@@ -93,11 +93,12 @@ public class EncodedS2CellIdVector
             for (int len = 0; len < 8; ++len)
             {
                 // "t_base" is the base value being tested (first "len" bytes of v_min).
-                // "t_max_delta_msb" is the most-significant bit position of the largest
-                // delta (or zero if there are no deltas, i.e. if v.size() == 0).
-                // "t_bytes" is the total size of the variable portion of the encoding.
+                // "t_max_delta_msb" is the most-significant bit position (i.e. bit-width
+                // minus one) of the largest delta (or zero if there are no deltas, i.e.
+                // if v.size() == 0).  "t_bytes" is the total size of the variable
+                // portion of the encoding.
                 UInt64 t_base = v_min & ~(~0UL >> (8 * len));
-                int t_max_delta_msb = Math.Max(0, BitsUtils.Log2Floor64((v_max - t_base) >> e_shift));
+                int t_max_delta_msb = Math.Max(0, BitsUtils.GetBitWidth((v_max - t_base) >> e_shift) - 1);
                 UInt64 t_bytes = (ulong)(len + v.Count * ((t_max_delta_msb >> 3) + 1));
                 if (t_bytes < e_bytes)
                 {

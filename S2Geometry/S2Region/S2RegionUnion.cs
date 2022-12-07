@@ -1,7 +1,19 @@
 namespace S2Geometry;
 
 // An S2RegionUnion represents a union of possibly overlapping regions.
-// It is convenient for computing a covering of a set of regions.
+// It is convenient for computing a covering of a set of regions.  However, note
+// that currently, using S2RegionCoverer to compute coverings of S2RegionUnions
+// may produce coverings with considerably less than the requested number of
+// cells in cases of overlapping or tiling regions.  This occurs because the
+// current S2RegionUnion.Contains implementation for S2Cells only returns
+// true if the cell is fully contained by one of the regions.  So, cells along
+// internal boundaries in the region union will be subdivided by the coverer
+// even though this is unnecessary, using up the maxSize cell budget.  Then,
+// when the coverer normalizes the covering, groups of 4 sibling cells along
+// these internal borders will be replaced by parents, resulting in coverings
+// that may have significantly fewer than maxSize cells, and so are less
+// accurate.  This is not a concern for unions of disjoint regions.
+//
 public sealed record class S2RegionUnion : IS2Region<S2RegionUnion>
 {
     #region Fields, Constants
@@ -72,6 +84,9 @@ public sealed record class S2RegionUnion : IS2Region<S2RegionUnion>
     {
         return Regions_.Any(t => t.Contains(p));
     }
+
+    // The current implementation only returns true if one of the regions in the
+    // union fully contains the cell.
     public bool Contains(S2Cell cell)
     {
         // Note that this method is allowed to return false even if the cell

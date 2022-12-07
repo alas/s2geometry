@@ -3,7 +3,7 @@ namespace S2Geometry;
 public class S2PointVectorShapeTests
 {
     [Fact]
-    public void Test_S2PointVectorShape_Empty()
+    internal void Test_S2PointVectorShape_Empty()
     {
         S2Point[] points = Array.Empty<S2Point>();
         S2PointVectorShape shape = new(points);
@@ -16,7 +16,7 @@ public class S2PointVectorShapeTests
     }
 
     [Fact]
-    public void Test_S2PointVectorShape_ConstructionAndAccess()
+    internal void Test_S2PointVectorShape_ConstructionAndAccess()
     {
         const int kNumPoints = 100;
         S2Point[] points = new S2Point[kNumPoints];
@@ -41,5 +41,31 @@ public class S2PointVectorShapeTests
             Assert.Equal(pt, edge.V0);
             Assert.Equal(pt, edge.V1);
         }
+    }
+
+    [Fact]
+    internal void Test_S2PointVectorShape_Move()
+    {
+        // Construct a shape to use as the correct answer and a second identical shape
+        // to be moved.
+        List<S2Point> points=new();
+        const int kNumPoints = 100;
+        for (int i = 0; i < kNumPoints; ++i)
+        {
+            points.Add(S2Testing.RandomPoint());
+        }
+        S2PointVectorShape correct=new(points.ToArray());
+        S2PointVectorShape to_move=new(points.ToArray());
+
+        // Test the move constructor.
+        S2PointVectorShape move1=to_move;
+        Assert.Equal(correct, move1);
+        Assert.Equal(correct.Id, move1.Id);
+
+        // Test the move-assignment operator.
+        S2PointVectorShape move2;
+        move2 = move1;
+        Assert.Equal(correct, move2);
+        Assert.Equal(correct.Id, move2.Id);
     }
 }

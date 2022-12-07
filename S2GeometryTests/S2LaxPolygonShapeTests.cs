@@ -1,12 +1,13 @@
 namespace S2Geometry;
 
 using System.Runtime.InteropServices;
+using Loop = List<S2Point>;
 
 public class S2LaxPolygonShapeTests
 {
     private readonly ITestOutputHelper _logger;
 
-    public S2LaxPolygonShapeTests(ITestOutputHelper logger) { _logger = logger; }
+    internal S2LaxPolygonShapeTests(ITestOutputHelper logger) { _logger = logger; }
 
     // Verifies that EncodedS2LaxPolygonShape behaves identically to
     // S2LaxPolygonShape. Also supports testing that the encoded form is identical
@@ -56,7 +57,7 @@ public class S2LaxPolygonShapeTests
     }
 
     [Fact]
-    public void Test_S2LaxPolygonShape_EmptyPolygon()
+    internal void Test_S2LaxPolygonShape_EmptyPolygon()
     {
         _logger.WriteLine(
             $"(INFO) sizeof(S2LaxPolygonShape) == {Marshal.SizeOf(typeof(S2LaxPolygonShape))}");
@@ -76,7 +77,80 @@ public class S2LaxPolygonShapeTests
     }
 
     [Fact]
-    public void Test_S2LaxPolygonShape_FullPolygon()
+    internal void Test_S2LaxPolygonShape_Move()
+    {
+        // Construct a shape to use as the correct answer and a second identical shape
+        // to be moved.
+        List<Loop> loops = new()
+        {
+            new Loop(ParsePointsOrDie("0:0, 0:3, 3:3")),
+            new Loop(ParsePointsOrDie("1:1, 2:2, 1:2"))
+        };
+        S2LaxPolygonShape correct=new(loops);
+        S2LaxPolygonShape to_move=new(loops);
+        Assert.Equal(correct, to_move);
+        Assert.Equal(correct.Id, to_move.Id);
+
+        // Test the move constructor.
+        S2LaxPolygonShape move1=to_move;
+        Assert.Equal(correct, move1);
+        TestEncodedS2LaxPolygonShape(move1);
+        Assert.Equal(correct.Id, move1.Id);
+        Assert.Equal(loops.Count, move1.NumLoops);
+        Assert.Equal(6, move1.NumVertices);
+        for (int i = 0; i < loops.Count; ++i)
+        {
+            for (int j = 0; j < loops[i].Count; ++j)
+            {
+                Assert.Equal(loops[i][j], move1.LoopVertex(i, j));
+            }
+        }
+
+        // Test the move-assignment operator.
+        S2LaxPolygonShape move2;
+        move2 = move1;
+        Assert.Equal(correct, move2);
+        TestEncodedS2LaxPolygonShape(move2);
+        Assert.Equal(correct.Id, move2.Id);
+        Assert.Equal(loops.Count, move2.NumLoops);
+        Assert.Equal(6, move2.NumVertices);
+        for (int i = 0; i < loops.Count; ++i)
+        {
+            for (int j = 0; j < loops[i].Count; ++j)
+            {
+                Assert.Equal(loops[i][j], move2.LoopVertex(i, j));
+            }
+        }
+    }
+
+    [Fact]
+    internal void Test_S2LaxPolygonShape_MoveFromShapeIndex()
+    {
+        // Construct an index containing shapes to be moved.
+        List<Loop> loops = new()
+        {
+            new Loop(ParsePointsOrDie("0:0, 0:3, 3:3")),
+            new Loop(ParsePointsOrDie("1:1, 2:2, 1:2"))
+        };
+        MutableS2ShapeIndex index=new();
+        index.Add(new S2LaxPolygonShape(loops));
+        index.Add(new S2LaxPolygonShape(loops));
+        Assert.Equal(index.NumShapeIds(), 2);
+
+        // Verify that the move constructor moves the id.
+        var shape0 = (S2LaxPolygonShape)index.Shape(0)!;
+        S2LaxPolygonShape moved_shape0 = shape0;
+        Assert.Equal(moved_shape0.Id, 0);
+
+        // Verify that the move-assignment operator moves the id.
+        var shape1 = (S2LaxPolygonShape)index.Shape(1)!;
+        S2LaxPolygonShape moved_shape1;
+        moved_shape1 = shape1;
+        Assert.Equal(moved_shape1.Id, 1);
+    }
+
+    [Fact]
+    internal void Test_S2LaxPolygonShape_FullPolygon()
     {
         var shape = new S2LaxPolygonShape(new S2Polygon(MakeLoopOrDie("full")));
         Assert.Equal(1, shape.NumLoops);
@@ -91,7 +165,7 @@ public class S2LaxPolygonShapeTests
     }
 
     [Fact]
-    public void Test_S2LaxPolygonShape_SingleVertexPolygon()
+    internal void Test_S2LaxPolygonShape_SingleVertexPolygon()
     {
         // S2Polygon doesn't support single-vertex loops, so we need to construct
         // the S2LaxPolygonShape directly.
@@ -118,7 +192,7 @@ public class S2LaxPolygonShapeTests
     }
 
     [Fact]
-    public void Test_S2LaxPolygonShape_SingleLoopPolygon()
+    internal void Test_S2LaxPolygonShape_SingleLoopPolygon()
     {
         // Test S2Polygon constructor.
         var vertices = ParsePointsOrDie("0:0, 0:1, 1:1, 1:0");
@@ -147,7 +221,7 @@ public class S2LaxPolygonShapeTests
     }
 
     [Fact]
-    public void Test_S2LaxPolygonShape_MultiLoopPolygon()
+    internal void Test_S2LaxPolygonShape_MultiLoopPolygon()
     {
         // Test S2Point[][] constructor.  Make sure that the loops are
         // oriented so that the interior of the polygon is always on the left.
@@ -185,7 +259,7 @@ public class S2LaxPolygonShapeTests
     }
 
     [Fact]
-    public void Test_S2LaxPolygonShape_MultiLoopS2Polygon()
+    internal void Test_S2LaxPolygonShape_MultiLoopS2Polygon()
     {
         // Verify that the orientation of loops representing holes is reversed when
         // converting from an S2Polygon to an S2LaxPolygonShape.
@@ -203,7 +277,7 @@ public class S2LaxPolygonShapeTests
     }
 
     [Fact]
-    public void Test_S2LaxPolygonShape_ManyLoopPolygon()
+    internal void Test_S2LaxPolygonShape_ManyLoopPolygon()
     {
         // Test a polygon with enough loops so that binary search is used to find
         // the loop containing a given edge.
@@ -262,7 +336,7 @@ public class S2LaxPolygonShapeTests
     }
 
     [Fact]
-    public void Test_S2LaxPolygonShape_DegenerateLoops()
+    internal void Test_S2LaxPolygonShape_DegenerateLoops()
     {
         var loops = new List<List<S2Point>>{
             ParsePointsOrDie("1:1, 1:2, 2:2, 1:2, 1:3, 1:2, 1:1"),
@@ -275,7 +349,7 @@ public class S2LaxPolygonShapeTests
     }
 
     [Fact]
-    public void Test_S2LaxPolygonShape_InvertedLoops()
+    internal void Test_S2LaxPolygonShape_InvertedLoops()
     {
         var loops = new List<List<S2Point>>{
             ParsePointsOrDie("1:2, 1:1, 2:2"),
@@ -301,7 +375,7 @@ public class S2LaxPolygonShapeTests
     }
 
     [Fact]
-    public void Test_S2LaxPolygonShape_CompareToS2Loop()
+    internal void Test_S2LaxPolygonShape_CompareToS2Loop()
     {
         for (int iter = 0; iter < 100; ++iter)
         {

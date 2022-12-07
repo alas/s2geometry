@@ -13,7 +13,7 @@ using SearchState = Key3<int, int, bool>;
 // An S2Polyline represents a sequence of zero or more vertices connected by
 // straight edges (geodesics).  Edges of length 0 and 180 degrees are not
 // allowed, i.e. adjacent vertices should not be identical or antipodal.
-public record struct S2Polyline : IS2Region<S2Polyline>, IDecoderStruct<S2Polyline>
+public record struct S2Polyline : IS2Region<S2Polyline>, IDecoder<S2Polyline>
 {
     #region Fields, Constants
 
@@ -861,26 +861,26 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoderStruct<S2Polyli
 
     // Decodes an S2Polyline encoded with any of Encode*() methods. Returns true
     // on success.
-    public static (bool, S2Polyline?) Decode(Decoder decoder)
+    public static (bool, S2Polyline) Decode(Decoder decoder)
     {
-        if (decoder.Avail() < sizeof(byte) + sizeof(UInt32)) return (false, null);
+        if (decoder.Avail() < sizeof(byte) + sizeof(UInt32)) return (false, default);
         byte version = decoder.Get8();
         return version switch
         {
             S2.kCurrentLosslessEncodingVersionNumber => DecodeUncompressed(decoder),
             kCurrentCompressedEncodingVersionNumber => DecodeCompressed(decoder),
-            _ => (false, null),
+            _ => (false, default),
         };
     }
 
     // Decode a polyline encoded with EncodeUncompressed(). Used by the Decode
     // method above.
-    public static (bool, S2Polyline?) DecodeUncompressed(Decoder decoder)
+    public static (bool, S2Polyline) DecodeUncompressed(Decoder decoder)
     {
-        if (decoder.Avail() < sizeof(UInt32)) return (false, null);
+        if (decoder.Avail() < sizeof(UInt32)) return (false, default);
 
         var count = (int)decoder.Get32();
-        if (decoder.Avail() < count) return (false, null);
+        if (decoder.Avail() < count) return (false, default);
         var verts = new S2Point[count];
         decoder.GetPoints(verts, 0, count);
 
@@ -896,11 +896,11 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoderStruct<S2Polyli
 
     // Decodes a polyline encoded with EncodeCompressed(). Used by the Decode
     // method above.
-    public static (bool, S2Polyline?) DecodeCompressed(Decoder decoder)
+    public static (bool, S2Polyline) DecodeCompressed(Decoder decoder)
     {
-        if (decoder.Avail() < sizeof(byte)) return (false, null);
+        if (decoder.Avail() < sizeof(byte)) return (false, default);
         var snap_level = decoder.Get8();
-        if (!decoder.TryGetVarInt32(out var num_vertices)) return (false, null);
+        if (!decoder.TryGetVarInt32(out var num_vertices)) return (false, default);
         if (num_vertices == 0)
         {
             // Empty polylines are allowed.
@@ -910,7 +910,7 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoderStruct<S2Polyli
         var points=new S2Point[num_vertices];
         if (!S2DecodePointsCompressed(decoder, snap_level, points, 0))
         {
-            return (false, null);
+            return (false, default);
         }
 
         {
@@ -1069,7 +1069,7 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoderStruct<S2Polyli
             var (success, result) = Decode(decoder);
             if (!success) return (false, null);
 
-            return (true, new OwningShape(result!.Value));
+            return (true, new OwningShape(result));
         }
     }
 }

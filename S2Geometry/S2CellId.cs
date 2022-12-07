@@ -34,7 +34,7 @@ namespace S2Geometry;
 
 using System.Globalization;
 
-public readonly record struct S2CellId(UInt64 Id) : IComparable<S2CellId>, IDecoderStruct<S2CellId>
+public readonly record struct S2CellId(UInt64 Id) : IComparable<S2CellId>, IDecoder<S2CellId>
 {
     #region Fields, Constants
 
@@ -1092,9 +1092,9 @@ public readonly record struct S2CellId(UInt64 Id) : IComparable<S2CellId>, IDeco
     }
 
     // Decodes an S2CellId encoded by Encode(). Returns true on success.
-    public static (bool, S2CellId?) Decode(Decoder decoder)
+    public static (bool, S2CellId) Decode(Decoder decoder)
     {
-        if (decoder.Avail() < sizeof(UInt64)) return (false, null);
+        if (decoder.Avail() < sizeof(UInt64)) return (false, default);
         var cell = new S2CellId(decoder.Get64());
         return (true, cell);
     }

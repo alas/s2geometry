@@ -6,13 +6,13 @@ public class S2RegionCovererTests
     private const string MAX_CELLS = "4,8"; // Comma-separated list of values to use for 'max_cells'
     private const int ITERS = 100000; // Number of random caps to try for each max_cells value
 
-    public S2RegionCovererTests(ITestOutputHelper testOutputHelper)
+    internal S2RegionCovererTests(ITestOutputHelper testOutputHelper)
     {
         _logger = testOutputHelper;
     }
 
     [Fact]
-    public void Test_S2RegionCoverer_RandomCells()
+    internal void Test_S2RegionCoverer_RandomCells()
     {
         S2RegionCoverer.Options options = new()
         {
@@ -67,7 +67,7 @@ public class S2RegionCovererTests
     }
 
     [Fact]
-    public void Test_S2RegionCoverer_RandomCaps()
+    internal void Test_S2RegionCoverer_RandomCaps()
     {
         const int kMaxLevel = S2.kMaxCellLevel;
         S2RegionCoverer.Options options = new();
@@ -106,7 +106,7 @@ public class S2RegionCovererTests
     }
 
     [Fact]
-    public void Test_S2RegionCoverer_SimpleCoverings()
+    internal void Test_S2RegionCoverer_SimpleCoverings()
     {
         Assert.True(false); //TODO
 
@@ -252,7 +252,7 @@ public class S2RegionCovererTests
     }
 
     [Fact]
-    public void Test_S2RegionCoverer_Accuracy()
+    internal void Test_S2RegionCoverer_Accuracy()
     {
         foreach (var max_cells in MAX_CELLS.Split(',', StringSplitOptions.RemoveEmptyEntries))
         {
@@ -261,7 +261,7 @@ public class S2RegionCovererTests
     }
 
     [Fact]
-    public void Test_S2RegionCoverer_InteriorCovering()
+    internal void Test_S2RegionCoverer_InteriorCovering()
     {
         // We construct the region the following way. Start with S2 cell of level l.
         // Remove from it one of its grandchildren (level l+2). If we then set
@@ -292,7 +292,7 @@ public class S2RegionCovererTests
     }
 
     [Fact]
-    public void Test_GetFastCovering_HugeFixedLevelCovering()
+    internal void Test_GetFastCovering_HugeFixedLevelCovering()
     {
         // Test a "fast covering" with a huge number of cells due to min_level().
         var options = new S2RegionCoverer.Options();
@@ -316,28 +316,28 @@ public class S2RegionCovererTests
     }
 
     [Fact]
-    public void Test_IsCanonical_InvalidS2CellId()
+    internal void Test_IsCanonical_InvalidS2CellId()
     {
         Assert.True(IsCanonical(new[] { "1/" }, new S2RegionCoverer.Options()));
         Assert.False(IsCanonical(new[] { "invalid" }, new S2RegionCoverer.Options()));
     }
 
     [Fact]
-    public void Test_IsCanonical_Unsorted()
+    internal void Test_IsCanonical_Unsorted()
     {
         Assert.True(IsCanonical(new[] { "1/1", "1/3" }, new S2RegionCoverer.Options()));
         Assert.False(IsCanonical(new[] { "1/3", "1/1" }, new S2RegionCoverer.Options()));
     }
 
     [Fact]
-    public void Test_IsCanonical_Overlapping()
+    internal void Test_IsCanonical_Overlapping()
     {
         Assert.True(IsCanonical(new[] { "1/2", "1/33" }, new S2RegionCoverer.Options()));
         Assert.False(IsCanonical(new[] { "1/3", "1/33" }, new S2RegionCoverer.Options()));
     }
 
     [Fact]
-    public void Test_IsCanonical_MinLevel()
+    internal void Test_IsCanonical_MinLevel()
     {
         S2RegionCoverer.Options options = new();
         options.MinLevel = (2);
@@ -346,7 +346,7 @@ public class S2RegionCovererTests
     }
 
     [Fact]
-    public void Test_IsCanonical_MaxLevel()
+    internal void Test_IsCanonical_MaxLevel()
     {
         S2RegionCoverer.Options options = new();
         options.MaxLevel = (2);
@@ -355,7 +355,7 @@ public class S2RegionCovererTests
     }
 
     [Fact]
-    public void Test_IsCanonical_LevelMod()
+    internal void Test_IsCanonical_LevelMod()
     {
         S2RegionCoverer.Options options = new();
         options.LevelMod = (2);
@@ -364,7 +364,7 @@ public class S2RegionCovererTests
     }
 
     [Fact]
-    public void Test_IsCanonical_MaxCells()
+    internal void Test_IsCanonical_MaxCells()
     {
         S2RegionCoverer.Options options = new()
         {
@@ -376,7 +376,7 @@ public class S2RegionCovererTests
     }
 
     [Fact]
-    public void Test_IsCanonical_Normalized()
+    internal void Test_IsCanonical_Normalized()
     {
         // Test that no sequence of cells could be replaced by an ancestor.
         S2RegionCoverer.Options options = new();
@@ -400,7 +400,7 @@ public class S2RegionCovererTests
             "1/1130", "1/1131", "1/1132", "1/1133"}, options));
     }
 
-    private static void TestCanonicalizeCovering(string[] input_str, string[] expected_str, S2RegionCoverer.Options options)
+    private static void TestCanonicalizeCovering(string[] input_str, string[] expected_str, S2RegionCoverer.Options options, bool test_cell_union = true)
     {
         List<S2CellId> actual = new();
         List<S2CellId> expected = new();
@@ -414,13 +414,32 @@ public class S2RegionCovererTests
         }
         S2RegionCoverer coverer = new(options);
         Assert.False(coverer.IsCanonical(actual));
+
+        if (test_cell_union)
+        {
+            // Test version taking and returning an `S2CellUnion`; this must be done
+            // first, since we use `actual` here and the other version modifies its
+            // argument.
+            S2CellUnion input_union=new(actual);
+            // Non-canonical input may become canonical after (or vice versa) after
+            // converting to S2CellUnion, so don't test whether or not the input is
+            // canonical.
+            S2CellUnion actual_union = coverer.CanonicalizeCovering(input_union);
+            Assert.Equal(expected, actual_union.CellIds);
+            Assert.True(coverer.IsCanonical(actual_union.CellIds));
+            Assert.True(coverer.IsCanonical(actual_union));
+            // `actual` didn't change.
+            Assert.False(coverer.IsCanonical(actual));
+        }
+
+        // Test modifying version.
         coverer.CanonicalizeCovering(actual);
         Assert.True(coverer.IsCanonical(actual));
         Assert.Equal(expected, actual);
     }
 
     [Fact]
-    public void Test_CanonicalizeCovering_UnsortedDuplicateCells()
+    internal void Test_CanonicalizeCovering_UnsortedDuplicateCells()
     {
         S2RegionCoverer.Options options = new();
         TestCanonicalizeCovering(new[] { "1/200", "1/13122", "1/20", "1/131", "1/13100" },
@@ -428,7 +447,7 @@ public class S2RegionCovererTests
     }
 
     [Fact]
-    public void Test_CanonicalizeCovering_MaxLevelExceeded()
+    internal void Test_CanonicalizeCovering_MaxLevelExceeded()
     {
         S2RegionCoverer.Options options = new();
         options.MaxLevel = (2);
@@ -437,7 +456,7 @@ public class S2RegionCovererTests
     }
 
     [Fact]
-    public void Test_CanonicalizeCovering_WrongLevelMod()
+    internal void Test_CanonicalizeCovering_WrongLevelMod()
     {
         S2RegionCoverer.Options options = new();
         options.MinLevel = (1);
@@ -447,7 +466,7 @@ public class S2RegionCovererTests
     }
 
     [Fact]
-    public void Test_CanonicalizeCovering_ReplacedByParent()
+    internal void Test_CanonicalizeCovering_ReplacedByParent()
     {
         // Test that 16 children are replaced by their parent when level_mod == 2.
         S2RegionCoverer.Options options = new();
@@ -459,7 +478,7 @@ public class S2RegionCovererTests
     }
 
     [Fact]
-    public void Test_CanonicalizeCovering_DenormalizedCellUnion()
+    internal void Test_CanonicalizeCovering_DenormalizedCellUnion()
     {
         // Test that all 4 children of a cell may be used when this is necessary to
         // satisfy min_level() or level_mod();
@@ -469,11 +488,14 @@ public class S2RegionCovererTests
         TestCanonicalizeCovering(
             new[] { "0/", "1/130", "1/131", "1/132", "1/133" },
             new[] { "0/0", "0/1", "0/2", "0/3", "1/130", "1/131", "1/132", "1/133" },
-            options);
+            options,
+            // Denormalized input will be changed by the `S2CellUnion` variants,
+            // so don't test it.
+            /*test_cell_union=*/false);
     }
 
     [Fact]
-    public void Test_CanonicalizeCovering_MaxCellsMergesSmallest()
+    internal void Test_CanonicalizeCovering_MaxCellsMergesSmallest()
     {
         // When there are too many cells, the smallest cells should be merged first.
         S2RegionCoverer.Options options = new()
@@ -486,7 +508,7 @@ public class S2RegionCovererTests
     }
 
     [Fact]
-    public void Test_CanonicalizeCovering_MaxCellsMergesRepeatedly()
+    internal void Test_CanonicalizeCovering_MaxCellsMergesRepeatedly()
     {
         // Check that when merging creates a cell when all 4 children are present,
         // those cells are merged into their parent (repeatedly if necessary).
@@ -511,7 +533,7 @@ public class S2RegionCovererTests
     }
 
 [Fact]
-    public void Test_JavaCcConsistency_CheckCovering()
+    internal void Test_JavaCcConsistency_CheckCovering()
     {
         S2Point[] points = {
             S2LatLng.FromDegrees(-33.8663457, 151.1960891).ToPoint(),

@@ -8,7 +8,7 @@
 
 namespace S2Geometry;
 
-public readonly record struct S2Cell : IS2Region<S2Cell>, IComparable<S2Cell>, IDecoderStruct<S2Cell>
+public readonly record struct S2Cell : IS2Region<S2Cell>, IComparable<S2Cell>, IDecoder<S2Cell>
 {
     #region Fields, Constants
 
@@ -674,13 +674,13 @@ public readonly record struct S2Cell : IS2Region<S2Cell>, IComparable<S2Cell>, I
     }
 
     // Decodes an S2Cell encoded with Encode().  Returns true on success.
-    public static (bool, S2Cell?) Decode(Decoder decoder)
+    public static (bool, S2Cell) Decode(Decoder decoder)
     {
         var (success, id) = S2CellId.Decode(decoder);
         if (!success)
-            return (false, null);
+            return (false, default);
 
-        return (true, new S2Cell(id!.Value));
+        return (true, new S2Cell(id));
     }
 
     #endregion

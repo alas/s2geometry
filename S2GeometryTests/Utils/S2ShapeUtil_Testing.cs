@@ -1,12 +1,12 @@
 namespace S2Geometry;
 
-public class S2ShapeUtil_Testing
+internal class S2ShapeUtil_Testing
 {
     /// <summary>
     /// Verifies that all methods of the two S2Shapes return identical results,
     /// except for id() and type_tag().
     /// </summary>
-    public static void ExpectEqual(S2Shape a, S2Shape b)
+    internal static void ExpectEqual(S2Shape a, S2Shape b)
     {
         Assert.True(a.NumEdges() == b.NumEdges());
         for (int i = 0; i < a.NumEdges(); ++i)
@@ -32,7 +32,7 @@ public class S2ShapeUtil_Testing
     /// Verifies that two S2ShapeIndexes have identical contents (including all the
     /// S2Shapes in both indexes).
     /// </summary>
-    public static void ExpectEqual(S2ShapeIndex a, S2ShapeIndex b)
+    internal static void ExpectEqual(S2ShapeIndex a, S2ShapeIndex b)
     {
         // Check that both indexes have identical shapes.
         Assert.True(a.NumShapeIds() == b.NumShapeIds());

@@ -3,7 +3,7 @@ namespace S2Geometry;
 public class S2ErrorTests
 {
     [Fact]
-    public void Test_S2Error_Basic()
+    internal void Test_S2Error_Basic()
     {
         S2Error error = new(S2ErrorCode.DUPLICATE_VERTICES,
             $"Vertex {23} is the same as vertex {47}");
@@ -14,7 +14,7 @@ public class S2ErrorTests
     }
 
     [Fact]
-    public void Test_S2Error_Constructor()
+    internal void Test_S2Error_Constructor()
     {
         S2Error error = new(S2ErrorCode.RESOURCE_EXHAUSTED,
             $"Memory limit exceeded ({100} vs {50})");

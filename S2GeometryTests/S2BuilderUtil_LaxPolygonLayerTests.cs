@@ -11,10 +11,10 @@ public class S2BuilderUtil_LaxPolygonLayerTests
         DegenerateBoundaries.DISCARD, DegenerateBoundaries.DISCARD_HOLES,
         DegenerateBoundaries.DISCARD_SHELLS, DegenerateBoundaries.KEEP};
 
-    public S2BuilderUtil_LaxPolygonLayerTests(ITestOutputHelper logger) { _logger = logger; }
+    internal S2BuilderUtil_LaxPolygonLayerTests(ITestOutputHelper logger) { _logger = logger; }
 
     [Fact]
-    public void Test_LaxPolygonLayer_Empty()
+    internal void Test_LaxPolygonLayer_Empty()
     {
         foreach (var db in kAllDegenerateBoundaries)
         {
@@ -23,7 +23,7 @@ public class S2BuilderUtil_LaxPolygonLayerTests
     }
 
     [Fact]
-    public void Test_LaxPolygonLayer_Full()
+    internal void Test_LaxPolygonLayer_Full()
     {
         foreach (var db in kAllDegenerateBoundaries)
         {
@@ -32,7 +32,7 @@ public class S2BuilderUtil_LaxPolygonLayerTests
     }
 
     [Fact]
-    public void Test_LaxPolygonLayer_OneNormalShell()
+    internal void Test_LaxPolygonLayer_OneNormalShell()
     {
         foreach (var db in kAllDegenerateBoundaries)
         {
@@ -41,7 +41,7 @@ public class S2BuilderUtil_LaxPolygonLayerTests
     }
 
     [Fact]
-    public void Test_LaxPolygonLayer_IsFullPolygonPredicateNotCalled()
+    internal void Test_LaxPolygonLayer_IsFullPolygonPredicateNotCalled()
     {
         // Test that the IsFullPolygonPredicate is not called when at least one
         // non-degenerate loop is present.
@@ -62,7 +62,7 @@ public class S2BuilderUtil_LaxPolygonLayerTests
     }
 
     [Fact]
-    public void Test_LaxPolygonLayer_TwoNormalShellsOneNormalHole()
+    internal void Test_LaxPolygonLayer_TwoNormalShellsOneNormalHole()
     {
         // The second two loops are nested.  Note that S2LaxPolygon and S2Polygon
         // require opposite vertex orderings for holes.
@@ -75,7 +75,7 @@ public class S2BuilderUtil_LaxPolygonLayerTests
     }
 
     [Fact]
-    public void Test_LaxPolygonLayer_AllDegenerateShells()
+    internal void Test_LaxPolygonLayer_AllDegenerateShells()
     {
         foreach (var db in new[]{DegenerateBoundaries.KEEP,
       DegenerateBoundaries.DISCARD_HOLES})
@@ -90,7 +90,7 @@ public class S2BuilderUtil_LaxPolygonLayerTests
     }
 
     [Fact]
-    public void Test_LaxPolygonLayer_AllDegenerateHoles()
+    internal void Test_LaxPolygonLayer_AllDegenerateHoles()
     {
         foreach (var db in new[]{DegenerateBoundaries.KEEP,
       DegenerateBoundaries.DISCARD_SHELLS})
@@ -105,7 +105,7 @@ public class S2BuilderUtil_LaxPolygonLayerTests
     }
 
     [Fact]
-    public void Test_LaxPolygonLayer_SomeDegenerateShells()
+    internal void Test_LaxPolygonLayer_SomeDegenerateShells()
     {
         string kNormal = "0:0, 0:9, 9:0; 1:1, 7:1, 1:7";
         string kInput = kNormal + "; 3:2; 2:2, 2:3";
@@ -116,7 +116,7 @@ public class S2BuilderUtil_LaxPolygonLayerTests
     }
 
     [Fact]
-    public void Test_LaxPolygonLayer_SomeDegenerateHoles()
+    internal void Test_LaxPolygonLayer_SomeDegenerateHoles()
     {
         foreach (var db in new[]{DegenerateBoundaries.KEEP,
       DegenerateBoundaries.DISCARD_SHELLS})
@@ -131,7 +131,7 @@ public class S2BuilderUtil_LaxPolygonLayerTests
     }
 
     [Fact]
-    public void Test_LaxPolygonLayer_NormalAndDegenerateShellsAndHoles()
+    internal void Test_LaxPolygonLayer_NormalAndDegenerateShellsAndHoles()
     {
         // We start with two normal shells and one normal hole.
         string kNormal = "0:0, 0:9, 9:9, 9:0; " +
@@ -157,7 +157,7 @@ public class S2BuilderUtil_LaxPolygonLayerTests
     }
 
     [Fact]
-    public void Test_LaxPolygonLayer_PartialLoop()
+    internal void Test_LaxPolygonLayer_PartialLoop()
     {
         S2Builder builder = new(new Options());
         S2LaxPolygonShape output = new();
@@ -171,7 +171,7 @@ public class S2BuilderUtil_LaxPolygonLayerTests
 #if false
     // TODO(ericv): Implement validation of S2LaxPolygonShape.
     [Fact]
-    public void Test_LaxPolygonLayer_InvalidPolygon() {
+    internal void Test_LaxPolygonLayer_InvalidPolygon() {
         S2Builder builder = new(new S2Builder.Options());
         S2LaxPolygonShape output = new();
         LaxPolygonLayer.Options options = new();
@@ -184,7 +184,7 @@ public class S2BuilderUtil_LaxPolygonLayerTests
 #endif
 
     [Fact]
-    public void Test_LaxPolygonLayer_DuplicateInputEdges()
+    internal void Test_LaxPolygonLayer_DuplicateInputEdges()
     {
         // Check that LaxPolygonLayer removes duplicate edges in such a way that
         // degeneracies are not lost.
@@ -205,7 +205,7 @@ public class S2BuilderUtil_LaxPolygonLayerTests
     }
 
     [Fact]
-    public void Test_LaxPolygonLayer_EdgeLabels()
+    internal void Test_LaxPolygonLayer_EdgeLabels()
     {
         // TODO(ericv): Implement EdgeType.UNDIRECTED.
         foreach (var edge_type in new[] { EdgeType.DIRECTED })
@@ -222,7 +222,7 @@ public class S2BuilderUtil_LaxPolygonLayerTests
     }
 
     [Fact]
-    public void Test_IndexedLaxPolygonLayer_AddsShape()
+    internal void Test_IndexedLaxPolygonLayer_AddsShape()
     {
         S2Builder builder = new(new Options());
         MutableS2ShapeIndex index = new();
@@ -236,7 +236,7 @@ public class S2BuilderUtil_LaxPolygonLayerTests
     }
 
     [Fact]
-    public void Test_IndexedLaxPolygonLayer_IgnoresEmptyShape()
+    internal void Test_IndexedLaxPolygonLayer_IgnoresEmptyShape()
     {
         S2Builder builder = new(new Options());
         MutableS2ShapeIndex index = new();

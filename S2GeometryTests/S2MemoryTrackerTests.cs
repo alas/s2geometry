@@ -3,7 +3,7 @@
 public class S2MemoryTrackerTests
 {
     [Fact]
-    public void Test_S2MemoryTracker_PeriodicCallback()
+    internal void Test_S2MemoryTracker_PeriodicCallback()
     {
         S2MemoryTracker tracker=new();
         int callback_count = 0;

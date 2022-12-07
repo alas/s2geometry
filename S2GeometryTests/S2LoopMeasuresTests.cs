@@ -15,7 +15,7 @@ public class S2LoopMeasuresTests
     private readonly S2PointLoopSpan three_leaf_clover_;
     private readonly S2PointLoopSpan tessellated_loop_;
 
-    public S2LoopMeasuresTests()
+    internal S2LoopMeasuresTests()
     {
         // The full loop is represented as a loop with no vertices.
         full_ = new();
@@ -58,7 +58,7 @@ public class S2LoopMeasuresTests
     }
 
     [Fact]
-    public void Test_PruneDegeneracies_AllDegeneracies()
+    internal void Test_PruneDegeneracies_AllDegeneracies()
     {
         TestPruneDegeneracies("", "");
         TestPruneDegeneracies("a", "");
@@ -74,7 +74,7 @@ public class S2LoopMeasuresTests
     }
 
     [Fact]
-    public void Test_PruneDegeneracies_SomeDegeneracies()
+    internal void Test_PruneDegeneracies_SomeDegeneracies()
     {
         TestPruneDegeneracies("abc", "abc");
         TestPruneDegeneracies("abca", "abc");
@@ -88,7 +88,7 @@ public class S2LoopMeasuresTests
     }
 
     [Fact]
-    public void Test_GetCanonicalLoopOrder_AllDegeneracies()
+    internal void Test_GetCanonicalLoopOrder_AllDegeneracies()
     {
         TestCanonicalLoopOrder("", new S2.LoopOrder(0, 1));
         TestCanonicalLoopOrder("a", new S2.LoopOrder(0, 1));
@@ -100,20 +100,20 @@ public class S2LoopMeasuresTests
     }
 
     [Fact]
-    public void Test_GetPerimeter_Empty()
+    internal void Test_GetPerimeter_Empty()
     {
         Assert.Equal(S1Angle.Zero, S2.GetPerimeter(Array.Empty<S2Point>()));
     }
 
     [Fact]
-    public void Test_GetPerimeter_Octant()
+    internal void Test_GetPerimeter_Octant()
     {
         var loop = ParsePointsOrDie("0:0, 0:90, 90:0");
         Assert2.DoubleEqual(3 * S2.M_PI_2, S2.GetPerimeter(loop.ToArray()).Radians);
     }
 
     [Fact]
-    public void Test_GetPerimeter_MoreThanTwoPi()
+    internal void Test_GetPerimeter_MoreThanTwoPi()
     {
         // Make sure that GetPerimeter doesn't use S1ChordAngle, which can only
         // represent distances up to 2*Pi.
@@ -122,14 +122,14 @@ public class S2LoopMeasuresTests
     }
 
     [Fact]
-    public void Test_GetSignedArea_Underflow()
+    internal void Test_GetSignedArea_Underflow()
     {
         var loop = ParsePointsOrDie("0:0, 0:1e-88, 1e-88:1e-88, 1e-88:0");
         Assert.True(S2.GetSignedArea(loop) > 0);
     }
 
     [Fact]
-    public void Test_LoopTestBase_GetAreaConsistentWithCurvature()
+    internal void Test_LoopTestBase_GetAreaConsistentWithCurvature()
     {
         TestAreaConsistentWithCurvature(full_);
         TestAreaConsistentWithCurvature(north_hemi_);
@@ -144,7 +144,7 @@ public class S2LoopMeasuresTests
     }
 
     [Fact]
-    public void Test_LoopTestBase_GetSurfaceIntegralGreaterThan4Pi()
+    internal void Test_LoopTestBase_GetSurfaceIntegralGreaterThan4Pi()
     {
         // This test demonstrates that even when GetSurfaceIntegral() returns a an
         // area greater than 4*Pi, GetSignedArea() still returns an accurate result.
@@ -162,7 +162,7 @@ public class S2LoopMeasuresTests
     }
 
     [Fact]
-    public void Test_LoopTestBase_GetAreaConsistentWithOrientation()
+    internal void Test_LoopTestBase_GetAreaConsistentWithOrientation()
     {
         // Test that GetArea() returns an area near 0 for degenerate loops that
         // contain almost no points, and an area near 4*Pi for degenerate loops that
@@ -194,14 +194,14 @@ public class S2LoopMeasuresTests
     }
 
     [Fact]
-    public void Test_LoopTestBase_GetAreaAccuracy()
+    internal void Test_LoopTestBase_GetAreaAccuracy()
     {
         // TODO(ericv): Test that GetArea() has an accuracy significantly better
         // than 1e-15 on loops whose area is small.
     }
 
     [Fact]
-    public void Test_LoopTestBase_GetAreaAndCentroid()
+    internal void Test_LoopTestBase_GetAreaAndCentroid()
     {
         Assert.Equal(S2.M_4_PI, S2.GetArea(full_));
         Assert.Equal(S2Point.Empty, S2.GetCentroid(full_));
@@ -249,7 +249,7 @@ public class S2LoopMeasuresTests
     }
 
     [Fact]
-    public void Test_LoopTestBase_GetCurvature()
+    internal void Test_LoopTestBase_GetCurvature()
     {
         Assert.Equal(-S2.M_2_PI, S2.GetCurvature(full_));
 

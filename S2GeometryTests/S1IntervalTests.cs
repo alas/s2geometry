@@ -22,7 +22,7 @@ public class S1IntervalTestsBase
     //    quad2 == [Pi/2, Pi]
     //    quad3 == [-Pi, -Pi/2]
     //    quad4 == [-Pi/2, 0]
-    public S1IntervalTestsBase()
+    internal S1IntervalTestsBase()
     {
         empty = S1Interval.Empty;
         full = S1Interval.Full;
@@ -58,7 +58,7 @@ public class S1IntervalTestsBase
     #endregion
 
     [Fact]
-    public void Test_S1IntervalTestBase_ConstructorsAndAccessors()
+    internal void Test_S1IntervalTestBase_ConstructorsAndAccessors()
     {
         // Spot-check the constructors and accessors.
         Assert.Equal(0, quad12.Lo);
@@ -84,7 +84,7 @@ public class S1IntervalTestsBase
     }
 
     [Fact]
-    public void Test_S1IntervalTestBase_SimplePredicates()
+    internal void Test_S1IntervalTestBase_SimplePredicates()
     {
         // is_valid(), IsEmpty, IsFull, IsInverted
         Assert.True(zero.IsValid() && !zero.IsEmpty() && !zero.IsFull());
@@ -98,7 +98,7 @@ public class S1IntervalTestsBase
     }
 
     [Fact]
-    public void Test_S1IntervalTestBase_AlmostEmptyOrFull()
+    internal void Test_S1IntervalTestBase_AlmostEmptyOrFull()
     {
         // Test that rounding errors don't cause intervals that are almost empty or
         // full to be considered empty or full.  The following value is the greatest
@@ -111,7 +111,7 @@ public class S1IntervalTestsBase
     }
 
     [Fact]
-    public void Test_S1IntervalTestBase_GetCenter()
+    internal void Test_S1IntervalTestBase_GetCenter()
     {
         Assert.Equal(quad12.GetCenter(), S2.M_PI_2);
         Assert2.DoubleEqual(new S1Interval(3.1, 2.9).GetCenter(), 3.0 - Math.PI);
@@ -124,7 +124,7 @@ public class S1IntervalTestsBase
     }
 
     [Fact]
-    public void Test_S1IntervalTestBase_GetLength()
+    internal void Test_S1IntervalTestBase_GetLength()
     {
         Assert.Equal(quad12.GetLength(), Math.PI);
         Assert.Equal(0, pi.GetLength());
@@ -136,7 +136,7 @@ public class S1IntervalTestsBase
     }
 
     [Fact]
-    public void Test_S1IntervalTestBase_Complement()
+    internal void Test_S1IntervalTestBase_Complement()
     {
         Assert.True(empty.Complement().IsFull());
         Assert.True(full.Complement().IsEmpty());
@@ -149,7 +149,7 @@ public class S1IntervalTestsBase
     }
 
     [Fact]
-    public void Test_S1IntervalTestBase_Contains()
+    internal void Test_S1IntervalTestBase_Contains()
     {
         // Contains(double), InteriorContains(double)
         Assert.True(!empty.Contains(0) && !empty.Contains(Math.PI) &&
@@ -177,7 +177,7 @@ public class S1IntervalTestsBase
     }
 
     [Fact]
-    public void Test_S1IntervalTestBase_IntervalOps()
+    internal void Test_S1IntervalTestBase_IntervalOps()
     {
         // Contains(S1Interval), InteriorContains(S1Interval),
         // Intersects(), InteriorIntersects(), Union(), Intersection()
@@ -297,7 +297,7 @@ public class S1IntervalTestsBase
     }
 
     [Fact]
-    public void Test_S1IntervalTestBase_AddPoint()
+    internal void Test_S1IntervalTestBase_AddPoint()
     {
         Assert.Equal(zero, S1Interval.AddPoint(empty, 0));
         Assert.Equal(pi, S1Interval.AddPoint(empty, Math.PI));
@@ -313,7 +313,7 @@ public class S1IntervalTestsBase
     }
 
     [Fact]
-    public void Test_S1IntervalTestBase_Project()
+    internal void Test_S1IntervalTestBase_Project()
     {
         S1Interval r = new(-Math.PI, -Math.PI);
         Assert.Equal(Math.PI, r.Project(-Math.PI));
@@ -332,7 +332,7 @@ public class S1IntervalTestsBase
     }
 
     [Fact]
-    public void Test_S1IntervalTestBase_FromPointPair()
+    internal void Test_S1IntervalTestBase_FromPointPair()
     {
         Assert.Equal(S1Interval.FromPointPair(-Math.PI, Math.PI), pi);
         Assert.Equal(S1Interval.FromPointPair(Math.PI, -Math.PI), pi);
@@ -341,7 +341,7 @@ public class S1IntervalTestsBase
     }
 
     [Fact]
-    public void Test_S1IntervalTestBase_Expanded()
+    internal void Test_S1IntervalTestBase_Expanded()
     {
         Assert.Equal(empty.Expanded(1), empty);
         Assert.Equal(full.Expanded(1), full);
@@ -362,7 +362,7 @@ public class S1IntervalTestsBase
     }
 
     [Fact]
-    public void Test_S1IntervalTestBase_ApproxEquals()
+    internal void Test_S1IntervalTestBase_ApproxEquals()
     {
         // Choose two values kLo and kHi such that it's okay to shift an endpoint by
         // kLo (i.e., the resulting interval is equivalent) but not by kHi.
@@ -422,7 +422,7 @@ public class S1IntervalTestsBase
     }
 
     [Fact]
-    public void Test_S1IntervalTestBase_OperatorEquals()
+    internal void Test_S1IntervalTestBase_OperatorEquals()
     {
         Assert.Equal(empty, empty);
         Assert.Equal(full, full);
@@ -430,7 +430,7 @@ public class S1IntervalTestsBase
     }
 
     [Fact]
-    public void Test_S1IntervalTestBase_GetDirectedHausdorffDistance()
+    internal void Test_S1IntervalTestBase_GetDirectedHausdorffDistance()
     {
         Assert2.Near(0.0, empty.GetDirectedHausdorffDistance(empty));
         Assert2.Near(0.0, empty.GetDirectedHausdorffDistance(mid12));
@@ -444,7 +444,7 @@ public class S1IntervalTestsBase
     }
 
     [Fact]
-    public void Test_S1IntervalTestBase_Quad41()
+    internal void Test_S1IntervalTestBase_Quad41()
     {
         Assert.Equal(quad41, new S1Interval(-S2.M_PI_2, S2.M_PI_2));
     }

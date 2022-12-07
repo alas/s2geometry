@@ -7,10 +7,10 @@ public class S2R2RectTests
 {
     private readonly ITestOutputHelper _logger;
 
-    public S2R2RectTests(ITestOutputHelper testOutputHelper) => _logger = testOutputHelper;
+    internal S2R2RectTests(ITestOutputHelper testOutputHelper) => _logger = testOutputHelper;
 
     [Fact]
-    public void Test_S2R2Rect_EmptyRectangles()
+    internal void Test_S2R2Rect_EmptyRectangles()
     {
         // Test basic properties of empty rectangles.
         var empty = S2R2Rect.Empty;
@@ -20,7 +20,7 @@ public class S2R2RectTests
     }
 
     [Fact]
-    public void Test_S2R2Rect_ConstructorsAndAccessors()
+    internal void Test_S2R2Rect_ConstructorsAndAccessors()
     {
         // Check various constructors and accessor methods.
         S2R2Rect d1 = new(new R2Point(0.1, 0), new R2Point(0.25, 1));
@@ -35,7 +35,7 @@ public class S2R2RectTests
     }
 
     [Fact]
-    public void Test_S2R2Rect_FromCell()
+    internal void Test_S2R2Rect_FromCell()
     {
         // FromCell, FromCellId
         Assert.Equal(new S2R2Rect(new R2Point(0, 0), new R2Point(0.5, 0.5)),
@@ -45,7 +45,7 @@ public class S2R2RectTests
     }
 
     [Fact]
-    public void Test_S2R2Rect_FromCenterSize()
+    internal void Test_S2R2Rect_FromCenterSize()
     {
         // FromCenterSize()
         Assert.True(S2R2Rect.FromCenterSize(new R2Point(0.3, 0.5), new R2Point(0.2, 0.4)).
@@ -55,7 +55,7 @@ public class S2R2RectTests
     }
 
     [Fact]
-    public void Test_S2R2Rect_FromPoint()
+    internal void Test_S2R2Rect_FromPoint()
     {
         // FromPoint(), FromPointPair()
         S2R2Rect d1 = new(new R2Point(0.1, 0), new R2Point(0.25, 1));
@@ -67,7 +67,7 @@ public class S2R2RectTests
     }
 
     [Fact]
-    public void Test_S2R2Rect_SimplePredicates()
+    internal void Test_S2R2Rect_SimplePredicates()
     {
         // GetCenter(), GetVertex(), Contains(R2Point), InteriorContains(R2Point).
         R2Point sw1 = new(0, 0.25);
@@ -99,7 +99,7 @@ public class S2R2RectTests
     }
 
     [Fact]
-    public void Test_S2R2Rect_IntervalOperations()
+    internal void Test_S2R2Rect_IntervalOperations()
     {
         // Contains(S2R2Rect), InteriorContains(S2R2Rect),
         // Intersects(), InteriorIntersects(), Union(), Intersection().
@@ -146,7 +146,7 @@ public class S2R2RectTests
     }
 
     [Fact]
-    public void Test_S2R2Rect_AddPoint()
+    internal void Test_S2R2Rect_AddPoint()
     {
         // AddPoint()
         R2Point sw1 = new(0, 0.25);
@@ -162,7 +162,7 @@ public class S2R2RectTests
     }
 
     [Fact]
-    public void Test_S2R2Rect_Project()
+    internal void Test_S2R2Rect_Project()
     {
         S2R2Rect r1 = new(new R1Interval(0, 0.5), new R1Interval(0.25, 0.75));
 
@@ -178,7 +178,7 @@ public class S2R2RectTests
     }
 
     [Fact]
-    public void Test_S2R2Rect_Expanded()
+    internal void Test_S2R2Rect_Expanded()
     {
         // Expanded()
         Assert.True(S2R2Rect.Empty.Expanded(new R2Point(0.1, 0.3)).IsEmpty());
@@ -198,7 +198,7 @@ public class S2R2RectTests
     }
 
     [Fact]
-    public void Test_S2R2Rect_Bounds()
+    internal void Test_S2R2Rect_Bounds()
     {
         // GetCapBound(), GetRectBound()
         var empty = S2R2Rect.Empty;
@@ -229,7 +229,7 @@ public class S2R2RectTests
     }
 
     [Fact]
-    public void Test_S2R2Rect_CellOperations()
+    internal void Test_S2R2Rect_CellOperations()
     {
         // Contains(S2Cell), MayIntersect(S2Cell)
 

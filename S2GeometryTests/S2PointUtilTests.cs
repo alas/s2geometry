@@ -3,7 +3,7 @@ namespace S2Geometry;
 public class S2PointUtilTests
 {
     [Fact]
-    public void Test_S2_Frames() {
+    internal void Test_S2_Frames() {
         var z = new S2Point(0.2, 0.5, -3.3).Normalize();
         var m = S2.GetFrame(z);
         Assert.True(S2.ApproxEquals(m.Col(2), z));
@@ -21,7 +21,7 @@ public class S2PointUtilTests
     }
 
     [Fact]
-    public void Test_S2_Rotate() {
+    internal void Test_S2_Rotate() {
         for (int iter = 0; iter < 1000; ++iter) {
             S2Point axis = S2Testing.RandomPoint();
             S2Point target = S2Testing.RandomPoint();
@@ -29,8 +29,7 @@ public class S2PointUtilTests
             double distance = Math.PI * Math.Pow(1e-15, S2Testing.Random.RandDouble());
             // Sometimes choose points near the far side of the axis.
             if (S2Testing.Random.OneIn(5)) distance = Math.PI - distance;
-            S2Point p = S2.InterpolateAtDistance(S1Angle.FromRadians(distance),
-                                                          axis, target);
+            S2Point p = S2.GetPointOnLine(axis, target, S1Angle.FromRadians(distance));
             // Choose the rotation angle.
             double angle = S2.M_2_PI * Math.Pow(1e-15, S2Testing.Random.RandDouble());
             if (S2Testing.Random.OneIn(3)) angle = -angle;
@@ -40,7 +39,7 @@ public class S2PointUtilTests
     }
 
     [Fact]
-    public void Test_S2_OriginTest() {
+    internal void Test_S2_OriginTest() {
         // To minimize the number of expensive Sign() calculations,
         // S2.Origin should not be nearly collinear with any commonly used edges.
         // Two important categories of such edges are:

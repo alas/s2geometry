@@ -7,8 +7,12 @@ public class S2PredicatesTests
     private const int consistency_iters = 5000; // Number of iterations for precision consistency tests
     private static readonly string[] kPrecisionNames = new[] { "double", "double", "exact", "symbolic" };
 
+    // If `sizeof(long double) == sizeof(double)`, then we will never do
+    // calculations with `long double` and instead fall back to exact.
+    private const Precision kLongDoublePrecision = S2Pred.kHasLongDouble ? Precision.LONG_DOUBLE : Precision.EXACT;
+
     [Fact]
-    public void Test_epsilon_for_digits_recursion()
+    internal void Test_epsilon_for_digits_recursion()
     {
         Assert.Equal(1.0, EpsilonForDigits(0));
         Assert.Equal(MathUtils.Ldexp(1.0, -24), EpsilonForDigits(24));
@@ -19,7 +23,7 @@ public class S2PredicatesTests
     }
 
     [Fact]
-    public void Test_Sign_CollinearPoints()
+    internal void Test_Sign_CollinearPoints()
     {
         // The following points happen to be *exactly collinear* along a line that it
         // approximate tangent to the surface of the unit sphere.  In fact, C is the
@@ -69,7 +73,7 @@ public class S2PredicatesTests
     }
 
     [Fact]
-    public void Test_SignTest_StressTest()
+    internal void Test_SignTest_StressTest()
     {
         // The run time of this test is *cubic* in the parameter below.
         const int kNumPointsPerCircle = 17;
@@ -97,7 +101,7 @@ public class S2PredicatesTests
     }
 
     [Fact]
-    public void Test_StableSignTest_FailureRate()
+    internal void Test_StableSignTest_FailureRate()
     {
         // Verify that StableSign() is able to handle most cases where the three
         // points are as collinear as possible.  (For reference, TriageSign() fails
@@ -113,7 +117,7 @@ public class S2PredicatesTests
     }
 
     [Fact]
-    public void Test_Sign_SymbolicPerturbationCodeCoverage()
+    internal void Test_Sign_SymbolicPerturbationCodeCoverage()
     {
         // The purpose of this test is simply to get code coverage of
         // SymbolicallyPerturbedSign().  Let M_1, M_2, ... be the sequence of
@@ -171,14 +175,14 @@ public class S2PredicatesTests
     }
 
     [Fact]
-    public void Test_CompareDistances_Coverage()
+    internal void Test_CompareDistances_Coverage()
     {
         // This test attempts to exercise all the code paths in all precisions.
 
         // Test TriageCompareSin2Distances.
         TestCompareDistances(new(1, 1, 1), new(1, 1 - 1e-15, 1), new(1, 1, 1 + 2e-15), -1, Precision.DOUBLE, Sin2Distances);
         TestCompareDistances(new(1, 1, 0), new(1, 1 - 1e-15, 1e-21), new(1, 1 - 1e-15, 0), 1, Precision.DOUBLE, Sin2Distances);
-        TestCompareDistances(new(2, 0, 0), new(2, -1, 0), new(2, 1, 1e-8), -1, Precision.LONG_DOUBLE, Sin2Distances);
+        TestCompareDistances(new(2, 0, 0), new(2, -1, 0), new(2, 1, 1e-8), -1, kLongDoublePrecision, Sin2Distances);
         TestCompareDistances(new(2, 0, 0), new(2, -1, 0), new(2, 1, 1e-100), -1, Precision.EXACT, Sin2Distances);
         TestCompareDistances(new(1, 0, 0), new(1, -1, 0), new(1, 1, 0), 1, Precision.SYMBOLIC, Sin2Distances);
         TestCompareDistances(new(1, 0, 0), new(1, 0, 0), new(1, 0, 0), 0, Precision.SYMBOLIC, Sin2Distances);
@@ -186,7 +190,7 @@ public class S2PredicatesTests
         // Test TriageCompareCosDistances.
         TestCompareDistances(new(1, 1, 1), new(1, -1, 0), new(-1, 1, 3e-15), 1, Precision.DOUBLE, CosDistances);
         TestCompareDistances(new(1, 0, 0), new(1, 1e-30, 0), new(-1, 1e-40, 0), -1, Precision.DOUBLE, CosDistances);
-        TestCompareDistances(new(1, 1, 1), new(1, -1, 0), new(-1, 1, 3e-18), 1, Precision.LONG_DOUBLE, CosDistances);
+        TestCompareDistances(new(1, 1, 1), new(1, -1, 0), new(-1, 1, 3e-18), 1, kLongDoublePrecision, CosDistances);
         TestCompareDistances(new(1, 1, 1), new(1, -1, 0), new(-1, 1, 1e-100), 1, Precision.EXACT, CosDistances);
         TestCompareDistances(new(1, 1, 1), new(1, -1, 0), new(-1, 1, 0), -1, Precision.SYMBOLIC, CosDistances);
         TestCompareDistances(new(1, 1, 1), new(1, -1, 0), new(1, -1, 0), 0, Precision.SYMBOLIC, CosDistances);
@@ -194,13 +198,13 @@ public class S2PredicatesTests
         // Test TriageCompareSin2Distances using distances greater than 90 degrees.
         TestCompareDistances(new(1, 1, 0), new(-1, -1 + 1e-15, 0), new(-1, -1, 0), -1, Precision.DOUBLE, MinusSin2Distances);
         TestCompareDistances(new(-1, -1, 0), new(1, 1 - 1e-15, 0), new(1, 1 - 1e-15, 1e-21), 1, Precision.DOUBLE, MinusSin2Distances);
-        TestCompareDistances(new(-1, -1, 0), new(2, 1, 0), new(2, 1, 1e-8), 1, Precision.LONG_DOUBLE, MinusSin2Distances);
+        TestCompareDistances(new(-1, -1, 0), new(2, 1, 0), new(2, 1, 1e-8), 1, kLongDoublePrecision, MinusSin2Distances);
         TestCompareDistances(new(-1, -1, 0), new(2, 1, 0), new(2, 1, 1e-30), 1, Precision.EXACT, MinusSin2Distances);
         TestCompareDistances(new(-1, -1, 0), new(2, 1, 0), new(1, 2, 0), -1, Precision.SYMBOLIC, MinusSin2Distances);
     }
 
     [Fact]
-    public void Test_CompareDistances_Consistency()
+    internal void Test_CompareDistances_Consistency()
     {
         // This test chooses random point pairs that are nearly equidistant from a
         // target point, and then checks that the answer given by a method at one
@@ -227,8 +231,8 @@ public class S2PredicatesTests
             S1Angle r = S1Angle.FromRadians(S2.M_PI_2 * Math.Pow(1e-30, S2Testing.Random.RandDouble()));
             if (S2Testing.Random.OneIn(2)) r = S1Angle.FromRadians(S2.M_PI_2) - r;
             if (S2Testing.Random.OneIn(2)) r = S1Angle.FromRadians(S2.M_PI_2) + r;
-            S2Point a = S2.InterpolateAtDistance(r, x, dir);
-            S2Point b = S2.InterpolateAtDistance(r, x, -dir);
+            S2Point a = S2.GetPointOnLine(x, dir, r);
+            S2Point b = S2.GetPointOnLine(x, -dir, r);
             Precision prec = TestCompareDistancesConsistency(x, a, b, CosDistances);
             if (r.GetDegrees() >= 45 && r.GetDegrees() <= 135) cos_stats.Tally(prec);
             // The Sin2 method is only valid if both distances are less than 90
@@ -260,13 +264,13 @@ public class S2PredicatesTests
     }
 
     [Fact]
-    public void Test_CompareDistance_Coverage()
+    internal void Test_CompareDistance_Coverage()
     {
         // Test TriageCompareSin2Distance.
         TestCompareDistance(new(1, 1, 1), new(1, 1 - 1e-15, 1),
             S1ChordAngle.FromRadians(1e-15), -1, Precision.DOUBLE, Sin2Distance);
         TestCompareDistance(new(1, 0, 0), new(1, 1, 0),
-            S1ChordAngle.FromRadians(S2.M_PI_4), -1, Precision.LONG_DOUBLE, Sin2Distance);
+            S1ChordAngle.FromRadians(S2.M_PI_4), -1, kLongDoublePrecision, Sin2Distance);
         TestCompareDistance(new(1, 1e-40, 0), new(1 + S2.DoubleEpsilon, 1e-40, 0),
             S1ChordAngle.FromRadians(0.9 * S2.DoubleEpsilon * 1e-40), 1, Precision.EXACT, Sin2Distance);
         TestCompareDistance(new(1, 1e-40, 0), new(1 + S2.DoubleEpsilon, 1e-40, 0),
@@ -282,7 +286,7 @@ public class S2PredicatesTests
         TestCompareDistance(new(1, 1, 0), new(1, -1 - 2 * S2.DoubleEpsilon, 0),
             S1ChordAngle.Right, 1, Precision.DOUBLE, CosDistance);
         TestCompareDistance(new(1, 1, 0), new(1, -1 - S2.DoubleEpsilon, 0),
-            S1ChordAngle.Right, 1, Precision.LONG_DOUBLE, CosDistance);
+            S1ChordAngle.Right, 1, kLongDoublePrecision, CosDistance);
         TestCompareDistance(new(1, 1, 0), new(1, -1, 1e-30),
             S1ChordAngle.Right, 0, Precision.EXACT, CosDistance);
         // The angle between these two points is exactly 60 degrees.
@@ -291,7 +295,7 @@ public class S2PredicatesTests
     }
 
     [Fact]
-    public void Test_CompareDistance_Consistency()
+    internal void Test_CompareDistance_Consistency()
     {
         // This test chooses random inputs such that the distance between points X
         // and Y is very close to the threshold distance "r".  It then checks that
@@ -308,7 +312,7 @@ public class S2PredicatesTests
             S1Angle r = S1Angle.FromRadians(S2.M_PI_2 * Math.Pow(1e-30, S2Testing.Random.RandDouble()));
             if (S2Testing.Random.OneIn(2)) r = S1Angle.FromRadians(S2.M_PI_2) - r;
             if (S2Testing.Random.OneIn(5)) r = S1Angle.FromRadians(S2.M_PI_2) + r;
-            S2Point y = S2.InterpolateAtDistance(r, x, dir);
+            S2Point y = S2.GetPointOnLine(x, dir, r);
             Precision prec = TestCompareDistanceConsistency(x, y, new S1ChordAngle(r), CosDistance);
             if (r.GetDegrees() >= 45) cos_stats.Tally(prec);
             if (r.Radians < S2.M_PI_2 - 1e-14)
@@ -320,7 +324,7 @@ public class S2PredicatesTests
     }
 
     [Fact]
-    public void Test_CompareEdgeDistance_Coverage()
+    internal void Test_CompareEdgeDistance_Coverage()
     {
         // Test TriageCompareLineSin2Distance.
         TestCompareEdgeDistance(
@@ -328,7 +332,7 @@ public class S2PredicatesTests
             S1ChordAngle.FromRadians(1e-15 + S2.DoubleEpsilon), -1, Precision.DOUBLE);
         TestCompareEdgeDistance(
             new(1, 1, 1e-15), new(1, 0, 0), new(0, 1, 0),
-            S1ChordAngle.FromRadians(1e-15 + S2.DoubleEpsilon), -1, Precision.LONG_DOUBLE);
+            S1ChordAngle.FromRadians(1e-15 + S2.DoubleEpsilon), -1, kLongDoublePrecision);
         TestCompareEdgeDistance(
             new(1, 1, 1e-40), new(1, 0, 0), new(0, 1, 0),
             S1ChordAngle.FromRadians(1e-40), -1, Precision.EXACT);
@@ -344,7 +348,7 @@ public class S2PredicatesTests
         TestCompareEdgeDistance(
             new(1e-15, 0, 1), new(1, 0, 0), new(0, 1, 0),
             S1ChordAngle.FromRadians(S2.M_PI_2 - 1e-15 - S2.DoubleEpsilon),
-            1, Precision.LONG_DOUBLE);
+            1, kLongDoublePrecision);
         TestCompareEdgeDistance(
             new(1e-40, 0, 1), new(1, 0, 0), new(0, 1, 0),
             S1ChordAngle.Right, -1, Precision.EXACT);
@@ -361,7 +365,7 @@ public class S2PredicatesTests
             S1ChordAngle.Right, 1, Precision.DOUBLE);
         TestCompareEdgeDistance(
             new(1e-18, -1, 0), new(1, 0, 0), new(1, 1, 0),
-            S1ChordAngle.Right, -1, Precision.LONG_DOUBLE);
+            S1ChordAngle.Right, -1, kLongDoublePrecision);
         TestCompareEdgeDistance(
             new(1e-100, -1, 0), new(1, 0, 0), new(1, 1, 0),
             S1ChordAngle.Right, -1, Precision.EXACT);
@@ -375,7 +379,7 @@ public class S2PredicatesTests
             S1ChordAngle.Right, 1, Precision.DOUBLE);
         TestCompareEdgeDistance(
             new(-1, 0, 0), new(1, 0, 0), new(1e-18, 1, 0),
-            S1ChordAngle.Right, 1, Precision.LONG_DOUBLE);
+            S1ChordAngle.Right, 1, kLongDoublePrecision);
         TestCompareEdgeDistance(
             new(-1, 0, 0), new(1, 0, 0), new(1e-100, 1, 0),
             S1ChordAngle.Right, 1, Precision.EXACT);
@@ -385,7 +389,7 @@ public class S2PredicatesTests
     }
 
     [Fact]
-    public void Test_CompareEdgeDistance_Consistency()
+    internal void Test_CompareEdgeDistance_Consistency()
     {
         // This test chooses random inputs such that the distance between "x" and
         // the line (a0, a1) is very close to the threshold distance "r".  It then
@@ -398,7 +402,7 @@ public class S2PredicatesTests
             S2Testing.Random.Reset(iter + 1);  // Easier to reproduce a specific case.
             S2Point a0 = ChoosePoint();
             S1Angle len = S1Angle.FromRadians(Math.PI * Math.Pow(1e-20, S2Testing.Random.RandDouble()));
-            S2Point a1 = S2.InterpolateAtDistance(len, a0, ChoosePoint());
+            S2Point a1 = S2.GetPointOnLine(a0, ChoosePoint(), len);
             if (S2Testing.Random.OneIn(2)) a1 = -a1;
             if (a0 == -a1) continue;  // Not allowed by API.
             S2Point n = S2.RobustCrossProd(a0, a1).Normalize();
@@ -406,7 +410,7 @@ public class S2PredicatesTests
             S2Point a = ((1 - f) * a0 + f * a1).Normalize();
             S1Angle r = S1Angle.FromRadians(S2.M_PI_2 * Math.Pow(1e-20, S2Testing.Random.RandDouble()));
             if (S2Testing.Random.OneIn(2)) r = S1Angle.FromRadians(S2.M_PI_2) - r;
-            S2Point x = S2.InterpolateAtDistance(r, a, n);
+            S2Point x = S2.GetPointOnLine(a, n, r);
             if (S2Testing.Random.OneIn(5))
             {
                 // Replace "x" with a random point that is closest to an edge endpoint.
@@ -437,7 +441,7 @@ public class S2PredicatesTests
     }
 
     [Fact]
-    public void Test_CompareEdgeDirections_Coverage()
+    internal void Test_CompareEdgeDirections_Coverage()
     {
         TestCompareEdgeDirections(new(1, 0, 0), new(1, 1, 0),
                                   new(1, -1, 0), new(1, 0, 0),
@@ -447,7 +451,7 @@ public class S2PredicatesTests
                                   1, Precision.DOUBLE);
         TestCompareEdgeDirections(new(1, 0, 1e-18), new(1, 1, 0),
                                   new(0, -1, 0), new(0, 0, 1),
-                                  1, Precision.LONG_DOUBLE);
+                                  1, kLongDoublePrecision);
         TestCompareEdgeDirections(new(1, 0, 1e-50), new(1, 1, 0),
                                   new(0, -1, 0), new(0, 0, 1),
                                   1, Precision.EXACT);
@@ -457,7 +461,7 @@ public class S2PredicatesTests
     }
 
     [Fact]
-    public void Test_CompareEdgeDirections_Consistency()
+    internal void Test_CompareEdgeDirections_Consistency()
     {
         // This test chooses random pairs of edges that are nearly perpendicular,
         // then checks that the answer given by a method at one level of precision
@@ -469,11 +473,11 @@ public class S2PredicatesTests
             S2Testing.Random.Reset(iter + 1);  // Easier to reproduce a specific case.
             S2Point a0 = ChoosePoint();
             S1Angle a_len = S1Angle.FromRadians(Math.PI * Math.Pow(1e-20, S2Testing.Random.RandDouble()));
-            S2Point a1 = S2.InterpolateAtDistance(a_len, a0, ChoosePoint());
+            S2Point a1 = S2.GetPointOnLine(a0, ChoosePoint(), a_len);
             S2Point a_norm = S2.RobustCrossProd(a0, a1).Normalize();
             S2Point b0 = ChoosePoint();
             S1Angle b_len = S1Angle.FromRadians(Math.PI * Math.Pow(1e-20, S2Testing.Random.RandDouble()));
-            S2Point b1 = S2.InterpolateAtDistance(b_len, b0, a_norm);
+            S2Point b1 = S2.GetPointOnLine(b0, a_norm, b_len);
             if (a0 == -a1 || b0 == -b1) continue;  // Not allowed by API.
             Precision prec = TestCompareEdgeDirectionsConsistency(a0, a1, b0, b1);
             // Don't skew the statistics by recording degenerate inputs.
@@ -503,7 +507,7 @@ public class S2PredicatesTests
     }
 
     [Fact]
-    public void Test_EdgeCircumcenterSign_Coverage()
+    internal void Test_EdgeCircumcenterSign_Coverage()
     {
         TestEdgeCircumcenterSign(
             new(1, 0, 0), new(1, 1, 0),
@@ -520,7 +524,7 @@ public class S2PredicatesTests
         TestEdgeCircumcenterSign(
             new(1, -1, 0), new(1, 1, 0),
             new(1, -1e-5, 1), new(1, 1e-5, -1), new(1, 1 - 1e-9, 1e-5),
-            -1, Precision.LONG_DOUBLE);
+            -1, kLongDoublePrecision);
         TestEdgeCircumcenterSign(
             new(1, -1, 0), new(1, 1, 0),
             new(1, -1e-5, 1), new(1, 1e-5, -1), new(1, 1 - 1e-15, 1e-5),
@@ -544,7 +548,7 @@ public class S2PredicatesTests
     }
 
     [Fact]
-    public void Test_CompareEdgePairDistance_Coverage()
+    internal void Test_CompareEdgePairDistance_Coverage()
     {
         // Since CompareEdgePairDistance() is implemented using other predicates, we
         // only test to verify that those predicates are being used correctly.
@@ -587,7 +591,7 @@ public class S2PredicatesTests
     }
 
     [Fact]
-    public void Test_EdgeCircumcenterSign_Consistency()
+    internal void Test_EdgeCircumcenterSign_Consistency()
     {
         // This test chooses random a random edge X, then chooses a random point Z
         // on the great circle through X, and finally choose three points A, B, C
@@ -605,9 +609,9 @@ public class S2PredicatesTests
             double c1 = (S2Testing.Random.OneIn(2) ? -1 : 1) * Math.Pow(1e-20, S2Testing.Random.RandDouble());
             S2Point z = (c0 * x0 + c1 * x1).Normalize();
             S1Angle r = S1Angle.FromRadians(Math.PI * Math.Pow(1e-30, S2Testing.Random.RandDouble()));
-            S2Point a = S2.InterpolateAtDistance(r, z, ChoosePoint());
-            S2Point b = S2.InterpolateAtDistance(r, z, ChoosePoint());
-            S2Point c = S2.InterpolateAtDistance(r, z, ChoosePoint());
+            S2Point a = S2.GetPointOnLine(z, ChoosePoint(), r);
+            S2Point b = S2.GetPointOnLine(z, ChoosePoint(), r);
+            S2Point c = S2.GetPointOnLine(z, ChoosePoint(), r);
             Precision prec = TestEdgeCircumcenterSignConsistency(x0, x1, a, b, c);
             // Don't skew the statistics by recording degenerate inputs.
             if (x0 == x1)
@@ -655,7 +659,7 @@ public class S2PredicatesTests
     }
 
     [Fact]
-    public void Test_VoronoiSiteExclusion_Coverage()
+    internal void Test_VoronoiSiteExclusion_Coverage()
     {
         // Both sites are closest to edge endpoint X0.
         TestVoronoiSiteExclusion(
@@ -677,11 +681,11 @@ public class S2PredicatesTests
         TestVoronoiSiteExclusion(
             new(1, -1e-10, 1e-5), new(1, 1e-10, -1e-5),
             new(1, -1, 0), new(1, 1, 0), S1ChordAngle.FromRadians(1e-5),
-            S2Pred.Excluded.NEITHER, Precision.LONG_DOUBLE);
+            S2Pred.Excluded.NEITHER, kLongDoublePrecision);
         TestVoronoiSiteExclusion(
             new(1, -1e-17, 1e-5), new(1, 1e-17, -1e-5),
             new(1, -1, 0), new(1, 1, 0), S1ChordAngle.FromRadians(1e-4),
-            S2Pred.Excluded.NEITHER, Precision.LONG_DOUBLE);
+            S2Pred.Excluded.NEITHER, kLongDoublePrecision);
         TestVoronoiSiteExclusion(
             new(1, -1e-20, 1e-5), new(1, 1e-20, -1e-5),
             new(1, -1, 0), new(1, 1, 0), S1ChordAngle.FromRadians(1e-5),
@@ -696,11 +700,11 @@ public class S2PredicatesTests
         TestVoronoiSiteExclusion(
             new(1, -1.00105e-6, 1.0049999999e-5), new(1, 0, -1e-5),
             new(1, -1, 0), new(1, 1, 0), S1ChordAngle.FromRadians(1.005e-5),
-            S2Pred.Excluded.FIRST, Precision.LONG_DOUBLE);
+            S2Pred.Excluded.FIRST, kLongDoublePrecision);
         TestVoronoiSiteExclusion(
             new(1, -1e-6, 1.005e-5), new(1, 0, -1e-5),
             new(1, -1, 0), new(1, 1, 0), S1ChordAngle.FromRadians(1.005e-5),
-            S2Pred.Excluded.FIRST, Precision.LONG_DOUBLE);
+            S2Pred.Excluded.FIRST, kLongDoublePrecision);
         TestVoronoiSiteExclusion(
             new(1, -1e-31, 1.005e-30), new(1, 0, -1e-30),
             new(1, -1, 0), new(1, 1, 0), S1ChordAngle.FromRadians(1.005e-30),
@@ -784,7 +788,7 @@ public class S2PredicatesTests
     }
 
     [Fact]
-    public void Test_VoronoiSiteExclusion_Consistency()
+    internal void Test_VoronoiSiteExclusion_Consistency()
     {
         // This test chooses random a random edge X, a random point P on that edge,
         // and a random threshold distance "r".  It then choose two sites A and B
@@ -802,13 +806,13 @@ public class S2PredicatesTests
             double f = Math.Pow(1e-20, S2Testing.Random.RandDouble());
             S2Point p = ((1 - f) * x0 + f * x1).Normalize();
             S1Angle r1 = S1Angle.FromRadians(S2.M_PI_2 * Math.Pow(1e-20, S2Testing.Random.RandDouble()));
-            S2Point a = S2.InterpolateAtDistance(r1, p, ChoosePoint());
-            S2Point b = S2.InterpolateAtDistance(r1, p, ChoosePoint());
+            S2Point a = S2.GetPointOnLine(p, ChoosePoint(), r1);
+            S2Point b = S2.GetPointOnLine(p, ChoosePoint(), r1);
             // Check that the other API requirements are met.
             S1ChordAngle r = new(r1);
             if (S2Pred.CompareEdgeDistance(a, x0, x1, r) > 0) continue;
             if (S2Pred.CompareEdgeDistance(b, x0, x1, r) > 0) continue;
-            if (S2Pred.CompareDistances(x0, a, b) > 0) { var tmp = a; a = b; b = tmp; }
+            if (S2Pred.CompareDistances(x0, a, b) > 0) { (b, a) = (a, b); }
             if (a == b) continue;
 
             Precision prec = TestVoronoiSiteExclusionConsistency(a, b, x0, x1, r);
@@ -1175,25 +1179,25 @@ public class S2PredicatesTests
 
     // Delegates for testing the various distance calculation methods.
 
-    public delegate int Triage(S2Point x, S2Point y, S1ChordAngle r);
+    internal delegate int Triage(S2Point x, S2Point y, S1ChordAngle r);
 
-    public static readonly Triage Sin2Distance = (S2Point x, S2Point y, S1ChordAngle r)
+    internal static readonly Triage Sin2Distance = (S2Point x, S2Point y, S1ChordAngle r)
         => S2Pred.TriageCompareSin2Distance_Test(x, y, r.Length2);
 
-    public static readonly Triage CosDistance = (S2Point x, S2Point y, S1ChordAngle r)
+    internal static readonly Triage CosDistance = (S2Point x, S2Point y, S1ChordAngle r)
         => S2Pred.TriageCompareCosDistance_Test(x, y, r.Length2);
 
     // The following helper classes allow us to test the various distance
     // calculation methods using a common test framework.
-    public delegate int TriagePoints(S2Point x, S2Point y, S2Point b);
-    public static readonly TriagePoints Sin2Distances = (S2Point x, S2Point a, S2Point b)
+    internal delegate int TriagePoints(S2Point x, S2Point y, S2Point b);
+    internal static readonly TriagePoints Sin2Distances = (S2Point x, S2Point a, S2Point b)
         => S2Pred.TriageCompareSin2Distances_Test(x, a, b);
 
-    public static readonly TriagePoints CosDistances = (S2Point x, S2Point a, S2Point b)
+    internal static readonly TriagePoints CosDistances = (S2Point x, S2Point a, S2Point b)
         => S2Pred.TriageCompareCosDistances_Test(x, a, b);
 
     // Compares distances greater than 90 degrees using sin^2(distance).
-    public static readonly TriagePoints MinusSin2Distances = (S2Point x, S2Point a, S2Point b)
+    internal static readonly TriagePoints MinusSin2Distances = (S2Point x, S2Point a, S2Point b)
         => -S2Pred.TriageCompareSin2Distances_Test(-x, a, b);
 
     #endregion
@@ -1392,7 +1396,7 @@ public class S2PredicatesTests
     }
 
     [Fact]
-    public void Test_Sign_StableSignUnderflow()
+    internal void Test_Sign_StableSignUnderflow()
     {
         // Verify that StableSign returns zero (indicating that the result is
         // uncertain) when its error calculation underflows.
@@ -1414,17 +1418,17 @@ public class S2PredicatesTests
     //
     // It is easier to think about what this test is doing if you imagine that the
     // points are in general position rather than on a great circle.
-    public class SignTest
+    internal class SignTest
     {
         // The following method is used to sort a collection of points in CCW order
         // around a given origin.  It returns true if A comes before B in the CCW
         // ordering (starting at an arbitrary fixed direction).
-        public class LessCCW : IComparer<S2Point>
+        internal class LessCCW : IComparer<S2Point>
         {
             private readonly S2Point origin_;
             private readonly S2Point start_;
 
-            public LessCCW(S2Point origin, S2Point start)
+            internal LessCCW(S2Point origin, S2Point start)
             { origin_ = origin; start_ = start; }
 
             public int Compare(S2Point a, S2Point b)
@@ -1434,12 +1438,12 @@ public class S2PredicatesTests
         }
     }
 
-    public static class StableSignTest
+    internal static class StableSignTest
     {
         // Estimate the probability that S2.StableSign() will not be able to compute
         // the determinant sign of a triangle A, B, C consisting of three points
         // that are as collinear as possible and spaced the given distance apart.
-        public static double GetFailureRate(double km)
+        internal static double GetFailureRate(double km)
         {
             int kIters = 1000;
             int failure_count = 0;
@@ -1463,17 +1467,17 @@ public class S2PredicatesTests
         }
     }
 
-    public enum Precision { DOUBLE, LONG_DOUBLE, EXACT, SYMBOLIC, NUM_PRECISIONS };
+    internal enum Precision { DOUBLE, LONG_DOUBLE, EXACT, SYMBOLIC, NUM_PRECISIONS };
 
     // A helper class that keeps track of how often each precision was used and
     // generates a string for logging purposes.
-    public class PrecisionStats
+    internal class PrecisionStats
     {
         private readonly int[] counts_ = new int[4].Fill(0); // NUM_PRECISIONS
 
-        public PrecisionStats() { }
+        internal PrecisionStats() { }
 
-        public void Tally(Precision precision) { ++counts_[(int)precision]; }
+        internal void Tally(Precision precision) { ++counts_[(int)precision]; }
 
         public override string ToString()
         {

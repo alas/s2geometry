@@ -3,7 +3,7 @@ namespace S2Geometry;
 public class S2EdgeDistancesTests
 {
     [Fact]
-    public void Test_S2_GetUpdateMinDistanceMaxError()
+    internal void Test_S2_GetUpdateMinDistanceMaxError()
     {
         // Verify that the error is "reasonable" for a sampling of distances.
         CheckUpdateMinDistanceMaxError(0, 1.5e-15);
@@ -18,7 +18,7 @@ public class S2EdgeDistancesTests
     }
 
     [Fact]
-    public void Test_S2_GetUpdateMinInteriorDistanceMaxError()
+    internal void Test_S2_GetUpdateMinInteriorDistanceMaxError()
     {
         // Check that the error bound returned by
         // GetUpdateMinInteriorDistanceMaxError() is large enough.
@@ -52,7 +52,7 @@ public class S2EdgeDistancesTests
     }
 
     [Fact]
-    public void Test_S2_Distance()
+    internal void Test_S2_Distance()
     {
         CheckDistance(new(1, 0, 0), new(1, 0, 0), new(0, 1, 0), 0, new(1, 0, 0));
         CheckDistance(new(0, 1, 0), new(1, 0, 0), new(0, 1, 0), 0, new(0, 1, 0));
@@ -76,7 +76,7 @@ public class S2EdgeDistancesTests
     }
 
     [Fact]
-    public void Test_S2_UpdateMinInteriorDistanceLowerBoundOptimizationIsConservative()
+    internal void Test_S2_UpdateMinInteriorDistanceLowerBoundOptimizationIsConservative()
     {
         // Verifies that AlwaysUpdateMinInteriorDistance() computes the lower bound
         // on the true distance conservatively.  (This test used to fail.)
@@ -90,7 +90,7 @@ public class S2EdgeDistancesTests
     }
 
     [Fact]
-    public void Test_S2_UpdateMinInteriorDistanceRejectionTestIsConservative()
+    internal void Test_S2_UpdateMinInteriorDistanceRejectionTestIsConservative()
     {
         // This test checks several representative cases where previously
         // UpdateMinInteriorDistance was failing to update the distance because a
@@ -123,7 +123,7 @@ public class S2EdgeDistancesTests
     }
 
     [Fact]
-    public void Test_S2_MaxDistance()
+    internal void Test_S2_MaxDistance()
     {
         CheckMaxDistance(new(1, 0, 1), new(1, 0, 0), new(0, 1, 0), S2.M_PI_2);
         CheckMaxDistance(new(1, 0, -1), new(1, 0, 0), new(0, 1, 0), S2.M_PI_2);
@@ -173,7 +173,7 @@ public class S2EdgeDistancesTests
     }
 
     [Fact]
-    public void Test_S2_Interpolate()
+    internal void Test_S2_Interpolate()
     {
         // Choose test points designed to expose floating-point errors.
         S2Point p1 = new S2Point(0.1, 1e-30, 0.3).Normalize();
@@ -218,7 +218,7 @@ public class S2EdgeDistancesTests
     }
 
     [Fact]
-    public void Test_S2_InterpolateCanExtrapolate()
+    internal void Test_S2_InterpolateCanExtrapolate()
     {
         S2Point i = new(1, 0, 0);
         S2Point j = new(0, 1, 0);
@@ -251,7 +251,7 @@ public class S2EdgeDistancesTests
     }
 
     [Fact]
-    public void Test_S2_RepeatedInterpolation()
+    internal void Test_S2_RepeatedInterpolation()
     {
         // Check that points do not drift away from unit length when repeated
         // interpolations are done.
@@ -268,7 +268,7 @@ public class S2EdgeDistancesTests
     }
 
     [Fact]
-    public void Test_S2_EdgePairMinDistance()
+    internal void Test_S2_EdgePairMinDistance()
     {
         // One edge is degenerate.
         CheckEdgePairMinDistance(new S2Point(1, 0, 1), new S2Point(1, 0, 1),
@@ -331,7 +331,7 @@ public class S2EdgeDistancesTests
     }
 
     [Fact]
-    public void Test_S2_EdgePairMaxDistance()
+    internal void Test_S2_EdgePairMaxDistance()
     {
         // Standard situation.  Same hemisphere, not degenerate.
         CheckEdgePairMaxDistance(new S2Point(1, 0, 0), new S2Point(0, 1, 0),
@@ -379,7 +379,7 @@ public class S2EdgeDistancesTests
     }
 
     [Fact]
-    public void Test_S2_EdgeBNearEdgeA()
+    internal void Test_S2_EdgeBNearEdgeA()
     {
         // Edge is near itself.
         Assert.True(IsEdgeBNearEdgeA("5:5, 10:-5", "5:5, 10:-5", 1e-6));
@@ -519,7 +519,7 @@ public class S2EdgeDistancesTests
     }
 
     [Fact]
-    public void Test_S2_ProjectError()
+    internal void Test_S2_ProjectError()
     {
         for (int iter = 0; iter < 1000; ++iter)
         {
@@ -622,7 +622,7 @@ public class S2EdgeDistancesTests
     }
 
     [Fact]
-    public void Test_S2_GetPointToLeftS1Angle()
+    internal void Test_S2_GetPointToLeftS1Angle()
     {
         S2Point a = S2LatLng.FromDegrees(0, 0).ToPoint();
         S2Point b = S2LatLng.FromDegrees(0, 5).ToPoint();  // east
@@ -635,7 +635,7 @@ public class S2EdgeDistancesTests
     }
 
     [Fact]
-    public void Test_S2_GetPointToLeftS1ChordAngle()
+    internal void Test_S2_GetPointToLeftS1ChordAngle()
     {
         S2Point a = S2LatLng.FromDegrees(0, 0).ToPoint();
         S2Point b = S2LatLng.FromDegrees(0, 5).ToPoint();  // east
@@ -648,7 +648,7 @@ public class S2EdgeDistancesTests
     }
 
     [Fact]
-    public void Test_S2_GetPointToRightS1Angle()
+    internal void Test_S2_GetPointToRightS1Angle()
     {
         S2Point a = S2LatLng.FromDegrees(0, 0).ToPoint();
         S2Point b = S2LatLng.FromDegrees(0, 5).ToPoint();  // east
@@ -661,7 +661,7 @@ public class S2EdgeDistancesTests
     }
 
     [Fact]
-    public void Test_S2_GetPointToRightS1ChordAngle()
+    internal void Test_S2_GetPointToRightS1ChordAngle()
     {
         S2Point a = S2LatLng.FromDegrees(0, 0).ToPoint();
         S2Point b = S2LatLng.FromDegrees(0, 5).ToPoint();  // east

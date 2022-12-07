@@ -5,11 +5,11 @@ namespace S2Geometry;
 
 using EdgeVector = List<S2Shape.Edge>;
 
-public class GraphClone
+internal class GraphClone
 {
-    public GraphClone() { }  // Must call Init().
-    public GraphClone(Graph g) { Init(g); }
-    public void Init(Graph g)
+    internal GraphClone() { }  // Must call Init().
+    internal GraphClone(Graph g) { Init(g); }
+    internal void Init(Graph g)
     {
         options_ = g.Options;
         vertices_ = g.Vertices;
@@ -24,7 +24,7 @@ public class GraphClone
             input_edge_id_set_lexicon_, label_set_ids_, label_set_lexicon_,
             is_full_polygon_predicate_);
     }
-    public Graph Graph() => g_;
+    internal Graph Graph() => g_;
 
     private GraphOptions options_;
     private List<S2Point> vertices_;
@@ -39,7 +39,7 @@ public class GraphClone
 
 // A layer type that copies an Graph into a GraphClone object
 // (which owns the underlying data, unlike Graph itself).
-public class GraphCloningLayer : Layer
+internal class GraphCloningLayer : Layer
 {
     private readonly GraphClone gc_;
 
@@ -56,7 +56,7 @@ public class GraphCloningLayer : Layer
 // A layer type that copies an Graph and appends it to a vector,
 // and appends the corresponding GraphClone object (which owns the Graph data)
 // to a separate vector.
-public class GraphAppendingLayer : Layer
+internal class GraphAppendingLayer : Layer
 {
     private readonly List<Graph> graphs_;
     private readonly List<GraphClone> clones_;
@@ -80,7 +80,7 @@ public class GraphAppendingLayer : Layer
 // (including multiplicities).  This allows testing whether an algorithm
 // produces a given multiset of edges without needing to specify a particular
 // ordering of those edges.
-public class IndexMatchingLayer : Layer
+internal class IndexMatchingLayer : Layer
 {
     // Tests whether the edges passed to its Build() method match the edges in
     // the given S2ShapeIndex (including multiplicities).  If any differences
@@ -89,7 +89,7 @@ public class IndexMatchingLayer : Layer
     // If "dimension" is non-negative then only shapes of the given dimension
     // are used.  (This makes allows use with classes such as S2BooleanOperation
     // that output one S2Builder::Graph for each dimension.)
-    public IndexMatchingLayer(GraphOptions graph_options,
+    internal IndexMatchingLayer(GraphOptions graph_options,
                               S2ShapeIndex index, int dimension = -1)
     {
         graph_options_ = graph_options; index_ = index; dimension_ = dimension;

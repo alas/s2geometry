@@ -6,10 +6,10 @@ public class S2CellUnionTests
 {
     private readonly ITestOutputHelper _logger;
 
-    public S2CellUnionTests(ITestOutputHelper logger) { _logger = logger; }
+    internal S2CellUnionTests(ITestOutputHelper logger) { _logger = logger; }
 
     [Fact]
-    public void Test_S2CellUnion_DefaultConstructor()
+    internal void Test_S2CellUnion_DefaultConstructor()
     {
         var ids = new List<S2CellId>();
         var empty = new S2CellUnion(ids);
@@ -17,7 +17,7 @@ public class S2CellUnionTests
     }
 
     [Fact]
-    public void Test_S2CellUnion_S2CellIdConstructor()
+    internal void Test_S2CellUnion_S2CellIdConstructor()
     {
         var face1_id = S2CellId.FromFace(1);
         var face1_union = new S2CellUnion(new List<S2CellId> { face1_id });
@@ -26,7 +26,7 @@ public class S2CellUnionTests
     }
 
     [Fact]
-    public void Test_S2CellUnion_WholeSphere()
+    internal void Test_S2CellUnion_WholeSphere()
     {
         var whole_sphere = S2CellUnion.WholeSphere();
         Assert.Equal(whole_sphere.LeafCellsCovered(), 6 * (1UL << 60));
@@ -35,7 +35,7 @@ public class S2CellUnionTests
     }
 
     [Fact]
-    public void Test_S2CellUnion_DuplicateCellsNotValid()
+    internal void Test_S2CellUnion_DuplicateCellsNotValid()
     {
         var id = new S2CellId(new S2Point(1, 0, 0));
         var cell_union = FromVerbatimNoChecks(new List<S2CellId> { id, id });
@@ -43,7 +43,7 @@ public class S2CellUnionTests
     }
 
     [Fact]
-    public void Test_S2CellUnion_UnsortedCellsNotValid()
+    internal void Test_S2CellUnion_UnsortedCellsNotValid()
     {
         var id = new S2CellId(new S2Point(1, 0, 0)).Parent(10);
         var cell_union = FromVerbatimNoChecks(new List<S2CellId> { id, id.Prev() });
@@ -51,7 +51,7 @@ public class S2CellUnionTests
     }
 
     [Fact]
-    public void Test_S2CellUnion_InvalidCellIdNotValid()
+    internal void Test_S2CellUnion_InvalidCellIdNotValid()
     {
         Assert.False(S2CellId.None.IsValid());
         var cell_union = FromVerbatimNoChecks(new List<S2CellId> { S2CellId.None });
@@ -59,7 +59,7 @@ public class S2CellUnionTests
     }
 
     [Fact]
-    public void Test_S2CellUnion_InvalidCellIdNotValidWithDebugFlag()
+    internal void Test_S2CellUnion_InvalidCellIdNotValidWithDebugFlag()
     {
         // Manually save and restore flag, to preserve test state in opensource
         // without gflags.
@@ -69,7 +69,7 @@ public class S2CellUnionTests
     }
 
     [Fact]
-    public void Test_S2CellUnion_IsNormalized()
+    internal void Test_S2CellUnion_IsNormalized()
     {
         var id = new S2CellId(new S2Point(1, 0, 0)).Parent(10);
         var cell_union = S2CellUnion.FromVerbatim(
@@ -79,7 +79,7 @@ public class S2CellUnionTests
     }
 
     [Fact]
-    public void Test_S2CellUnion_Normalize()
+    internal void Test_S2CellUnion_Normalize()
     {
         // Try a bunch of random test cases, and keep track of average
         // statistics for normalization (to see if they agree with the
@@ -220,7 +220,7 @@ public class S2CellUnionTests
     }
 
     [Fact]
-    public void Test_S2CellUnion_Expand()
+    internal void Test_S2CellUnion_Expand()
     {
         // This test generates coverings for caps of random sizes, expands
         // the coverings by a random radius, and then make sure that the new
@@ -274,7 +274,7 @@ public class S2CellUnionTests
     }
 
     [Fact]
-    public void Test_S2CellUnion_EncodeDecode()
+    internal void Test_S2CellUnion_EncodeDecode()
     {
         var cell_ids = new List<S2CellId>{new S2CellId(0x33),
                            new S2CellId(0x8e3748fab),
@@ -290,7 +290,7 @@ public class S2CellUnionTests
     }
 
     [Fact]
-    public void Test_S2CellUnion_EncodeDecodeEmpty()
+    internal void Test_S2CellUnion_EncodeDecodeEmpty()
     {
         S2CellUnion empty_cell_union = new();
 
@@ -303,7 +303,7 @@ public class S2CellUnionTests
     }
 
     [Fact]
-    public void Test_S2CellUnion_FromMinMax()
+    internal void Test_S2CellUnion_FromMinMax()
     {
         // Check the very first leaf cell and face cell.
         S2CellId face1_id = S2CellId.FromFace(0);
@@ -320,13 +320,16 @@ public class S2CellUnionTests
         {
             S2CellId x = S2Testing.GetRandomCellId(S2.kMaxCellLevel);
             S2CellId y = S2Testing.GetRandomCellId(S2.kMaxCellLevel);
-            if (x > y) { var tmp = x; x = y; y = tmp; }
+            if (x > y)
+            {
+                (y, x) = (x, y);
+            }
             TestFromMinMax(x, y);
         }
     }
 
     [Fact]
-    public void Test_S2CellUnion_FromBeginEnd()
+    internal void Test_S2CellUnion_FromBeginEnd()
     {
         // Since FromMinMax() is implemented in terms of FromBeginEnd(), we
         // focus on test cases that generate an empty range.
@@ -354,7 +357,7 @@ public class S2CellUnionTests
     }
 
     [Fact]
-    public void Test_S2CellUnion_EmptyMutableOps()
+    internal void Test_S2CellUnion_EmptyMutableOps()
     {
         S2CellUnion empty_cell_union = new();
 
@@ -379,7 +382,7 @@ public class S2CellUnionTests
     }
 
     [Fact]
-    public void Test_S2CellUnion_EmptyAndNonEmptyBooleanOps()
+    internal void Test_S2CellUnion_EmptyAndNonEmptyBooleanOps()
     {
         S2CellUnion empty_cell_union = new();
         S2CellId face1_id = S2CellId.FromFace(1);
@@ -430,7 +433,7 @@ public class S2CellUnionTests
     }
 
     [Fact]
-    public void Test_S2CellUnion_Clear()
+    internal void Test_S2CellUnion_Clear()
     {
         S2CellId face1_id = S2CellId.FromFace(1);
         S2CellUnion face1_union = new(new List<S2CellId> { face1_id });
@@ -446,7 +449,7 @@ public class S2CellUnionTests
     }
 
     [Fact]
-    public void Test_S2CellUnion_RefuseToDecode()
+    internal void Test_S2CellUnion_RefuseToDecode()
     {
         List<S2CellId> cellids = new();
         S2CellId id = S2CellId.Begin(S2.kMaxCellLevel);
@@ -464,7 +467,7 @@ public class S2CellUnionTests
     }
 
     [Fact]
-    public void Test_S2CellUnion_Release()
+    internal void Test_S2CellUnion_Release()
     {
         S2CellId face1_id = S2CellId.FromFace(1);
         S2CellUnion face1_union = new(new List<S2CellId> { face1_id });
@@ -478,7 +481,7 @@ public class S2CellUnionTests
     }
 
     [Fact]
-    public void Test_S2CellUnion_LeafCellsCovered()
+    internal void Test_S2CellUnion_LeafCellsCovered()
     {
         S2CellUnion cell_union = new();
         Assert.Equal(0UL, cell_union.LeafCellsCovered());
@@ -517,7 +520,7 @@ public class S2CellUnionTests
     }
 
     [Fact]
-    public void Test_S2CellUnion_WorksInContainers()
+    internal void Test_S2CellUnion_WorksInContainers()
     {
         var ids = new List<S2CellId> { S2CellId.FromFace(1) };
         var union_vector = new List<S2CellUnion> { new S2CellUnion(ids) };
@@ -525,20 +528,20 @@ public class S2CellUnionTests
     }
 
     [Fact]
-    public void Test_S2CellUnion_ToStringEmpty()
+    internal void Test_S2CellUnion_ToStringEmpty()
     {
         Assert.Equal(new S2CellUnion().ToString(), "Size:0 S2CellIds:");
     }
 
     [Fact]
-    public void Test_S2CellUnion_ToStringOneCell()
+    internal void Test_S2CellUnion_ToStringOneCell()
     {
         Assert.Equal(new S2CellUnion(new List<S2CellId> { S2CellId.FromFace(1)}).ToString(),
             "Size:1 S2CellIds:3");
     }
 
     [Fact]
-    public void Test_S2CellUnion_ToStringTwoCells()
+    internal void Test_S2CellUnion_ToStringTwoCells()
     {
         Assert.Equal(
             new S2CellUnion(new List<S2CellId> { S2CellId.FromFace(1), S2CellId.FromFace(2)}).ToString(),
@@ -546,7 +549,7 @@ public class S2CellUnionTests
     }
 
     [Fact]
-    public void Test_S2CellUnion_ToStringOver500Cells()
+    internal void Test_S2CellUnion_ToStringOver500Cells()
     {
         List<S2CellId> ids=new();
         new S2CellUnion(new List<S2CellId> { S2CellId.FromFace(1)}).Denormalize(6, 1, ids);  // 4096 cells
@@ -556,7 +559,7 @@ public class S2CellUnionTests
     }
 
     [Fact]
-    public void Test_S2CellUnion_IntersectionOneInputNormalized()
+    internal void Test_S2CellUnion_IntersectionOneInputNormalized()
     {
         S2CellId id = S2CellId.FromFace(3);  // arbitrary
         S2CellUnion parent=new(new List<S2CellId> { id });

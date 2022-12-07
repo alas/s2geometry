@@ -4,10 +4,10 @@ public class S2LatLngTests
 {
     private readonly ITestOutputHelper _logger;
 
-    public S2LatLngTests(ITestOutputHelper logger) { _logger = logger; }
+    internal S2LatLngTests(ITestOutputHelper logger) { _logger = logger; }
 
     [Fact]
-    public void Test_S2LatLng_TestBasic()
+    internal void Test_S2LatLng_TestBasic()
     {
         S2LatLng ll_rad = S2LatLng.FromRadians(S2.M_PI_4, S2.M_PI_2);
         Assert.Equal(S2.M_PI_4, ll_rad.LatRadians);
@@ -52,7 +52,7 @@ public class S2LatLngTests
     }
 
     [Fact]
-    public void Test_S2LatLng_TestConversion()
+    internal void Test_S2LatLng_TestConversion()
     {
         // Test special cases: poles, "date line"
         Assert2.DoubleEqual(90.0, new S2LatLng(S2LatLng.FromDegrees(90.0, 65.0).ToPoint()).Lat().GetDegrees());
@@ -74,7 +74,7 @@ public class S2LatLngTests
     }
 
     [Fact]
-    public void Test_S2LatLng_NegativeZeros()
+    internal void Test_S2LatLng_NegativeZeros()
     {
         Assert.True(IsIdentical(
             S2LatLng.Latitude(new S2Point(1.0, 0.0, -0.0)).Radians, +0.0));
@@ -89,7 +89,7 @@ public class S2LatLngTests
     }
 
     [Fact]
-    public void Test_S2LatLng_TestDistance()
+    internal void Test_S2LatLng_TestDistance()
     {
         Assert.Equal(0.0, S2LatLng.FromDegrees(90, 0).GetDistance(S2LatLng.FromDegrees(90, 0)).Radians);
         Assert2.Near(77.0, S2LatLng.FromDegrees(-37, 25).GetDistance(S2LatLng.FromDegrees(-66, -155)).GetDegrees(), 1e-13);
@@ -98,7 +98,7 @@ public class S2LatLngTests
     }
 
     [Fact]
-    public void Test_S2LatLng_TestToString()
+    internal void Test_S2LatLng_TestToString()
     {
         (double lat, double lng, double expected_lat, double expected_lng)[] values =
             {
@@ -126,7 +126,7 @@ public class S2LatLngTests
     }
 
     [Fact]
-    public void Test_S2LatLng_TestHashCode()
+    internal void Test_S2LatLng_TestHashCode()
     {
         Dictionary<S2LatLng, int> map = new()
         {

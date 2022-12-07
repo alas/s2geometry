@@ -3,7 +3,21 @@ namespace S2Geometry;
 public class S2CentroidTests
 {
     [Fact]
-    public void Test_TriangleTrueCentroid_SmallTriangles() {
+    internal void Test_PlanarCentroid_SemiEquator()
+    {
+        // Test the centroid of polyline ABC that follows the equator and consists
+        // of two 90 degree edges (i.e., C = -A).  The centroid should point toward
+        // B and have a norm of 1/3.  This is not a thorough test of
+        // PlanarCentroid; it is only intended to prevent it from being detected as
+        // dead code.
+        S2Point a=new(0, -1, 0), b=new(1, 0, 0), c=new(0, 1, 0);
+        S2Point centroid = S2Centroid.PlanarCentroid(a, b, c);
+        Assert.True(S2.ApproxEquals(b, centroid.Normalize()));
+        Assert.Equal(1 / 3.0, centroid.Norm());
+    }
+
+    [Fact]
+    internal void Test_TriangleTrueCentroid_SmallTriangles() {
         // Test TrueCentroid() with very small triangles.  This test assumes that
         // the triangle is small enough so that it is nearly planar.
         for (int iter = 0; iter < 100; ++iter) {
@@ -22,7 +36,7 @@ public class S2CentroidTests
     }
 
     [Fact]
-    public void Test_EdgeTrueCentroid_SemiEquator() {
+    internal void Test_EdgeTrueCentroid_SemiEquator() {
         // Test the centroid of polyline ABC that follows the equator and consists
         // of two 90 degree edges (i.e., C = -A).  The centroid (multiplied by
         // length) should point toward B and have a norm of 2.0.  (The centroid
@@ -34,7 +48,7 @@ public class S2CentroidTests
     }
 
     [Fact]
-    public void Test_EdgeTrueCentroid_GreatCircles() {
+    internal void Test_EdgeTrueCentroid_GreatCircles() {
         // Construct random great circles and divide them randomly into segments.
         // Then make sure that the centroid is approximately at the center of the
         // sphere.  Note that because of the way the centroid is computed, it does

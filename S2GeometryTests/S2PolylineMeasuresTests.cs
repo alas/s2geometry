@@ -3,7 +3,7 @@ namespace S2Geometry;
 public class S2PolylineMeasuresTests
 {
     [Fact]
-    public void Test_GetLengthAndCentroid_GreatCircles()
+    internal void Test_GetLengthAndCentroid_GreatCircles()
     {
         // Construct random great circles and divide them randomly into segments.
         // Then make sure that the length and centroid are correct.  Note that

@@ -7,7 +7,7 @@ public class S2PolylineAlignmentTests
     // PRIVATE API TESTS
 
     [Fact]
-    public void Test_S2PolylineAlignmentTest_CreatesWindowFromStrides() {
+    internal void Test_S2PolylineAlignmentTest_CreatesWindowFromStrides() {
         //    0 1 2 3 4 5
         //  0 * * * . . .
         //  1 . * * * . .
@@ -23,7 +23,7 @@ public class S2PolylineAlignmentTests
     }
 
     [Fact]
-    public void Test_S2PolylineAlignmentTest_CreatesWindowFromWarpPath() {
+    internal void Test_S2PolylineAlignmentTest_CreatesWindowFromWarpPath() {
         //   0 1 2 3 4 5
         // 0 * . . . . .
         // 1 * * . . . .
@@ -49,7 +49,7 @@ public class S2PolylineAlignmentTests
     }
 
     [Fact]
-    public void Test_S2PolylineAlignmentTest_GeneratesWindowDebugString() {
+    internal void Test_S2PolylineAlignmentTest_GeneratesWindowDebugString() {
         var strides = new[]{ (0, 4), (0, 4), (0, 4), (0, 4) };
         var w = new S2PolylineAlignment.Window(strides);
         string expected_output = @"
@@ -62,7 +62,7 @@ Assert.Equal(("\r\n" + w).NoCR(), expected_output.NoCR());
     }
 
     [Fact]
-    public void Test_S2PolylineAlignmentTest_UpsamplesWindowByFactorOfTwo() {
+    internal void Test_S2PolylineAlignmentTest_UpsamplesWindowByFactorOfTwo() {
         //   0 1 2 3 4 5
         // 0 * * * . . .
         // 1 . * * * . .
@@ -89,7 +89,7 @@ Assert.Equal(("\r\n" + w).NoCR(), expected_output.NoCR());
     }
 
     [Fact]
-    public void Test_S2PolylineAlignmentTest_UpsamplesWindowXAxisByFactorOfThree() {
+    internal void Test_S2PolylineAlignmentTest_UpsamplesWindowXAxisByFactorOfThree() {
         //   0 1 2 3 4 5
         // 0 * * * . . .
         // 1 . * * * . .
@@ -110,7 +110,7 @@ Assert.Equal(("\r\n" + w_upscaled).NoCR(), expected_output.NoCR());
     }
 
     [Fact]
-    public void Test_S2PolylineAlignmentTest_UpsamplesWindowYAxisByFactorOfThree() {
+    internal void Test_S2PolylineAlignmentTest_UpsamplesWindowYAxisByFactorOfThree() {
         //   0 1 2 3 4 5
         // 0 * * * . . .
         // 1 . * * * . .
@@ -142,7 +142,7 @@ Assert.Equal(("\r\n" + w_upscaled).NoCR(), expected_output.NoCR());
     }
 
     [Fact]
-    public void Test_S2PolylineAlignmentTest_UpsamplesWindowByNonInteger() {
+    internal void Test_S2PolylineAlignmentTest_UpsamplesWindowByNonInteger() {
         //   0 1 2 3 4 5
         // 0 * * * . . .
         // 1 . * * * . .
@@ -179,7 +179,7 @@ Assert.Equal(("\r\n" + w_upscaled).NoCR(), expected_output.NoCR());
     }
 
     [Fact]
-    public void Test_S2PolylineAlignmentTest_DilatesWindowByRadiusZero() {
+    internal void Test_S2PolylineAlignmentTest_DilatesWindowByRadiusZero() {
         //   0 1 2 3 4 5
         // 0 * * * . . .
         // 1 . . * . . .
@@ -201,7 +201,7 @@ Assert.Equal(("\r\n" + w_d).NoCR(), expected_output.NoCR());
     }
 
     [Fact]
-    public void Test_S2PolylineAlignmentTest_DilatesWindowByRadiusOne() {
+    internal void Test_S2PolylineAlignmentTest_DilatesWindowByRadiusOne() {
         //   0 1 2 3 4 5 (x's are the spots that we dilate into)
         // 0 * * * x . .
         // 1 x x * x . .
@@ -223,7 +223,7 @@ Assert.Equal(("\r\n" + w_d).NoCR(), expected_output.NoCR());
     }
 
     [Fact]
-    public void Test_S2PolylineAlignmentTest_DilatesWindowByRadiusTwo() {
+    internal void Test_S2PolylineAlignmentTest_DilatesWindowByRadiusTwo() {
         //   0 1 2 3 4 5 (x's are the spots that we dilate into)
         // 0 * * * x x .
         // 1 x x * x x x
@@ -245,7 +245,7 @@ Assert.Equal(("\r\n" + w_d).NoCR(), expected_output.NoCR());
     }
 
     [Fact]
-    public void Test_S2PolylineAlignmentTest_DilatesWindowByVeryLargeRadius() {
+    internal void Test_S2PolylineAlignmentTest_DilatesWindowByVeryLargeRadius() {
         var strides = new []{
             (0, 3), (2, 3), (2, 3), (2, 4), (3, 6)};
         var w = new S2PolylineAlignment.Window(strides);
@@ -261,7 +261,7 @@ Assert.Equal(("\r\n" + w_d).NoCR(), expected_output.NoCR());
     }
 
     [Fact]
-    public void Test_S2PolylineAlignmentTest_HalvesZeroLengthPolyline() {
+    internal void Test_S2PolylineAlignmentTest_HalvesZeroLengthPolyline() {
         var line = MakePolylineOrDie("");
         var halved = S2PolylineAlignment.HalfResolution(line);
         var correct = MakePolylineOrDie("");
@@ -269,7 +269,7 @@ Assert.Equal(("\r\n" + w_d).NoCR(), expected_output.NoCR());
     }
 
     [Fact]
-    public void Test_S2PolylineAlignmentTest_HalvesEvenLengthPolyline() {
+    internal void Test_S2PolylineAlignmentTest_HalvesEvenLengthPolyline() {
         var line = MakePolylineOrDie("0:0, 0:1, 0:2, 1:2");
         var halved = S2PolylineAlignment.HalfResolution(line);
         var correct = MakePolylineOrDie("0:0, 0:2");
@@ -277,17 +277,17 @@ Assert.Equal(("\r\n" + w_d).NoCR(), expected_output.NoCR());
     }
 
     [Fact]
-    public void Test_S2PolylineAlignmentTest_HalvesOddLengthPolyline() {
+    internal void Test_S2PolylineAlignmentTest_HalvesOddLengthPolyline() {
         var line = MakePolylineOrDie("0:0, 0:1, 0:2, 1:2, 3:5");
         var halved = S2PolylineAlignment.HalfResolution(line);
         var correct = MakePolylineOrDie("0:0, 0:2, 3:5");
         Assert.Equal(halved.ToDebugString(), correct.ToDebugString());
     }
 
-    // PUBLIC API TESTS
+    // internal API TESTS
 
     [Fact]
-    public void Test_S2PolylineAlignmentTest_ExactLengthZeroInputs() {
+    internal void Test_S2PolylineAlignmentDeathTest_ExactLengthZeroInputs() {
         var a = MakePolylineOrDie("");
         var b = MakePolylineOrDie("");
         var correct_path = new WarpPath{ };
@@ -295,7 +295,7 @@ Assert.Equal(("\r\n" + w_d).NoCR(), expected_output.NoCR());
     }
 
     [Fact]
-    public void Test_S2PolylineAlignmentTest_ExactLengthZeroInputA() {
+    internal void Test_S2PolylineAlignmentDeathTest_ExactLengthZeroInputA() {
         var a = MakePolylineOrDie("");
         var b = MakePolylineOrDie("0:0, 1:1, 2:2");
         WarpPath correct_path = new();
@@ -303,7 +303,7 @@ Assert.Equal(("\r\n" + w_d).NoCR(), expected_output.NoCR());
     }
 
     [Fact]
-    public void Test_S2PolylineAlignmentTest_ExactLengthZeroInputB() {
+    internal void Test_S2PolylineAlignmentDeathTest_ExactLengthZeroInputB() {
         var a = MakePolylineOrDie("0:0, 1:1, 2:2");
         var b = MakePolylineOrDie("");
         WarpPath correct_path = new();
@@ -311,7 +311,7 @@ Assert.Equal(("\r\n" + w_d).NoCR(), expected_output.NoCR());
     }
 
     [Fact]
-    public void Test_S2PolylineAlignmentTest_ExactLengthOneInputs() {
+    internal void Test_S2PolylineAlignmentTest_ExactLengthOneInputs() {
         var a = MakePolylineOrDie("1:1");
         var b = MakePolylineOrDie("2:2");
         var correct_path = new WarpPath{ (0, 0) };
@@ -320,7 +320,7 @@ Assert.Equal(("\r\n" + w_d).NoCR(), expected_output.NoCR());
     }
 
     [Fact]
-    public void Test_S2PolylineAlignmentTest_ExactLengthOneInputA() {
+    internal void Test_S2PolylineAlignmentTest_ExactLengthOneInputA() {
         var a = MakePolylineOrDie("0:0");
         var b = MakePolylineOrDie("0:0, 1:1, 2:2");
         var correct_path = new WarpPath{ (0, 0), (0, 1), (0, 2) };
@@ -329,7 +329,7 @@ Assert.Equal(("\r\n" + w_d).NoCR(), expected_output.NoCR());
     }
 
     [Fact]
-    public void Test_S2PolylineAlignmentTest_ExactLengthOneInputB() {
+    internal void Test_S2PolylineAlignmentTest_ExactLengthOneInputB() {
         var a = MakePolylineOrDie("0:0, 1:1, 2:2");
         var b = MakePolylineOrDie("0:0");
         var correct_path = new WarpPath{ (0, 0), (1, 0), (2, 0) };
@@ -338,7 +338,7 @@ Assert.Equal(("\r\n" + w_d).NoCR(), expected_output.NoCR());
     }
 
     [Fact]
-    public void Test_S2PolylineAlignmentTest_ExactHeaderFileExample() {
+    internal void Test_S2PolylineAlignmentTest_ExactHeaderFileExample() {
         var a = MakePolylineOrDie("1:0, 5:0, 6:0, 9:0");
         var b = MakePolylineOrDie("2:0, 7:0, 8:0");
         var correct_path = new WarpPath{ (0, 0), (1, 1), (2, 1), (3, 2) };
@@ -349,7 +349,7 @@ Assert.Equal(("\r\n" + w_d).NoCR(), expected_output.NoCR());
     // Take a small random selection of short correlated polylines and ensure that
     // the cost from the brute force solver equals the cost from the DP solvers.
     [Fact]
-    public void Test_S2PolylineAlignmentTest_FuzzedWithBruteForce() {
+    internal void Test_S2PolylineAlignmentTest_FuzzedWithBruteForce() {
         int kNumPolylines = 10;
         int kNumVertices = 8;
         double kPerturbation = 1.5;
@@ -365,14 +365,14 @@ Assert.Equal(("\r\n" + w_d).NoCR(), expected_output.NoCR());
 
     // Tests for GetMedoidPolyline
     [Fact]
-    public void Test_S2PolylineAlignmentTest_MedoidPolylineNoPolylines() {
+    internal void Test_S2PolylineAlignmentDeathTest_MedoidPolylineNoPolylines() {
         S2Polyline[] polylines = Array.Empty<S2Polyline>();
         var default_opts = new S2PolylineAlignment.MedoidOptions();
         Assert.Throws<Exception>(() => S2PolylineAlignment.GetMedoidPolyline(polylines, default_opts));
     }
 
     [Fact]
-    public void Test_S2PolylineAlignmentTest_MedoidPolylineOnePolyline() {
+    internal void Test_S2PolylineAlignmentTest_MedoidPolylineOnePolyline() {
         S2Polyline[] polylines = new S2Polyline[]{
         MakePolylineOrDie("5:0, 5:1, 5:2") };
         var default_opts = new S2PolylineAlignment.MedoidOptions();
@@ -381,7 +381,7 @@ Assert.Equal(("\r\n" + w_d).NoCR(), expected_output.NoCR());
     }
 
     [Fact]
-    public void Test_S2PolylineAlignmentTest_MedoidPolylineTwoPolylines() {
+    internal void Test_S2PolylineAlignmentTest_MedoidPolylineTwoPolylines() {
         // Tie-breaking is contractually done by choosing the smallest tied index.
         // These inputs (really, any collection of two polylines) yield a tie.
         var polylines = new S2Polyline[]{
@@ -394,7 +394,7 @@ Assert.Equal(("\r\n" + w_d).NoCR(), expected_output.NoCR());
     }
 
     [Fact]
-    public void Test_S2PolylineAlignmentTest_MedoidPolylineFewSmallPolylines() {
+    internal void Test_S2PolylineAlignmentTest_MedoidPolylineFewSmallPolylines() {
         var polylines = new S2Polyline[] {
             MakePolylineOrDie("5:0, 5:1, 5:2"),
             MakePolylineOrDie("3:0, 3:1, 3:2"),
@@ -407,7 +407,7 @@ Assert.Equal(("\r\n" + w_d).NoCR(), expected_output.NoCR());
     }
 
     [Fact]
-    public void Test_S2PolylineAlignmentTest_MedoidPolylineOverlappingPolylines() {
+    internal void Test_S2PolylineAlignmentTest_MedoidPolylineOverlappingPolylines() {
         // Given two identical polylines as input, break the tie with smallest index.
         var polylines = new S2Polyline[] {
         MakePolylineOrDie("1:0, 1:1, 1:2"),
@@ -419,7 +419,7 @@ Assert.Equal(("\r\n" + w_d).NoCR(), expected_output.NoCR());
     }
 
     [Fact]
-    public void Test_S2PolylineAlignmentTest_MedoidPolylineDifferentLengthPolylines() {
+    internal void Test_S2PolylineAlignmentTest_MedoidPolylineDifferentLengthPolylines() {
         var polylines = new S2Polyline[]
         {
             MakePolylineOrDie("5:0, 5:1, 5:2"),
@@ -433,7 +433,7 @@ Assert.Equal(("\r\n" + w_d).NoCR(), expected_output.NoCR());
     }
 
     [Fact]
-    public void Test_S2PolylineAlignmentTest_MedoidPolylineFewLargePolylines() {
+    internal void Test_S2PolylineAlignmentTest_MedoidPolylineFewLargePolylines() {
         // We pick num_vertices to be large so that the approx and exact vertex
         // alignment computations are likely to give different results.
         int num_polylines = 3;
@@ -479,14 +479,14 @@ Assert.Equal(("\r\n" + w_d).NoCR(), expected_output.NoCR());
     // Tests for GetConsensusPolyline
 
     [Fact]
-    public void Test_S2PolylineAlignmentTest_ConsensusPolylineNoPolylines() {
+    internal void Test_S2PolylineAlignmentDeathTest_ConsensusPolylineNoPolylines() {
         var polylines = Array.Empty<S2Polyline>();
         var default_opts = new S2PolylineAlignment.ConsensusOptions();
         Assert.Throws<Exception>(() => S2PolylineAlignment.GetConsensusPolyline(polylines, default_opts));
     }
 
     [Fact]
-    public void Test_S2PolylineAlignmentTest_ConsensusPolylineOnePolyline() {
+    internal void Test_S2PolylineAlignmentTest_ConsensusPolylineOnePolyline() {
         var polylines = new[] { MakePolylineOrDie("3:0, 3:1, 3:2") };
 
         var default_opts = new S2PolylineAlignment.ConsensusOptions();
@@ -496,7 +496,7 @@ Assert.Equal(("\r\n" + w_d).NoCR(), expected_output.NoCR());
     }
 
     [Fact]
-    public void Test_S2PolylineAlignmentTest_ConsensusPolylineTwoPolylines() {
+    internal void Test_S2PolylineAlignmentTest_ConsensusPolylineTwoPolylines() {
         S2Polyline[] polylines = new S2Polyline[] 
         {
             MakePolylineOrDie("3:0, 3:1, 3:2"),
@@ -510,7 +510,7 @@ Assert.Equal(("\r\n" + w_d).NoCR(), expected_output.NoCR());
     }
 
     [Fact]
-    public void Test_S2PolylineAlignmentTest_ConsensusPolylineOverlappingPolylines() {
+    internal void Test_S2PolylineAlignmentTest_ConsensusPolylineOverlappingPolylines() {
         var polylines = new S2Polyline[]
         {
             MakePolylineOrDie("1:0, 1:1, 1:2"),
@@ -620,7 +620,7 @@ Assert.Equal(("\r\n" + w_d).NoCR(), expected_output.NoCR());
 }
 
 
-public static class StringExtensions
+internal static class StringExtensions
 {
-    public static string NoCR(this string s) => s.Replace("\r", "");
+    internal static string NoCR(this string s) => s.Replace("\r", "");
 }

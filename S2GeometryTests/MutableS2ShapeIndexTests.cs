@@ -8,7 +8,7 @@ public class MutableS2ShapeIndexTests
     private readonly MutableS2ShapeIndex index_ = new();
 
     [Fact]
-    public void Test_MutableS2ShapeIndexTest_SpaceUsed()
+    internal void Test_MutableS2ShapeIndexTest_SpaceUsed()
     {
         index_.Add(new S2EdgeVectorShape(new S2Point(1, 0, 0), new S2Point(0, 1, 0)));
         Assert.False(index_.IsFresh());
@@ -24,14 +24,14 @@ public class MutableS2ShapeIndexTests
     }
 
     [Fact]
-    public void Test_MutableS2ShapeIndexTest_NoEdges()
+    internal void Test_MutableS2ShapeIndexTest_NoEdges()
     {
         TestEnumeratorMethods(index_);
         TestEncodeDecode(index_);
     }
 
     [Fact]
-    public void Test_MutableS2ShapeIndexTest_OneEdge()
+    internal void Test_MutableS2ShapeIndexTest_OneEdge()
     {
         Assert.Equal(0, index_.Add(new S2EdgeVectorShape(
             new S2Point(1, 0, 0), new S2Point(0, 1, 0))));
@@ -41,7 +41,7 @@ public class MutableS2ShapeIndexTests
     }
 
     [Fact]
-    public void Test_MutableS2ShapeIndexTest_ShrinkToFitOptimization()
+    internal void Test_MutableS2ShapeIndexTest_ShrinkToFitOptimization()
     {
         // This used to trigger a bug in the ShrinkToFit optimization.  The loop
         // below contains almost all of face 0 except for a small region in the
@@ -57,7 +57,7 @@ public class MutableS2ShapeIndexTests
     }
 
     [Fact]
-    public void Test_MutableS2ShapeIndexTest_LoopsSpanningThreeFaces()
+    internal void Test_MutableS2ShapeIndexTest_LoopsSpanningThreeFaces()
     {
         int kNumEdges = 100;
         // Validation is quadratic
@@ -76,7 +76,7 @@ public class MutableS2ShapeIndexTests
     }
 
     [Fact]
-    public void Test_MutableS2ShapeIndexTest_ManyIdenticalEdges()
+    internal void Test_MutableS2ShapeIndexTest_ManyIdenticalEdges()
     {
         int kNumEdges = 100;  // Validation is quadratic
         S2Point a = new S2Point(0.99, 0.99, 1).Normalize();
@@ -97,7 +97,7 @@ public class MutableS2ShapeIndexTests
     }
 
     [Fact]
-    public void Test_MutableS2ShapeIndexTest_DegenerateEdge()
+    internal void Test_MutableS2ShapeIndexTest_DegenerateEdge()
     {
         // This test verifies that degenerate edges are supported.  The following
         // point is a cube face vertex, and so it should be indexed in 3 cells.
@@ -120,7 +120,7 @@ public class MutableS2ShapeIndexTests
     }
 
     [Fact]
-    public void Test_MutableS2ShapeIndexTest_ManyTinyEdges()
+    internal void Test_MutableS2ShapeIndexTest_ManyTinyEdges()
     {
         // This test adds many edges to a single leaf cell, to check that
         // subdivision stops when no further subdivision is possible.
@@ -144,7 +144,7 @@ public class MutableS2ShapeIndexTests
     }
 
     [Fact]
-    public void Test_MutableS2ShapeIndexTest_SimpleUpdates()
+    internal void Test_MutableS2ShapeIndexTest_SimpleUpdates()
     {
         // Add 5 loops one at a time, then release them one at a time,
         // validating the index at each step.
@@ -164,7 +164,7 @@ public class MutableS2ShapeIndexTests
     }
 
     [Fact]
-    public void Test_MutableS2ShapeIndexTest_RandomUpdates()
+    internal void Test_MutableS2ShapeIndexTest_RandomUpdates()
     {
         // Set the temporary memory budget such that at least one shape needs to be
         // split into multiple update batches (namely, the "5 concentric rings"
@@ -238,7 +238,7 @@ public class MutableS2ShapeIndexTests
     }
 
     [Fact]
-    public void Test_MutableS2ShapeIndex_ConstMethodsThreadSafe()
+    internal void Test_MutableS2ShapeIndex_ConstMethodsThreadSafe()
     {
         // Ensure that lazy updates are thread-safe.  In other words, make sure that
         // nothing bad happens when multiple threads call "const" methods that
@@ -253,7 +253,7 @@ public class MutableS2ShapeIndexTests
     }
 
     [Fact]
-    public void Test_MutableS2ShapeIndex_MixedGeometry()
+    internal void Test_MutableS2ShapeIndex_MixedGeometry()
     {
         // This test used to trigger a bug where the presence of a shape with an
         // interior could cause shapes that don't have an interior to suddenly
@@ -277,7 +277,7 @@ public class MutableS2ShapeIndexTests
     }
 
     [Fact]
-    public void Test_MutableS2ShapeIndexTest_LinearSpace()
+    internal void Test_MutableS2ShapeIndexTest_LinearSpace()
     {
         // Build an index that requires FLAGS_s2shape_index_min_short_edge_fraction
         // to be non-zero in order to use a non-quadratic amount of space.
@@ -312,7 +312,7 @@ public class MutableS2ShapeIndexTests
         // Create the clusters of short edges.
         for (int k = 0; k < num_clusters; ++k)
         {
-            S2Point p = S2.Interpolate(k / (num_clusters - 1.0), a, b);
+            S2Point p = S2.Interpolate(a, b, k / (num_clusters - 1.0));
             var points = new S2Point[edges_per_cluster];
             points.Fill(p);
             index_.Add(new S2PointVectorShape(points));
@@ -329,7 +329,7 @@ public class MutableS2ShapeIndexTests
     }
 
     [Fact]
-    public void Test_MutableS2ShapeIndexTest_LongIndexEntriesBound()
+    internal void Test_MutableS2ShapeIndexTest_LongIndexEntriesBound()
     {
         // This test demonstrates that the c2 = 366 upper bound (using default
         // parameter values) mentioned in the .cc file is achievable.
@@ -369,26 +369,54 @@ public class MutableS2ShapeIndexTests
         Assert.Equal(366, sum);
     }
 
+    // Test move-construct and move-assign functionality of `S2Shape`.  It has an id
+    // value which is set when it's added to an index.  So we can create two
+    // `S2LaxPolygonShape`s, add them to an index, then
+    [Fact]
+    internal void Test_MutableS2ShapeIndex_ShapeIdSwaps()
+    {
+        MutableS2ShapeIndex index=new();
+        index.Add(MakeLaxPolylineOrDie("1:1, 2:2"));
+        index.Add(MakeLaxPolylineOrDie("3:3, 4:4"));
+        index.Add(MakeLaxPolylineOrDie("5:5, 6:6"));
+
+        var a = (S2LaxPolylineShape)index.Shape(1)!;
+        var b = (S2LaxPolylineShape)index.Shape(2)!;
+        Assert.Equal(a.Id, 1);
+        Assert.Equal(b.Id, 2);
+
+        // Verify move construction moves the id value.
+        S2LaxPolylineShape c=new(a);
+        Assert.Equal(c.Id, 1);
+        Assert.Equal(c, MakeLaxPolylineOrDie("3:3, 4:4"));
+
+        // Verify move assignment moves the id value.
+        S2LaxPolylineShape d;
+        d = b;
+        Assert.Equal(d.Id, 2);
+        Assert.Equal(d, MakeLaxPolylineOrDie("5:5, 6:6"));
+    }
+
     // NOTE(ericv): The tests below are all somewhat fragile since they depend on
     // the internal BatchGenerator heuristics; if these heuristics change
     // (including constants) then the tests below may need to change as well.
 
     [Fact]
-    public void Test_MutableS2ShapeIndexTest_RemoveFullPolygonBatch()
+    internal void Test_MutableS2ShapeIndexTest_RemoveFullPolygonBatch()
     {
         TestBatchGenerator(0, Array.Empty<int>(), 100 /*bytes*/, 7,
                  new List<BatchDescriptor> { new(new(7, 0), new(7, 0), 0) });
     }
 
     [Fact]
-    public void Test_MutableS2ShapeIndexTest_AddFullPolygonBatch()
+    internal void Test_MutableS2ShapeIndexTest_AddFullPolygonBatch()
     {
         TestBatchGenerator(0, new[] { 0 }, 100 /*bytes*/, 7,
             new List<BatchDescriptor> { new(new(7, 0), new(8, 0), 0) });
     }
 
     [Fact]
-    public void Test_MutableS2ShapeIndexTest_RemoveManyEdgesInOneBatch()
+    internal void Test_MutableS2ShapeIndexTest_RemoveManyEdgesInOneBatch()
     {
         // Test removing more edges than would normally fit in a batch.  For good
         // measure we also add two full polygons in the same batch.
@@ -397,7 +425,7 @@ public class MutableS2ShapeIndexTests
     }
 
     [Fact]
-    public void Test_MutableS2ShapeIndexTest_RemoveAndAddEdgesInOneBatch()
+    internal void Test_MutableS2ShapeIndexTest_RemoveAndAddEdgesInOneBatch()
     {
         // Test removing and adding edges in one batch.
         TestBatchGenerator(3, new[] { 4, 5 }, 10000 /*bytes*/, 7,
@@ -405,7 +433,7 @@ public class MutableS2ShapeIndexTests
     }
 
     [Fact]
-    public void Test_MutableS2ShapeIndexTest_RemoveAndAddEdgesInTwoBatches()
+    internal void Test_MutableS2ShapeIndexTest_RemoveAndAddEdgesInTwoBatches()
     {
         // Test removing many edges and then adding a few.
         TestBatchGenerator(1000, new[] { 3 }, 1000 /*bytes*/, 7,
@@ -416,7 +444,7 @@ public class MutableS2ShapeIndexTests
     }
 
     [Fact]
-    public void Test_MutableS2ShapeIndexTest_RemoveAndAddEdgesAndFullPolygonsInTwoBatches()
+    internal void Test_MutableS2ShapeIndexTest_RemoveAndAddEdgesAndFullPolygonsInTwoBatches()
     {
         // Like the above, but also add two full polygons such that one polygon is
         // processed in each batch.
@@ -428,7 +456,7 @@ public class MutableS2ShapeIndexTests
     }
 
     [Fact]
-    public void Test_MutableS2ShapeIndexTest_SeveralShapesInOneBatch()
+    internal void Test_MutableS2ShapeIndexTest_SeveralShapesInOneBatch()
     {
         // Test adding several shapes in one batch.
         TestBatchGenerator(0, new[] { 3, 4, 5 }, 10000 /*bytes*/, 7,
@@ -436,7 +464,7 @@ public class MutableS2ShapeIndexTests
     }
 
     [Fact]
-    public void Test_MutableS2ShapeIndexTest_GroupSmallShapesIntoBatches()
+    internal void Test_MutableS2ShapeIndexTest_GroupSmallShapesIntoBatches()
     {
         // Test adding several small shapes that must be split into batches.
         // 10000 bytes ~= temporary space to process 48 edges.
@@ -449,7 +477,7 @@ public class MutableS2ShapeIndexTests
     }
 
     [Fact]
-    public void Test_MutableS2ShapeIndexTest_AvoidPartialShapeInBatch()
+    internal void Test_MutableS2ShapeIndexTest_AvoidPartialShapeInBatch()
     {
         // Test adding a small shape followed by a large shape that won't fit in the
         // same batch as the small shape, but will fit in its own separate batch.
@@ -463,7 +491,7 @@ public class MutableS2ShapeIndexTests
     }
 
     [Fact]
-    public void Test_MutableS2ShapeIndexTest_SplitShapeIntoTwoBatches()
+    internal void Test_MutableS2ShapeIndexTest_SplitShapeIntoTwoBatches()
     {
         // Test adding a few small shapes, then a large shape that can be split
         // across the remainder of the first batch plus the next batch.  The first
@@ -483,7 +511,7 @@ public class MutableS2ShapeIndexTests
     }
 
     [Fact]
-    public void Test_MutableS2ShapeIndexTest_RemoveEdgesAndAddPartialShapeInSameBatch()
+    internal void Test_MutableS2ShapeIndexTest_RemoveEdgesAndAddPartialShapeInSameBatch()
     {
         // Test a batch that consists of removing some edges and then adding a
         // partial shape.  We also check that the small shape at the end is put into
@@ -497,7 +525,7 @@ public class MutableS2ShapeIndexTests
     }
 
     [Fact]
-    public void Test_MutableS2ShapeIndexTest_SplitShapeIntoManyBatches()
+    internal void Test_MutableS2ShapeIndexTest_SplitShapeIntoManyBatches()
     {
         // Like the above except that the shape is split into 10 batches.  With
         // 10000 bytes of temporary space, the ideal batch sizes are 63, 61, 59, 57,
@@ -763,9 +791,9 @@ public class MutableS2ShapeIndexTests
     // Note that we only test concurrent read access, since MutableS2ShapeIndex
     // requires all updates to be single-threaded and not concurrent with any
     // reads.
-    public class LazyUpdatesTest : ReaderWriterTest
+    internal class LazyUpdatesTest : ReaderWriterTest
     {
-        public override void WriteOp()
+        internal override void WriteOp()
         {
             index_.Clear();
             int num_vertices = 4 * S2Testing.Random.Skewed(10);  // Up to 4K vertices
@@ -774,7 +802,7 @@ public class MutableS2ShapeIndexTests
             index_.Add(new S2Loop.Shape(loop));
         }
 
-        public override void ReadOp()
+        internal override void ReadOp()
         {
             foreach (var it in index_)
             {

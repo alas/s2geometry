@@ -8,27 +8,27 @@ public class S2CellIndexTests
     private readonly List<LabelledCell> contents_ = new();
     
     [Fact]
-    public void Test_S2CellIndexTest_Empty()
+    internal void Test_S2CellIndexTest_Empty()
     {
         QuadraticValidate();
     }
 
     [Fact]
-    public void Test_S2CellIndexTest_OneFaceCell()
+    internal void Test_S2CellIndexTest_OneFaceCell()
     {
         Add("0/", 0);
         QuadraticValidate();
     }
 
     [Fact]
-    public void Test_S2CellIndexTest_OneLeafCell()
+    internal void Test_S2CellIndexTest_OneLeafCell()
     {
         Add("1/012301230123012301230123012301", 12);
         QuadraticValidate();
     }
 
     [Fact]
-    public void Test_S2CellIndexTest_DuplicateValues()
+    internal void Test_S2CellIndexTest_DuplicateValues()
     {
         Add("0/", 0);
         Add("0/", 0);
@@ -38,7 +38,7 @@ public class S2CellIndexTests
     }
 
     [Fact]
-    public void Test_S2CellIndexTest_DisjointCells()
+    internal void Test_S2CellIndexTest_DisjointCells()
     {
         Add("0/", 0);
         Add("3/", 0);
@@ -46,7 +46,7 @@ public class S2CellIndexTests
     }
 
     [Fact]
-    public void Test_S2CellIndexTest_NestedCells()
+    internal void Test_S2CellIndexTest_NestedCells()
     {
         // Tests nested cells, including cases where several cells have the same
         // range_min() or range_max() and with randomly ordered labels.
@@ -68,7 +68,7 @@ public class S2CellIndexTests
     }
 
     [Fact]
-    public void Test_S2CellIndexTest_RandomCellUnions()
+    internal void Test_S2CellIndexTest_RandomCellUnions()
     {
         // Construct cell unions from random S2CellIds at random levels.  Note that
         // because the cell level is chosen uniformly, there is a very high
@@ -80,7 +80,7 @@ public class S2CellIndexTests
     }
 
     [Fact]
-    public void Test_S2CellIndexTest_ContentsEnumeratorSuppressesDuplicates()
+    internal void Test_S2CellIndexTest_ContentsEnumeratorSuppressesDuplicates()
     {
         // Checks that ContentsIterator stops reporting values once it reaches a
         // node of the cell tree that was visited by the previous call to Begin().
@@ -124,7 +124,7 @@ public class S2CellIndexTests
     }
 
     [Fact]
-    public void Test_S2CellIndexTest_IntersectionOptimization()
+    internal void Test_S2CellIndexTest_IntersectionOptimization()
     {
         // Tests various corner cases for the binary search optimization in
         // VisitIntersectingCells.
@@ -139,7 +139,7 @@ public class S2CellIndexTests
     }
 
     [Fact]
-    public void Test_S2CellIndexTest_IntersectionRandomUnions()
+    internal void Test_S2CellIndexTest_IntersectionRandomUnions()
     {
         // Construct cell unions from random S2CellIds at random levels.  Note that
         // because the cell level is chosen uniformly, there is a very high
@@ -155,7 +155,7 @@ public class S2CellIndexTests
     }
 
     [Fact]
-    public void Test_S2CellIndexTest_IntersectionSemiRandomUnions() {
+    internal void Test_S2CellIndexTest_IntersectionSemiRandomUnions() {
         // This test also uses random S2CellUnions, but the unions are specially
         // constructed so that interesting cases are more likely to arise.
         for (int iter = 0; iter < 200; ++iter) {

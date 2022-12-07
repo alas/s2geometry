@@ -3,7 +3,7 @@
 public class S2WrappedShapeTests
 {
     [Fact]
-    public void Test_S2WrappedShape_Coverage()
+    internal void Test_S2WrappedShape_Coverage()
     {
         // Tests that all the S2Shape methods are implemented.
 

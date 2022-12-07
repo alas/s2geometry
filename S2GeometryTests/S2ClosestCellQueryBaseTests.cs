@@ -11,7 +11,7 @@ using FurthestCellQuery = S2ClosestCellQueryBase<S2MaxDistance>;
 public class S2ClosestCellQueryBaseTests
 {
     [Fact]
-    public void Test_S2ClosestCellQueryBase_MaxDistance()
+    internal void Test_S2ClosestCellQueryBase_MaxDistance()
     {
         S2CellIndex index = new();
         index.Add(MakeCellUnionOrDie("0/123, 0/22, 0/3"), 1 /*label*/);
@@ -29,7 +29,7 @@ public class S2ClosestCellQueryBaseTests
 
     private sealed class FurthestPointTarget : S2MaxDistancePointTarget
     {
-        public FurthestPointTarget(S2Point point) : base(point) { }
+        internal FurthestPointTarget(S2Point point) : base(point) { }
 
         public override int MaxBruteForceIndexSize => 10;  // Arbitrary.
     }

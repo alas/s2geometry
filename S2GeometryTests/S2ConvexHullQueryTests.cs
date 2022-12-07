@@ -4,10 +4,10 @@ public class S2ConvexHullQueryTests
 {
     private readonly ITestOutputHelper _logger;
 
-    public S2ConvexHullQueryTests(ITestOutputHelper logger) { _logger = logger; }
+    internal S2ConvexHullQueryTests(ITestOutputHelper logger) { _logger = logger; }
 
     [Fact]
-    public void Test_S2ConvexHullQuery_NoPoints()
+    internal void Test_S2ConvexHullQuery_NoPoints()
     {
         S2ConvexHullQuery query = new();
         var result = (query.GetConvexHull());
@@ -15,7 +15,7 @@ public class S2ConvexHullQueryTests
     }
 
     [Fact]
-    public void Test_S2ConvexHullQuery_OnePoint()
+    internal void Test_S2ConvexHullQuery_OnePoint()
     {
         S2ConvexHullQuery query = new();
         var p = new S2Point(0, 0, 1);
@@ -32,7 +32,7 @@ public class S2ConvexHullQueryTests
     }
 
     [Fact]
-    public void Test_S2ConvexHullQuery_TwoPoints()
+    internal void Test_S2ConvexHullQuery_TwoPoints()
     {
         S2ConvexHullQuery query = new();
         S2Point p = new(0, 0, 1);
@@ -53,7 +53,7 @@ public class S2ConvexHullQueryTests
     }
 
     [Fact]
-    public void Test_S2ConvexHullQuery_TwoAntipodalPoints()
+    internal void Test_S2ConvexHullQuery_TwoAntipodalPoints()
     {
         S2ConvexHullQuery query=new();
         query.AddPoint(new S2Point(0, 0, 1));
@@ -63,7 +63,7 @@ public class S2ConvexHullQueryTests
     }
 
     [Fact]
-    public void Test_S2ConvexHullQuery_EmptyLoop()
+    internal void Test_S2ConvexHullQuery_EmptyLoop()
     {
         S2ConvexHullQuery query = new();
         S2Loop empty = (S2Loop.kEmpty);
@@ -73,7 +73,7 @@ public class S2ConvexHullQueryTests
     }
 
     [Fact]
-    public void Test_S2ConvexHullQuery_FullLoop()
+    internal void Test_S2ConvexHullQuery_FullLoop()
     {
         S2ConvexHullQuery query = new();
         S2Loop full = (S2Loop.kFull);
@@ -83,7 +83,7 @@ public class S2ConvexHullQueryTests
     }
 
     [Fact]
-    public void Test_S2ConvexHullQuery_EmptyPolygon()
+    internal void Test_S2ConvexHullQuery_EmptyPolygon()
     {
         S2ConvexHullQuery query = new();
         List<S2Loop> loops = new();
@@ -94,7 +94,7 @@ public class S2ConvexHullQueryTests
     }
 
     [Fact]
-    public void Test_S2ConvexHullQuery_NonConvexPoints()
+    internal void Test_S2ConvexHullQuery_NonConvexPoints()
     {
         // Generate a point set such that the only convex region containing them is
         // the entire sphere.  In other words, you can generate any point on the
@@ -110,7 +110,7 @@ public class S2ConvexHullQueryTests
     }
 
     [Fact]
-    public void Test_S2ConvexHullQuery_SimplePolyline()
+    internal void Test_S2ConvexHullQuery_SimplePolyline()
     {
         // A polyline is handling identically to a point set, so there is no need
         // for special testing other than code coverage.
@@ -125,7 +125,7 @@ public class S2ConvexHullQueryTests
     }
 
     [Fact]
-    public void Test_S2ConvexHullQuery_LoopsAroundNorthPole()
+    internal void Test_S2ConvexHullQuery_LoopsAroundNorthPole()
     {
         // Test loops of various sizes around the north pole.
         TestNorthPoleLoop(S1Angle.FromDegrees(1), 3);
@@ -140,7 +140,7 @@ public class S2ConvexHullQueryTests
     }
 
     [Fact]
-    public void Test_S2ConvexHullQuery_PointsInsideHull()
+    internal void Test_S2ConvexHullQuery_PointsInsideHull()
     {
         // Repeatedly build the convex hull of a set of points, then add more points
         // inside that loop and build the convex hull again.  The result should
@@ -194,7 +194,7 @@ public class S2ConvexHullQueryTests
     }
 
     [Fact]
-    public void Test_S2ConvexHullQuery_CapBoundExpandedToHemisphere()
+    internal void Test_S2ConvexHullQuery_CapBoundExpandedToHemisphere()
     {
         // The following 3 points yield an S2Cap bound that is slightly smaller than
         // a hemisphere.  Here we test that the cap is expanded using a conservative

@@ -9,7 +9,7 @@ public class S2BooleanOperationTests
     private readonly ITestOutputHelper _logger;
     private readonly DegeneracyCoverageTest dct;
 
-    public S2BooleanOperationTests(ITestOutputHelper logger)
+    internal S2BooleanOperationTests(ITestOutputHelper logger)
     {
         _logger = logger;
         dct = new DegeneracyCoverageTest(logger);
@@ -60,7 +60,7 @@ public class S2BooleanOperationTests
     //  - Interior/interior: polygons in interior/exterior of other polygons
 
     [Fact]
-    public void Test_S2BooleanOperation_DegeneratePolylines()
+    internal void Test_S2BooleanOperation_DegeneratePolylines()
     {
         // Verify that degenerate polylines are preserved under all boundary models.
         Options options = new();
@@ -75,7 +75,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_S2BooleanOperation_DegeneratePolygons()
+    internal void Test_S2BooleanOperation_DegeneratePolygons()
     {
         // Verify that degenerate polygon features (single-vertex and sibling pair
         // shells and holes) are preserved under all boundary models.
@@ -91,7 +91,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_S2BooleanOperation_PointPoint()
+    internal void Test_S2BooleanOperation_PointPoint()
     {
         Options options = new();
         var a = "0:0 | 1:0 # #";
@@ -109,7 +109,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_S2BooleanOperation_PointOpenPolyline()
+    internal void Test_S2BooleanOperation_PointOpenPolyline()
     {
         // Tests operations between an open polyline and its vertices.
         //
@@ -137,7 +137,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_S2BooleanOperation_PointOpenPolylineLoopBoundariesFalse()
+    internal void Test_S2BooleanOperation_PointOpenPolylineLoopBoundariesFalse()
     {
         // With Options.polyline_loops_have_boundaries() == false, the loop
         // "4:0, 5:0, 4:0" has two vertices, both of which are contained.
@@ -159,7 +159,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_S2BooleanOperation_PointSemiOpenPolyline()
+    internal void Test_S2BooleanOperation_PointSemiOpenPolyline()
     {
         // Degenerate polylines are defined not contain any points under the
         // SEMI_OPEN model either, so again the point 3:0 and the degenerate
@@ -185,7 +185,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_S2BooleanOperation_PointClosedPolyline()
+    internal void Test_S2BooleanOperation_PointClosedPolyline()
     {
         // Under the CLOSED model, the degenerate polyline 3:0 does contain its
         // vertex.  Since polylines take precedence over points, the union of the
@@ -213,7 +213,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_S2BooleanOperation_PointPolygonInterior()
+    internal void Test_S2BooleanOperation_PointPolygonInterior()
     {
         Options options = new();  // PolygonModel is irrelevant.
                                                      // One interior point and one exterior point.
@@ -230,7 +230,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_S2BooleanOperation_PointOpenPolygonVertex()
+    internal void Test_S2BooleanOperation_PointOpenPolygonVertex()
     {
         Options options = new();
         options.PolygonModel_ = (PolygonModel.OPEN);
@@ -248,7 +248,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_S2BooleanOperation_PointSemiOpenPolygonVertex()
+    internal void Test_S2BooleanOperation_PointSemiOpenPolygonVertex()
     {
         Options options = new();
         options.PolygonModel_ = (PolygonModel.SEMI_OPEN);
@@ -271,7 +271,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_S2BooleanOperation_PointClosedPolygonVertex()
+    internal void Test_S2BooleanOperation_PointClosedPolygonVertex()
     {
         Options options = new();
         options.PolygonModel_ = (PolygonModel.CLOSED);
@@ -289,7 +289,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_S2BooleanOperation_PolylineVertexOpenPolylineVertex()
+    internal void Test_S2BooleanOperation_PolylineVertexOpenPolylineVertex()
     {
         // Test first, last, and middle vertices of both polylines.  Also test
         // first/last and middle vertices of two polyline loops.
@@ -322,7 +322,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_S2BooleanOperation_PolylineVertexOpenPolylineVertexLoopBoundariesFalse()
+    internal void Test_S2BooleanOperation_PolylineVertexOpenPolylineVertexLoopBoundariesFalse()
     {
         // With Options.polyline_loops_have_boundaries() == false, the 3 polyline
         // loops each have two vertices, both of which are contained.
@@ -351,7 +351,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_S2BooleanOperation_PolylineVertexSemiOpenPolylineVertex()
+    internal void Test_S2BooleanOperation_PolylineVertexSemiOpenPolylineVertex()
     {
         // The result does not depend on Options.polyline_loops_have_boundaries().
         Options options = new();
@@ -377,7 +377,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_S2BooleanOperation_PolylineVertexClosedPolylineVertex()
+    internal void Test_S2BooleanOperation_PolylineVertexClosedPolylineVertex()
     {
         Options options = new();
         options.PolylineModel_ = (PolylineModel.CLOSED);
@@ -404,7 +404,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_S2BooleanOperation_PolylineVertexClosedPolylineVertexLoopBoundariesFalse()
+    internal void Test_S2BooleanOperation_PolylineVertexClosedPolylineVertexLoopBoundariesFalse()
     {
         Options options = new();
         options.PolylineModel_ = (PolylineModel.CLOSED);
@@ -431,7 +431,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_S2BooleanOperation_TestSemiOpenPolygonVerticesContained()
+    internal void Test_S2BooleanOperation_TestSemiOpenPolygonVerticesContained()
     {
         // Verify whether certain vertices of the test polygon are contained under
         // the semi-open boundary model (for use in the tests below).
@@ -451,7 +451,7 @@ public class S2BooleanOperationTests
     // above.  It is sufficient to use PolylineModel.CLOSED with the various
     // PolygonModel options.
     [Fact]
-    public void Test_S2BooleanOperation_PolylineVertexOpenPolygonVertex()
+    internal void Test_S2BooleanOperation_PolylineVertexOpenPolygonVertex()
     {
         Options options = new();
         options.PolygonModel_ = (PolygonModel.OPEN);
@@ -480,7 +480,7 @@ public class S2BooleanOperationTests
     // closed polyline vertex.  This tests that when an open vertex and a closed
     // vertex coincide with each other, the result is considered closed.
     [Fact]
-    public void Test_S2BooleanOperation_PolylineVertexOpenPolygonClosedPolylineVertex()
+    internal void Test_S2BooleanOperation_PolylineVertexOpenPolygonClosedPolylineVertex()
     {
         var kTestGeometrySuffix =
             "-2:0, 0:1 | -2:1, 0:2 | -2:2, 0:3 | -2:3, 0:4 | " +
@@ -510,7 +510,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_S2BooleanOperation_PolylineVertexSemiOpenPolygonVertex()
+    internal void Test_S2BooleanOperation_PolylineVertexSemiOpenPolygonVertex()
     {
         Options options = new();
         options.PolygonModel_ = (PolygonModel.SEMI_OPEN);
@@ -536,7 +536,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_S2BooleanOperation_PolylineVertexClosedPolygonVertex()
+    internal void Test_S2BooleanOperation_PolylineVertexClosedPolygonVertex()
     {
         Options options = new();
         options.PolygonModel_ = (PolygonModel.CLOSED);
@@ -559,7 +559,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_S2BooleanOperation_PolylineEdgePolylineEdgeCrossing()
+    internal void Test_S2BooleanOperation_PolylineEdgePolylineEdgeCrossing()
     {
         // Two polyline edges that cross at a point interior to both edges.
         Options options = RoundToE(1);
@@ -576,7 +576,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_S2BooleanOperation_PolylineEdgePolylineEdgeOverlap()
+    internal void Test_S2BooleanOperation_PolylineEdgePolylineEdgeOverlap()
     {
         // The PolylineModel does not affect this calculation.  In particular the
         // intersection of a degenerate polyline edge with itself is non-empty, even
@@ -601,7 +601,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_S2BooleanOperation_PolylineLoopMultipleOpenPolylineEdge()
+    internal void Test_S2BooleanOperation_PolylineLoopMultipleOpenPolylineEdge()
     {
         // Here we test a polyline loop ABCA with the pairs {AA, AB} and {AA, AC}.
         // This tests not only what happens when degenerate polylines intersect loop
@@ -623,7 +623,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_S2BooleanOperation_PolylineLoopMultipleSemiOpenPolylineEdge()
+    internal void Test_S2BooleanOperation_PolylineLoopMultipleSemiOpenPolylineEdge()
     {
         // Like the test above but with SEMI_OPEN boundaries.  In this case ABCA
         // intersected with {AA, AB} is {AA, AB, AB} but ABCA intersected with {AA,
@@ -646,7 +646,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_S2BooleanOperation_PolylineLoopMultipleClosedPolylineEdge()
+    internal void Test_S2BooleanOperation_PolylineLoopMultipleClosedPolylineEdge()
     {
         // Like the test above but with CLOSED boundaries.  In this case ABCA
         // intersected with {AA, AB} is {AA, AA, AB, AB} since the chain ABCA
@@ -668,7 +668,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_S2BooleanOperation_PolylineLoopMultiplePolylineEdgeLoopBoundariesFalse()
+    internal void Test_S2BooleanOperation_PolylineLoopMultiplePolylineEdgeLoopBoundariesFalse()
     {
         // Like the tests above but with polyline_loops_have_boundaries() == false.
         // In this case the result does not depend on the polyline model.  The
@@ -699,7 +699,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_S2BooleanOperation_PolylineEdgeOpenPolygonEdgeOverlap()
+    internal void Test_S2BooleanOperation_PolylineEdgeOpenPolygonEdgeOverlap()
     {
         Options options = new();
         options.PolygonModel_ = PolygonModel.OPEN;
@@ -718,7 +718,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_S2BooleanOperation_PolylineEdgeSemiOpenPolygonEdgeOverlap()
+    internal void Test_S2BooleanOperation_PolylineEdgeSemiOpenPolygonEdgeOverlap()
     {
         var polygon = MakePolygonOrDie("1:1, 1:3, 3:3, 3:1");
         Assert.False(polygon.Contains(MakePointOrDie("1:1")));
@@ -740,7 +740,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_S2BooleanOperation_PolylineEdgeClosedPolygonEdgeOverlap()
+    internal void Test_S2BooleanOperation_PolylineEdgeClosedPolygonEdgeOverlap()
     {
         Options options = new();
         options.PolygonModel_ = PolygonModel.CLOSED;
@@ -757,7 +757,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_S2BooleanOperation_PolygonVertexMatching()
+    internal void Test_S2BooleanOperation_PolygonVertexMatching()
     {
         // This test shows that CrossingProcessor.ProcessEdgeCrossings() must set
         // a0_matches_polygon and a1_matches_polygon correctly even when (a0, a1)
@@ -772,7 +772,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_S2BooleanOperation_PolylineEdgePolygonInterior()
+    internal void Test_S2BooleanOperation_PolylineEdgePolygonInterior()
     {
         Options options = new();  // PolygonModel is irrelevant.
         // One normal and one degenerate polyline edge in the polygon interior, and
@@ -790,7 +790,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_S2BooleanOperation_PolylineEdgeIsolatedStartVertexPlusInteriorCrossing()
+    internal void Test_S2BooleanOperation_PolylineEdgeIsolatedStartVertexPlusInteriorCrossing()
     {
         // Tests a polyline XYZ that when intersected with a polygon results in an
         // isolated vertex X plus a clipped portion UYV.  This case is unusual
@@ -809,7 +809,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_S2BooleanOperation_PolygonEdgeIsolatedStartVertexPlusInteriorCrossing()
+    internal void Test_S2BooleanOperation_PolygonEdgeIsolatedStartVertexPlusInteriorCrossing()
     {
         // Similar to the case above, but tests a polygon XYZ rather than a
         // polyline.  This requires using the CLOSED polygon model and computing the
@@ -826,7 +826,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_S2BooleanOperation_PolygonVertexOpenPolygonVertex()
+    internal void Test_S2BooleanOperation_PolygonVertexOpenPolygonVertex()
     {
         Options options = new();
         options.PolygonModel_ = PolygonModel.OPEN;
@@ -843,7 +843,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_S2BooleanOperation_PolygonVertexSemiOpenPolygonVertex()
+    internal void Test_S2BooleanOperation_PolygonVertexSemiOpenPolygonVertex()
     {
         Options options = new();
         options.PolygonModel_ = PolygonModel.SEMI_OPEN;
@@ -860,7 +860,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_S2BooleanOperation_PolygonVertexClosedPolygonVertex()
+    internal void Test_S2BooleanOperation_PolygonVertexClosedPolygonVertex()
     {
         Options options = new();
         options.PolygonModel_ = PolygonModel.CLOSED;
@@ -879,7 +879,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_S2BooleanOperation_PolygonEdgePolygonEdgeCrossing()
+    internal void Test_S2BooleanOperation_PolygonEdgePolygonEdgeCrossing()
     {
         // Two polygons whose edges cross at points interior to both edges.
         Options options = RoundToE(2);
@@ -897,7 +897,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_S2BooleanOperation_PolygonEdgeOpenPolygonEdgeOverlap()
+    internal void Test_S2BooleanOperation_PolygonEdgeOpenPolygonEdgeOverlap()
     {
         Options options = new();
         // One shape is a rectangle, the other consists of one triangle inside the
@@ -918,7 +918,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_S2BooleanOperation_PolygonEdgeSemiOpenPolygonEdgeOverlap()
+    internal void Test_S2BooleanOperation_PolygonEdgeSemiOpenPolygonEdgeOverlap()
     {
         Options options = new();
         options.PolygonModel_ = (PolygonModel.SEMI_OPEN);
@@ -938,7 +938,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_S2BooleanOperation_PolygonEdgeClosedPolygonEdgeOverlap()
+    internal void Test_S2BooleanOperation_PolygonEdgeClosedPolygonEdgeOverlap()
     {
         Options options = new();
         options.PolygonModel_ = (PolygonModel.CLOSED);
@@ -957,7 +957,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_S2BooleanOperation_PolygonPolygonInterior()
+    internal void Test_S2BooleanOperation_PolygonPolygonInterior()
     {
         Options options = new();  // PolygonModel is irrelevant.
         // One loop in the interior of another polygon and one loop in the exterior.
@@ -975,7 +975,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_S2BooleanOperation_PolygonEdgesDegenerateAfterSnapping()
+    internal void Test_S2BooleanOperation_PolygonEdgesDegenerateAfterSnapping()
     {
         Options options = RoundToE(0);
         // Two narrow rectangles forming a plus sign.
@@ -1004,11 +1004,11 @@ public class S2BooleanOperationTests
     {
         private readonly ITestOutputHelper _logger;
 
-        public DegeneracyCoverageTest(ITestOutputHelper logger) { _logger = logger; }
+        internal DegeneracyCoverageTest(ITestOutputHelper logger) { _logger = logger; }
 
         // Verifies that the S2BooleanOperation results for the given OpType and
         // PolygonModel match the given set of rules (encoded as described below).
-        public void Run(OpType op_type, PolygonModel polygon_model,
+        internal void Run(OpType op_type, PolygonModel polygon_model,
             List<string> rules)
         {
             Assert.Equal(rules.Count, kInputChars.Length);
@@ -1298,7 +1298,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_DegeneracyCoverageTest_OpenIntersection()
+    internal void Test_DegeneracyCoverageTest_OpenIntersection()
     {
         List<string> rules = new()
         {
@@ -1321,7 +1321,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_DegeneracyCoverageTest_SemiOpenIntersection()
+    internal void Test_DegeneracyCoverageTest_SemiOpenIntersection()
     {
         List<string> rules = new()
         {
@@ -1344,7 +1344,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_DegeneracyCoverageTest_ClosedIntersection()
+    internal void Test_DegeneracyCoverageTest_ClosedIntersection()
     {
         List<string> rules = new()
         {
@@ -1367,7 +1367,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_DegeneracyCoverageTest_OpenUnion()
+    internal void Test_DegeneracyCoverageTest_OpenUnion()
     {
         List<string> rules = new()
         {
@@ -1390,7 +1390,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_DegeneracyCoverageTest_SemiOpenUnion()
+    internal void Test_DegeneracyCoverageTest_SemiOpenUnion()
     {
         // CAVEAT: The results for (U,u) and (D,d) require the U polygon to contain
         // vertex A but not vertex B, and the D polygon to contain neither vertex.
@@ -1421,7 +1421,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_DegeneracyCoverageTest_ClosedUnion()
+    internal void Test_DegeneracyCoverageTest_ClosedUnion()
     {
         List<string> rules = new()
         {
@@ -1444,7 +1444,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_DegeneracyCoverageTest_OpenDifference()
+    internal void Test_DegeneracyCoverageTest_OpenDifference()
     {
         List<string> rules = new()
         {
@@ -1467,7 +1467,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_DegeneracyCoverageTest_SemiOpenDifference()
+    internal void Test_DegeneracyCoverageTest_SemiOpenDifference()
     {
         // See SemiOpenUnion notes regarding (u,U) and (d,D).
         List<string> rules = new()
@@ -1491,7 +1491,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_DegeneracyCoverageTest_ClosedDifference()
+    internal void Test_DegeneracyCoverageTest_ClosedDifference()
     {
         List<string> rules = new()
         {
@@ -1514,7 +1514,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_DegeneracyCoverageTest_OpenSymmetricDifference()
+    internal void Test_DegeneracyCoverageTest_OpenSymmetricDifference()
     {
         List<string> rules = new()
         {
@@ -1537,7 +1537,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_DegeneracyCoverageTest_SemiOpenSymmetricDifference()
+    internal void Test_DegeneracyCoverageTest_SemiOpenSymmetricDifference()
     {
         // See SemiOpenUnion notes regarding (U,u) and (D,d).
         List<string> rules = new()
@@ -1561,7 +1561,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_DegeneracyCoverageTest_ClosedSymmetricDifference()
+    internal void Test_DegeneracyCoverageTest_ClosedSymmetricDifference()
     {
         // Note that (H,S)->H, (h,s)->h and (U,D)->UD.  In all three cases the
         // shared boundary is present on both sides and therefore these edges should
@@ -1592,7 +1592,7 @@ public class S2BooleanOperationTests
     // interesting special cases.
 
     [Fact]
-    public void Test_S2BooleanOperation_ThreeOverlappingBars()
+    internal void Test_S2BooleanOperation_ThreeOverlappingBars()
     {
         // Two vertical bars and a horizontal bar that overlaps both of the other
         // bars and connects them.
@@ -1616,7 +1616,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_S2BooleanOperation_FourOverlappingBars()
+    internal void Test_S2BooleanOperation_FourOverlappingBars()
     {
         // Two vertical bars and two horizontal bars.
 
@@ -1647,7 +1647,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_S2BooleanOperation_OverlappingDoughnuts()
+    internal void Test_S2BooleanOperation_OverlappingDoughnuts()
     {
         // Two overlapping square doughnuts whose holes do not overlap.
         // This means that the union polygon has only two holes rather than three.
@@ -1679,7 +1679,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_S2BooleanOperation_PolylineEnteringRectangle()
+    internal void Test_S2BooleanOperation_PolylineEnteringRectangle()
     {
         // A polyline that enters a rectangle very close to one of its vertices.
         var options = RoundToE(1);
@@ -1696,7 +1696,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_S2BooleanOperation_PolylineCrossingRectangleTwice()
+    internal void Test_S2BooleanOperation_PolylineCrossingRectangleTwice()
     {
         // A polyline that crosses a rectangle in one direction, then moves to a
         // different side and crosses the rectangle in the other direction.  Note
@@ -1728,7 +1728,7 @@ public class S2BooleanOperationTests
     // to be "doubled" into two vertices, one at longitude 180 and one at longitude
     // -180, in order to match the longitudes of the adjacent vertices.)
     [Fact]
-    public void Test_S2BooleanOperation_MeridianSplitting()
+    internal void Test_S2BooleanOperation_MeridianSplitting()
     {
         // A line along the equator crossing the 180 degree meridian.
         TestMeridianSplitting("# 0:-160, 0:170 #", "# 0:-160, 0:180, 0:170 #");
@@ -1791,7 +1791,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_S2BooleanOperation_GetCrossedVertexIndexBug1()
+    internal void Test_S2BooleanOperation_GetCrossedVertexIndexBug1()
     {
         // This test exercises a rare special case in GetCrossedVertexIndex where
         // two crossing edge chains snap to a different permutation of the same
@@ -1826,7 +1826,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_S2BooleanOperation_GetCrossedVertexIndexBug2()
+    internal void Test_S2BooleanOperation_GetCrossedVertexIndexBug2()
     {
         // This test exercises another rare case where the crossing vertices chosen
         // by GetCrossedVertexIndex() are not ordered correctly along the edge being
@@ -1881,7 +1881,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_S2BooleanOperation_GetCrossedVertexIndexBug3()
+    internal void Test_S2BooleanOperation_GetCrossedVertexIndexBug3()
     {
         // This test exercise the special case in GetCrossedVertexIndex() that
         // requires checking the orientation of a loop.  This is done by adding up the
@@ -1914,7 +1914,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_S2BooleanOperation_GetCrossedVertexIndexBug4()
+    internal void Test_S2BooleanOperation_GetCrossedVertexIndexBug4()
     {
         // This example tests the "special case" in GetCrossedVertexIndex() in
         // situations where two edges snap to the same sequence of vertices in
@@ -1955,7 +1955,7 @@ public class S2BooleanOperationTests
     }
 
     [Fact]
-    public void Test_S2BooleanOperation_FullAndEmptyResults()
+    internal void Test_S2BooleanOperation_FullAndEmptyResults()
     {
         // The followingants are all in S2TextFormat.MakeLaxPolygon() format.
         string kEmpty = "";
@@ -2111,7 +2111,7 @@ ExpectPolygon(OpType.SYMMETRIC_DIFFERENCE, k6FaceShell1Minus, k6FaceHole1,kFull)
     // This also indirectly tests IsEmpty(), which is used to implement Contains()
     // and Intersects().
     [Fact]
-    public void Test_S2BooleanOperation_Equals()
+    internal void Test_S2BooleanOperation_Equals()
     {
         Assert.True(TestEqual("# #", "# #"));
         Assert.True(TestEqual("# # full", "# # full"));
@@ -2126,7 +2126,7 @@ ExpectPolygon(OpType.SYMMETRIC_DIFFERENCE, k6FaceShell1Minus, k6FaceHole1,kFull)
     }
 
     [Fact]
-    public void Test_S2BooleanOperation_GetCrossedVertexIndexBug5()
+    internal void Test_S2BooleanOperation_GetCrossedVertexIndexBug5()
     {
         // Yet another bizarre situation where two crossing edges snap (correctly) to
         // a sequence of vertices in different orders.  Using the internal vertex
@@ -2197,7 +2197,7 @@ ExpectPolygon(OpType.SYMMETRIC_DIFFERENCE, k6FaceShell1Minus, k6FaceHole1,kFull)
     }
 
     [Fact]
-    public void Test_S2BooleanOperation_GetCrossedVertexIndexBug6()
+    internal void Test_S2BooleanOperation_GetCrossedVertexIndexBug6()
     {
         // This is another test of the code in GetCrossedVertexIndex() that checks
         // whether the B subchain contains an interior vertex of the A edge.
@@ -2270,7 +2270,7 @@ ExpectPolygon(OpType.SYMMETRIC_DIFFERENCE, k6FaceShell1Minus, k6FaceHole1,kFull)
 
     // Tests Contains() on empty and full geometries.
     [Fact]
-    public void Test_S2BooleanOperation_ContainsEmptyAndFull()
+    internal void Test_S2BooleanOperation_ContainsEmptyAndFull()
     {
         var empty = MakeIndexOrDie("# #");
         var full = MakeIndexOrDie("# # full");
@@ -2282,7 +2282,7 @@ ExpectPolygon(OpType.SYMMETRIC_DIFFERENCE, k6FaceShell1Minus, k6FaceHole1,kFull)
 
     // Tests Intersects() on empty and full geometries.
     [Fact]
-    public void Test_S2BooleanOperation_IntersectsEmptyAndFull()
+    internal void Test_S2BooleanOperation_IntersectsEmptyAndFull()
     {
         var empty = MakeIndexOrDie("# #");
         var full = MakeIndexOrDie("# # full");
@@ -2344,7 +2344,7 @@ ExpectPolygon(OpType.SYMMETRIC_DIFFERENCE, k6FaceShell1Minus, k6FaceHole1,kFull)
     }
 
     [Fact]
-    public void Test_S2BooleanOperation_SelfIntersectingPolylines()
+    internal void Test_S2BooleanOperation_SelfIntersectingPolylines()
     {
         // Two polylines that intersect at the point 2:4, and that also have
         // self-intersections at the points 2:2 and 3:4 respectively.  The

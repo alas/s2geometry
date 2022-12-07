@@ -1953,9 +1953,9 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
         }
         var (success2, bound) = S2LatLngRect.Decode(decoder);
         if (!success2) return (false, null);
-        var subregion_bound = S2LatLngRectBounder.ExpandForSubregions(bound!.Value);
+        var subregion_bound = S2LatLngRectBounder.ExpandForSubregions(bound);
 
-        return (true, new S2Polygon(loops, bound.Value, subregion_bound));
+        return (true, new S2Polygon(loops, bound, subregion_bound));
     }
 
     // Encode the polygon's vertices using about 4 bytes / vertex plus 24 bytes /

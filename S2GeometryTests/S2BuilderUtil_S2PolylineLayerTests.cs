@@ -3,13 +3,13 @@ namespace S2Geometry;
 public class S2BuilderUtil_S2PolylineLayerTests
 {
     [Fact]
-    public void Test_S2PolylineLayer_NoEdges()
+    internal void Test_S2PolylineLayer_NoEdges()
     {
         TestS2Polyline(Array.Empty<string>(), "");
     }
 
     [Fact]
-    public void Test_S2PolylineLayer_OneEdge()
+    internal void Test_S2PolylineLayer_OneEdge()
     {
         // Even with undirected edges, S2PolylineLayer prefers to reconstruct edges
         // in their original direction.
@@ -18,13 +18,13 @@ public class S2BuilderUtil_S2PolylineLayerTests
     }
 
     [Fact]
-    public void Test_S2PolylineLayer_StraightLineWithBacktracking()
+    internal void Test_S2PolylineLayer_StraightLineWithBacktracking()
     {
         TestS2PolylineUnchanged("0:0, 1:0, 2:0, 3:0, 2:0, 1:0, 2:0, 3:0, 4:0");
     }
 
     [Fact]
-    public void Test_S2PolylineLayer_EarlyWalkTerminationWithEndLoop1()
+    internal void Test_S2PolylineLayer_EarlyWalkTerminationWithEndLoop1()
     {
         // Test that the "early walk termination" code (which is needed by
         // S2PolylineVectorLayer in order to implement idempotency) does not create
@@ -38,7 +38,7 @@ public class S2BuilderUtil_S2PolylineLayerTests
     }
 
     [Fact]
-    public void Test_S2PolylineLayer_EarlyWalkTerminationWithEndLoop2()
+    internal void Test_S2PolylineLayer_EarlyWalkTerminationWithEndLoop2()
     {
         // This tests a different code path where the walk is terminated early
         // (yield a polyline with one edge), and then the walk is "maximimzed" by
@@ -48,13 +48,13 @@ public class S2BuilderUtil_S2PolylineLayerTests
     }
 
     [Fact]
-    public void Test_S2PolylineLayer_SimpleLoop()
+    internal void Test_S2PolylineLayer_SimpleLoop()
     {
         TestS2PolylineUnchanged("0:0, 0:5, 5:5, 5:0, 0:0");
     }
 
     [Fact]
-    public void Test_S2PolylineLayer_ManyLoops()
+    internal void Test_S2PolylineLayer_ManyLoops()
     {
         // This polyline consists of many overlapping loops that keep returning to
         // the same starting vertex (2:2).  This tests whether the implementation is
@@ -66,7 +66,7 @@ public class S2BuilderUtil_S2PolylineLayerTests
     }
 
     [Fact]
-    public void Test_S2PolylineLayer_UnorderedLoops()
+    internal void Test_S2PolylineLayer_UnorderedLoops()
     {
         // This test consists of 5 squares that touch diagonally, similar to the 5
         // white squares of a 3x3 chessboard.  The edges of these squares need to be
@@ -83,7 +83,7 @@ public class S2BuilderUtil_S2PolylineLayerTests
     }
 
     [Fact]
-    public void Test_S2PolylineLayer_SplitEdges()
+    internal void Test_S2PolylineLayer_SplitEdges()
     {
         // Test reconstruction of a polyline where two edges have been split into
         // many pieces by crossing edges.  This example is particularly challenging
@@ -101,7 +101,7 @@ public class S2BuilderUtil_S2PolylineLayerTests
     }
 
     [Fact]
-    public void Test_S2PolylineLayer_SimpleEdgeLabels()
+    internal void Test_S2PolylineLayer_SimpleEdgeLabels()
     {
         S2Builder builder = new(new Options());
         S2Polyline output = new();
@@ -136,7 +136,7 @@ public class S2BuilderUtil_S2PolylineLayerTests
     }
 
     [Fact]
-    public void Test_S2PolylineLayer_InvalidPolyline()
+    internal void Test_S2PolylineLayer_InvalidPolyline()
     {
         S2Builder builder = new(new Options());
         S2Polyline output = new();
@@ -155,7 +155,7 @@ public class S2BuilderUtil_S2PolylineLayerTests
     }
 
     [Fact]
-    public void Test_IndexedS2PolylineLayer_AddsShape()
+    internal void Test_IndexedS2PolylineLayer_AddsShape()
     {
         S2Builder builder = new(new Options());
         MutableS2ShapeIndex index = new();
@@ -170,7 +170,7 @@ public class S2BuilderUtil_S2PolylineLayerTests
     }
 
     [Fact]
-    public void Test_IndexedS2PolylineLayer_AddsEmptyShape()
+    internal void Test_IndexedS2PolylineLayer_AddsEmptyShape()
     {
         S2Builder builder = new(new Options());
         MutableS2ShapeIndex index = new();

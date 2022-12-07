@@ -5,7 +5,7 @@ using S2MaxDistanceTargets = S2DistanceTarget<S2MaxDistance>;
 public class S2MaxDistanceTargetsTests
 {
     [Fact]
-    public void Test_CellTarget_GetCapBound()
+    internal void Test_CellTarget_GetCapBound()
     {
         for (int i = 0; i < 100; i++)
         {
@@ -27,7 +27,7 @@ public class S2MaxDistanceTargetsTests
     }
 
     [Fact]
-    public void Test_IndexTarget_GetCapBound()
+    internal void Test_IndexTarget_GetCapBound()
     {
         MutableS2ShapeIndex index = new();
 
@@ -55,7 +55,7 @@ public class S2MaxDistanceTargetsTests
     }
 
     [Fact]
-    public void Test_PointTarget_UpdateMaxDistance()
+    internal void Test_PointTarget_UpdateMaxDistance()
     {
         S2MaxDistancePointTarget target = new(MakePointOrDie("0:0"));
         S2MaxDistance dist0 = new(S1ChordAngle.FromDegrees(0));
@@ -85,7 +85,7 @@ public class S2MaxDistanceTargetsTests
     }
 
     [Fact]
-    public void Test_PointTarget_UpdateMaxDistanceToEdgeWhenEqual()
+    internal void Test_PointTarget_UpdateMaxDistanceToEdgeWhenEqual()
     {
         // Verifies that UpdateMinDistance only returns true when the new distance
         // is greater than the old distance (not greater than or equal to).
@@ -97,7 +97,7 @@ public class S2MaxDistanceTargetsTests
     }
 
     [Fact]
-    public void Test_PointTarget_UpdateMaxDistanceToCellWhenEqual()
+    internal void Test_PointTarget_UpdateMaxDistanceToCellWhenEqual()
     {
         S2MaxDistancePointTarget target = new(MakePointOrDie("1:0"));
         var dist = S2MaxDistance.Infinity;
@@ -107,7 +107,7 @@ public class S2MaxDistanceTargetsTests
     }
 
     [Fact]
-    public void Test_EdgeTarget_UpdateMaxDistance()
+    internal void Test_EdgeTarget_UpdateMaxDistance()
     {
         var target_edge = ParsePointsOrDie("0:-1, 0:1");
         S2MaxDistanceEdgeTarget target = new(target_edge[0], target_edge[1]);
@@ -138,7 +138,7 @@ public class S2MaxDistanceTargetsTests
     }
 
     [Fact]
-    public void Test_EdgeTarget_UpdateMaxDistanceToEdgeWhenEqual()
+    internal void Test_EdgeTarget_UpdateMaxDistanceToEdgeWhenEqual()
     {
         S2MaxDistanceEdgeTarget target = new(MakePointOrDie("1:0"), MakePointOrDie("1:1"));
         var dist = S2MaxDistance.Infinity;
@@ -148,7 +148,7 @@ public class S2MaxDistanceTargetsTests
     }
 
     [Fact]
-    public void Test_EdgeTarget_UpdateMaxDistanceToEdgeAntipodal()
+    internal void Test_EdgeTarget_UpdateMaxDistanceToEdgeAntipodal()
     {
         S2MaxDistanceEdgeTarget target = new(MakePointOrDie("0:89"), MakePointOrDie("0:91"));
         var dist = S2MaxDistance.Infinity;
@@ -158,7 +158,7 @@ public class S2MaxDistanceTargetsTests
     }
 
     [Fact]
-    public void Test_EdgeTarget_UpdateMaxDistanceToCellWhenEqual()
+    internal void Test_EdgeTarget_UpdateMaxDistanceToCellWhenEqual()
     {
         S2MaxDistanceEdgeTarget target = new(MakePointOrDie("1:0"), MakePointOrDie("1:1"));
         var dist = S2MaxDistance.Infinity;
@@ -168,7 +168,7 @@ public class S2MaxDistanceTargetsTests
     }
 
     [Fact]
-    public void Test_CellTarget_UpdateMaxDistance()
+    internal void Test_CellTarget_UpdateMaxDistance()
     {
         S2MaxDistanceCellTarget target = new(new S2Cell(new S2CellId(MakePointOrDie("0:1"))));
         S2MaxDistance dist0 = new(S1ChordAngle.FromDegrees(0));
@@ -196,7 +196,7 @@ public class S2MaxDistanceTargetsTests
     }
 
     [Fact]
-    public void Test_CellTarget_UpdateMaxDistanceToEdgeWhenEqual()
+    internal void Test_CellTarget_UpdateMaxDistanceToEdgeWhenEqual()
     {
         S2MaxDistanceCellTarget target = new(new S2Cell(new S2CellId(MakePointOrDie("0:1"))));
         var dist = S2MaxDistance.Infinity;
@@ -206,7 +206,7 @@ public class S2MaxDistanceTargetsTests
     }
 
     [Fact]
-    public void Test_CellTarget_UpdateMaxDistanceToCellWhenEqual()
+    internal void Test_CellTarget_UpdateMaxDistanceToCellWhenEqual()
     {
         S2MaxDistanceCellTarget target = new(new S2Cell(new S2CellId(MakePointOrDie("0:1"))));
         var dist = S2MaxDistance.Infinity;
@@ -216,7 +216,7 @@ public class S2MaxDistanceTargetsTests
     }
 
     [Fact]
-    public void Test_ShapeIndexTarget_UpdateMaxDistanceToEdgeWhenEqual()
+    internal void Test_ShapeIndexTarget_UpdateMaxDistanceToEdgeWhenEqual()
     {
         var target_index = MakeIndexOrDie("1:0 # #");
         S2MaxDistanceShapeIndexTarget target = new(target_index);
@@ -227,7 +227,7 @@ public class S2MaxDistanceTargetsTests
     }
 
     [Fact]
-    public void Test_ShapeIndexTarget_UpdateMaxDistanceToCellWhenEqual()
+    internal void Test_ShapeIndexTarget_UpdateMaxDistanceToCellWhenEqual()
     {
         var target_index = MakeIndexOrDie("1:0 # #");
         S2MaxDistanceShapeIndexTarget target = new(target_index);
@@ -238,7 +238,7 @@ public class S2MaxDistanceTargetsTests
     }
 
     [Fact]
-    public void Test_CellTarget_UpdateMaxDistanceToCellAntipodal()
+    internal void Test_CellTarget_UpdateMaxDistanceToCellAntipodal()
     {
         var p = MakePointOrDie("0:0");
         S2MaxDistanceCellTarget target = new(new S2Cell(p));
@@ -251,7 +251,7 @@ public class S2MaxDistanceTargetsTests
     }
 
     [Fact]
-    public void Test_PointTarget_VisitContainingShapes()
+    internal void Test_PointTarget_VisitContainingShapes()
     {
         // Only shapes 2 and 4 should contain the target point.
         var index = MakeIndexOrDie("1:1 # 1:1, 2:2 # 0:0, 0:3, 3:0 | 6:6, 6:9, 9:6 | 0:0, 0:4, 4:0");
@@ -263,7 +263,7 @@ public class S2MaxDistanceTargetsTests
     }
 
     [Fact]
-    public void Test_EdgeTarget_VisitContainingShapes()
+    internal void Test_EdgeTarget_VisitContainingShapes()
     {
         // Only shapes 2 and 4 should contain the target edge.
         var index = MakeIndexOrDie("1:1 # 1:1, 2:2 # 0:0, 0:3, 3:0 | 6:6, 6:9, 9:6 | 0:0, 0:4, 4:0");
@@ -275,7 +275,7 @@ public class S2MaxDistanceTargetsTests
     }
 
     [Fact]
-    public void Test_CellTarget_VisitContainingShapes()
+    internal void Test_CellTarget_VisitContainingShapes()
     {
         var index = MakeIndexOrDie("1:1 # 1:1, 2:2 # 0:0, 0:3, 3:0 | 6:6, 6:9, 9:6 | -1:-1, -1:5, 5:-1");
         // Only shapes 2 and 4 should contain a very small cell near
@@ -295,7 +295,7 @@ public class S2MaxDistanceTargetsTests
     }
 
     [Fact]
-    public void Test_ShapeIndexTarget_VisitContainingShapes()
+    internal void Test_ShapeIndexTarget_VisitContainingShapes()
     {
         // Create an index containing a repeated grouping of one point, one
         // polyline, and one polygon.
@@ -326,7 +326,7 @@ public class S2MaxDistanceTargetsTests
     }
 
     [Fact]
-    public void Test_ShapeIndexTarget_VisitContainingShapesEmptyAndFull()
+    internal void Test_ShapeIndexTarget_VisitContainingShapesEmptyAndFull()
     {
         // Verify that VisitContainingShapes never returns empty polygons and always
         // returns full polygons (i.e., those containing the entire sphere).
@@ -376,7 +376,7 @@ public class S2MaxDistanceTargetsTests
     }
 }
 
-public static class S2MaxDistanceExtensions
+internal static class S2MaxDistanceExtensions
 {
-    public static S1ChordAngle ToS1ChordAngle(this S2MaxDistance me) => me.Distance;
+    internal static S1ChordAngle ToS1ChordAngle(this S2MaxDistance me) => me.Distance;
 }

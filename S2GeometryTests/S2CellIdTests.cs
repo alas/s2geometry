@@ -7,7 +7,7 @@ public class S2CellIdTests
     private const double kCellSize = 1.0 / (1 << kMaxWalkLevel);
 
     [Fact]
-    public void Test_S2CellId_DefaultConstructor()
+    internal void Test_S2CellId_DefaultConstructor()
     {
         S2CellId id = new();
         Assert.Equal(0UL, id.Id);
@@ -15,7 +15,7 @@ public class S2CellIdTests
     }
 
     [Fact]
-    public void Test_S2CellId_S2CellIdHash()
+    internal void Test_S2CellId_S2CellIdHash()
     {
         Assert.Equal(
             GetCellId(0, 90).GetHashCode(),
@@ -23,7 +23,7 @@ public class S2CellIdTests
     }
 
     [Fact]
-    public void Test_S2CellId_FaceDefinitions()
+    internal void Test_S2CellId_FaceDefinitions()
     {
         Assert.Equal(0UL, GetCellId(0, 0).Face());
         Assert.Equal(1UL, GetCellId(0, 90).Face());
@@ -34,7 +34,7 @@ public class S2CellIdTests
     }
 
     [Fact]
-    public void Test_S2CellId_FromFace()
+    internal void Test_S2CellId_FromFace()
     {
         for (int face = 0; face < 6; ++face)
         {
@@ -43,7 +43,7 @@ public class S2CellIdTests
     }
 
     [Fact]
-    public void Test_S2CellId_ParentChildRelationships()
+    internal void Test_S2CellId_ParentChildRelationships()
     {
         S2CellId id = S2CellId.FromFacePosLevel(3, 0x12345678, S2.kMaxCellLevel - 4);
         Assert.True(id.IsValid());
@@ -70,14 +70,14 @@ public class S2CellIdTests
     }
 
     [Fact]
-    public void Test_S2CellId_SentinelRangeMinMax()
+    internal void Test_S2CellId_SentinelRangeMinMax()
     {
         Assert.Equal(S2CellId.Sentinel, S2CellId.Sentinel.RangeMin());
         Assert.Equal(S2CellId.Sentinel, S2CellId.Sentinel.RangeMax());
     }
 
     [Fact]
-    public void Test_S2CellId_CenterSiTi()
+    internal void Test_S2CellId_CenterSiTi()
     {
         S2CellId id = S2CellId.FromFacePosLevel(3, 0x12345678,
                                                  S2.kMaxCellLevel);
@@ -116,7 +116,7 @@ public class S2CellIdTests
     }
 
     [Fact]
-    public void Test_S2CellId_Wrapping()
+    internal void Test_S2CellId_Wrapping()
     {
         // Check wrapping from beginning of Hilbert curve to end and vice versa.
         Assert.Equal(S2CellId.End(0).Prev(), S2CellId.Begin(0).PrevWrap());
@@ -138,7 +138,7 @@ public class S2CellIdTests
     }
 
     [Fact]
-    public void Test_S2CellId_Advance()
+    internal void Test_S2CellId_Advance()
     {
         S2CellId id = S2CellId.FromFacePosLevel(3, 0x12345678,
                                                  S2.kMaxCellLevel - 4);
@@ -171,7 +171,7 @@ public class S2CellIdTests
     }
 
     [Fact]
-    public void Test_S2CellId_DistanceFromBegin()
+    internal void Test_S2CellId_DistanceFromBegin()
     {
         Assert.Equal(6, S2CellId.End(0).DistanceFromBegin());
         Assert.Equal(6 * (1L << (2 * S2.kMaxCellLevel)),
@@ -185,7 +185,7 @@ public class S2CellIdTests
     }
 
     [Fact]
-    public void Test_S2CellId_MaximumTile()
+    internal void Test_S2CellId_MaximumTile()
     {
         // This method is tested more thoroughly in s2cell_union_test.cc.
         for (int iter = 0; iter < 1000; ++iter)
@@ -223,7 +223,7 @@ public class S2CellIdTests
     }
 
     [Fact]
-    public void Test_S2CellId_GetCommonAncestorLevel()
+    internal void Test_S2CellId_GetCommonAncestorLevel()
     {
         // Two identical cell ids.
         Assert.Equal(0, S2CellId.FromFace(0)
@@ -247,7 +247,7 @@ public class S2CellIdTests
     }
 
     [Fact]
-    public void Test_S2CellId_Inverses()
+    internal void Test_S2CellId_Inverses()
     {
         // Check the conversion of random leaf cells to S2LatLngs and back.
         for (int i = 0; i < 200000; ++i)
@@ -261,7 +261,7 @@ public class S2CellIdTests
     }
 
     [Fact]
-    public void Test_S2CellId_Tokens()
+    internal void Test_S2CellId_Tokens()
     {
         // Test random cell ids at all levels.
         for (int i = 0; i < 10000; ++i)
@@ -299,7 +299,7 @@ public class S2CellIdTests
     }
 
     [Fact]
-    public void Test_S2CellId_EncodeDecode()
+    internal void Test_S2CellId_EncodeDecode()
     {
         S2CellId id = new(0x7837423);
         Encoder encoder = new();
@@ -311,7 +311,7 @@ public class S2CellIdTests
     }
 
     [Fact]
-    public void Test_S2CellId_EncodeDecodeNoneCell()
+    internal void Test_S2CellId_EncodeDecodeNoneCell()
     {
         S2CellId none_id = S2CellId.None;
         Encoder encoder = new();
@@ -323,7 +323,7 @@ public class S2CellIdTests
     }
 
     [Fact]
-    public void Test_S2CellId_DecodeFailsWithTruncatedBuffer()
+    internal void Test_S2CellId_DecodeFailsWithTruncatedBuffer()
     {
         S2CellId id = new(0x7837423);
         Encoder encoder = new();
@@ -336,7 +336,7 @@ public class S2CellIdTests
     }
 
     [Fact]
-    public void Test_S2CellId_Containment()
+    internal void Test_S2CellId_Containment()
     {
         // Test contains() and intersects().
         var parent_map = new Dictionary<S2CellId, S2CellId>();
@@ -369,7 +369,7 @@ public class S2CellIdTests
     }
 
     [Fact]
-    public void Test_S2CellId_Continuity()
+    internal void Test_S2CellId_Continuity()
     {
         // Make sure that sequentially increasing cell ids form a continuous
         // path over the surface of the sphere, i.e. there are no
@@ -393,7 +393,7 @@ public class S2CellIdTests
     }
 
     [Fact]
-    public void Test_S2CellId_Coverage()
+    internal void Test_S2CellId_Coverage()
     {
         // Make sure that random points on the sphere can be represented to the
         // expected level of accuracy, which in the worst case is Math.Sqrt(2/3) times
@@ -412,7 +412,7 @@ public class S2CellIdTests
     }
 
     [Fact]
-    public void Test_S2CellId_Neighbors()
+    internal void Test_S2CellId_Neighbors()
     {
         // Check the edge neighbors of face 1.
         var out_faces = new[] { 5, 3, 2, 0 };
@@ -478,7 +478,7 @@ public class S2CellIdTests
     }
 
     [Fact]
-    public void Test_S2CellId_ExpandedByDistanceUV()
+    internal void Test_S2CellId_ExpandedByDistanceUV()
     {
         const double max_dist_degrees = 10;
         for (var iter = 0; iter < 100; ++iter)
@@ -490,7 +490,7 @@ public class S2CellIdTests
     }
 
     [Fact]
-    public void Test_S2CellId_ToString()
+    internal void Test_S2CellId_ToString()
     {
         Assert.Equal("3/", S2CellId.FromFace(3).ToString());
         Assert.Equal("4/000000000000000000000000000000",
@@ -499,7 +499,7 @@ public class S2CellIdTests
     }
 
     [Fact]
-    public void Test_S2CellId_FromDebugString()
+    internal void Test_S2CellId_FromDebugString()
     {
         Assert.Equal(S2CellId.FromFace(3), S2CellId.FromDebugString("3/"));
         Assert.Equal(S2CellId.FromFace(0).Child(2).Child(1),
@@ -517,7 +517,7 @@ public class S2CellIdTests
     }
 
     [Fact]
-    public void Test_S2CellId_OutputOperator()
+    internal void Test_S2CellId_OutputOperator()
     {
         S2CellId cell = new(0xbb04000000000000UL);
         Assert.Equal("5/31200", cell.ToString());

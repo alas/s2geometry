@@ -31,7 +31,7 @@ public class S2TextFormatTests
     }
 
     [Fact]
-    public void Test_ToString_SpecialCases()
+    internal void Test_ToString_SpecialCases()
     {
         ExpectString("0:0", S2LatLng.FromDegrees(0, 0));
         ExpectString("90:0", new S2LatLng(new S2Point(0, 0, 1)));
@@ -39,7 +39,7 @@ public class S2TextFormatTests
     }
 
     [Fact]
-    public void Test_ToString_NegativeZeros()
+    internal void Test_ToString_NegativeZeros()
     {
         // Verify that negative zero coordinates in S2Points are formatted identically
         // to positive zeros.  This ensure that whenever two S2Points compare equal to
@@ -60,7 +60,7 @@ public class S2TextFormatTests
     }
 
     [Fact]
-    public void Test_E5()
+    internal void Test_E5()
     {
         for (var i = 0; i < kIters; i++)
         {
@@ -71,7 +71,7 @@ public class S2TextFormatTests
     }
 
     [Fact]
-    public void Test_E6()
+    internal void Test_E6()
     {
         for (var i = 0; i < kIters; i++)
         {
@@ -82,7 +82,7 @@ public class S2TextFormatTests
     }
 
     [Fact]
-    public void Test_E7()
+    internal void Test_E7()
     {
         ExpectMaxDigits(S2LatLng.FromDegrees(0, 0), 7);
         for (var i = 0; i < kIters; i++)
@@ -94,7 +94,7 @@ public class S2TextFormatTests
     }
 
     [Fact]
-    public void Test_MinimalDigits_DoubleConstants()
+    internal void Test_MinimalDigits_DoubleConstants()
     {
         // Verify that points specified as floating-point literals in degrees using
         // up to 10 digits after the decimal point are formatted with the minimal
@@ -111,56 +111,68 @@ public class S2TextFormatTests
     }
 
     [Fact]
-    public void Test_UninitializedLoop()
+    internal void Test_ToString_FaceCellId()
+    {
+        Assert.Equal("2/", S2CellId.FromFace(2).ToString());
+    }
+
+    [Fact]
+    internal void Test_ToString_Level3CellId()
+    {
+        Assert.Equal("2/033", S2CellId.FromFace(2).Child(0).Child(3).Child(3).ToString());
+    }
+
+    [Fact]
+    internal void Test_UninitializedLoop()
     {
         var loop = new S2Loop(Array.Empty<S2Point>());
         Assert.Equal("", loop.ToDebugString());
     }
 
     [Fact]
-    public void Test_EmptyLoop()
+    internal void Test_EmptyLoop()
     {
         var empty = S2Loop.kEmpty;
         Assert.Equal("empty", empty.ToDebugString());
     }
 
     [Fact]
-    public void Test_FullLoop()
+    internal void Test_FullLoop()
     {
         var full = S2Loop.kFull;
         Assert.Equal("full", full.ToDebugString());
     }
 
     [Fact]
-    public void Test_EmptyPolyline()
+    internal void Test_EmptyPolyline()
     {
         var polyline = new S2Polyline();
         Assert.Equal("", polyline.ToDebugString());
     }
 
     [Fact]
-    public void Test_EmptyPointVector()
+    internal void Test_EmptyPointVector()
     {
         var points = Array.Empty<S2Point>();
         Assert.Equal("", points.ToDebugString());
     }
 
     [Fact]
-    public void Test_EmptyPolygon()
+    internal void Test_EmptyPolygon()
     {
         var empty = new S2Polygon();
         Assert.Equal("empty", empty.ToDebugString());
     }
 
     [Fact]
-    public void Test_FullPolygon()
+    internal void Test_FullPolygon()
     {
         var full = new S2Polygon(S2Loop.kFull);
         Assert.Equal("full", full.ToDebugString());
     }
 
     [Fact]
-    public void Test_S2PolygonLoopSeparator()
+    internal void Test_S2PolygonLoopSeparator()
     {
         // Shells and holes same direction.
         var loops = new[] { "0:0, 0:5, 5:0", "1:1, 1:4, 4:1" };
@@ -170,7 +182,7 @@ public class S2TextFormatTests
     }
 
     [Fact]
-    public void Test_LaxPolygonLoopSeparator()
+    internal void Test_LaxPolygonLoopSeparator()
     {
         string kLoop1 = "0:0, 0:5, 5:0";
         string kLoop2 = "1:1, 4:1, 1:4";  // Interior on left of all loops.
@@ -180,7 +192,14 @@ public class S2TextFormatTests
     }
 
     [Fact]
-    public void Test_MakeLaxPolygon_Empty()
+    internal void Test_ToString_S2LatLngSpan()
+    {
+        List<S2LatLng> latlngs = ParseLatLngsOrDie("-20:150, -20:151, -19:150");
+        Assert.Equal("-20:150, -20:151, -19:150", latlngs.ToString());
+    }
+
+    [Fact]
+    internal void Test_MakeLaxPolygon_Empty()
     {
         // Verify that "" and "empty" both create empty polygons.
         var shape = MakeLaxPolygonOrDie("");
@@ -190,7 +209,7 @@ public class S2TextFormatTests
     }
 
     [Fact]
-    public void Test_MakeLaxPolygon_Full()
+    internal void Test_MakeLaxPolygon_Full()
     {
         var shape = MakeLaxPolygonOrDie("full");
         Assert.Equal(1, shape.NumLoops);
@@ -198,7 +217,7 @@ public class S2TextFormatTests
     }
 
     [Fact]
-    public void Test_MakeLaxPolygon_FullWithHole()
+    internal void Test_MakeLaxPolygon_FullWithHole()
     {
         var shape = MakeLaxPolygonOrDie("full; 0:0");
         Assert.Equal(2, shape.NumLoops);
@@ -208,7 +227,7 @@ public class S2TextFormatTests
     }
 
     [Fact]
-    public void Test_S2ShapeIndex()
+    internal void Test_S2ShapeIndex()
     {
         TestS2ShapeIndex("# #");
         TestS2ShapeIndex("0:0 # #");
@@ -224,20 +243,20 @@ public class S2TextFormatTests
     }
 
     [Fact]
-    public void Test_MakePoint_ValidInput()
+    internal void Test_MakePoint_ValidInput()
     {
         Assert.True(MakePoint("-20:150", out var point));
         Assert.Equal(S2LatLng.FromDegrees(-20, 150).ToPoint(), point);
     }
 
     [Fact]
-    public void Test_MakePoint_InvalidInput()
+    internal void Test_MakePoint_InvalidInput()
     {
         Assert.False(MakePoint("blah", out _));
     }
 
     [Fact]
-    public void Test_ParseLatLngs_ValidInput()
+    internal void Test_ParseLatLngs_ValidInput()
     {
         var latlngs = new List<S2LatLng>();
         Assert.True(ParseLatLngs("-20:150, -20:151, -19:150", latlngs));
@@ -248,14 +267,14 @@ public class S2TextFormatTests
     }
 
     [Fact]
-    public void Test_ParseLatLngs_InvalidInput()
+    internal void Test_ParseLatLngs_InvalidInput()
     {
         var latlngs = new List<S2LatLng>();
         Assert.False(ParseLatLngs("blah", latlngs));
     }
 
     [Fact]
-    public void Test_ParsePoints_ValidInput()
+    internal void Test_ParsePoints_ValidInput()
     {
         var vertices = new List<S2Point>();
         Assert.True(ParsePoints("-20:150, -20:151, -19:150", vertices));
@@ -266,14 +285,14 @@ public class S2TextFormatTests
     }
 
     [Fact]
-    public void Test_ParsePoints_InvalidInput()
+    internal void Test_ParsePoints_InvalidInput()
     {
         var vertices = new List<S2Point>();
         Assert.False(ParsePoints("blah", vertices));
     }
 
     [Fact]
-    public void Test_MakeLatLngRect_ValidInput()
+    internal void Test_MakeLatLngRect_ValidInput()
     {
         Assert.True(MakeLatLngRect("-10:-10, 10:10", out var rect));
         Assert.Equal(rect, new S2LatLngRect(
@@ -282,33 +301,33 @@ public class S2TextFormatTests
     }
 
     [Fact]
-    public void Test_MakeLatLngRect_InvalidInput()
+    internal void Test_MakeLatLngRect_InvalidInput()
     {
         Assert.False(MakeLatLngRect("blah", out _));
     }
 
     [Fact]
-    public void Test_MakeLatLng_ValidInput()
+    internal void Test_MakeLatLng_ValidInput()
     {
         Assert.True(MakeLatLng("-12.3:45.6", out var latlng));
         Assert.Equal(latlng, S2LatLng.FromDegrees(-12.3, 45.6));
     }
 
     [Fact]
-    public void Test_MakeLatLng_InvalidInput()
+    internal void Test_MakeLatLng_InvalidInput()
     {
         Assert.False(MakeLatLng("blah", out _));
     }
 
     [Fact]
-    public void Test_MakeCellId_ValidInput()
+    internal void Test_MakeCellId_ValidInput()
     {
         Assert.True(MakeCellId("3/", out var cellId));
         Assert.Equal(cellId, S2CellId.FromFace(3));
     }
 
     [Fact]
-    public void Test_MakeCellId_InvalidInput()
+    internal void Test_MakeCellId_InvalidInput()
     {
         Assert.False(MakeCellId("blah", out _));
         Assert.False(MakeCellId("6/0", out _));
@@ -316,7 +335,7 @@ public class S2TextFormatTests
     }
 
     [Fact]
-    public void Test_MakeCellUnion_ValidInput()
+    internal void Test_MakeCellUnion_ValidInput()
     {
         Assert.True(MakeCellUnion("1/3, 4/", out var cellUnion));
         var expected = new S2CellUnion(new List<S2CellId> {
@@ -325,14 +344,14 @@ public class S2TextFormatTests
     }
 
     [Fact]
-    public void Test_MakeCellUnion_InvalidInput()
+    internal void Test_MakeCellUnion_InvalidInput()
     {
         Assert.False(MakeCellUnion("abc", out _));
         Assert.False(MakeCellUnion("3/1 4/1", out _));
     }
 
     [Fact]
-    public void Test_MakeLoop_ValidInput()
+    internal void Test_MakeLoop_ValidInput()
     {
         Assert.True(MakeLoop("-20:150, -20:151, -19:150", out var loop));
         var expected = new S2Loop(new[]
@@ -345,13 +364,13 @@ public class S2TextFormatTests
     }
 
     [Fact]
-    public void Test_MakeLoop_InvalidInput()
+    internal void Test_MakeLoop_InvalidInput()
     {
         Assert.False(MakeLoop("blah", out _));
     }
 
     [Fact]
-    public void Test_SafeMakeLoop_Empty()
+    internal void Test_SafeMakeLoop_Empty()
     {
         // Verify that "empty" creates an empty loop.
         S2Loop? loop;
@@ -360,7 +379,7 @@ public class S2TextFormatTests
     }
 
     [Fact]
-    public void Test_SafeMakeLoop_Full()
+    internal void Test_SafeMakeLoop_Full()
     {
         // Verify that "full" creates a full loop.
         S2Loop? loop;
@@ -369,7 +388,7 @@ public class S2TextFormatTests
     }
 
     [Fact]
-    public void Test_MakePolyline_ValidInput()
+    internal void Test_MakePolyline_ValidInput()
     {
         Assert.True(MakePolyline("-20:150, -20:151, -19:150", out var polyline));
         var expected = new S2Polyline(new[] {
@@ -381,13 +400,13 @@ public class S2TextFormatTests
     }
 
     [Fact]
-    public void Test_MakePolyline_InvalidInput()
+    internal void Test_MakePolyline_InvalidInput()
     {
         Assert.False(MakePolyline("blah", out _));
     }
 
     [Fact]
-    public void Test_MakeLaxPolyline_ValidInput()
+    internal void Test_MakeLaxPolyline_ValidInput()
     {
         Assert.True(MakeLaxPolyline("-20:150, -20:151, -19:150", out var laxPolyline));
 
@@ -399,13 +418,13 @@ public class S2TextFormatTests
     }
 
     [Fact]
-    public void Test_MakeLaxPolyline_InvalidInput()
+    internal void Test_MakeLaxPolyline_InvalidInput()
     {
         Assert.False(MakeLaxPolyline("blah", out _));
     }
 
     [Fact]
-    public void Test_MakePolygon_ValidInput()
+    internal void Test_MakePolygon_ValidInput()
     {
         Assert.True(MakePolygon("-20:150, -20:151, -19:150", out var polygon));
         var vertices = new[]
@@ -419,13 +438,13 @@ public class S2TextFormatTests
     }
 
     [Fact]
-    public void Test_MakePolygon_InvalidInput()
+    internal void Test_MakePolygon_InvalidInput()
     {
         Assert.False(MakePolygon("blah", out _));
     }
 
     [Fact]
-    public void Test_MakePolygon_Empty()
+    internal void Test_MakePolygon_Empty()
     {
         // Verify that "" and "empty" both create empty polygons.
         Assert.True(MakePolygon("", out var polygon));
@@ -435,7 +454,7 @@ public class S2TextFormatTests
     }
 
     [Fact]
-    public void Test_MakePolygon_Full()
+    internal void Test_MakePolygon_Full()
     {
         // Verify that "full" creates the full polygon.
         Assert.True(MakePolygon("full", out var polygon));
@@ -443,7 +462,7 @@ public class S2TextFormatTests
     }
 
     [Fact]
-    public void Test_MakeVerbatimPolygon_ValidInput()
+    internal void Test_MakeVerbatimPolygon_ValidInput()
     {
         Assert.True(MakeVerbatimPolygon("-20:150, -20:151, -19:150", out var polygon));
         var vertices = new[]
@@ -457,13 +476,13 @@ public class S2TextFormatTests
     }
 
     [Fact]
-    public void Test_MakeVerbatimPolygon_InvalidInput()
+    internal void Test_MakeVerbatimPolygon_InvalidInput()
     {
         Assert.False(MakeVerbatimPolygon("blah", out _));
     }
 
     [Fact]
-    public void Test_MakeLaxPolygon_ValidInput()
+    internal void Test_MakeLaxPolygon_ValidInput()
     {
         Assert.True(MakeLaxPolygon("-20:150, -20:151, -19:150", out var lax_polygon));
 
@@ -483,13 +502,13 @@ public class S2TextFormatTests
     }
 
     [Fact]
-    public void Test_MakeLaxPolygon_InvalidInput()
+    internal void Test_MakeLaxPolygon_InvalidInput()
     {
         Assert.False(MakeLaxPolygon("blah", out _));
     }
 
     [Fact]
-    public void Test_MakeIndex_ValidInput()
+    internal void Test_MakeIndex_ValidInput()
     {
         const string valid = "# 0:0, 0:0 | 1:0, 2:0 #";
         Assert.True(MakeIndex(valid, out var index));
@@ -497,7 +516,7 @@ public class S2TextFormatTests
     }
 
     [Fact]
-    public void Test_MakeIndex_InvalidInput()
+    internal void Test_MakeIndex_InvalidInput()
     {
         Assert.False(MakeIndex("# blah #", out _));
     }

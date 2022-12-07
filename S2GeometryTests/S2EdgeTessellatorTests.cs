@@ -12,10 +12,10 @@ public class S2EdgeTessellatorTests
     private static readonly S1Angle kMaxProjError = S1Angle.FromRadians(2e-15);
     private readonly ITestOutputHelper _logger;
 
-    public S2EdgeTessellatorTests(ITestOutputHelper logger) { _logger = logger; }
+    internal S2EdgeTessellatorTests(ITestOutputHelper logger) { _logger = logger; }
 
     [Fact]
-    public void Test_S2EdgeTessellator_ProjectedNoTessellation() {
+    internal void Test_S2EdgeTessellator_ProjectedNoTessellation() {
         PlateCarreeProjection proj=new(180);
         S2EdgeTessellator tess = new(proj, S1Angle.FromDegrees(0.01));
         List<R2Point> vertices = new();
@@ -24,7 +24,7 @@ public class S2EdgeTessellatorTests
     }
 
     [Fact]
-    public void Test_S2EdgeTessellator_UnprojectedNoTessellation() {
+    internal void Test_S2EdgeTessellator_UnprojectedNoTessellation() {
         PlateCarreeProjection proj = new(180);
         S2EdgeTessellator tess = new(proj, S1Angle.FromDegrees(0.01));
         List<S2Point> vertices = new();
@@ -33,7 +33,7 @@ public class S2EdgeTessellatorTests
     }
 
     [Fact]
-    public void Test_S2EdgeTessellator_UnprojectedWrapping() {
+    internal void Test_S2EdgeTessellator_UnprojectedWrapping() {
         // This tests that a projected edge that crosses the 180 degree meridian
         // goes the "short way" around the sphere.
 
@@ -47,7 +47,7 @@ public class S2EdgeTessellatorTests
     }
 
     [Fact]
-    public void Test_S2EdgeTessellator_ProjectedWrapping() {
+    internal void Test_S2EdgeTessellator_ProjectedWrapping() {
         // This tests projecting a geodesic edge that crosses the 180 degree
         // meridian.  This results in a set of vertices that may be non-canonical
         // (i.e., absolute longitudes greater than 180 degrees) but that don't have
@@ -63,7 +63,7 @@ public class S2EdgeTessellatorTests
     }
 
     [Fact]
-    public void Test_S2EdgeTessellator_UnprojectedWrappingMultipleCrossings() {
+    internal void Test_S2EdgeTessellator_UnprojectedWrappingMultipleCrossings() {
         // Tests an edge chain that crosses the 180 degree meridian multiple times.
         // Note that due to coordinate wrapping, the last vertex of one edge may not
         // exactly match the first edge of the next edge after unprojection.
@@ -82,7 +82,7 @@ public class S2EdgeTessellatorTests
     }
 
     [Fact]
-    public void Test_S2EdgeTessellator_ProjectedWrappingMultipleCrossings() {
+    internal void Test_S2EdgeTessellator_ProjectedWrappingMultipleCrossings() {
         // The following loop crosses the 180 degree meridian four times (twice in
         // each direction).
         var loop = ParsePointsOrDie("0:160, 0:-40, 0:120, 0:-80, 10:120, " +
@@ -108,7 +108,7 @@ public class S2EdgeTessellatorTests
     }
 
     [Fact]
-    public void Test_S2EdgeTessellator_InfiniteRecursionBug() {
+    internal void Test_S2EdgeTessellator_InfiniteRecursionBug() {
         PlateCarreeProjection proj = new(180);
         S1Angle kOneMicron = S1Angle.FromRadians(1e-6 / 6371.0);
         S2EdgeTessellator tess = new(proj, kOneMicron);
@@ -119,7 +119,7 @@ public class S2EdgeTessellatorTests
     }
 
     [Fact]
-    public void Test_S2EdgeTessellator_UnprojectedAccuracy() {
+    internal void Test_S2EdgeTessellator_UnprojectedAccuracy() {
         MercatorProjection proj = new(180);
         S1Angle tolerance = S1Angle.FromDegrees(1e-5);
         R2Point pa = new(0, 0), pb = new(89.999999, 179);
@@ -129,7 +129,7 @@ public class S2EdgeTessellatorTests
 
     // Repro case for b/110719057.
     [Fact]
-    public void Test_S2EdgeTessellator_UnprojectedAccuracyCrossEquator() {
+    internal void Test_S2EdgeTessellator_UnprojectedAccuracyCrossEquator() {
         MercatorProjection proj = new(180);
         S1Angle tolerance = S1Angle.FromDegrees(1e-5);
         R2Point pa = new(-10, -10), pb = new(10, 10);
@@ -138,7 +138,7 @@ public class S2EdgeTessellatorTests
     }
 
     [Fact]
-    public void Test_S2EdgeTessellator_ProjectedAccuracy() {
+    internal void Test_S2EdgeTessellator_ProjectedAccuracy() {
         PlateCarreeProjection proj = new(180);
         S1Angle tolerance=S1Angle.FromE7(1);
         S2Point a = S2LatLng.FromDegrees(-89.999, -170).ToPoint();
@@ -148,7 +148,7 @@ public class S2EdgeTessellatorTests
     }
 
     [Fact]
-    public void Test_S2EdgeTessellator_UnprojectedAccuracyMidpointEquator() {
+    internal void Test_S2EdgeTessellator_UnprojectedAccuracyMidpointEquator() {
         PlateCarreeProjection proj = new(180);
         S1Angle tolerance = S2Testing.MetersToAngle(1);
         R2Point a = new(80, 50), b = new(-80, -50);
@@ -157,7 +157,7 @@ public class S2EdgeTessellatorTests
     }
 
     [Fact]
-    public void Test_S2EdgeTessellator_ProjectedAccuracyMidpointEquator() {
+    internal void Test_S2EdgeTessellator_ProjectedAccuracyMidpointEquator() {
         PlateCarreeProjection proj = new(180);
         S1Angle tolerance = S2Testing.MetersToAngle(1);
         S2Point a = S2LatLng.FromDegrees(50, 80).ToPoint();
@@ -168,7 +168,7 @@ public class S2EdgeTessellatorTests
 
     // Repro case for b/110719057.
     [Fact]
-    public void Test_S2EdgeTessellator_ProjectedAccuracyCrossEquator() {
+    internal void Test_S2EdgeTessellator_ProjectedAccuracyCrossEquator() {
         PlateCarreeProjection proj = new(180);
         S1Angle tolerance = S1Angle.FromE7(1);
         S2Point a = S2LatLng.FromDegrees(-20, -20).ToPoint();
@@ -178,7 +178,7 @@ public class S2EdgeTessellatorTests
     }
 
     [Fact]
-    public void Test_S2EdgeTessellator_ProjectedAccuracySeattleToNewYork() {
+    internal void Test_S2EdgeTessellator_ProjectedAccuracySeattleToNewYork() {
         PlateCarreeProjection proj = new(180);
         S1Angle tolerance = S2Testing.MetersToAngle(1);
         S2Point seattle = S2LatLng.FromDegrees(47.6062, -122.3321).ToPoint();
@@ -188,7 +188,7 @@ public class S2EdgeTessellatorTests
     }
 
     [Fact]
-    public void Test_S2EdgeTessellator_MaxEdgeErrorPlateCarree() {
+    internal void Test_S2EdgeTessellator_MaxEdgeErrorPlateCarree() {
         PlateCarreeProjection proj = new(180);
         // Uncomment to test some nearby parameter values.
         // TestEdgeError(proj, 0.311);
@@ -197,7 +197,7 @@ public class S2EdgeTessellatorTests
     }
 
     [Fact]
-    public void Test_S2EdgeTessellator_MaxEdgeErrorMercator() {
+    internal void Test_S2EdgeTessellator_MaxEdgeErrorMercator() {
         MercatorProjection proj = new(180);
         // Uncomment to test some nearby parameter values.
         // TestEdgeError(proj, 0.311);
@@ -206,14 +206,14 @@ public class S2EdgeTessellatorTests
     }
 
     [Fact]
-    public void Test_S2EdgeTessellator_RandomEdgesPlateCarree() {
+    internal void Test_S2EdgeTessellator_RandomEdgesPlateCarree() {
         PlateCarreeProjection proj = new(180);
         S1Angle tolerance = S2Testing.MetersToAngle(100);
         TestRandomEdges(proj, tolerance);
     }
 
     [Fact]
-    public void Test_S2EdgeTessellator_RandomEdgesMercator() {
+    internal void Test_S2EdgeTessellator_RandomEdgesMercator() {
         MercatorProjection proj = new(180);
         S1Angle tolerance = S2Testing.MetersToAngle(100);
         TestRandomEdges(proj, tolerance);
@@ -221,7 +221,7 @@ public class S2EdgeTessellatorTests
 
     // TODO(ericv): Superceded by random edge tests above, remove?
     [Fact]
-    public void Test_S2EdgeTessellator_UnprojectedAccuracyRandomCheck() {
+    internal void Test_S2EdgeTessellator_UnprojectedAccuracyRandomCheck() {
         PlateCarreeProjection proj = new(180);
         S1Angle tolerance = S1Angle.FromDegrees(1e-3);
         int kIters = 5000;
@@ -242,7 +242,7 @@ public class S2EdgeTessellatorTests
 
     // XXX(ericv): Superceded by random edge tests above, remove?
     [Fact]
-    public void Test_S2EdgeTessellator_ProjectedAccuracyRandomCheck() {
+    internal void Test_S2EdgeTessellator_ProjectedAccuracyRandomCheck() {
         PlateCarreeProjection proj = new(180);
         S1Angle tolerance = S1Angle.FromDegrees(1e-3);
         int kIters = 5000;
@@ -474,15 +474,15 @@ public class S2EdgeTessellatorTests
     {
         private double sum;
         private int count;
-        public double Max { get; private set; }
+        internal double Max { get; private set; }
 
-        public Stats()
+        internal Stats()
         {
             Max = double.NegativeInfinity;
             sum = 0; count = 0;
         }
 
-        public void Tally(double v)
+        internal void Tally(double v)
         {
             Assert.False(double.IsNaN(v));
             Max = Math.Max(v, Max);
@@ -490,7 +490,7 @@ public class S2EdgeTessellatorTests
             count += 1;
         }
 
-        public double Avg => sum / count;
+        internal double Avg => sum / count;
 
         public override string ToString() => $"avg = {Avg}, max = {Max}";
     };
