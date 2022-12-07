@@ -2057,7 +2057,7 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
     //
     // Note that unlike S2Polygon, the edges of S2Polygon.Shape are directed
     // such that the polygon interior is always on the left.
-    public class Shape : S2Shape, IEncoder
+    public class Shape : S2Shape
     {
         #region Fields, Constants
 
@@ -2204,7 +2204,7 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
 
         #region IEncoder
 
-        public override void Encode(Encoder encoder, CodingHint hint)
+        public override void Encode(Encoder encoder, CodingHint hint = CodingHint.COMPACT)
         {
             if (hint == CodingHint.FAST)
             {

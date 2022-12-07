@@ -112,7 +112,7 @@ public class EncodedS2LaxPolylineShape : S2Shape, IInitEncoder<EncodedS2LaxPolyl
     //           can be enlarged as necessary by calling Ensure(int).
     //
     // The encoding must be identical to S2LaxPolylineShape::Encode().
-    public void Encode(Encoder encoder, CodingHint hint)
+    public override void Encode(Encoder encoder, CodingHint hint = CodingHint.COMPACT)
     {
         vertices_.Encode(encoder);
     }

@@ -404,7 +404,7 @@ public class EncodedUintVector_UInt16
         encoder.PutN(data_, Count * len_);
     }
 
-    private byte[] data_;
+    private byte[]? data_;
     private byte len_;
 }
 
@@ -559,7 +559,7 @@ public class EncodedUintVector_UInt32
         encoder.PutN(data_, Count * len_);
     }
 
-    private byte[] data_;
+    private byte[]? data_;
     private byte len_;
 }
 
@@ -719,6 +719,6 @@ public class EncodedUintVector_UInt64
         encoder.PutN(data_, Count * len_);
     }
 
-    private byte[] data_;
+    private byte[]? data_;
     private byte len_;
 }

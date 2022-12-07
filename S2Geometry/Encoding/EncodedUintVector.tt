@@ -303,7 +303,7 @@ public class EncodedUintVector_<#= type.Name #>
         encoder.PutN(data_, Count * len_);
     }
 
-    private byte[] data_;
+    private byte[]? data_;
     private byte len_;
 }
 <# } #>

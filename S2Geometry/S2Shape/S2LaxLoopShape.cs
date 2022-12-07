@@ -117,8 +117,8 @@ public class S2LaxClosedPolylineShape : S2LaxLoopShape
 
     // See S2LaxLoopShape for constructors.
     public sealed override int Dimension() => 1;
-    public sealed override ReferencePoint GetReferencePoint()
-        => ReferencePoint.FromContained(false);
+    public sealed override ReferencePoint GetReferencePoint() =>
+        ReferencePoint.FromContained(false);
 }
 
 // S2VertexIdLaxLoopShape is just like S2LaxLoopShape, except that vertices are

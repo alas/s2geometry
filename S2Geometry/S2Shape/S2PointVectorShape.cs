@@ -26,7 +26,7 @@ public class S2PointVectorShape : S2Shape, IInitEncoder<S2PointVectorShape>
     //
     // REQUIRES: "encoder" uses the default constructor, so that its buffer
     //           can be enlarged as necessary by calling Ensure(int).
-    public void Encode(Encoder encoder, CodingHint hint = CodingHint.COMPACT)
+    public override void Encode(Encoder encoder, CodingHint hint = CodingHint.COMPACT)
     {
         EncodedS2PointVector.EncodeS2PointVector(points_, hint, encoder);
     }
@@ -66,7 +66,7 @@ public class S2PointVectorShape : S2Shape, IInitEncoder<S2PointVectorShape>
 // very fast initialization and no additional memory use beyond the encoded
 // data.  The encoded data is not owned by this class; typically it points
 // into a large contiguous buffer that contains other encoded data as well.
-public class EncodedS2PointVectorShape : S2Shape, IEncoder, IInitEncoder<EncodedS2PointVectorShape>
+public class EncodedS2PointVectorShape : S2Shape, IInitEncoder<EncodedS2PointVectorShape>
 {
     // Constructs an uninitialized object; requires Init() to be called.
     public EncodedS2PointVectorShape() => points_ = new();
@@ -88,7 +88,7 @@ public class EncodedS2PointVectorShape : S2Shape, IEncoder, IInitEncoder<Encoded
     //
     // REQUIRES: "encoder" uses the default constructor, so that its buffer
     //           can be enlarged as necessary by calling Ensure(int).
-    public void Encode(Encoder encoder, CodingHint hint)
+    public override void Encode(Encoder encoder, CodingHint hint = CodingHint.COMPACT)
     {
         points_.Encode(encoder);
     }

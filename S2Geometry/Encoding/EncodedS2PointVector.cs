@@ -350,13 +350,13 @@ public class EncodedS2PointVector
         for (int i = 0; i < values.Length; i += kBlockSize)
         {
             int block_size = Math.Min(kBlockSize, values.Length - i);
-            BlockCode code = GetBlockCode(new ArraySegment<UInt64>(values, i, block_size), base_, have_exceptions);
+            var code = GetBlockCode(new ArraySegment<UInt64>(values, i, block_size), base_, have_exceptions);
 
             // Encode the one-byte block header (see above).
             Encoder block = blocks.AddViaEncoder();
-            int offset_bytes = code.OffsetBits_ >> 3;
-            int delta_nibbles = code.DeltaBits_ >> 2;
-            int overlap_nibbles = code.OverlapBits_ >> 2;
+            int offset_bytes = code.OffsetBits >> 3;
+            int delta_nibbles = code.DeltaBits >> 2;
+            int overlap_nibbles = code.OverlapBits >> 2;
             block.Ensure(1 + offset_bytes + (kBlockSize / 2) * delta_nibbles);
             System.Diagnostics.Debug.Assert(offset_bytes - overlap_nibbles <= 7);
             System.Diagnostics.Debug.Assert(overlap_nibbles <= 1);
@@ -381,7 +381,7 @@ public class EncodedS2PointVector
             if (num_exceptions == block_size) offset = 0;
 
             // Encode the offset.
-            int offset_shift = code.DeltaBits_ - code.OverlapBits_;
+            int offset_shift = code.DeltaBits - code.OverlapBits;
             offset &= ~BitMask(offset_shift);
             System.Diagnostics.Debug.Assert((offset == 0) == (offset_bytes == 0));
             if (offset > 0)
@@ -410,7 +410,7 @@ public class EncodedS2PointVector
                         delta += kBlockSize;
                     }
                 }
-                System.Diagnostics.Debug.Assert(delta <= BitMask(code.DeltaBits_));
+                System.Diagnostics.Debug.Assert(delta <= BitMask(code.DeltaBits));
                 if ((delta_nibbles & 1) != 0 && (j & 1) != 0)
                 {
                     // Combine this delta with the high-order 4 bits of the previous delta.
@@ -896,8 +896,10 @@ public class EncodedS2PointVector
     // (If such an encoding is not possible then level < 0.)
     private readonly struct CellPoint
     {
-        public readonly sbyte Level, Face;
-        public readonly UInt32 Si, Ti;
+        public sbyte Level { get; }
+        public sbyte Face { get; }
+        public UInt32 Si { get; }
+        public UInt32 Ti { get; }
 
         // Constructor necessary in order to narrow "int" arguments to "sbyte".
         public CellPoint(int level, int face, UInt32 si, UInt32 ti)
@@ -911,18 +913,9 @@ public class EncodedS2PointVector
 
     // Represents the encoding parameters to be used for a given block (consisting
     // of kBlockSize encodable 64-bit values).  See below.
-    private readonly struct BlockCode
-    {
-        public readonly int DeltaBits_;     // Delta length in bits (multiple of 4)
-        public readonly int OffsetBits_;    // Offset length in bits (multiple of 8)
-        public readonly int OverlapBits_;   // {Delta, Offset} overlap in bits (0 or 4)
-
-        public BlockCode(int delta_bits, int offset_bits, int overlap_bits)
-        {
-            DeltaBits_ = delta_bits;
-            OffsetBits_ = offset_bits;
-            OverlapBits_ = overlap_bits;
-        }
-    }
+    private readonly record struct BlockCode(
+        int DeltaBits,     // Delta length in bits (multiple of 4)
+        int OffsetBits,    // Offset length in bits (multiple of 8)
+        int OverlapBits);  // {Delta, Offset} overlap in bits (0 or 4)
 }
 

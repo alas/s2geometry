@@ -231,7 +231,7 @@ public class Decoder
 {
     public byte[] Buffer { get; private set; }
     public int Offset { get; private set; }
-    private readonly int Limit;
+    public int Limit { get; private set; }
 
     static Decoder()
     {
@@ -242,11 +242,11 @@ public class Decoder
     }
 
     // Initialize decoder to decode from "buf"
-    public Decoder(byte[] buf, int offset, int maxn)
+    public Decoder(byte[] buffer, int offset, int limit)
     {
-        Buffer = buf;
+        Buffer = buffer;
         Offset = offset;
-        Limit = maxn;
+        Limit = limit;
     }
 
     #region Get

@@ -269,7 +269,7 @@ public class S2LaxPolygonShape : S2Shape, IInitEncoder<S2LaxPolygonShape>
     //
     // REQUIRES: "encoder" uses the default constructor, so that its buffer
     //           can be enlarged as necessary by calling Ensure(int).
-    public void Encode(Encoder encoder, CodingHint hint = CodingHint.COMPACT)
+    public override void Encode(Encoder encoder, CodingHint hint = CodingHint.COMPACT)
     {
         encoder.Ensure(1 + Encoder.kVarintMax32);
         encoder.Put8(kCurrentEncodingVersionNumber);
@@ -417,7 +417,7 @@ public class EncodedS2LaxPolygonShape : S2Shape, IInitEncoder<EncodedS2LaxPolygo
     //           can be enlarged as necessary by calling Ensure(int).
     //
     // The encoding must be identical to S2LaxPolygonShape::Encode().
-    public void Encode(Encoder encoder, CodingHint hint)
+    public override void Encode(Encoder encoder, CodingHint hint = CodingHint.COMPACT)
     {
         encoder.Ensure(1 + Encoder.kVarintMax32);
         encoder.Put8(S2LaxPolygonShape.kCurrentEncodingVersionNumber);

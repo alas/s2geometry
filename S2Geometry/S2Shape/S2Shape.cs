@@ -38,7 +38,7 @@
 
 namespace S2Geometry;
 
-public abstract class S2Shape
+public abstract class S2Shape : IEncoder
 {
     #region Fields, Constants
 
@@ -157,7 +157,7 @@ public abstract class S2Shape
     //
     // REQUIRES: "encoder" uses the default constructor, so that its buffer
     //           can be enlarged as necessary by calling Ensure(int).
-    public virtual void Encode(Encoder encoder, CodingHint hint)
+    public virtual void Encode(Encoder encoder, CodingHint hint = CodingHint.COMPACT)
     {
         throw new NotImplementedException("(FATAL) Encoding not implemented for this S2Shape type");
     }

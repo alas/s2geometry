@@ -943,7 +943,7 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoder<S2Polyline>
     // that this class does not take ownership of the polyline itself (see
     // OwningShape below).  You can also subtype this class to store additional
     // data (see S2Shape for details).
-    public class Shape : S2Shape, IEncoder
+    public class Shape : S2Shape
     {
         #region Fields, Constants
 
