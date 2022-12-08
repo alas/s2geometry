@@ -2,7 +2,7 @@
 
 using System.Numerics;
 
-[System.Diagnostics.DebuggerDisplay("{ToStringDegrees()}")]
+//[System.Diagnostics.DebuggerDisplay("{ToStringDegrees()}")]
 public readonly record struct Vector3<T>(T X, T Y, T Z) : IComparable<Vector3<T>> where T : INumber<T>, IFloatingPointIeee754<T>
 {
     #region Fields, Constants
@@ -236,7 +236,6 @@ public readonly record struct Vector3<T>(T X, T Y, T Z) : IComparable<Vector3<T>
     #region Object
 
     public override string ToString() => $"[{X:g}, {Y:g}, {Z:g}]";
-
 
     #endregion
 }

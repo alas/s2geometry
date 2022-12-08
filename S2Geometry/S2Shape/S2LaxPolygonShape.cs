@@ -342,17 +342,17 @@ public class S2LaxPolygonShape : S2Shape, IInitEncoder<S2LaxPolygonShape>
             return new ChainPosition(0, e);
         }
         // Test if this edge belongs to the loop returned by the previous call.
-        var start = 0; //loop_starts_ + prev_loop_.load(std::memory_order_relaxed);
-        if (e >= loop_starts_[0] && e < loop_starts_[1])
+        var start = 0 + prev_loop_; //.load(std::memory_order_relaxed);
+        if (e >= loop_starts_[start] && e < loop_starts_[start + 1])
         {
             // This edge belongs to the same loop as the previous call.
         }
         else
         {
-            if (e == loop_starts_[1])
+            if (e == loop_starts_[start + 1])
             {
                 // This is the edge immediately following the previous loop.
-                do { ++start; } while (e == loop_starts_[1]);
+                do { ++start; } while (e == loop_starts_[start + 1]);
             }
             else
             {
@@ -360,16 +360,16 @@ public class S2LaxPolygonShape : S2Shape, IInitEncoder<S2LaxPolygonShape>
                 const int kMaxLinearSearchLoops = 12;  // From benchmarks.
                 if (NumLoops <= kMaxLinearSearchLoops)
                 {
-                    while (loop_starts_[1] <= e) ++start;
+                    while (loop_starts_[start + 1] <= e) ++start;
                 }
                 else
                 {
-                    start = 1; // loop_starts_.GetUpperBound(e, 1, NumLoops) - 1;
+                    start = loop_starts_.GetUpperBound((uint)e, start + 1, NumLoops) - 1;
                 }
             }
-            prev_loop_ = start; // - loop_starts_;
+            prev_loop_ = start;
         }
-        return new ChainPosition(start /*- loop_starts_*/, e /*- start[0]*/);
+        return new ChainPosition(start, (int)((uint)e - loop_starts_[start]));
     }
 
     // Define as enum so we don't have to declare storage.
