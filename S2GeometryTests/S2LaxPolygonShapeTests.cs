@@ -325,6 +325,8 @@ public class S2LaxPolygonShapeTests
         }
         var mt = new PseudoRandom.MersenneTwister();
         edges = edges.Shuffle(mt.GenerateRandomN).ToList();
+        // TODO(user,b/210097200): Use structured bindings when we require
+        // C++17 in opensource.
         foreach (var (e, i, j) in edges)
         {
             Assert.Equal(shape.GetChainPosition(e), new S2Shape.ChainPosition(i, j));

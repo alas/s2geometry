@@ -2042,6 +2042,8 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
     {
         #region Fields, Constants
 
+        public const TypeTag kTypeTag = TypeTag.S2Polygon;
+
         // The loop that contained the edge returned by the previous call to the
         // edge() method.  This is used as a hint to speed up edge location when
         // there are many loops.  Note that this field does not take up any space
@@ -2081,6 +2083,23 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
                 if (loop_starts_ != null) loop_starts_[num_loops] = offset;
             }
         }
+
+        #endregion
+
+        #region IEncoder
+
+        public override void Encode(Encoder encoder, CodingHint hint = CodingHint.COMPACT)
+        {
+            if (hint == CodingHint.FAST)
+            {
+                Polygon.EncodeUncompressed(encoder);
+            }
+            else
+            {
+                Polygon.Encode(encoder, hint);
+            }
+        }
+        // Decoding is defined only for S2Polygon::OwningShape below.
 
         #endregion
 
@@ -2179,24 +2198,7 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
             }
             return new ChainPosition(i, e);
         }
-        public override TypeTag GetTypeTag() => TypeTag.S2Polygon;
-
-        #endregion
-
-        #region IEncoder
-
-        public override void Encode(Encoder encoder, CodingHint hint = CodingHint.COMPACT)
-        {
-            if (hint == CodingHint.FAST)
-            {
-                Polygon.EncodeUncompressed(encoder);
-            }
-            else
-            {
-                Polygon.Encode(encoder, hint);
-            }
-        }
-        // Decoding is defined only for S2Polygon::OwningShape below.
+        public override TypeTag GetTypeTag() => kTypeTag;
 
         #endregion
     }

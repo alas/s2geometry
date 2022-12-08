@@ -11,6 +11,8 @@ namespace S2Geometry;
 
 public class S2LaxPolylineShape : S2Shape, IInitEncoder<S2LaxPolylineShape>
 {
+    public const TypeTag kTypeTag = TypeTag.S2LaxPolylineShape;
+
     private S2Point[]? vertices_;
 
     #region Constructors
@@ -80,7 +82,12 @@ public class S2LaxPolylineShape : S2Shape, IInitEncoder<S2LaxPolylineShape>
         return new Edge(Vertex(j), Vertex(j + 1));
     }
     public sealed override ChainPosition GetChainPosition(int e) => new ChainPosition(0, e);
-    public override TypeTag GetTypeTag() => TypeTag.S2LaxPolylineShape;
+
+    // Define as enum so we don't have to declare storage.
+    // TODO(user, b/210097200): Use static constexpr when C++17 is allowed
+    // in opensource.
+    public override TypeTag GetTypeTag() => kTypeTag;
+
 }
 
 // Exactly like S2LaxPolylineShape, except that the vertices are kept in an
@@ -90,6 +97,8 @@ public class S2LaxPolylineShape : S2Shape, IInitEncoder<S2LaxPolylineShape>
 // into a large contiguous buffer that contains other encoded data as well.
 public class EncodedS2LaxPolylineShape : S2Shape, IInitEncoder<EncodedS2LaxPolylineShape>
 {
+    private readonly EncodedS2PointVector vertices_;
+
     // Constructs an uninitialized object; requires Init() to be called.
     public EncodedS2LaxPolylineShape() { vertices_ = new EncodedS2PointVector(); }
 
@@ -152,7 +161,8 @@ public class EncodedS2LaxPolylineShape : S2Shape, IInitEncoder<EncodedS2LaxPolyl
         return new ChainPosition(0, e);
     }
 
-    public override TypeTag GetTypeTag() => TypeTag.S2LaxPolylineShape;
-
-    private readonly EncodedS2PointVector vertices_;
+    // Define as enum so we don't have to declare storage.
+    // TODO(user, b/210097200): Use static constexpr when C++17 is allowed
+    // in opensource.
+    public override TypeTag GetTypeTag() => S2LaxPolylineShape.kTypeTag;
 }

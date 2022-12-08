@@ -344,6 +344,8 @@ public sealed class S2ShapeIndexRegion<TIndex> : IS2Region<S2ShapeIndexRegion<TI
                                 clipped.NumEdges > 0 || !clipped.ContainsCenter;
                         }
                     }
+                    // TODO(user,b/210097200): Use structured bindings when we require
+                    // C++17 in opensource.
                     foreach (var (shape_id, not_contains) in shape_not_contains)
                     {
                         if (!visitor(Index().Shape(shape_id), !not_contains)) return false;

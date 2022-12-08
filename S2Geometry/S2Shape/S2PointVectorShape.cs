@@ -10,6 +10,8 @@ public class S2PointVectorShape : S2Shape, IInitEncoder<S2PointVectorShape>
 {
     public const TypeTag kTypeTag = TypeTag.S2PointVectorShape;
 
+    private S2Point[] points_;
+
     // Constructs an empty point vector.
     public S2PointVectorShape() { }
 
@@ -59,9 +61,11 @@ public class S2PointVectorShape : S2Shape, IInitEncoder<S2PointVectorShape>
     public sealed override Edge ChainEdge(int i, int j)
     { System.Diagnostics.Debug.Assert(j == 0); return new Edge(points_[i], points_[i]); }
     public sealed override ChainPosition GetChainPosition(int e) => new(e, 0);
-    public override TypeTag GetTypeTag() => kTypeTag;
 
-    private S2Point[] points_;
+    // Define as enum so we don't have to declare storage.
+    // TODO(user, b/210097200): Use static constexpr when C++17 is allowed
+    // in opensource.
+    public override TypeTag GetTypeTag() => kTypeTag;
 }
 
 // Exactly like S2PointVectorShape, except that the points are kept in an

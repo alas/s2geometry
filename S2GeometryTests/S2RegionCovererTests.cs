@@ -47,9 +47,11 @@ public class S2RegionCovererTests
         {
             // If the covering has more than the requested number of cells, then check
             // that the cell count cannot be reduced by using the parent of some cell.
-            foreach (var count in min_level_cells.Values)
+            // TODO(user,b/210097200): Use structured bindings when we require
+            // C++17 in opensource.
+            foreach (var (_, cells) in min_level_cells)
             {
-                Assert.Equal(1, count);
+                Assert.Equal(1, cells);
             }
         }
         if (interior)

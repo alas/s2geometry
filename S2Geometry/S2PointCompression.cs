@@ -379,6 +379,8 @@ public static class S2PointCompression
     /// </summary>
     public static bool S2DecodePointsCompressed(Decoder decoder, int level, S2Point[] points, int offset)
     {
+        System.Diagnostics.Debug.Assert(level <= S2.kMaxCellLevel);
+
         var faces = new Faces();
         var len = points.Length - offset;
         if (!faces.Decode(len, decoder))

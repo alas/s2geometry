@@ -27,6 +27,8 @@ public class S2PolylineTests
                                      new S2Point(0, 1, 0)));
         semi_equator.Reverse();
         Assert.Equal(new S2Point(1, 0, 0), semi_equator.Vertex(2));
+        Assert.Equal(3, semi_equator.GetVerticesSpan().Count);
+        Assert.Equal(new S2Point(1, 0, 0), semi_equator.GetVerticesSpan()[2]);
     }
 
     [Fact]
@@ -499,6 +501,34 @@ public class S2PolylineTests
     {
         var data = Encoding.ASCII.GetBytes("bad data");
         Decoder decoder = new(data, 0, data.Length);
+        var (success, _) = S2Polyline.Decode(decoder);
+        Assert.False(success);
+    }
+
+    [Fact]
+    internal void Test_S2Polyline_DecodeCompressedMaxCellLevel()
+    {
+        Encoder encoder=new();
+        encoder.Ensure(6);
+        encoder.Put8(2);  // kCurrentCompressedEncodingVersionNumber
+        encoder.Put8(S2.kMaxCellLevel);
+        encoder.Put32(0);
+        var decoder = encoder.Decoder();
+
+        var (success, _) = S2Polyline.Decode(decoder);
+        Assert.True(success);
+    }
+
+    [Fact]
+    internal void Test_S2Polyline_DecodeCompressedCellLevelTooHigh()
+    {
+        Encoder encoder=new();
+        encoder.Ensure(6);
+        encoder.Put8(2);  // kCurrentCompressedEncodingVersionNumber
+        encoder.Put8(S2.kMaxCellLevel + 1);
+        encoder.Put32(0);
+        var decoder = encoder.Decoder();
+
         var (success, _) = S2Polyline.Decode(decoder);
         Assert.False(success);
     }

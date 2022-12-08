@@ -334,10 +334,13 @@ public static partial class S2
         //
         // The calculation below computes each of the six vertex-vertex distances
         // twice (this could be optimized).
-        return (UpdateMinDistance(a0, b0, b1, ref min_dist) |
-                UpdateMinDistance(a1, b0, b1, ref min_dist) |
-                UpdateMinDistance(b0, a0, a1, ref min_dist) |
-                UpdateMinDistance(b1, a0, a1, ref min_dist));
+        //
+        // We do not want the short circuit behavior of ||. Suppress
+        // -Wbitwise-instead-of-logical errors by converting to int.
+        return UpdateMinDistance(a0, b0, b1, ref min_dist) |
+               UpdateMinDistance(a1, b0, b1, ref min_dist) |
+               UpdateMinDistance(b0, a0, a1, ref min_dist) |
+               UpdateMinDistance(b1, a0, a1, ref min_dist);
     }
 
     // As above, but for maximum distances.  If one edge crosses the antipodal
@@ -359,10 +362,10 @@ public static partial class S2
         //
         // The calculation below computes each of the six vertex-vertex distances
         // twice (this could be optimized).
-        return (UpdateMaxDistance(a0, b0, b1, ref max_dist) |
-                UpdateMaxDistance(a1, b0, b1, ref max_dist) |
-                UpdateMaxDistance(b0, a0, a1, ref max_dist) |
-                UpdateMaxDistance(b1, a0, a1, ref max_dist));
+        return UpdateMaxDistance(a0, b0, b1, ref max_dist) |
+               UpdateMaxDistance(a1, b0, b1, ref max_dist) |
+               UpdateMaxDistance(b0, a0, a1, ref max_dist) |
+               UpdateMaxDistance(b1, a0, a1, ref max_dist);
     }
 
     // Returns the pair of points (a, b) that achieves the minimum distance

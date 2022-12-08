@@ -2134,6 +2134,9 @@ public partial class S2Builder
     // Vertices are specified as indices into a vertex vector to save space.
     public sealed class VertexIdEdgeVectorShape : S2Shape
     {
+        private readonly List<InputEdge> edges_;
+        private readonly List<S2Point> vertices_;
+
         // Requires that "edges" isant for the lifetime of this object.
         public VertexIdEdgeVectorShape(List<InputEdge> edges, List<S2Point> vertices)
         {
@@ -2154,9 +2157,6 @@ public partial class S2Builder
         public override ChainPosition GetChainPosition(int e) => new(e, 0);
 
         private S2Point Vertex(int i) => vertices_[i];
-
-        private readonly List<InputEdge> edges_;
-        private readonly List<S2Point> vertices_;
     }
 
     //////////////////////  Internal Types  /////////////////////////

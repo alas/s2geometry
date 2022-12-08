@@ -50,6 +50,8 @@ public class S2LaxPolygonShape : S2Shape, IInitEncoder<S2LaxPolygonShape>
 {
     #region Fields, Constants
 
+    public const TypeTag kTypeTag = TypeTag.S2LaxPolygonShape;
+
     // Returns the number of loops.
     //
     // Note that the parent class has a 4-byte S2Shape::id_ field so there is no
@@ -370,7 +372,10 @@ public class S2LaxPolygonShape : S2Shape, IInitEncoder<S2LaxPolygonShape>
         return new ChainPosition(start /*- loop_starts_*/, e /*- start[0]*/);
     }
 
-    public override TypeTag GetTypeTag() => TypeTag.S2LaxPolygonShape;
+    // Define as enum so we don't have to declare storage.
+    // TODO(user, b/210097200): Use static constexpr when C++17 is allowed
+    // in opensource.
+    public override TypeTag GetTypeTag() => kTypeTag;
 
     #endregion
 }
@@ -382,6 +387,14 @@ public class S2LaxPolygonShape : S2Shape, IInitEncoder<S2LaxPolygonShape>
 // into a large contiguous buffer that contains other encoded data as well.
 public class EncodedS2LaxPolygonShape : S2Shape, IInitEncoder<EncodedS2LaxPolygonShape>
 {
+    // The loop that contained the edge returned by the previous call to the
+    // edge() method.  This is used as a hint to speed up edge location when
+    // there are many loops.
+    private int prev_loop_ = 0;
+
+    private readonly EncodedS2PointVector vertices_ = new();
+    private readonly EncodedUintVector_UInt32 loop_starts_ = new();
+
     // Constructs an uninitialized object; requires Init() to be called.
     public EncodedS2LaxPolygonShape() { }
 
@@ -568,13 +581,5 @@ public class EncodedS2LaxPolygonShape : S2Shape, IInitEncoder<EncodedS2LaxPolygo
         return new ChainPosition(i, e - (int)loop_starts_[i]);
     }
 
-    public override TypeTag GetTypeTag() => TypeTag.S2LaxPolygonShape;
-
-    // The loop that contained the edge returned by the previous call to the
-    // edge() method.  This is used as a hint to speed up edge location when
-    // there are many loops.
-    private int prev_loop_ = 0;
-
-    private readonly EncodedS2PointVector vertices_ = new();
-    private readonly EncodedUintVector_UInt32 loop_starts_ = new();
+    public override TypeTag GetTypeTag() => S2LaxPolygonShape.kTypeTag;
 }

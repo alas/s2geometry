@@ -159,11 +159,11 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoder<S2Polyline>
         return Vertices[k];
     }
 
+    // Returns an S2PointSpan containing the polyline's vertices.
+    public S2PointSpan GetVerticesSpan() => new(Vertices);
+
     // Return the length of the polyline.
-    public S1Angle GetLength()
-    {
-        return S2PolylineMeasures.GetLength(VerticesClone());
-    }
+    public S1Angle GetLength() => S2PolylineMeasures.GetLength(GetVerticesSpan());
 
     // Return the true centroid of the polyline multiplied by the length of the
     // polyline (see s2centroids.h for details on centroids).  The result is not
@@ -171,10 +171,7 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoder<S2Polyline>
     //
     // Prescaling by the polyline length makes it easy to compute the centroid
     // of several polylines (by simply adding up their centroids).
-    public S2Point GetCentroid()
-    {
-        return S2PolylineMeasures.GetCentroid(VerticesClone());
-    }
+    public S2Point GetCentroid() => S2PolylineMeasures.GetCentroid(GetVerticesSpan());
 
     // If all of the polyline's vertices happen to be the centers of S2Cells at
     // some level, then returns that level, otherwise returns -1.  See also
@@ -188,17 +185,21 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoder<S2Polyline>
             int face;
             uint si, ti;
             var level = S2.XYZtoFaceSiTi(Vertices[i], out face, out si, out ti);
-    if (level< 0) return level;  // Vertex is not a cell center.
-    if (level != snap_level) {
-      if (snap_level< 0) {
-        snap_level = level;  // First vertex.
-      } else {
-        return -1;  // Vertices at more than one cell level.
-      }
+            if (level< 0) return level;  // Vertex is not a cell center.
+            if (level != snap_level)
+            {
+                if (snap_level< 0)
+                {
+                    snap_level = level;  // First vertex.
+                }
+                else
+                {
+                    return -1;  // Vertices at more than one cell level.
+                }
+            }
+        }
+        return snap_level;
     }
-  }
-  return snap_level;
-}
 
 
     // Return the point whose distance from vertex 0 along the polyline is the
@@ -206,10 +207,7 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoder<S2Polyline>
     // or greater than one are clamped.  The return value is unit length.  This
     // cost of this function is currently linear in the number of vertices.
     // The polyline must not be empty.
-    public S2Point Interpolate(double fraction)
-    {
-        return GetSuffix(fraction, out _);
-    }
+    public S2Point Interpolate(double fraction) => GetSuffix(fraction, out _);
 
     // Like Interpolate(), but also return the index of the next polyline
     // vertex after the interpolated point P.  This allows the caller to easily
@@ -681,10 +679,8 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoder<S2Polyline>
     }
 
     // Returns the total number of bytes used by the polyline.
-    public int SpaceUsed()
-    {
-        return Marshal.SizeOf(typeof(S2Polyline)) + Vertices.Length * Marshal.SizeOf(typeof(S2Point));
-    }
+    public int SpaceUsed() =>
+        Marshal.SizeOf(typeof(S2Polyline)) + Vertices.Length * Marshal.SizeOf(typeof(S2Point));
 
     // Return the first i > "index" such that the ith vertex of "pline" is not at
     // the same point as the "index"th vertex.  Returns pline.num_vertices() if
@@ -880,7 +876,10 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoder<S2Polyline>
         if (decoder.Avail() < sizeof(UInt32)) return (false, default);
 
         var count = (int)decoder.Get32();
-        if (decoder.Avail() < count) return (false, default);
+
+        // Check the bytes available before allocating memory in case of
+        // corrupt/malicious input.
+        if (decoder.Avail() < count * SizeHelper.SizeOf(typeof(S2Point))) return (false, default);
         var verts = new S2Point[count];
         decoder.GetPoints(verts, 0, count);
 
@@ -900,6 +899,8 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoder<S2Polyline>
     {
         if (decoder.Avail() < sizeof(byte)) return (false, default);
         var snap_level = decoder.Get8();
+        if (snap_level > S2.kMaxCellLevel) return (false, default);
+
         if (!decoder.TryGetVarInt32(out var num_vertices)) return (false, default);
         if (num_vertices == 0)
         {
@@ -907,7 +908,11 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoder<S2Polyline>
             S2Polyline shape = new(Array.Empty<S2Point>());
             return (true, shape);
         }
-        var points=new S2Point[num_vertices];
+
+        // TODO(b/209937354): Prevent large allocations like in DecodeUncompressed.
+        // This is more complicated due to the compressed encoding, but perhaps the
+        // minimum required size can be bounded.
+        var points =new S2Point[num_vertices];
         if (!S2DecodePointsCompressed(decoder, snap_level, points, 0))
         {
             return (false, default);
@@ -946,6 +951,11 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoder<S2Polyline>
     public class Shape : S2Shape
     {
         #region Fields, Constants
+
+        // Define as enum so we don't have to declare storage.
+        // TODO(user, b/210097200): Use static constexpr when C++17 is
+        // allowed in opensource.
+        public const TypeTag kTypeTag = TypeTag.S2Polyline;
 
         public S2Polyline Polyline { get; private set; }
 
@@ -992,39 +1002,28 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoder<S2Polyline>
             }
         }
         // Decoding is defined only for S2Polyline::OwningShape below.
-        
+
         #endregion
 
         #region S2Shape
 
         // S2Shape interface:
 
-        public sealed override int NumEdges()
-        {
-            return NumEdgesStatic(Polyline);
-        }
+        public sealed override int NumEdges() => NumEdgesStatic(Polyline);
 
-        private static int NumEdgesStatic(S2Polyline pol)
-        {
-            return Math.Max(0, pol.Vertices.Length - 1);
-        }
+        private static int NumEdgesStatic(S2Polyline pol) =>
+            Math.Max(0, pol.Vertices.Length - 1);
 
-        public sealed override Edge GetEdge(int e)
-        {
-            return new Edge(Polyline.Vertex(e), Polyline.Vertex(e + 1));
-        }
+        public sealed override Edge GetEdge(int e) =>
+            new Edge(Polyline.Vertex(e), Polyline.Vertex(e + 1));
 
-        public sealed override int Dimension() { return 1; }
+        public sealed override int Dimension() => 1;
 
-        public sealed override ReferencePoint GetReferencePoint()
-        {
-            return ReferencePoint.FromContained(false);
-        }
+        public sealed override ReferencePoint GetReferencePoint() =>
+            ReferencePoint.FromContained(false);
 
-        public sealed override int NumChains()
-        {
-            return Math.Min(1, NumEdgesStatic(Polyline));  // Avoid virtual call.
-        }
+        public sealed override int NumChains() =>
+            Math.Min(1, NumEdgesStatic(Polyline));  // Avoid virtual call.
 
         public sealed override Chain GetChain(int i)
         {
@@ -1038,12 +1037,9 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoder<S2Polyline>
             return new Edge(Polyline.Vertex(j), Polyline.Vertex(j + 1));
         }
 
-        public sealed override ChainPosition GetChainPosition(int e)
-        {
-            return new ChainPosition(0, e);
-        }
+        public sealed override ChainPosition GetChainPosition(int e) => new(0, e);
 
-        public override TypeTag GetTypeTag() => TypeTag.S2Polyline;
+        public override TypeTag GetTypeTag() => kTypeTag;
 
         #endregion
     }
