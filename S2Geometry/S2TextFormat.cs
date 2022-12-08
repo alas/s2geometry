@@ -363,17 +363,23 @@ public static class S2TextFormat
     }
 
     // Returns a MutableS2ShapeIndex containing the points, polylines, and loops
-    // (in the form of a single polygon) described by the following format:
+    // (in the form of one polygon for each group of loops) described by the
+    // following format:
     //
     //   point1|point2|... # line1|line2|... # polygon1|polygon2|...
     //
     // Examples:
-    //   1:2 | 2:3 # #                     // Two points
+    //   1:2 | 2:3 # #                     // Two points (one S2PointVectorShape)
     //   # 0:0, 1:1, 2:2 | 3:3, 4:4 #      // Two polylines
     //   # # 0:0, 0:3, 3:0; 1:1, 2:1, 1:2  // Two nested loops (one polygon)
-    //   5:5 # 6:6, 7:7 # 0:0, 0:1, 1:0    // One of each
+    //   5:5 # 6:6, 7:7 # 0:0, 0:1, 1:0    // One of each point, line, and polygon
     //   # # empty                         // One empty polygon
     //   # # empty | full                  // One empty polygon, one full polygon
+    //
+    // All the points, if any, are stored as a single S2PointVectorShape in the
+    // index.  Polylines are stored as individual S2LaxPolylineShapes.  Polygons
+    // are separated by '|', with distinct loops for a polygon separated by ';'.
+    // Each group of loops is stored as an individual S2LaxPolygonShape.
     //
     // Loops should be directed so that the region's interior is on the left.
     // Loops can be degenerate (they do not need to meet S2Loop requirements).

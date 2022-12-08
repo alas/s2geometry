@@ -626,7 +626,7 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
     public bool ApproxContains(S2Polygon b, S1Angle tolerance)
     {
         var difference = new S2Polygon();
-        difference.InitToApproxDifference(b, this, tolerance);
+        difference.InitToDifference(b, this, new IdentitySnapFunction(tolerance));
         return difference.IsEmpty();
     }
 
@@ -656,7 +656,7 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
     public bool ApproxDisjoint(S2Polygon b, S1Angle tolerance)
     {
         var intersection = new S2Polygon();
-        intersection.InitToApproxIntersection(b, this, tolerance);
+        intersection.InitToIntersection(b, this, new IdentitySnapFunction(tolerance));
         return intersection.IsEmpty();
     }
 
@@ -706,7 +706,7 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
     // are valid (i.e., IsValid returns true).
     public void InitToIntersection(S2Polygon a, S2Polygon b)
     {
-        InitToApproxIntersection(a, b, S2.kIntersectionMergeRadiusS1Angle);
+        InitToIntersection(a, b, new IdentitySnapFunction(S2.kIntersectionMergeRadiusS1Angle));
     }
     public void InitToIntersection(S2Polygon a, S2Polygon b, SnapFunction snap_function)
     {
@@ -731,7 +731,7 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
 
     public void InitToUnion(S2Polygon a, S2Polygon b)
     {
-        InitToApproxUnion(a, b, S2.kIntersectionMergeRadiusS1Angle);
+        InitToUnion(a, b, new IdentitySnapFunction(S2.kIntersectionMergeRadiusS1Angle));
     }
     public void InitToUnion(S2Polygon a, S2Polygon b, SnapFunction snap_function)
     {
@@ -744,7 +744,7 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
 
     public void InitToDifference(S2Polygon a, S2Polygon b)
     {
-        InitToApproxDifference(a, b, S2.kIntersectionMergeRadiusS1Angle);
+        InitToDifference(a, b, new IdentitySnapFunction(S2.kIntersectionMergeRadiusS1Angle));
     }
     public void InitToDifference(S2Polygon a, S2Polygon b, SnapFunction snap_function)
     {
@@ -757,7 +757,7 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
 
     public void InitToSymmetricDifference(S2Polygon a, S2Polygon b)
     {
-        InitToApproxSymmetricDifference(a, b, S2.kIntersectionMergeRadiusS1Angle);
+        InitToSymmetricDifference(a, b, new IdentitySnapFunction(S2.kIntersectionMergeRadiusS1Angle));
     }
     public void InitToSymmetricDifference(S2Polygon a, S2Polygon b, SnapFunction snap_function)
     {
@@ -766,26 +766,6 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
     public bool InitToSymmetricDifference(S2Polygon a, S2Polygon b, SnapFunction snap_function, out S2Error error)
     {
         return InitToOperation(S2BooleanOperation.OpType.SYMMETRIC_DIFFERENCE, snap_function, a, b, out error);
-    }
-
-    // Convenience functions that use the IdentitySnapFunction with the given
-    // snap radius.  TODO(ericv): Consider deprecating these and require the
-    // snap function to be specified explcitly?
-    public void InitToApproxIntersection(S2Polygon a, S2Polygon b, S1Angle snap_radius)
-    {
-        InitToIntersection(a, b, new IdentitySnapFunction(snap_radius));
-    }
-    public void InitToApproxUnion(S2Polygon a, S2Polygon b, S1Angle snap_radius)
-    {
-        InitToUnion(a, b, new IdentitySnapFunction(snap_radius));
-    }
-    public void InitToApproxDifference(S2Polygon a, S2Polygon b, S1Angle snap_radius)
-    {
-        InitToDifference(a, b, new IdentitySnapFunction(snap_radius));
-    }
-    public void InitToApproxSymmetricDifference(S2Polygon a, S2Polygon b, S1Angle snap_radius)
-    {
-        InitToSymmetricDifference(a, b, new IdentitySnapFunction(snap_radius));
     }
 
     // Convenience function that snaps the vertices to S2CellId centers at the
@@ -931,7 +911,7 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
             throw new ApplicationException("Could not build polygon: " + error);
         }
         // If there are no loops, check whether the result should be the full
-        // polygon rather than the empty one.  (See InitToApproxIntersection.)
+        // polygon rather than the empty one.  (See InitToIntersection.)
         if (NumLoops() == 0)
         {
             if (a.bound_.Area() > S2.M_2_PI && a.GetArea() > S2.M_2_PI) Invert();
@@ -1313,7 +1293,8 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
         // discard sibling pairs.  Then the polygons are approximately equal if the
         // output graph has no edges.
         var symmetric_difference = new S2Polygon();
-        symmetric_difference.InitToApproxSymmetricDifference(b, this, tolerance);
+        symmetric_difference.InitToSymmetricDifference(
+            b, this, new IdentitySnapFunction(tolerance));
         return symmetric_difference.IsEmpty();
     }
 
@@ -1582,7 +1563,7 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
             throw new ApplicationException("Could not build polygon: " + error);
         }
         // If there are no loops, check whether the result should be the full
-        // polygon rather than the empty one.  (See InitToApproxIntersection.)
+        // polygon rather than the empty one.  (See InitToIntersection.)
         if (NumLoops() == 0)
         {
             if (a.bound_.Area() > S2.M_2_PI && a.GetArea() > S2.M_2_PI) Invert();

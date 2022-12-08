@@ -52,11 +52,14 @@ public abstract class S2Shape : IEncoder
 
     #region S2Shape
 
-    // Returns the number of edges in this shape.  Edges have ids ranging from 0
-    // to num_edges() - 1.
+    // Returns the number of edges in this shape, or points, if the shape's
+    // dimension is 0.  Edges or points have ids ranging from 0 to
+    // num_edges() - 1.
     public abstract int NumEdges();
 
-    // Returns the endpoints of the given edge id.
+    // Returns the edge or point for the given edge id.  Points are represented as
+    // degenerate edges, with equal endpoints, but not all degenerate edges are
+    // points.
     //
     // REQUIRES: 0 <= id < num_edges()
     public abstract Edge GetEdge(int edge_id);

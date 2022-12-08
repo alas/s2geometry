@@ -176,5 +176,7 @@ public class S2PolylineSimplifierTests
             s.AvoidDisc(p, radius, disc_on_left[i++]);
         }
         Assert.Equal(expected_result, s.Extend(MakePointOrDie(dst)));
+            //<< "\nsrc = " << src << "\ndst = " << dst << "\ntarget = " << target
+            //<< "\navoid = " << avoid;
     }
 }

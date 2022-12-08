@@ -160,9 +160,9 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoder<S2Polyline>
     }
 
     // Return the length of the polyline.
-    public S1Angle Length()
+    public S1Angle GetLength()
     {
-        return S2PolylineMeasures.GetLength(new S2PointSpan(Vertices));
+        return S2PolylineMeasures.GetLength(VerticesClone());
     }
 
     // Return the true centroid of the polyline multiplied by the length of the
@@ -173,7 +173,7 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoder<S2Polyline>
     // of several polylines (by simply adding up their centroids).
     public S2Point GetCentroid()
     {
-        return S2PolylineMeasures.GetCentroid(new S2PointSpan(Vertices));
+        return S2PolylineMeasures.GetCentroid(VerticesClone());
     }
 
     // If all of the polyline's vertices happen to be the centers of S2Cells at

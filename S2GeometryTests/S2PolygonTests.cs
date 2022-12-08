@@ -1468,10 +1468,10 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
 
     [Fact]
     internal void Test_S2Polygon_InitToSnappedIsValid_D() {
-        var poly = (MakePolygonOrDie(
+        var poly = MakePolygonOrDie(
   "52.0909316:4.8673826, 52.0909317627574:4.86738262858533, " +
   "52.0911338452911:4.86248482549567, 52.0911337:4.8624848, " +
-  "52.0910665:4.8641176, 52.090999:4.8657502"));
+  "52.0910665:4.8641176, 52.090999:4.8657502");
         Assert.True(poly.IsValid());
         S2Polygon poly_snapped = new();
         poly_snapped.InitToSnapped(poly);
@@ -1641,8 +1641,8 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
         // sphere, it is not straightforward to project points onto any edge except
         // along the equator.  (The equator is the only line of latitude that is
         // also a geodesic.)
-        var nested = (MakePolygonOrDie(
-  "3:1, 3:-1, -3:-1, -3:1; 4:2, 4:-2, -4:-2, -4:2;"));
+        var nested = MakePolygonOrDie(
+            "3:1, 3:-1, -3:-1, -3:1; 4:2, 4:-2, -4:-2, -4:2;");
 
         // All points on the boundary of the polygon should be at distance zero.
         for (int i = 0; i < nested.NumLoops(); i++) {
@@ -1652,8 +1652,8 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
                 TestDistanceMethods(nested, loop.Vertex(j), new S2Point());
                 // A point along an edge.
                 TestDistanceMethods(nested, S2.Interpolate(
-                    S2Testing.Random.RandDouble(), loop.Vertex(j), loop.Vertex(j + 1)),
-                                    new S2Point());
+                    loop.Vertex(j), loop.Vertex(j + 1), S2Testing.Random.RandDouble()),
+                    new S2Point());
             }
         }
         // A point outside the outer shell that projects to an edge.
@@ -2649,8 +2649,8 @@ for (int i = 0; i < 100000; ++i) {
             if (!expected.ApproxEquals(result, S2.kIntersectionMergeRadiusS1Angle))
             {
                 S2Polygon symmetric_difference = new();
-                symmetric_difference.InitToApproxSymmetricDifference(
-                    expected, result, S2.kIntersectionMergeRadiusS1Angle);
+                symmetric_difference.InitToSymmetricDifference(
+                    expected, result, new IdentitySnapFunction(S2.kIntersectionMergeRadiusS1Angle));
                 var ss = symmetric_difference.ToDebugString();
                 Assert.True(false);
             }

@@ -432,7 +432,7 @@ Level   Ratio  Ratio Aspect  Ratio Aspect    Min    Max    Min    Max
             S2Point v1 = cell.Vertex(i);
             S2Point v2 = S2Testing.SamplePoint(
                 new S2Cap(cell.Vertex(i + 1), S1Angle.FromRadians(1e-15)));
-            S2Point p = S2.Interpolate(S2Testing.Random.RandDouble(), v1, v2);
+            S2Point p = S2.Interpolate(v1, v2, S2Testing.Random.RandDouble());
             if (new S2Loop(cell).Contains(p))
             {
                 Assert.True(cell.GetRectBound().Contains(new S2LatLng(p)));
@@ -454,7 +454,7 @@ Level   Ratio  Ratio Aspect  Ratio Aspect    Min    Max    Min    Max
             S2Point v1 = cell.Vertex(i);
             S2Point v2 = S2Testing.SamplePoint(
                 new S2Cap(cell.Vertex(i + 1), S1Angle.FromRadians(1e-15)));
-            S2Point p = S2.Interpolate(S2Testing.Random.RandDouble(), v1, v2);
+            S2Point p = S2.Interpolate(v1, v2, S2Testing.Random.RandDouble());
             Assert.True(new S2Cell(new S2CellId(p)).Contains(p));
         }
     }
@@ -666,8 +666,8 @@ Level   Ratio  Ratio Aspect  Ratio Aspect    Min    Max    Min    Max
         // Test an edge for which its antipode crosses the cell. Validates both the
         // standard and brute force implementations for this case.
         S2Cell cell = S2Cell.FromFacePosLevel(0, 0, 20);
-        S2Point a = -S2.Interpolate(2.0, cell.Center(), cell.Vertex(0));
-        S2Point b = -S2.Interpolate(2.0, cell.Center(), cell.Vertex(2));
+        S2Point a = -S2.Interpolate(cell.Center(), cell.Vertex(0), 2.0);
+        S2Point b = -S2.Interpolate(cell.Center(), cell.Vertex(2), 2.0);
 
         S1ChordAngle actual = cell.MaxDistance(a, b);
         S1ChordAngle expected = GetMaxDistanceToEdgeBruteForce(cell, a, b);

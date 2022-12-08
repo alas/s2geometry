@@ -283,7 +283,7 @@ public class S2EdgeTessellatorTests
             else
             {
                 Assert.True(dist_type == DistType.PARAMETRIC);
-                dist = new S1ChordAngle(p, S2.Interpolate(f, x, y));
+                dist = new S1ChordAngle(p, S2.Interpolate(x, y, f));
             }
             if (dist > max_dist) max_dist = dist;
         }
@@ -424,8 +424,8 @@ public class S2EdgeTessellatorTests
             if (max_dist_p <= S2EdgeTessellator.kMinTolerance()) continue;
 
             // Compute the estimated error bound.
-            S1Angle d1 = new(S2.Interpolate(t, a, b), proj.Unproject((1 - t) * pa + t * pb));
-            S1Angle d2 = new(S2.Interpolate(1 - t, a, b), proj.Unproject(t * pa + (1 - t) * pb));
+            S1Angle d1 = new(S2.Interpolate(a, b, t), proj.Unproject((1 - t) * pa + t * pb));
+            S1Angle d2 = new(S2.Interpolate(a, b, 1 - t), proj.Unproject(t * pa + (1 - t) * pb));
             S1Angle dist = kScaleFactor * new[] { S1Angle.FromRadians(1e-300), d1, d2 }.Max();
 
             // Compute the ratio of the true geometric/parametric errors to the

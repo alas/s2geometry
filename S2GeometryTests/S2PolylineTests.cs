@@ -34,7 +34,7 @@ public class S2PolylineTests
     {
         S2Polyline poly = new();
 
-        Assert.Equal(S1Angle.Zero, poly.Length());
+        Assert.Equal(S1Angle.Zero, poly.GetLength());
         Assert.Equal(new S2Point(), poly.GetCentroid());
 
         poly.Reverse();  // Can be reversed
@@ -94,7 +94,7 @@ public class S2PolylineTests
             // Close the circle.
             vertices.Add(vertices[0]);
             S2Polyline line = new(vertices.ToArray());
-            S1Angle length = line.Length();
+            S1Angle length = line.GetLength();
             Assert.True(Math.Abs(length.Radians - S2.M_2_PI) <= 2e-14);
             S2Point centroid = line.GetCentroid();
             Assert.True(centroid.Norm() <= 2e-14);
@@ -656,7 +656,7 @@ public class S2PolylineTests
         TestNearlyCovers("", "", 0.0, true, true);
     }
 
-    // Wraps S2TextFormat.MakePolyline in order to test Encode/Decode.
+    // Wraps s2textformat::MakePolylineOrDie in order to test Encode/Decode.
     private static S2Polyline MakePolyline(string str, bool assertIsValid = true)
     {
         var polyline = MakePolylineOrDie(str, assertIsValid ? S2Debug.ALLOW : S2Debug.DISABLE);

@@ -652,8 +652,8 @@ public class S2LoopTests
             // below B (i.e., ABC is CCW).
             var b = (S2Testing.RandomPoint() + new S2Point(0, 0, 1)).Normalize();
             var v = b.CrossProd(new S2Point(0, 0, 1)).Normalize();
-            var a = S2.Interpolate(S2Testing.Random.RandDouble(), -v, b);
-            var c = S2.Interpolate(S2Testing.Random.RandDouble(), b, v);
+            var a = S2.Interpolate(-v, b, S2Testing.Random.RandDouble());
+            var c = S2.Interpolate(b, v, S2Testing.Random.RandDouble());
             if (S2Pred.Sign(a, b, c) < 0)
             {
                 --iter; continue;

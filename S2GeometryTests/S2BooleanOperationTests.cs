@@ -253,7 +253,7 @@ public class S2BooleanOperationTests
         Options options = new();
         options.PolygonModel_ = (PolygonModel.SEMI_OPEN);
         // The two vertices are chosen such that the polygon contains one vertex but
-        // not the other under PolygonModel.SEMI_OPEN.  (The same vertices are used
+        // not the other under PolygonModel::SEMI_OPEN.  (The same vertices are used
         // for all three PolygonModel options.)
         var polygon = MakePolygonOrDie("0:0, 0:1, 1:0");
         Assert.True(polygon.Contains(MakePointOrDie("0:1")));
@@ -1957,7 +1957,8 @@ public class S2BooleanOperationTests
     [Fact]
     internal void Test_S2BooleanOperation_FullAndEmptyResults()
     {
-        // The followingants are all in S2TextFormat.MakeLaxPolygon() format.
+        // The following constants are all in s2textformat::MakeLaxPolygonOrDie()
+        // format.
         string kEmpty = "";
         string kFull = "full";
 
@@ -2401,7 +2402,7 @@ ExpectPolygon(OpType.SYMMETRIC_DIFFERENCE, k6FaceShell1Minus, k6FaceHole1,kFull)
     }
 
     // Performs the given operation and compares the result to "expected_str".  All
-    // arguments are in S2TextFormat.MakeLaxPolygon() format.
+    // arguments are in S2TextFormat::MakeLaxPolygonOrDie() format.
     private static void ExpectPolygon(OpType op_type,
         string a_str, string b_str, string expected_str)
     {

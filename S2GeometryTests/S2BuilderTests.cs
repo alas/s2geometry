@@ -191,8 +191,11 @@ public class S2BuilderTests
             {
                 Assert.True(S2.IsEdgeBNearEdgeA(
                     a, b, output.Vertex(i), output.Vertex(i + 1), max_deviation));
-                _logger.WriteLine(
-                    $"Iteration {iter}: ({S2TextFormat.ToDebugString(a)}, {S2TextFormat.ToDebugString(S2.Interpolate(0.5, a, b))}), {S2TextFormat.ToDebugString(output)}");
+                _logger.WriteLine(String.Format($"Iteration {0}: ({1}, {2}), {3}",
+                    iter,
+                    S2TextFormat.ToDebugString(a),
+                    S2TextFormat.ToDebugString(S2.Interpolate(a, b, 0.5)),
+                    S2TextFormat.ToDebugString(output)));
             }
             if (n > 2) ++num_effective;
         }
@@ -1156,7 +1159,7 @@ new S2Point(-0.10531192039116592, -0.80522217309701472, 0.58354661457028933),
             }
             else
             {
-                v3 = S2.Interpolate(Math.Pow(1e-16, S2Testing.Random.RandDouble()), v1, v2);
+                v3 = S2.Interpolate(v1, v2, Math.Pow(1e-16, S2Testing.Random.RandDouble()));
                 v3 = S2.GetPointOnLine(v3, v1.CrossProd(v2).Normalize(), d3);
             }
             Options options = new(new IdentitySnapFunction(snap_radius));

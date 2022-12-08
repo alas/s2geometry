@@ -295,12 +295,6 @@ public static partial class S2
         return (r.Cos() * origin + r.Sin() * dir).Normalize();
     }
 
-    [Obsolete("Inline the implementation")]
-    public static S2Point Interpolate(double t, S2Point a, S2Point b)
-    {
-        return Interpolate(a, b, t);
-    }
-
     // Returns the point X along the line segment AB whose distance from A is the
     // given fraction "t" of the distance AB (where "t" is not necessarily in the
     // range [0, 1]).  Note that all distances are measured on the surface of the

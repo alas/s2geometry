@@ -1103,9 +1103,9 @@ public readonly record struct S2CellId(UInt64 Id) : IComparable<S2CellId>, IDeco
 
     #region IComparable
 
-    // When S2CellId is used as a key in one of the btree container types
-    // (util/btree), indicate that linear rather than binary search should be
-    // used.  This is much faster when the comparison function is cheap.
+    // When S2CellId is used as a key in one of the absl::btree container types,
+    // indicate that linear rather than binary search should be used.  This is
+    // much faster when the comparison function is cheap.
     //typedef std::true_type absl_btree_prefer_linear_node_search;
 
     public int CompareTo(S2CellId other)

@@ -229,8 +229,8 @@ public class S2EdgeCrosserTests
         {
             S2Point a = S2Testing.RandomPoint();
             S2Point d = S2Testing.RandomPoint();
-            S2Point b = S2.Interpolate(0.05, a, d);
-            S2Point c = S2.Interpolate(0.95, a, d);
+            S2Point b = S2.Interpolate(a, d, 0.05);
+            S2Point c = S2.Interpolate(a, d, 0.95);
             Assert.True(0 > S2.CrossingSign(a, b, c, d));
             Assert.True(0 > S2.CrossingSign(a, b, c, d));
             S2EdgeCrosser crosser = new(a, b, c);

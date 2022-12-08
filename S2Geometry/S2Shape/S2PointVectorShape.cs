@@ -1,5 +1,5 @@
 // S2PointVectorShape is an S2Shape representing a set of S2Points. Each point
-// is reprsented as a degenerate edge with the same starting and ending
+// is represented as a degenerate edge with the same starting and ending
 // vertices.
 //
 // This class is useful for adding a collection of points to an S2ShapeIndex.
@@ -42,12 +42,15 @@ public class S2PointVectorShape : S2Shape, IInitEncoder<S2PointVectorShape>
         return (true, shape);
     }
 
-    // S2Shape interface:
+    // S2Shape interface.
+
+    // Returns the number of points.
     public sealed override int NumEdges()
     {
         return NumPoints;
     }
 
+    // Returns a point represented as a degenerate edge.
     public sealed override Edge GetEdge(int e) => new(points_[e], points_[e]);
     public sealed override int Dimension() { return 0; }
     public sealed override ReferencePoint GetReferencePoint() => ReferencePoint.FromContained(false);

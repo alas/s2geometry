@@ -18,7 +18,7 @@
 // The IDistance template argument is used to represent distances.  Usually it
 // is a thin wrapper around S1ChordAngle, but another distance type may be
 // used as long as it implements the IDistance concept described in
-// s2distance_targets.h.  For example this can be used to measure maximum
+// s2distance_target.h.  For example this can be used to measure maximum
 // distances, to get more accuracy, or to measure non-spheroidal distances.
 
 namespace S2Geometry;
