@@ -48,7 +48,7 @@ public class EncodedS2PointVector
 
         // Peek at the format but don't advance the decoder; the format-specific
         // Init functions will do that.
-        format_ = (Format)(decoder.Get8() & kEncodingFormatMask);
+        format_ = (Format)(decoder.Peek8() & kEncodingFormatMask);
         return format_ switch
         {
             Format.UNCOMPRESSED => InitUncompressedFormat(decoder),
@@ -461,7 +461,7 @@ public class EncodedS2PointVector
         var pointBuffer = new S2Point[size_];
         decoder.GetPoints(pointBuffer, 0, (int)size_);
         points = pointBuffer;
-        decoder.Skip(bytes);
+        //decoder.Skip(bytes); //note(Alas): in original code the GetPoints was a direct buffer access without advancing the pointer so here there is no need to skip
         return true;
     }
     private bool InitCellIdsFormat(Decoder decoder)

@@ -111,7 +111,7 @@ public class EncodedS2CellIdVectorTests
     {
         byte[] bytes = {
             (31 << 3)  // 31 -> add 29 to bytes[1].
-            + 1,   // Number of encoded cell IDs.
+            + 1,       // Number of encoded cell IDs.
             27,        // 27+29 is the maximum supported shift.
             1, 0       // Encoded cell ID. Not important.
         };
@@ -125,7 +125,7 @@ public class EncodedS2CellIdVectorTests
     {
         byte[] bytes = {
             (31 << 3)  // 31 -> add 29 to bytes[1].
-            + 1,   // Number of encoded cell IDs.
+            + 1,       // Number of encoded cell IDs.
             28,        // 28+29 is greater than the maximum supported shift of 56.
             1, 0       // Encoded cell ID. Not important.
         };

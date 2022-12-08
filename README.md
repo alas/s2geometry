@@ -16,9 +16,6 @@ limitations under the License.
 
 Author: ericv@google.com (Eric Veach)
 
-Ported to from: [google / s2geometry](https://github.com/google/s2geometry/commit/174e2e44ff5de6845e47201e4a7295b3fd256edd)
-
-[Previous version](https://github.com/alas/s2geometry/commit/ec5adeffeeb6af4bf416ed40a1d7ae3b8856b511) ported to from: [google / s2geometry](https://github.com/google/s2geometry/commit/cae6519ef34fc5ac79e5a69a50717864549d1cd4)
+Ported to from: [google / s2geometry](https://github.com/google/s2geometry/commit/1427c85bac2cda3d69d128f0636c7ff003b973d8)
 
 Also Based on: [novotnyllc / s2-geometry-library-csharp](https://github.com/novotnyllc/s2-geometry-library-csharp/commit/880deeff88f8b8b0fe67ed888efeffbbdc460a7b)
-

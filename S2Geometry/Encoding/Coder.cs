@@ -252,6 +252,11 @@ public class Decoder
     #region Get
 
     // Decoding routines.  Note that these do not check bounds
+    public byte Peek8()
+    {
+        byte v = Buffer[Offset];
+        return v;
+    }
     public byte Get8()
     {
         byte v = Buffer[Offset];

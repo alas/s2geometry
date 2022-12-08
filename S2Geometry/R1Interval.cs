@@ -64,7 +64,7 @@ public readonly record struct R1Interval(
     /// <returns>true if the interval is empty, i.e. it contains no points.</returns>
     public bool IsEmpty() => Lo > Hi;
 
-    /// <returns>Returns true if the given point is in the closed interval [lo, hi].</returns>
+    /// <returns>true if the given point is in the closed interval [lo, hi].</returns>
     public bool Contains(double p) => p >= Lo && p <= Hi;
 
     /// <returns>true if the given point is in the open interval (lo, hi).</returns>
