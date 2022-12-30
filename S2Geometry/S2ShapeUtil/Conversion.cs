@@ -9,7 +9,7 @@ public static partial class S2ShapeUtil
     // This method does allow an empty shape (i.e. a shape with no vertices).
     public static List<S2Point> ShapeToS2Points(S2Shape multipoint)
     {
-        System.Diagnostics.Debug.Assert(multipoint.Dimension() == 0);
+        Debug.Assert(multipoint.Dimension() == 0);
         List<S2Point> points = new();
         points.Capacity = multipoint.NumEdges();
         for (int i = 0; i < multipoint.NumEdges(); ++i)
@@ -26,8 +26,8 @@ public static partial class S2ShapeUtil
     // shape with no vertices).
     public static S2Polyline ShapeToS2Polyline(S2Shape line)
     {
-        System.Diagnostics.Debug.Assert(line.Dimension() == 1);
-        System.Diagnostics.Debug.Assert(line.NumChains() == 1);
+        Debug.Assert(line.Dimension() == 1);
+        Debug.Assert(line.NumChains() == 1);
         S2Point[] vertices;
         S2.GetChainVertices(line, 0, out vertices);
         return new S2Polyline(vertices);
@@ -41,7 +41,7 @@ public static partial class S2ShapeUtil
         {
             return new S2Polygon(S2Loop.kFull);
         }
-        System.Diagnostics.Debug.Assert(poly.Dimension() == 2);
+        Debug.Assert(poly.Dimension() == 2);
         List<S2Loop> loops = new();
         for (int i = 0; i < poly.NumChains(); ++i)
         {

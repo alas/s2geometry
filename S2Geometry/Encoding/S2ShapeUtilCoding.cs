@@ -51,11 +51,11 @@ public static class S2ShapeUtilCoding
         var tag = shape.GetTypeTag();
         if (tag == S2Shape.TypeTag.kNoTypeTag)
         {
-            System.Diagnostics.Debug.WriteLine("(DFATAL) Unsupported S2Shape type: " + tag);
+            Debug.WriteLine("(DFATAL) Unsupported S2Shape type: " + tag);
             return false;
         }
         // Update the following constant when adding new S2Shape encodings.
-        System.Diagnostics.Debug.Assert(tag < S2Shape.TypeTag.kNextAvailableTypeTag);
+        Debug.Assert(tag < S2Shape.TypeTag.kNextAvailableTypeTag);
         shape.Encode(encoder, CodingHint.FAST);
         return true;
     }
@@ -71,11 +71,11 @@ public static class S2ShapeUtilCoding
         var tag = shape.GetTypeTag();
         if (tag == S2Shape.TypeTag.kNoTypeTag)
         {
-            System.Diagnostics.Debug.WriteLine("(DFATAL) Unsupported S2Shape type: " + tag);
+            Debug.WriteLine("(DFATAL) Unsupported S2Shape type: " + tag);
             return false;
         }
         // Update the following constant when adding new S2Shape encodings.
-        System.Diagnostics.Debug.Assert(tag < S2Shape.TypeTag.kNextAvailableTypeTag);
+        Debug.Assert(tag < S2Shape.TypeTag.kNextAvailableTypeTag);
         shape.Encode(encoder, CodingHint.COMPACT);
         return true;
     }
@@ -308,7 +308,7 @@ public static class S2ShapeUtilCoding
         var shape_vector = new StringVectorEncoder();
         foreach (var shape in index)
         {
-            System.Diagnostics.Debug.Assert(shape is not null);
+            Debug.Assert(shape is not null);
             (shape as IEncoder)!.Encode(shape_vector.AddViaEncoder(), hint);
         }
         shape_vector.Encode(encoder);

@@ -145,9 +145,9 @@ public static partial class S2
     // most accurate results.  Requires that x, a, and b have unit length.
     public static S2Point Project(S2Point x, S2Point a, S2Point b, S2Point a_cross_b)
     {
-        System.Diagnostics.Debug.Assert(a.IsUnitLength());
-        System.Diagnostics.Debug.Assert(b.IsUnitLength());
-        System.Diagnostics.Debug.Assert(x.IsUnitLength());
+        Debug.Assert(a.IsUnitLength());
+        Debug.Assert(b.IsUnitLength());
+        Debug.Assert(x.IsUnitLength());
 
         // TODO(ericv): When X is nearly perpendicular to the plane containing AB,
         // the result is guaranteed to be close to the edge AB but may be far from
@@ -190,7 +190,7 @@ public static partial class S2
     // that X == Interpolate(A, B, t).  Requires that A and B are distinct.
     public static double GetDistanceFraction(S2Point x, S2Point a, S2Point b)
     {
-        System.Diagnostics.Debug.Assert(a != b);
+        Debug.Assert(a != b);
         var da = x.Angle(a);
         var db = x.Angle(b);
         return da / (da + db);
@@ -267,9 +267,9 @@ public static partial class S2
     public static S2Point GetPointOnRay(S2Point origin, S2Point dir, S1Angle r)
     {
         // See comments above.
-        System.Diagnostics.Debug.Assert(origin.IsUnitLength());
-        System.Diagnostics.Debug.Assert(dir.IsUnitLength());
-        System.Diagnostics.Debug.Assert(origin.DotProd(dir) <=
+        Debug.Assert(origin.IsUnitLength());
+        Debug.Assert(dir.IsUnitLength());
+        Debug.Assert(origin.DotProd(dir) <=
             S2.kRobustCrossProdError + 0.75 * S2.DoubleEpsilon);
 
         return (r.Cos() * origin + r.Sin() * dir).Normalize();
@@ -279,10 +279,10 @@ public static partial class S2
     // near 180 degrees due to the limitations of S1ChordAngle.
     public static S2Point GetPointOnRay(S2Point origin, S2Point dir, S1ChordAngle r)
     {
-        System.Diagnostics.Debug.Assert(origin.IsUnitLength());
-        System.Diagnostics.Debug.Assert(dir.IsUnitLength());
+        Debug.Assert(origin.IsUnitLength());
+        Debug.Assert(dir.IsUnitLength());
         // The error bound below includes the error in computing the dot product.
-        System.Diagnostics.Debug.Assert(origin.DotProd(dir) <=
+        Debug.Assert(origin.DotProd(dir) <=
                   S2.kRobustCrossProdError + 0.75 * S2.DoubleEpsilon);
 
         // Mathematically the result should already be unit length, but we normalize
@@ -406,8 +406,8 @@ public static partial class S2
     // TODO(ericv): Optimize this function to use S1ChordAngle rather than S1Angle.
     public static bool IsEdgeBNearEdgeA(S2Point a0, S2Point a1, S2Point b0, S2Point b1, S1Angle tolerance)
     {
-        System.Diagnostics.Debug.Assert(tolerance.Radians < S2.M_PI_2);
-        System.Diagnostics.Debug.Assert(tolerance.Radians > 0);
+        Debug.Assert(tolerance.Radians < S2.M_PI_2);
+        Debug.Assert(tolerance.Radians > 0);
         // The point on edge B=b0b1 furthest from edge A=a0a1 is either b0, b1, or
         // some interior point on B.  If it is an interior point on B, then it must be
         // one of the two points where the great circle containing B (circ(B)) is
@@ -522,9 +522,9 @@ public static partial class S2
     // duplication.
     private static bool AlwaysUpdateMinInteriorDistance(S2Point x, S2Point a, S2Point b, double xa2, double xb2, ref S1ChordAngle min_dist, bool always_update)
     {
-        System.Diagnostics.Debug.Assert(x.IsUnitLength() && a.IsUnitLength() && b.IsUnitLength());
-        System.Diagnostics.Debug.Assert(xa2 == (x - a).Norm2());
-        System.Diagnostics.Debug.Assert(xb2 == (x - b).Norm2());
+        Debug.Assert(x.IsUnitLength() && a.IsUnitLength() && b.IsUnitLength());
+        Debug.Assert(xa2 == (x - a).Norm2());
+        Debug.Assert(xb2 == (x - b).Norm2());
 
         // The closest point on AB could either be one of the two vertices (the
         // "vertex case") or in the interior (the "interior case").  Let C = A x B.
@@ -634,7 +634,7 @@ public static partial class S2
     // speed of GetDistance() by about 10% without creating code duplication.
     private static bool AlwaysUpdateMinDistance(S2Point x, S2Point a, S2Point b, ref S1ChordAngle min_dist, bool always_update)
     {
-        System.Diagnostics.Debug.Assert(x.IsUnitLength() && a.IsUnitLength() && b.IsUnitLength());
+        Debug.Assert(x.IsUnitLength() && a.IsUnitLength() && b.IsUnitLength());
 
         double xa2 = (x - a).Norm2(), xb2 = (x - b).Norm2();
         if (AlwaysUpdateMinInteriorDistance(x, a, b, xa2, xb2, ref min_dist, always_update))

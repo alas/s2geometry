@@ -80,7 +80,7 @@ public class S2PointIndex<Data> : IEnumerable<TreeNode<Data>>
     // Convenience function for the case when Data is an empty class.
     public void Add(S2Point point)
     {
-        //System.Diagnostics.Debug.Assert(typeof(Data) == void); // Data must be empty
+        //Debug.Assert(typeof(Data) == void); // Data must be empty
         Add(point, default);
     }
     // Adds the given point to the index.  Invalidates all iterators.
@@ -94,7 +94,7 @@ public class S2PointIndex<Data> : IEnumerable<TreeNode<Data>>
     // Convenience function for the case when Data is an empty class.
     public void Remove(S2Point point)
     {
-        //System.Diagnostics.Debug.Assert(typeof(Data) == void); // Data must be empty
+        //Debug.Assert(typeof(Data) == void); // Data must be empty
         Remove(point, default);
     }
     // Removes the given point from the index.  Both the "point" and "data"

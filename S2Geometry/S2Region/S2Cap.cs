@@ -47,7 +47,7 @@ public readonly record struct S2Cap : IS2Region<S2Cap>, IDecoder<S2Cap>
         Center = center;
         Radius = new S1ChordAngle(S1Angle.Min(radius, S1Angle.FromRadians(Math.PI)));
         // The "min" calculation above is necessary to handle S1Angle.Infinity().
-        System.Diagnostics.Debug.Assert(IsValid());
+        Debug.Assert(IsValid());
     }
 
     // Constructs a cap where the angle is expressed as an S1ChordAngle.  This
@@ -56,7 +56,7 @@ public readonly record struct S2Cap : IS2Region<S2Cap>, IDecoder<S2Cap>
     {
         Center = center;
         Radius = radius;
-        System.Diagnostics.Debug.Assert(IsValid());
+        Debug.Assert(IsValid());
     }
 
     #endregion
@@ -186,7 +186,7 @@ public readonly record struct S2Cap : IS2Region<S2Cap>, IDecoder<S2Cap>
     // unit-length vector.
     public bool InteriorContains(S2Point p)
     {
-        System.Diagnostics.Debug.Assert(p.IsUnitLength());
+        Debug.Assert(p.IsUnitLength());
         return IsFull() || new S1ChordAngle(Center, p) < Radius;
     }
 
@@ -196,7 +196,7 @@ public readonly record struct S2Cap : IS2Region<S2Cap>, IDecoder<S2Cap>
     public S2Cap AddPoint(S2Point p)
     {
         // Compute the squared chord length, then convert it into a height.
-        System.Diagnostics.Debug.Assert(p.IsUnitLength());
+        Debug.Assert(p.IsUnitLength());
         var newCenter = Center;
         var newRadius = S1ChordAngle.Zero;
         if (IsEmpty())
@@ -239,7 +239,7 @@ public readonly record struct S2Cap : IS2Region<S2Cap>, IDecoder<S2Cap>
     // cap.  Note that any expansion of the empty cap is still empty.
     public S2Cap Expanded(S1Angle distance)
     {
-        System.Diagnostics.Debug.Assert(distance.Radians >= 0);
+        Debug.Assert(distance.Radians >= 0);
         if (IsEmpty()) return Empty;
         return new S2Cap(Center, Radius + new S1ChordAngle(distance));
     }
@@ -479,7 +479,7 @@ public readonly record struct S2Cap : IS2Region<S2Cap>, IDecoder<S2Cap>
     /// <param name="p">should be a unit-length vector.</param>
     public bool Contains(S2Point p)
     {
-        System.Diagnostics.Debug.Assert(p.IsUnitLength());
+        Debug.Assert(p.IsUnitLength());
         return new S1ChordAngle(Center, p) <= Radius;
     }
 
@@ -500,7 +500,7 @@ public readonly record struct S2Cap : IS2Region<S2Cap>, IDecoder<S2Cap>
         encoder.PutDouble(Center.Z);
         encoder.PutDouble(Radius.Length2);
 
-        System.Diagnostics.Debug.Assert(encoder.Avail() >= 0);
+        Debug.Assert(encoder.Avail() >= 0);
     }
 
     // Decodes an S2Cap encoded with Encode().  Returns true on success.
@@ -517,7 +517,7 @@ public readonly record struct S2Cap : IS2Region<S2Cap>, IDecoder<S2Cap>
         var result = new S2Cap(cen, rad);
 
 #if s2debug
-        System.Diagnostics.Debug.Assert(result.IsValid()); // Invalid S2Cap
+        Debug.Assert(result.IsValid()); // Invalid S2Cap
 #endif
 
         return (true, result);

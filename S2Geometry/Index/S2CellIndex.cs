@@ -73,7 +73,6 @@
 namespace S2Geometry;
 
 using System.Collections;
-using System.Diagnostics.CodeAnalysis;
 
 public class S2CellIndex
 {
@@ -100,8 +99,8 @@ public class S2CellIndex
     // REQUIRES: cell_id.IsValid
     public void Add(S2CellId cell_id, Int32 label)
     {
-        System.Diagnostics.Debug.Assert(cell_id.IsValid());
-        System.Diagnostics.Debug.Assert(label >= 0);
+        Debug.Assert(cell_id.IsValid());
+        Debug.Assert(label >= 0);
         cell_tree_.Add(new CellNode(cell_id, label, -1));
     }
 
@@ -288,14 +287,14 @@ public class S2CellIndex
         {
             range_nodes_ = index.range_nodes_;
             Position = -1;
-            System.Diagnostics.Debug.Assert(range_nodes_.Any()); // Call Build() first.
+            Debug.Assert(range_nodes_.Any()); // Call Build() first.
         }
 
         public RangeNodeEnumerator(List<RangeNode> rangeNodes, int position)
         {
             range_nodes_ = rangeNodes;
             Position = position;
-            System.Diagnostics.Debug.Assert(range_nodes_.Any()); // Call Build() first.
+            Debug.Assert(range_nodes_.Any()); // Call Build() first.
         }
 
         public virtual bool MoveNext()
@@ -345,7 +344,7 @@ public class S2CellIndex
         // REQUIRES: target.IsLeaf
         public void Seek(S2CellId target)
         {
-            System.Diagnostics.Debug.Assert(target.IsLeaf());
+            Debug.Assert(target.IsLeaf());
             Position = range_nodes_.GetUpperBound(new RangeNode(target, -1)) - 1;
         }
 

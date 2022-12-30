@@ -67,8 +67,8 @@ public static partial class S2
             // the range [1,2).
             int level = Math.ILogB(value / Deriv);
             level = Math.Max(0, Math.Min(S2.kMaxCellLevel, -(level >> (Dim - 1))));
-            System.Diagnostics.Debug.Assert(level == S2.kMaxCellLevel || GetValue(level) <= value);
-            System.Diagnostics.Debug.Assert(level == 0 || GetValue(level - 1) > value);
+            Debug.Assert(level == S2.kMaxCellLevel || GetValue(level) <= value);
+            Debug.Assert(level == 0 || GetValue(level - 1) > value);
             return level;
         }
 
@@ -85,8 +85,8 @@ public static partial class S2
             // rounding down.
             int level = Math.ILogB(Deriv / value);
             level = Math.Max(0, Math.Min(S2.kMaxCellLevel, level >> (Dim - 1)));
-            System.Diagnostics.Debug.Assert(level == 0 || GetValue(level) >= value);
-            System.Diagnostics.Debug.Assert(level == S2.kMaxCellLevel || GetValue(level + 1) < value);
+            Debug.Assert(level == 0 || GetValue(level) >= value);
+            Debug.Assert(level == S2.kMaxCellLevel || GetValue(level + 1) < value);
             return level;
         }
     }

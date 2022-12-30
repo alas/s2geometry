@@ -238,7 +238,7 @@ S2.GetUpdateMinDistanceMaxError(value)).Successor());
     // IsEmpty == true is returned.
     public S2ClosestPointQueryBase<Distance, Data>.Result FindClosestPoint(Target target)
     {
-        // System.Diagnostics.Debug.Assert(Marshal.SizeOf(typeof(Options)) <= 32); // Consider not copying Options here
+        // Debug.Assert(Marshal.SizeOf(typeof(Options)) <= 32); // Consider not copying Options here
         Options tmp_options = Options_;
         tmp_options.MaxResults = 1;
         return base_.FindClosestPoint(target, tmp_options);
@@ -261,7 +261,7 @@ S2.GetUpdateMinDistanceMaxError(value)).Successor());
     // threshold than it is to calculate the actual minimum distance.
     public bool IsDistanceLess(Target target, Distance limit)
     {
-        // System.Diagnostics.Debug.Assert(Marshal.SizeOf(typeof(Options)) <= 32); // Consider not copying Options here
+        // Debug.Assert(Marshal.SizeOf(typeof(Options)) <= 32); // Consider not copying Options here
         Options tmp_options = Options_;
         tmp_options.MaxResults = (1);
         tmp_options.MaxDistance = (limit);
@@ -273,7 +273,7 @@ S2.GetUpdateMinDistanceMaxError(value)).Successor());
     // is exactly equal to "limit".
     public bool IsDistanceLessOrEqual(Target target, Distance limit)
     {
-        // System.Diagnostics.Debug.Assert(Marshal.SizeOf(typeof(Options)) <= 32); // Consider not copying Options here
+        // Debug.Assert(Marshal.SizeOf(typeof(Options)) <= 32); // Consider not copying Options here
         Options tmp_options = Options_;
         tmp_options.MaxResults = (1);
         tmp_options.InclusiveMaxDistance = (limit);
@@ -295,7 +295,7 @@ S2.GetUpdateMinDistanceMaxError(value)).Successor());
     // are guaranteed to not intersect after snapping.
     public bool IsConservativeDistanceLessOrEqual(Target target, Distance limit)
     {
-        // System.Diagnostics.Debug.Assert(Marshal.SizeOf(typeof(Options)) <= 32); // Consider not copying Options here
+        // Debug.Assert(Marshal.SizeOf(typeof(Options)) <= 32); // Consider not copying Options here
         Options tmp_options = Options_;
         tmp_options.MaxResults = (1);
         tmp_options.ConservativeMaxDistance = (limit);

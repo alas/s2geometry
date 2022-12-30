@@ -2,7 +2,7 @@
 
 using System.Numerics;
 
-//[System.Diagnostics.DebuggerDisplay("{S2PointExtensions.ToStringDegrees(this)}")]
+//[DebuggerDisplay("{S2PointExtensions.ToStringDegrees(this)}")]
 public readonly record struct Vector3<T>(T X, T Y, T Z) : IComparable<Vector3<T>> where T : INumber<T>, IFloatingPointIeee754<T>
 {
     #region Fields, Constants

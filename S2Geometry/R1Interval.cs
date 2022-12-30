@@ -1,6 +1,6 @@
 ﻿namespace S2Geometry;
 
-[System.Diagnostics.DebuggerDisplay("{ToDebugString()}")]
+[DebuggerDisplay("{ToDebugString()}")]
 public readonly record struct R1Interval(
     double Lo,  // The low bound of the interval.
     double Hi)  // The high bound of the interval.
@@ -143,7 +143,7 @@ public readonly record struct R1Interval(
     /// </summary>
     public double Project(double p)
     {
-        System.Diagnostics.Debug.Assert(!IsEmpty());
+        Debug.Assert(!IsEmpty());
         return Math.Max(Lo, Math.Min(Hi, p));
     }
 

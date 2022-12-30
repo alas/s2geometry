@@ -59,7 +59,7 @@ public class S2EdgeVectorShape : S2Shape
     public sealed override Chain GetChain(int i) => new(i, 1);
     public sealed override Edge ChainEdge(int i, int j)
     {
-        System.Diagnostics.Debug.Assert(j == 0);
+        Debug.Assert(j == 0);
         return new Edge(edges_[i].Item1, edges_[i].Item2);
     }
     public sealed override ChainPosition GetChainPosition(int e) => new(e, 0);

@@ -1,4 +1,6 @@
-﻿global using Edge = S2Geometry.S2ShapeUtil.ShapeEdgeId;                         // Defines an output edge.
+﻿global using System.Diagnostics;
+
+global using Edge = S2Geometry.S2ShapeUtil.ShapeEdgeId;                         // Defines an output edge.
 global using OutputEdge = S2Geometry.S2ShapeUtil.ShapeEdgeId;                   // Defines an output edge.   
 
 global using EdgeLoop = System.Collections.Generic.List<System.Int32>;          // A loop consisting of a sequence of edges.

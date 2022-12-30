@@ -175,10 +175,10 @@ public class SnappedWindingDelta
     {
         error = S2Error.OK;
 
-        System.Diagnostics.Debug.Assert(!builder.Options_.SimplifyEdgeChains);
-        System.Diagnostics.Debug.Assert(g.Options.EdgeType_ == S2Builder.EdgeType.DIRECTED);
-        System.Diagnostics.Debug.Assert(g.Options.DegenerateEdges_ == GraphOptions.DegenerateEdges.KEEP);
-        System.Diagnostics.Debug.Assert(
+        Debug.Assert(!builder.Options_.SimplifyEdgeChains);
+        Debug.Assert(g.Options.EdgeType_ == S2Builder.EdgeType.DIRECTED);
+        Debug.Assert(g.Options.DegenerateEdges_ == GraphOptions.DegenerateEdges.KEEP);
+        Debug.Assert(
             new[]
             {
                 GraphOptions.SiblingPairs.KEEP,
@@ -258,8 +258,8 @@ public class SnappedWindingDelta
                 // compute the winding number of R by counting signed crossings of the
                 // edge ZR, while the winding number of R' relative to Z is always zero
                 // because the snapped chain collapses to a single point.
-                System.Diagnostics.Debug.Assert(chain_out[0] == ref_out);         // Snaps to R'.
-                System.Diagnostics.Debug.Assert(chain_in[0] == chain_in.Last());  // Chain is a loop.
+                Debug.Assert(chain_out[0] == ref_out);         // Snaps to R'.
+                Debug.Assert(chain_in[0] == chain_in.Last());  // Chain is a loop.
                 S2Point z = S2.Ortho(ref_out);
                 winding_delta += 0 - GetEdgeWindingDelta(z, ref_in, chain_in);
             }
@@ -303,8 +303,8 @@ public class SnappedWindingDelta
                 // reverse order to C' to form a single closed loop.  The remaining term
                 // s(RR', C') can be implemented as signed edge crossing tests, or more
                 // directly by testing whether R is contained by the wedge C'.
-                System.Diagnostics.Debug.Assert(chain_out.Count == 3);
-                System.Diagnostics.Debug.Assert(chain_out[1] == ref_out);
+                Debug.Assert(chain_out.Count == 3);
+                Debug.Assert(chain_out[1] == ref_out);
 
                 // Compute two points Za and Zb such that Za is not affected by the
                 // snapping of any edge except possibly B0B1, and Zb is not affected by
@@ -378,7 +378,7 @@ public class SnappedWindingDelta
 
                 // Compute the change in winding number of RR' with respect to C' only.
                 // (This could also be computed using two calls to s2pred::OrderedCCW.)
-                System.Diagnostics.Debug.Assert(chain_out[1] == ref_out);
+                Debug.Assert(chain_out[1] == ref_out);
                 winding_delta += GetEdgeWindingDelta(ref_in, ref_out, chain_out);
             }
         }
@@ -407,8 +407,8 @@ public class SnappedWindingDelta
         List<S2Point> chain_in, List<S2Point> chain_out, out S2Error error)
     {
         error = S2Error.OK;
-        System.Diagnostics.Debug.Assert(!chain_in.Any());
-        System.Diagnostics.Debug.Assert(!chain_out.Any());
+        Debug.Assert(!chain_in.Any());
+        Debug.Assert(!chain_out.Any());
 
         // First look for an incoming edge to the reference vertex.  (This will be
         // the start of a chain that eventually leads to an outgoing edge.)
@@ -478,7 +478,7 @@ public class SnappedWindingDelta
     private static int GetEdgeWindingDelta(S2Point a, S2Point b,
                             List<S2Point> chain)
     {
-        System.Diagnostics.Debug.Assert(chain.Count > 0);
+        Debug.Assert(chain.Count > 0);
 
         int delta = 0;
         S2EdgeCrosser crosser = new(a, b, chain[0]);
@@ -539,7 +539,7 @@ public class SnappedWindingDelta
             if (entry.Value == 1) return entry.Key;
         }
         // Otherwise "input_edge_id" must snap to a single degenerate edge.
-        System.Diagnostics.Debug.Assert(excess_degree_map.Count == 1);
+        Debug.Assert(excess_degree_map.Count == 1);
         return excess_degree_map.First().Key;
     }
 

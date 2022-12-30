@@ -235,20 +235,20 @@ public class S2WindingOperation
                     S2Builder builder, Graph g)
         {
             g_ = g;
-            System.Diagnostics.Debug.Assert(g_.Options.EdgeType_ == EdgeType.DIRECTED);
-            System.Diagnostics.Debug.Assert(g_.Options.DegenerateEdges_ == DegenerateEdges.KEEP);
-            System.Diagnostics.Debug.Assert(g_.Options.DuplicateEdges_ == DuplicateEdges.KEEP);
-            System.Diagnostics.Debug.Assert(g_.Options.SiblingPairs_ == SiblingPairs.KEEP);
+            Debug.Assert(g_.Options.EdgeType_ == EdgeType.DIRECTED);
+            Debug.Assert(g_.Options.DegenerateEdges_ == DegenerateEdges.KEEP);
+            Debug.Assert(g_.Options.DuplicateEdges_ == DuplicateEdges.KEEP);
+            Debug.Assert(g_.Options.SiblingPairs_ == SiblingPairs.KEEP);
 
             // Compute the winding number at the reference point after snapping (see
             // s2builderutil::GetSnappedWindingDelta).
             S2Point ref_in = builder.InputEdge(ref_input_edge_id).V0;
             VertexId ref_v = S2BuilderUtil.SnappedWindingDelta.FindFirstVertexId(ref_input_edge_id, g_);
-            System.Diagnostics.Debug.Assert(ref_v >= 0);  // No errors are possible.
+            Debug.Assert(ref_v >= 0);  // No errors are possible.
             CurrentRefPoint = g_.Vertex(ref_v);
             CurrentRefWinding = ref_winding_in + S2BuilderUtil.SnappedWindingDelta.GetSnappedWindingDelta(
                 ref_in, ref_v, ie => true, builder, g_, out S2Error error);
-            System.Diagnostics.Debug.Assert(error.IsOk());  // No errors are possible.
+            Debug.Assert(error.IsOk());  // No errors are possible.
 
             // Winding numbers at other points are computed by counting signed edge
             // crossings.  If we need to do this many times, it is worthwhile to build an
@@ -379,7 +379,7 @@ public class S2WindingOperation
             // this edge removed (since it should not be emitted to the result layer).
             WindingOracle oracle = new(op_.ref_input_edge_id_, op_.ref_winding_in_,
                                  op_.builder_, g);
-            //System.Diagnostics.Debug.Assert(error.IsOk());  // No errors are possible.
+            //Debug.Assert(error.IsOk());  // No errors are possible.
 
             // Now that we have computed the change in winding number, we create a new
             // graph with the reference edge removed.  Note that S2MemoryTracker errors
@@ -458,7 +458,7 @@ public class S2WindingOperation
 
             var sibling_map = g.GetSiblingMap();
             g.GetLeftTurnMap(sibling_map, out InputEdgeLoop left_turn_map, out error);
-            System.Diagnostics.Debug.Assert(error.IsOk());
+            Debug.Assert(error.IsOk());
 
             // A map from EdgeId to the winding number of the region it bounds.
             List<int> edge_winding = new(g.NumEdges);
@@ -532,7 +532,7 @@ public class S2WindingOperation
                                    List<EdgeId> left_turn_map, List<EdgeId> sibling_map)
         {
             // If the given edge is degenerate, this is an isolated vertex.
-            System.Diagnostics.Debug.Assert(g.GetEdge(start).EdgeId == v);
+            Debug.Assert(g.GetEdge(start).EdgeId == v);
             if (g.GetEdge(start).ShapeId == v) return start;
 
             // Otherwise search for the loop that contains "v".
@@ -540,8 +540,8 @@ public class S2WindingOperation
             for (; ; )
             {
                 EdgeId e1 = left_turn_map[e0];
-                System.Diagnostics.Debug.Assert(g.GetEdge(e0).EdgeId == v);
-                System.Diagnostics.Debug.Assert(g.GetEdge(e1).ShapeId == v);
+                Debug.Assert(g.GetEdge(e0).EdgeId == v);
+                Debug.Assert(g.GetEdge(e1).ShapeId == v);
 
                 // The first test below handles the case where there are only two edges
                 // incident to this vertex (i.e., the vertex angle is 360 degrees).
@@ -552,7 +552,7 @@ public class S2WindingOperation
                     return e0;
                 }
                 e0 = sibling_map[e1];
-                System.Diagnostics.Debug.Assert(e0 != start);
+                Debug.Assert(e0 != start);
             }
             throw new Exception("Shoul not be possible to get here");
         }

@@ -232,7 +232,7 @@ public static partial class S2ShapeUtil
             /// </summary>
             public bool VisitCrossings(RangeEnumerator ai, RangeEnumerator bi)
             {
-                System.Diagnostics.Debug.Assert(ai.Id.Contains(bi.Id));
+                Debug.Assert(ai.Id.Contains(bi.Id));
                 if (ai.Cell.NumEdges() == 0)
                 {
                     // Skip over the cells of B using binary search.
@@ -492,7 +492,7 @@ public static partial class S2ShapeUtil
                 return false;
             }
 
-            System.Diagnostics.Debug.Assert(index.NumShapeIds() == 1);
+            Debug.Assert(index.NumShapeIds() == 1);
             var shape = index.Shape(0);
 
             // Visit all crossing pairs except possibly for ones of the form (AB, BC),

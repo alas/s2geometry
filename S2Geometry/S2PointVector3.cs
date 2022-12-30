@@ -121,7 +121,7 @@ public readonly record struct S2PointS2Point
     public S2PointS2Point Inverse()
     {
         var det = Det();
-        System.Diagnostics.Debug.Assert(det != 0); // Can't inverse. Determinant = 0.
+        Debug.Assert(det != 0); // Can't inverse. Determinant = 0.
         return (1 / det) * ComatrixTransposed();
     }
 

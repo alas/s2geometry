@@ -76,7 +76,7 @@ public class S2ShapeNestingQuery
         {
             return new();
         }
-        System.Diagnostics.Debug.Assert(shape.Dimension() == 2);
+        Debug.Assert(shape.Dimension() == 2);
 
         int num_chains = shape.NumChains();
 
@@ -235,7 +235,7 @@ public class S2ShapeNestingQuery
         List<ChainRelation> relations = new(num_chains);
         for (int chain = 0; chain < num_chains; ++chain)
         {
-            System.Diagnostics.Debug.Assert(parents[chain].GetOnesCount() <= 1);
+            Debug.Assert(parents[chain].GetOnesCount() <= 1);
 
             int parent;
             if (parents[chain].FindFirstSetBit(out parent))
@@ -255,7 +255,7 @@ public class S2ShapeNestingQuery
                 ++depth;
                 current = relations[current].Parent;
             } while (current >= 0 && depth < num_chains);
-            System.Diagnostics.Debug.Assert(depth < num_chains);
+            Debug.Assert(depth < num_chains);
 
             if (depth != 0 && (depth % 2 == 0))
             {

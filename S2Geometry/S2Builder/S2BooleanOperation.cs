@@ -335,7 +335,7 @@ public class S2BooleanOperation
         bool result_empty = true;
         var op = new S2BooleanOperation(op_type, (res) => result_empty = res, options ?? new Options());
         op.Build(a, b, out S2Error error);
-        System.Diagnostics.Debug.Assert(error.IsOk());
+        Debug.Assert(error.IsOk());
         return result_empty;
     }
 
@@ -790,7 +790,7 @@ public class S2BooleanOperation
                 }
                 else
                 {
-                    System.Diagnostics.Debug.Assert(2 == a_dimension_);
+                    Debug.Assert(2 == a_dimension_);
                     return ProcessEdge2(a_id, a, it);
                 }
             }
@@ -814,7 +814,7 @@ public class S2BooleanOperation
                 source_id_map_[new SourceId(kSetReverseA)] = kSetReverseA;
                 foreach (var tmp in source_edge_crossings_)
                 {
-                    System.Diagnostics.Debug.Assert(source_id_map_.ContainsKey(tmp.Item2.Item1));
+                    Debug.Assert(source_id_map_.ContainsKey(tmp.Item2.Item1));
                     var it = source_id_map_[tmp.Item2.Item1];
                     input_crossings_.Add((tmp.Item1, new CrossingInputEdge(it, tmp.Item2.Item2)));
                 }
@@ -1005,7 +1005,7 @@ public class S2BooleanOperation
             // as soon as the result is known to be non-empty.
             private bool ProcessEdge0(Edge a_id, S2Shape.Edge a, CrossingIterator it)
             {
-                System.Diagnostics.Debug.Assert(a.V0 == a.V1);
+                Debug.Assert(a.V0 == a.V1);
                 // When a region is inverted, all points and polylines are discarded.
                 if (invert_a_ != invert_result_)
                 {
@@ -1091,7 +1091,7 @@ public class S2BooleanOperation
                 Inside ^= (r.a1_crossings & 1) != 0;
                 if (it.CrossingsComplete())
                 {
-                    System.Diagnostics.Debug.Assert(it.BIndex().MakeS2ContainsPointQuery().Contains(a.V1) == Inside ^ invert_b_);
+                    Debug.Assert(it.BIndex().MakeS2ContainsPointQuery().Contains(a.V1) == Inside ^ invert_b_);
                 }
 
                 // Special case to test whether the last vertex of a polyline should be
@@ -1164,7 +1164,7 @@ public class S2BooleanOperation
                 bool keep_degen_b = (polygon_model_ == PolygonModel.OPEN && invert_a_);
 
                 var r = ProcessEdgeCrossings(a_id, a, it);
-                System.Diagnostics.Debug.Assert(!r.matches_polyline);
+                Debug.Assert(!r.matches_polyline);
 
                 // If only one region is inverted, matching/sibling relations are reversed.
                 if (invert_a_ != invert_b_)
@@ -1207,7 +1207,7 @@ public class S2BooleanOperation
                             is_degenerate_hole_[r.polygon_match_id] = Inside;
                             is_degenerate_hole_[r.sibling_match_id] = Inside;
                         }
-                        System.Diagnostics.Debug.Assert(r.interior_crossings == 0);
+                        Debug.Assert(r.interior_crossings == 0);
                         Inside ^= (r.a1_crossings & 1) == 1;
                         return true;
                     }
@@ -1334,7 +1334,7 @@ public class S2BooleanOperation
                 // Verify that edge crossings are being counted correctly.
                 if (it.CrossingsComplete())
                 {
-                    System.Diagnostics.Debug.Assert(it.BIndex().MakeS2ContainsPointQuery().Contains(a.V1) == Inside ^ invert_b_);
+                    Debug.Assert(it.BIndex().MakeS2ContainsPointQuery().Contains(a.V1) == Inside ^ invert_b_);
                 }
 
                 return true;
@@ -1423,7 +1423,7 @@ public class S2BooleanOperation
                     }
                     else
                     {
-                        System.Diagnostics.Debug.Assert(2 == it.BDimension());
+                        Debug.Assert(2 == it.BDimension());
                         if (a.V0 == a.V1 || b.V0 == b.V1)
                         {
                             // There are no edge crossings since at least one edge is degenerate.
@@ -1547,9 +1547,9 @@ public class S2BooleanOperation
             // REQUIRES: "v" is an endpoint of it.b_edge()
             private bool PolylineEdgeContainsVertex(S2Point v, CrossingIterator it, int dimension)
             {
-                System.Diagnostics.Debug.Assert(1 == it.BDimension());
-                System.Diagnostics.Debug.Assert(it.BEdge().V0 == v || it.BEdge().V1 == v);
-                System.Diagnostics.Debug.Assert(dimension == 0 || dimension == 1);
+                Debug.Assert(1 == it.BDimension());
+                Debug.Assert(it.BEdge().V0 == v || it.BEdge().V1 == v);
+                Debug.Assert(dimension == 0 || dimension == 1);
 
                 // Closed polylines contain all their vertices.
                 if (polyline_model_ == PolylineModel.CLOSED) return true;
@@ -1820,7 +1820,7 @@ public class S2BooleanOperation
                     while (edge_id < chain_limit)
                     {
                         Edge a_id = new(a_shape_id, edge_id);
-                        System.Diagnostics.Debug.Assert(cp.Inside || next_crossing.AId() == a_id);
+                        Debug.Assert(cp.Inside || next_crossing.AId() == a_id);
                         if (!cp.ProcessEdge(a_id, next_crossing))
                         {
                             return false;
@@ -1931,7 +1931,7 @@ public class S2BooleanOperation
                 var anyDup = false;
                 for (var i = 1; i < tmp_crossings_.Count && !anyDup; i++)
                     anyDup = tmp_crossings_[i - 1] == tmp_crossings_[i];
-                System.Diagnostics.Debug.Assert(!anyDup);
+                Debug.Assert(!anyDup);
             }
             tmp_crossings_.Add(new IndexCrossing(kSentinel, kSentinel));
             var next_crossing = new CrossingIterator(query.Index, tmp_crossings_, false /*crossings_complete*/);
@@ -1983,7 +1983,7 @@ public class S2BooleanOperation
             if (region_id == index_crossings_first_region_id_) return true;
             if (index_crossings_first_region_id_ < 0)
             {
-                System.Diagnostics.Debug.Assert(region_id == 0);  // For efficiency, not correctness.
+                Debug.Assert(region_id == 0);  // For efficiency, not correctness.
                 // TODO(ericv): This would be more efficient if VisitCrossingEdgePairs()
                 // returned the sign (+1 or -1) of the interior crossing, i.e.
                 // "int interior_crossing_sign" rather than "bool is_interior".
@@ -2090,14 +2090,14 @@ public class S2BooleanOperation
                 if (num_edges != b_shape.NumEdges()) return false;
                 if (dimension == 0)
                 {
-                    System.Diagnostics.Debug.Assert(num_edges == num_chains);  // All chains are of length 1.
+                    Debug.Assert(num_edges == num_chains);  // All chains are of length 1.
                     continue;
                 }
                 for (int c = 0; c < num_chains; ++c)
                 {
                     var a_chain = a_shape.GetChain(c);
                     var b_chain = b_shape.GetChain(c);
-                    System.Diagnostics.Debug.Assert(a_chain.Start == b_chain.Start);
+                    Debug.Assert(a_chain.Start == b_chain.Start);
                     if (a_chain.Length != b_chain.Length) return false;
                 }
             }
@@ -2173,7 +2173,7 @@ public class S2BooleanOperation
             //     one of the two results is possible.  (This test is very fast.)  Note
             //     that snapping will never cause the result to cover an entire extra
             //     cube face because the maximum allowed snap radius is too small.
-            System.Diagnostics.Debug.Assert(SnapFunction.kMaxSnapRadius.GetDegrees() <= 70);
+            Debug.Assert(SnapFunction.kMaxSnapRadius.GetDegrees() <= 70);
             //
             //  2. We compute the area of each input geometry, and use this to bound the
             //     minimum and maximum area of the result.  If only one of {0, 4*Pi} is
@@ -2494,9 +2494,9 @@ public class GraphEdgeClipper
     // exactly one input edge.  (See also S2Builder.Graph.GetInputEdgeOrder.)
     private static List<int> GetInputEdgeChainOrder(Graph g, List<InputEdgeId> input_ids)
     {
-        System.Diagnostics.Debug.Assert(g.Options.EdgeType_ == EdgeType.DIRECTED);
-        System.Diagnostics.Debug.Assert(g.Options.DuplicateEdges_ == DuplicateEdges.KEEP);
-        System.Diagnostics.Debug.Assert(g.Options.SiblingPairs_ == SiblingPairs.KEEP);
+        Debug.Assert(g.Options.EdgeType_ == EdgeType.DIRECTED);
+        Debug.Assert(g.Options.DuplicateEdges_ == DuplicateEdges.KEEP);
+        Debug.Assert(g.Options.SiblingPairs_ == SiblingPairs.KEEP);
 
         // First, sort the edges so that the edges corresponding to each input edge
         // are consecutive.  (Each input edge was snapped to a chain of output
@@ -2544,7 +2544,7 @@ public class GraphEdgeClipper
                 if (++i == end) break;
                 var index = vmap.GetLowerBound(new(v, 0));
                 var output = vmap[index];
-                System.Diagnostics.Debug.Assert(v == output.Item1);
+                Debug.Assert(v == output.Item1);
                 next = output.Item2;
             }
             vmap.Clear();
@@ -2589,7 +2589,7 @@ public class GraphEdgeClipper
                 }
                 else
                 {
-                    System.Diagnostics.Debug.Assert(input_crossings_[next].Item2.InputId == S2BooleanOperation.kSetReverseA);
+                    Debug.Assert(input_crossings_[next].Item2.InputId == S2BooleanOperation.kSetReverseA);
                     reverse_a = input_crossings_[next].Item2.LeftToRight;
                 }
             }
@@ -2606,7 +2606,7 @@ public class GraphEdgeClipper
             if (!b_input_edges.Any())
             {
                 // In general the caller only passes edges that are part of the output
-                // (i.e., we could System.Diagnostics.Debug.Assert(inside) here).  The one exception is for
+                // (i.e., we could Debug.Assert(inside) here).  The one exception is for
                 // polyline/polygon operations, where the polygon edges are needed to
                 // compute the polyline output but are not emitted themselves.
                 if (inside)
@@ -2630,8 +2630,8 @@ public class GraphEdgeClipper
             }
             --i;
 #if s2builder_verbose
-            System.Diagnostics.Debug.Write($"input edge {a_input_id} (inside={inside}):");
-            foreach (var id in a_vertices) System.Diagnostics.Debug.Write(" " + id);
+            Debug.Write($"input edge {a_input_id} (inside={inside}):");
+            foreach (var id in a_vertices) Debug.Write(" " + id);
 #endif
             // Now for each B edge chain, decide which vertex of the A chain it
             // crosses, and keep track of the number of signed crossings at each A
@@ -2661,12 +2661,12 @@ public class GraphEdgeClipper
                 if (a_index >= 0)
                 {
 #if s2builder_verbose
-                    System.Diagnostics.Debug.Write($"{Environment.NewLine}  b input edge {b_input_edges[bi].InputId} (l2r={left_to_right}, crossing={a_vertices[a_index]})");
+                    Debug.Write($"{Environment.NewLine}  b input edge {b_input_edges[bi].InputId} (l2r={left_to_right}, crossing={a_vertices[a_index]})");
 
                     foreach (var x in b_edges[bi])
                     {
                         var e = g_.GetEdge(x.Id);
-                        System.Diagnostics.Debug.Write($" ({e.ShapeId}, {e.EdgeId})");
+                        Debug.Write($" ({e.ShapeId}, {e.EdgeId})");
                     }
 #endif
                     // Keep track of the number of signed crossings (see above).
@@ -2685,7 +2685,7 @@ public class GraphEdgeClipper
                 }
             }
 #if s2builder_verbose
-            System.Diagnostics.Debug.WriteLine("");
+            Debug.WriteLine("");
 #endif
 
             // Finally, we iterate through the A edge chain, keeping track of the
@@ -2715,7 +2715,7 @@ public class GraphEdgeClipper
                 multiplicity += a_num_crossings[ai];
             }
             // Multiplicities other than 0 or 1 can only occur in the edge interior.
-            System.Diagnostics.Debug.Assert(multiplicity == 0 || multiplicity == 1);
+            Debug.Assert(multiplicity == 0 || multiplicity == 1);
             inside = (multiplicity != 0);
 
             // Output any isolated polyline vertices.
@@ -2749,7 +2749,7 @@ public class GraphEdgeClipper
     {
         // Examine all of the edges incident to the given vertex of A.  If any edge
         // comes from a B input edge, append it to the appropriate vector.
-        System.Diagnostics.Debug.Assert(b_input_edges.Count == b_edges.Count);
+        Debug.Assert(b_input_edges.Count == b_edges.Count);
         foreach (var e in in_.EdgeIds(a[ai]))
         {
             int id = input_ids_[e];
@@ -2781,7 +2781,7 @@ public class GraphEdgeClipper
     {
         if (!a.Any() || !b.Any())
         {
-            System.Diagnostics.Debug.WriteLine(
+            Debug.WriteLine(
                 $"GraphEdgeClipper.GetCrossedVertexIndex called with {a.Count} vertex ids and {b.Count} crossing graph edges.");
             return -1;
         }
@@ -2929,7 +2929,7 @@ public class GraphEdgeClipper
         // Otherwise we choose the smallest shared Int32 in the acceptable range,
         // in order to ensure that both chains choose the same crossing vertex.
         int best = -1;
-        System.Diagnostics.Debug.Assert(lo <= hi);
+        Debug.Assert(lo <= hi);
         foreach (var e in b)
         {
             int ai = e.AIndex;
@@ -3063,10 +3063,10 @@ public class EdgeClippingLayer : Layer
         new GraphEdgeClipper(g, input_dimensions_, input_crossings_,
             new_edges, new_input_edge_ids).Run();
 #if s2builder_verbose
-        System.Diagnostics.Debug.WriteLine("Edges after clipping: ");
+        Debug.WriteLine("Edges after clipping: ");
         for (int i = 0; i < new_edges.Count; ++i)
         {
-            System.Diagnostics.Debug.WriteLine(
+            Debug.WriteLine(
                 $"  {new_input_edge_ids[i]} ({new_edges[i].ShapeId}, {new_edges[i].EdgeId})");
         }
 #endif
@@ -3089,7 +3089,7 @@ public class EdgeClippingLayer : Layer
         {
             // The Graph objects must be valid until the last Build() call completes,
             // so we store all of the graph data in arrays with 3 elements.
-            System.Diagnostics.Debug.Assert(3 == layers_.Count);
+            Debug.Assert(3 == layers_.Count);
             List<Edge>[] layer_edges = { new List<Edge>(), new List<Edge>(), new List<Edge>(), };
             List<EdgeId>[] layer_input_edge_ids = { new List<EdgeId>(), new List<EdgeId>(), new List<EdgeId>(), };
             // Separate the edges according to their dimension.

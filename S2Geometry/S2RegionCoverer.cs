@@ -41,7 +41,7 @@ public class S2RegionCoverer
     {
         Options_ = options;
 
-        System.Diagnostics.Debug.Assert(options.MinLevel <= options.MaxLevel);
+        Debug.Assert(options.MinLevel <= options.MaxLevel);
     }
 
     // Default constructor.  Options can be set using Options().
@@ -169,7 +169,7 @@ public class S2RegionCoverer
     public bool IsCanonical(List<S2CellId> covering)
     {
         // We check this on each call because of Options().
-        System.Diagnostics.Debug.Assert(Options_.MinLevel <= Options_.MaxLevel);
+        Debug.Assert(Options_.MinLevel <= Options_.MaxLevel);
 
         int min_level = Options_.MinLevel;
         int max_level = Options_.TrueMaxLevel;
@@ -229,7 +229,7 @@ public class S2RegionCoverer
     public void CanonicalizeCovering(List<S2CellId> covering)
     {
         // We check this on each call because of Options().
-        System.Diagnostics.Debug.Assert(Options_.MinLevel <= Options_.MaxLevel);
+        Debug.Assert(Options_.MinLevel <= Options_.MaxLevel);
 
         // Note that when the covering parameters have their default values, almost
         // all of the code in this function is skipped.
@@ -309,7 +309,7 @@ public class S2RegionCoverer
                 }
             }
         }
-        System.Diagnostics.Debug.Assert(IsCanonical(covering));
+        Debug.Assert(IsCanonical(covering));
     }
 
     public class Candidate
@@ -390,7 +390,7 @@ public class S2RegionCoverer
             DeleteCandidate(candidate, true);
             return;
         }
-        System.Diagnostics.Debug.Assert(candidate.NumChildren == 0);
+        Debug.Assert(candidate.NumChildren == 0);
 
         // Expand one level at a time until we hit min_level() to ensure that we
         // don't skip over it.
@@ -480,7 +480,7 @@ public class S2RegionCoverer
     private List<S2CellId> GetCoveringInternal(IS2Region region)
     {
         // We check this on each call because of Options().
-        System.Diagnostics.Debug.Assert(Options_.MinLevel <= Options_.MaxLevel);
+        Debug.Assert(Options_.MinLevel <= Options_.MaxLevel);
 
         // Strategy: Start with the 6 faces of the cube.  Discard any
         // that do not intersect the shape.  Then repeatedly choose the
@@ -496,7 +496,7 @@ public class S2RegionCoverer
         // children first), and then by the number of fully contained children
         // (fewest children first).
 
-        System.Diagnostics.Debug.Assert(!pq_.Any());
+        Debug.Assert(!pq_.Any());
         var result = new List<S2CellId>();
         region_ = region;
         //candidates_created_counter_ = 0;
@@ -561,7 +561,7 @@ public class S2RegionCoverer
             var result_copy = result.ToList();
             S2CellUnion.Denormalize(result_copy, Options_.MinLevel, Options_.LevelMod, result);
         }
-        System.Diagnostics.Debug.Assert(IsCanonical(result));
+        Debug.Assert(IsCanonical(result));
         return result;
     }
 
@@ -583,7 +583,7 @@ public class S2RegionCoverer
     // then normalized to ensure that no redundant cells are present.
     private void AdjustCellLevels(List<S2CellId> cells)
     {
-        System.Diagnostics.Debug.Assert(cells.IsSorted());
+        Debug.Assert(cells.IsSorted());
         if (Options_.LevelMod == 1) return;
 
         int output = 0;
@@ -621,7 +621,7 @@ public class S2RegionCoverer
     {
         var begin = covering.GetLowerBound(id.RangeMin());
         var end = covering.GetUpperBound(id.RangeMax());
-        System.Diagnostics.Debug.Assert(begin != end);
+        Debug.Assert(begin != end);
         covering.RemoveRange(begin + 1, end);
         covering[begin] = id;
     }
@@ -659,8 +659,8 @@ public class S2RegionCoverer
             get => _min_level;
             set
             {
-                System.Diagnostics.Debug.Assert(value >= 0);
-                System.Diagnostics.Debug.Assert(value <= S2.kMaxCellLevel);
+                Debug.Assert(value >= 0);
+                Debug.Assert(value <= S2.kMaxCellLevel);
                 // min_level() <= max_level() is checked by S2RegionCoverer.
                 _min_level = Math.Max(0, Math.Min(S2.kMaxCellLevel, value));
             }
@@ -674,8 +674,8 @@ public class S2RegionCoverer
             get => max_level_;
             set
             {
-                System.Diagnostics.Debug.Assert(value >= 0);
-                System.Diagnostics.Debug.Assert(value <= S2.kMaxCellLevel);
+                Debug.Assert(value >= 0);
+                Debug.Assert(value <= S2.kMaxCellLevel);
                 // min_level() <= max_level() is checked by S2RegionCoverer.
                 max_level_ = Math.Max(0, Math.Min(S2.kMaxCellLevel, value));
             }
@@ -704,8 +704,8 @@ public class S2RegionCoverer
             get => level_mod_;
             set
             {
-                System.Diagnostics.Debug.Assert(value >= 1);
-                System.Diagnostics.Debug.Assert(value <= 3);
+                Debug.Assert(value >= 1);
+                Debug.Assert(value <= 3);
                 level_mod_ = Math.Max(1, Math.Min(3, value));
             }
         }

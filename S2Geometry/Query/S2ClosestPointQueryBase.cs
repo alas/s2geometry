@@ -150,7 +150,7 @@ public class S2ClosestPointQueryBase<Distance, Data> where Distance : IEquatable
             }
             // The priority queue returns the largest elements first.
             results.Reverse();
-            System.Diagnostics.Debug.Assert(results.IsSorted());
+            Debug.Assert(results.IsSorted());
         }
     }
 
@@ -161,7 +161,7 @@ public class S2ClosestPointQueryBase<Distance, Data> where Distance : IEquatable
     // REQUIRES: options.max_results() == 1
     public Result FindClosestPoint(S2DistanceTarget<Distance> target, Options options)
     {
-        System.Diagnostics.Debug.Assert(options.MaxResults == 1);
+        Debug.Assert(options.MaxResults == 1);
         FindClosestPointsInternal(target, options);
         return result_singleton_;
     }
@@ -173,9 +173,9 @@ public class S2ClosestPointQueryBase<Distance, Data> where Distance : IEquatable
 
         distance_limit_ = options.MaxDistance;
         result_singleton_ = new Result();
-        System.Diagnostics.Debug.Assert(!result_vector_.Any());
-        System.Diagnostics.Debug.Assert(!result_set_.Any());
-        System.Diagnostics.Debug.Assert(target.MaxBruteForceIndexSize >= 0);
+        Debug.Assert(!result_vector_.Any());
+        Debug.Assert(!result_set_.Any());
+        Debug.Assert(target.MaxBruteForceIndexSize >= 0);
         if (Equals(distance_limit_, Distance.Zero)) return;
 
         // If max_error() > 0 and the target takes advantage of this, then we may
@@ -264,7 +264,7 @@ public class S2ClosestPointQueryBase<Distance, Data> where Distance : IEquatable
     }
     private void InitQueue()
     {
-        System.Diagnostics.Debug.Assert(!queue_.Any());
+        Debug.Assert(!queue_.Any());
 
         // Optimization: rather than starting with the entire index, see if we can
         // limit the search region to a small disc.  Then we can find a covering for
@@ -392,7 +392,7 @@ public class S2ClosestPointQueryBase<Distance, Data> where Distance : IEquatable
     {
         // Add the lowest common ancestor of the given range.
         int level = first_id.CommonAncestorLevel(last_id);
-        System.Diagnostics.Debug.Assert(level >= 0);
+        Debug.Assert(level >= 0);
         index_covering_.Add(first_id.Parent(level));
     }
     private void MaybeAddResult(S2Point point, Data data)
@@ -509,7 +509,7 @@ public class S2ClosestPointQueryBase<Distance, Data> where Distance : IEquatable
             get => _maxResults;
             set
             {
-                System.Diagnostics.Debug.Assert(value >= 1);
+                Debug.Assert(value >= 1);
                 _maxResults = value;
             }
         }

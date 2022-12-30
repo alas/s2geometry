@@ -46,7 +46,7 @@ public static class BitsUtils
                 log += shift;
             }
         }
-        //System.Diagnostics.Debug.Assert(value == 1);
+        //Assert(value == 1);
         return log;
     }
 

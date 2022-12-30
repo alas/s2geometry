@@ -122,7 +122,7 @@ public class S2PolylineLayer : Layer
 
     private void Init(S2Polyline polyline, LabelSet? label_set_ids, IdSetLexicon? label_set_lexicon, Options options)
     {
-        System.Diagnostics.Debug.Assert((label_set_ids is null) == (label_set_lexicon is null));
+        Debug.Assert((label_set_ids is null) == (label_set_lexicon is null));
         polyline_ = polyline;
         label_set_ids_ = label_set_ids;
         label_set_lexicon_ = label_set_lexicon;

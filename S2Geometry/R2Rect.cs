@@ -44,7 +44,7 @@ public readonly record struct R2Rect
     {
         X = x;
         Y = y;
-        System.Diagnostics.Debug.Assert(IsValid());
+        Debug.Assert(IsValid());
     }
 
     #endregion

@@ -21,7 +21,7 @@ public static class S2TextFormat
     public static List<S2LatLng> ParseLatLngsOrDie(string str)
     {
         var latlngs = new List<S2LatLng>();
-        System.Diagnostics.Debug.Assert(ParseLatLngs(str, latlngs));
+        Debug.Assert(ParseLatLngs(str, latlngs));
         return latlngs;
     }
 
@@ -49,7 +49,7 @@ public static class S2TextFormat
     public static List<S2Point> ParsePointsOrDie(string str)
     {
         var vertices = new List<S2Point>();
-        System.Diagnostics.Debug.Assert(ParsePoints(str, vertices));
+        Debug.Assert(ParsePoints(str, vertices));
         return vertices;
     }
 
@@ -67,7 +67,7 @@ public static class S2TextFormat
 
     public static S2Point MakePointOrDie(string str)
     {
-        System.Diagnostics.Debug.Assert(MakePoint(str, out var point));
+        Debug.Assert(MakePoint(str, out var point));
         return point;
     }
 
@@ -98,7 +98,7 @@ public static class S2TextFormat
     // Given a string in the same format as ParseLatLngs, returns a single S2LatLng.
     public static S2LatLng MakeLatLngOrDie(string str)
     {
-        System.Diagnostics.Debug.Assert(MakeLatLng(str, out var latlng));
+        Debug.Assert(MakeLatLng(str, out var latlng));
         return latlng;
     }
 
@@ -106,7 +106,7 @@ public static class S2TextFormat
     // bounding S2LatLngRect that contains the coordinates.
     public static S2LatLngRect? MakeLatLngRectOrDie(string str)
     {
-        System.Diagnostics.Debug.Assert(MakeLatLngRect(str, out var rect));
+        Debug.Assert(MakeLatLngRect(str, out var rect));
         return rect;
     }
 
@@ -145,7 +145,7 @@ public static class S2TextFormat
     // This function is a wrapper for S2CellId.FromDebugString().
     public static S2CellId MakeCellIdOrDie(string str)
     {
-        System.Diagnostics.Debug.Assert(MakeCellId(str, out var cell_id));
+        Debug.Assert(MakeCellId(str, out var cell_id));
         return cell_id;
     }
 
@@ -197,7 +197,7 @@ public static class S2TextFormat
     // cells by their parent cell.)
     public static S2CellUnion MakeCellUnionOrDie(string str)
     {
-        System.Diagnostics.Debug.Assert(MakeCellUnion(str, out var cell_union));
+        Debug.Assert(MakeCellUnion(str, out var cell_union));
         return cell_union;
     }
 
@@ -207,7 +207,7 @@ public static class S2TextFormat
     // The strings "empty" or "full" create an empty or full loop respectively.
     public static S2Loop MakeLoopOrDie(string str, S2Debug override_ = S2Debug.ALLOW)
     {
-        System.Diagnostics.Debug.Assert(MakeLoop(str, out var loop, override_));
+        Debug.Assert(MakeLoop(str, out var loop, override_));
         return loop!;
     }
 
@@ -237,7 +237,7 @@ public static class S2TextFormat
     // Similar to MakeLoop(), but returns an S2Polyline rather than an S2Loop.
     public static S2Polyline MakePolylineOrDie(string str, S2Debug override_ = S2Debug.ALLOW)
     {
-        System.Diagnostics.Debug.Assert(MakePolyline(str, out var polyline, override_));
+        Debug.Assert(MakePolyline(str, out var polyline, override_));
         return polyline!.Value;
     }
 
@@ -255,7 +255,7 @@ public static class S2TextFormat
     // Like MakePolyline, but returns an S2LaxPolylineShape instead.
     public static S2LaxPolylineShape MakeLaxPolylineOrDie(string str)
     {
-        System.Diagnostics.Debug.Assert(MakeLaxPolyline(str, out var lax_polyline));
+        Debug.Assert(MakeLaxPolyline(str, out var lax_polyline));
         return lax_polyline;
     }
 
@@ -303,7 +303,7 @@ public static class S2TextFormat
     //     "full"   // the full polygon (consisting of one full loop).
     public static S2Polygon MakePolygonOrDie(string str)
     {
-        System.Diagnostics.Debug.Assert(MakePolygon(str, out var polygon));
+        Debug.Assert(MakePolygon(str, out var polygon));
         return polygon;
     }
 
@@ -318,7 +318,7 @@ public static class S2TextFormat
     // gives you exactly what you asked for).
     public static S2Polygon MakeVerbatimPolygonOrDie(string str)
     {
-        System.Diagnostics.Debug.Assert(MakeVerbatimPolygon(str, out var polygon));
+        Debug.Assert(MakeVerbatimPolygon(str, out var polygon));
         return polygon;
     }
 
@@ -335,7 +335,7 @@ public static class S2TextFormat
     // denotes the full polygon and "" or "empty" denote the empty polygon.
     public static S2LaxPolygonShape MakeLaxPolygonOrDie(string str)
     {
-        System.Diagnostics.Debug.Assert(MakeLaxPolygon(str, out var lax_polygon));
+        Debug.Assert(MakeLaxPolygon(str, out var lax_polygon));
         return lax_polygon;
     }
 
@@ -389,7 +389,7 @@ public static class S2TextFormat
     //         as the string "empty" rather than as the empty string ("").
     public static MutableS2ShapeIndex MakeIndexOrDie(string str)
     {
-        System.Diagnostics.Debug.Assert(MakeIndex(str, out var index));
+        Debug.Assert(MakeIndex(str, out var index));
         return index;
     }
 
@@ -400,7 +400,7 @@ public static class S2TextFormat
         index = null;
         var result = new MutableS2ShapeIndex();
         var strs = str.Split('#');
-        System.Diagnostics.Debug.Assert(3 == strs.Length);
+        Debug.Assert(3 == strs.Length);
 
         var points = new List<S2Point>();
         foreach (var point_str in SplitString(strs[0], '|'))
@@ -577,7 +577,7 @@ public static class S2TextFormat
                     var chain = shape.GetChain(i);
                     if (chain.Length == 0)
                     {
-                        System.Diagnostics.Debug.Assert(dim == 2);
+                        Debug.Assert(dim == 2);
                         sb.Append("full");
                     }
                     else

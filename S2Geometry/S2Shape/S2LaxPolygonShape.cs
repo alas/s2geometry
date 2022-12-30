@@ -168,7 +168,7 @@ public class S2LaxPolygonShape : S2Shape, IInitEncoder<S2LaxPolygonShape>
     // Returns the number of vertices in the given loop.
     public int NumLoopVertices(int i)
     {
-        System.Diagnostics.Debug.Assert(i < NumLoops);
+        Debug.Assert(i < NumLoops);
         if (NumLoops == 1)
         {
             return NumVertices;
@@ -186,8 +186,8 @@ public class S2LaxPolygonShape : S2Shape, IInitEncoder<S2LaxPolygonShape>
     // REQUIRES: 0 <= j < num_loop_vertices(i)
     public S2Point LoopVertex(int i, int j)
     {
-        System.Diagnostics.Debug.Assert(i < NumLoops);
-        System.Diagnostics.Debug.Assert(j < NumLoopVertices(i));
+        Debug.Assert(i < NumLoops);
+        Debug.Assert(j < NumLoopVertices(i));
         if (i == 0)
         {
             return vertices_.Skip(j).FirstOrDefault();
@@ -203,8 +203,8 @@ public class S2LaxPolygonShape : S2Shape, IInitEncoder<S2LaxPolygonShape>
     // REQUIRES: 0 <= j < num_loop_vertices(i)
     public IEnumerable<S2Point> LoopVertices(int i, int j, int n)
     {
-        System.Diagnostics.Debug.Assert(i < NumLoops);
-        System.Diagnostics.Debug.Assert(j < NumLoopVertices(i));
+        Debug.Assert(i < NumLoops);
+        Debug.Assert(j < NumLoopVertices(i));
         if (NumLoops == 1)
         {
             return vertices_.Skip(j);
@@ -305,7 +305,7 @@ public class S2LaxPolygonShape : S2Shape, IInitEncoder<S2LaxPolygonShape>
     public sealed override int NumChains() => NumLoops;
     public sealed override Chain GetChain(int i)
     {
-        System.Diagnostics.Debug.Assert(i < NumLoops);
+        Debug.Assert(i < NumLoops);
         if (NumLoops == 1)
         {
             return new Chain(0, NumVertices);
@@ -319,8 +319,8 @@ public class S2LaxPolygonShape : S2Shape, IInitEncoder<S2LaxPolygonShape>
     public sealed override Edge ChainEdge(int i, int j) => ChainEdgeInternal(i, j);
     private Edge ChainEdgeInternal(int i, int j)
     {
-        System.Diagnostics.Debug.Assert(i < NumLoops);
-        System.Diagnostics.Debug.Assert(j < NumLoopVertices(i));
+        Debug.Assert(i < NumLoops);
+        Debug.Assert(j < NumLoopVertices(i));
         int n = NumLoopVertices(i);
         int k = (j + 1 == n) ? 0 : j + 1;
         if (NumLoops == 1)
@@ -336,7 +336,7 @@ public class S2LaxPolygonShape : S2Shape, IInitEncoder<S2LaxPolygonShape>
     public sealed override ChainPosition GetChainPosition(int e) => GetChainPositionInternal(e);
     private ChainPosition GetChainPositionInternal(int e)
     {
-        System.Diagnostics.Debug.Assert(e < NumEdges());
+        Debug.Assert(e < NumEdges());
         if (NumLoops == 1)
         {
             return new ChainPosition(0, e);
@@ -459,7 +459,7 @@ public class EncodedS2LaxPolygonShape : S2Shape, IInitEncoder<EncodedS2LaxPolygo
     }
     public int NumLoopVertices(int i)
     {
-        System.Diagnostics.Debug.Assert(i < NumLoops);
+        Debug.Assert(i < NumLoops);
         if (NumLoops == 1)
         {
             return vertices_.Count();
@@ -471,8 +471,8 @@ public class EncodedS2LaxPolygonShape : S2Shape, IInitEncoder<EncodedS2LaxPolygo
     }
     public S2Point LoopVertex(int i, int j)
     {
-        System.Diagnostics.Debug.Assert(i < NumLoops);
-        System.Diagnostics.Debug.Assert(j < NumLoopVertices(i));
+        Debug.Assert(i < NumLoops);
+        Debug.Assert(j < NumLoopVertices(i));
         if (NumLoops == 1)
         {
             return vertices_[j];
@@ -491,7 +491,7 @@ public class EncodedS2LaxPolygonShape : S2Shape, IInitEncoder<EncodedS2LaxPolygo
 
     public sealed override Edge GetEdge(int e)
     {
-        System.Diagnostics.Debug.Assert(e < NumEdges());
+        Debug.Assert(e < NumEdges());
         int e1 = e + 1;
         if (NumLoops == 1)
         {
@@ -514,7 +514,7 @@ public class EncodedS2LaxPolygonShape : S2Shape, IInitEncoder<EncodedS2LaxPolygo
     public sealed override int NumChains() { return NumLoops; }
     public sealed override Chain GetChain(int i)
     {
-        System.Diagnostics.Debug.Assert(i < NumLoops);
+        Debug.Assert(i < NumLoops);
         if (NumLoops == 1)
         {
             return new Chain(0, vertices_.Count());
@@ -528,8 +528,8 @@ public class EncodedS2LaxPolygonShape : S2Shape, IInitEncoder<EncodedS2LaxPolygo
     public sealed override Edge ChainEdge(int i, int j) => ChainEdgeInternal(i, j);
     private Edge ChainEdgeInternal(int i, int j)
     {
-        System.Diagnostics.Debug.Assert(i < NumLoops);
-        System.Diagnostics.Debug.Assert(j < NumLoopVertices(i));
+        Debug.Assert(i < NumLoops);
+        Debug.Assert(j < NumLoopVertices(i));
         int n = NumLoopVertices(i);
         int k = (j + 1 == n) ? 0 : j + 1;
         if (NumLoops == 1)
@@ -545,7 +545,7 @@ public class EncodedS2LaxPolygonShape : S2Shape, IInitEncoder<EncodedS2LaxPolygo
     public sealed override ChainPosition GetChainPosition(int e) => GetChainPositionInternal(e);
     private ChainPosition GetChainPositionInternal(int e)
     {
-        System.Diagnostics.Debug.Assert(e < NumEdges());
+        Debug.Assert(e < NumEdges());
         if (NumLoops == 1)
         {
             return new ChainPosition(0, e);

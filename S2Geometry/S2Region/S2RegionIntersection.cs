@@ -27,7 +27,7 @@ public sealed record class S2RegionIntersection : IS2Region<S2RegionIntersection
     // Initialize region by taking ownership of the given regions.
     public void Init(IS2Region[] regions)
     {
-        System.Diagnostics.Debug.Assert(!Regions.Any());
+        Debug.Assert(!Regions.Any());
         Regions = regions;
     }
 

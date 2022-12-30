@@ -23,7 +23,7 @@ public sealed class GraphShape : S2Shape
     public override Chain GetChain(int i) => new Chain(i, 1);
     public override Edge ChainEdge(int i, int j)
     {
-        System.Diagnostics.Debug.Assert(j == 0);
+        Debug.Assert(j == 0);
         return GetEdge(i);
     }
     public override ChainPosition GetChainPosition(int e) => new ChainPosition(e, 0);

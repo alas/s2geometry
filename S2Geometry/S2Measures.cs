@@ -55,9 +55,9 @@ public static partial class S2
     // The area is always positive.
     public static double Area(S2Point a, S2Point b, S2Point c)
     {
-        System.Diagnostics.Debug.Assert(a.IsUnitLength());
-        System.Diagnostics.Debug.Assert(b.IsUnitLength());
-        System.Diagnostics.Debug.Assert(c.IsUnitLength());
+        Debug.Assert(a.IsUnitLength());
+        Debug.Assert(b.IsUnitLength());
+        Debug.Assert(c.IsUnitLength());
         // This method is based on l'Huilier's theorem,
         //
         //   tan(E/4) = Math.Sqrt(tan(s/2) tan((s-a)/2) tan((s-b)/2) tan((s-c)/2))

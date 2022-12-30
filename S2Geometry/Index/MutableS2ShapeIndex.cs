@@ -243,7 +243,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
     // just been called).  May be called before or after set_memory_tracker().
     public void Init()
     {
-        System.Diagnostics.Debug.Assert(!shapes_.Any());
+        Debug.Assert(!shapes_.Any());
         // Memory tracking is not affected by this method.
     }
 
@@ -518,7 +518,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         // client is free to delete "shape" once this call is finished.
 
         var shape = shapes_[shape_id];
-        System.Diagnostics.Debug.Assert(shape is not null);
+        Debug.Assert(shape is not null);
         if (shape_id < pending_additions_begin_)
         {
             var num_edges = shape.NumEdges();
@@ -707,7 +707,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
             var batch = batches[i];
             if (mem_tracker_.IsActive())
             {
-                System.Diagnostics.Debug.Assert(mem_tracker_.ClientUsageBytes == SpaceUsed());  // Invariant.
+                Debug.Assert(mem_tracker_.ClientUsageBytes == SpaceUsed());  // Invariant.
             }
             Array6<List<FaceEdge>> all_edges = new (() => new());
 
@@ -1096,7 +1096,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
                 tracker.DrawTo(pcell.GetCenter());
                 var clipped = cell.Clipped(n - 1);
                 int num_edges = clipped.NumEdges;
-                System.Diagnostics.Debug.Assert(num_edges > 0);
+                Debug.Assert(num_edges > 0);
                 for (int i = 0; i < num_edges; ++i)
                 {
                     tmp_edges.Add(shape.GetEdge(clipped.Edge(i)));
@@ -1286,7 +1286,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
     private void UpdateEdges(S2PaddedCell pcell, List<ClippedEdge> edges, InteriorTracker tracker, EdgeAllocator alloc, bool disjoint_from_index)
     {
         // Cases where an index cell is not needed should be detected before this.
-        System.Diagnostics.Debug.Assert(edges.Any() || tracker.ShapeIds().Any());
+        Debug.Assert(edges.Any() || tracker.ShapeIds().Any());
 
         // This function is recursive with a maximum recursion depth of 30
         // (S2Constants.kMaxCellLevel).  Note that using an explicit stack does not seem
@@ -1332,7 +1332,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
             }
             else
             {
-                System.Diagnostics.Debug.Assert(CellRelation.SUBDIVIDED == r);
+                Debug.Assert(CellRelation.SUBDIVIDED == r);
             }
         }
 
@@ -1434,7 +1434,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
     // RestoreStateBefore() when processing of this cell is finished.
     private void AbsorbIndexCell(S2PaddedCell pcell, S2ShapeIndexIdCell item, List<ClippedEdge> edges, InteriorTracker tracker, EdgeAllocator alloc)
     {
-        System.Diagnostics.Debug.Assert(pcell.Id == item.Item1);
+        Debug.Assert(pcell.Id == item.Item1);
 
         // When we absorb a cell, we erase all the edges that are being removed.
         // However when we are finished with this cell, we want to restore the state
@@ -1860,8 +1860,8 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         var y = new R1Interval(d);
 
         var res = new ClippedEdge(edge.FaceEdge, new R2Rect(x, y));
-        System.Diagnostics.Debug.Assert(!res.Bound.IsEmpty());
-        System.Diagnostics.Debug.Assert(edge.Bound.Contains(res.Bound));
+        Debug.Assert(!res.Bound.IsEmpty());
+        Debug.Assert(edge.Bound.Contains(res.Bound));
         alloc.AddClippedEdge(res);
         return res;
     }
@@ -2122,7 +2122,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         // separately.
         public void SaveAndClearStateBefore(Int32 limit_shape_id)
         {
-            System.Diagnostics.Debug.Assert(!saved_ids_.Any());
+            Debug.Assert(!saved_ids_.Any());
             var limit = LowerBound(limit_shape_id);
             saved_ids_.AddRange(shape_ids_.Take(limit));
             shape_ids_.RemoveRange(0, limit);
@@ -2411,7 +2411,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
                 num_edges_left -= batch_size;
                 ideal_batch_size *= kTmpSpaceMultiplier;
             }
-            System.Diagnostics.Debug.Assert(batch_sizes.Count <= kMaxBatches);
+            Debug.Assert(batch_sizes.Count <= kMaxBatches);
             return batch_sizes.ToList();
         }
 

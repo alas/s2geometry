@@ -233,8 +233,8 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
     // REQUIRES: 0 <= i < 2 * NumVertices
     public S2Point Vertex(int i)
     {
-        System.Diagnostics.Debug.Assert(i >= 0);
-        System.Diagnostics.Debug.Assert(i < (2 * NumVertices));
+        Debug.Assert(i >= 0);
+        Debug.Assert(i < (2 * NumVertices));
         int j = i - NumVertices;
         return Vertices[j < 0 ? i : j];
     }
@@ -255,8 +255,8 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
     // REQUIRES: 0 <= i < 2 * NumVertices
     public S2Point OrientedVertex(int i)
     {
-        System.Diagnostics.Debug.Assert(i >= 0);
-        System.Diagnostics.Debug.Assert(i < 2 * NumVertices);
+        Debug.Assert(i >= 0);
+        Debug.Assert(i < 2 * NumVertices);
         int j = i - NumVertices;
         if (j < 0) j = i;
         if (IsHole()) j = NumVertices - 1 - j;
@@ -301,7 +301,7 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
     public void Normalize()
     {
         if (!IsNormalized()) Invert();
-        System.Diagnostics.Debug.Assert(IsNormalized());
+        Debug.Assert(IsNormalized());
     }
 
     // Reverse the order of the loop vertices, effectively complementing the
@@ -760,8 +760,8 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
     // REQUIRES: if b.IsFull, then !b.is_hole().
     public int CompareBoundary(S2Loop b)
     {
-        System.Diagnostics.Debug.Assert(!IsEmpty() && !b.IsEmpty());
-        System.Diagnostics.Debug.Assert(!b.IsFull() || !b.IsHole());
+        Debug.Assert(!IsEmpty() && !b.IsEmpty());
+        Debug.Assert(!b.IsFull() || !b.IsHole());
 
         // The bounds must intersect for containment or crossing.
         if (!_bound.Intersects(b._bound)) return -1;
@@ -794,8 +794,8 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
     // REQUIRES: if b.IsFull, then reverse_b == false.
     public bool ContainsNonCrossingBoundary(S2Loop b, bool reverse_b)
     {
-        System.Diagnostics.Debug.Assert(!IsEmpty() && !b.IsEmpty());
-        System.Diagnostics.Debug.Assert(!b.IsFull() || !reverse_b);
+        Debug.Assert(!IsEmpty() && !b.IsEmpty());
+        Debug.Assert(!b.IsFull() || !reverse_b);
 
         // The bounds must intersect for containment.
         if (!_bound.Intersects(b._bound)) return false;
@@ -921,7 +921,7 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
         if (S2DebugOverride == S2Debug.ALLOW)
         {
             // Note that s2debug is false in optimized builds (by default).
-            System.Diagnostics.Debug.Assert(IsValid());
+            Debug.Assert(IsValid());
         }
 #endif
     }
@@ -951,7 +951,7 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
     {
         // subregion_bound_ must be at least as large as bound_.  (This is an
         // internal consistency check rather than a test of client data.)
-        System.Diagnostics.Debug.Assert(_subregionBound.Contains(_bound));
+        Debug.Assert(_subregionBound.Contains(_bound));
 
         // All vertices must be unit length.  (Unfortunately this check happens too
         // late in debug mode, because S2Loop construction calls S2Pred.Sign which
@@ -1039,7 +1039,7 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
         {
             (_bound as IEncoder).Encode(encoder);
         }
-        System.Diagnostics.Debug.Assert(encoder.Avail() >= 0);
+        Debug.Assert(encoder.Avail() >= 0);
     }
 
     // Decode a loop encoded with EncodeCompressed. The parameters must be the
@@ -1171,7 +1171,7 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
     // [This condition is true whenever it.Locate(target) returns INDEXED.]
     private bool BoundaryApproxIntersects(S2ShapeIndexIdCell icell, S2Cell target)
     {
-        System.Diagnostics.Debug.Assert(icell.Item1.Contains(target.Id));
+        Debug.Assert(icell.Item1.Contains(target.Id));
         S2ClippedShape a_clipped = icell.Item2!.Clipped(0);
         int a_num_edges = a_clipped.NumEdges;
 
@@ -1507,7 +1507,7 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
         encoder.PutPoints(Vertices);
         encoder.Put8((byte)(ContainsOrigin ? 1 : 0));
         encoder.Put32(Depth);
-        System.Diagnostics.Debug.Assert(encoder.Avail() >= 0);
+        Debug.Assert(encoder.Avail() >= 0);
 
         _bound.Encode(encoder, hint);
     }
@@ -1707,13 +1707,13 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
 
         public override Chain GetChain(int i)
         {
-            System.Diagnostics.Debug.Assert(i == 0);
+            Debug.Assert(i == 0);
             return new Chain(0, NumEdges());
         }
 
         public override Edge ChainEdge(int i, int j)
         {
-            System.Diagnostics.Debug.Assert(i == 0);
+            Debug.Assert(i == 0);
             return new Edge(Loop.Vertex(j), Loop.Vertex(j + 1));
         }
 
@@ -1817,7 +1817,7 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
         // Advances both iterators past ai.id().
         public bool HasCrossingRelation(RangeEnumerator ai, RangeEnumerator bi)
         {
-            System.Diagnostics.Debug.Assert(ai.Id.Contains(bi.Id));
+            Debug.Assert(ai.Id.Contains(bi.Id));
             if (ai.NumEdges() == 0)
             {
                 if (ai.ContainsCenter() == (ACrossingTarget != 0))
@@ -1866,7 +1866,7 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
         // within ai.id().  Advances "bi" (only) past ai.id().
         private bool HasCrossing(RangeEnumerator ai, RangeEnumerator bi)
         {
-            System.Diagnostics.Debug.Assert(ai.Id.Contains(bi.Id));
+            Debug.Assert(ai.Id.Contains(bi.Id));
             // If ai.id() intersects many edges of B, then it is faster to use
             // S2CrossingEdgeQuery to narrow down the candidates.  But if it intersects
             // only a few edges, it is faster to check all the crossings directly.

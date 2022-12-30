@@ -10,7 +10,7 @@
 //   }
 //   S2CrossingEdgeQuery query(out index);
 //   foreach (var& edge in query.GetCrossingEdges(a, b, CrossingType.ALL)) {
-//     System.Diagnostics.Debug.Assert(S2EdgeCrossings.CrossingSign(a0, a1, edge.v0(), edge.v1()) >= 0);
+//     Debug.Assert(S2EdgeCrossings.CrossingSign(a0, a1, edge.v0(), edge.v1()) >= 0);
 //   }
 // }
 //
@@ -267,7 +267,7 @@ public class S2CrossingEdgeQuery
             {
                 var icell = Index.GetIndexCell(pos);
                 // edge_root is an index cell or is contained by an index cell (case 1).
-                System.Diagnostics.Debug.Assert(icell.Value.Item1.Contains(edge_root));
+                Debug.Assert(icell.Value.Item1.Contains(edge_root));
                 if (!visitor(icell.Value.Item2)) return false;
             }
             else if (relation == S2ShapeIndex.CellRelation.SUBDIVIDED)
@@ -294,7 +294,7 @@ public class S2CrossingEdgeQuery
     //    this method is called using different query edges with the same root.]
     public bool VisitCells(S2Point a0, S2Point a1, S2PaddedCell root, CellVisitor visitor)
     {
-        System.Diagnostics.Debug.Assert(root.Padding == 0);
+        Debug.Assert(root.Padding == 0);
         visitor_ = visitor;
         // We use padding when clipping to ensure that the result is non-empty
         // whenever the edge (a0, a1) intersects the given root cell.
@@ -335,7 +335,7 @@ public class S2CrossingEdgeQuery
     {
         // This code uses S2PaddedCell because it has the methods we need for
         // efficient splitting, however the actual padding is required to be zero.
-        System.Diagnostics.Debug.Assert(pcell.Padding == 0);
+        Debug.Assert(pcell.Padding == 0);
 
         var (pos, found) = Index.SeekCell(pcell.Id.RangeMin());
         KeyData<S2CellId, S2ShapeIndexCell>? icell = null;
@@ -452,16 +452,16 @@ public class S2CrossingEdgeQuery
         arr1[1 - u_end] = u;
         arr2[1 - v_end] = v;
         child_bounds[0] = new R2Rect(new R1Interval(arr1), new R1Interval(arr2));
-        System.Diagnostics.Debug.Assert(!child_bounds[0].IsEmpty());
-        System.Diagnostics.Debug.Assert(edge_bound.Contains(child_bounds[0]));
+        Debug.Assert(!child_bounds[0].IsEmpty());
+        Debug.Assert(edge_bound.Contains(child_bounds[0]));
 
         arr1 = new double[2] { edge_bound[0][0], edge_bound[0][1] };
         arr2 = new double[2] { edge_bound[1][0], edge_bound[1][1] };
         arr1[u_end] = u;
         arr2[v_end] = v;
         child_bounds[1] = new R2Rect(new R1Interval(arr1), new R1Interval(arr2));
-        System.Diagnostics.Debug.Assert(!child_bounds[1].IsEmpty());
-        System.Diagnostics.Debug.Assert(edge_bound.Contains(child_bounds[1]));
+        Debug.Assert(!child_bounds[1].IsEmpty());
+        Debug.Assert(edge_bound.Contains(child_bounds[1]));
     }
 
     //////////// Temporary storage used while processing a query ///////////

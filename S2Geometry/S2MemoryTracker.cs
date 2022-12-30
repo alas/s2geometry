@@ -282,7 +282,7 @@ public class S2MemoryTracker
             // Note that reserve() allocates new storage before freeing the old storage.
             if (!Tally(new_capacity * SizeHelper.SizeOf(typeof(T)))) return false;
             v.Capacity = new_capacity;
-            System.Diagnostics.Debug.Assert(v.Capacity == new_capacity);
+            Debug.Assert(v.Capacity == new_capacity);
             return Tally(-old_capacity * SizeHelper.SizeOf(typeof(T)));
         }
 
