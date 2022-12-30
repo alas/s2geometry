@@ -82,8 +82,8 @@ public static partial class S2ShapeUtil
 
         #region IEquatable
 
-        public bool Equals(EdgeEnumerator other) => index_ == other.index_ && shape_id_ == other.shape_id_ && edge_id_ == other.edge_id_;
-        public override bool Equals(object obj) => obj is EdgeEnumerator ee && Equals(ee);
+        public override bool Equals(object? obj) => obj is EdgeEnumerator ee && Equals(ee);
+        public bool Equals(EdgeEnumerator? other) => other is not null && index_ == other.index_ && shape_id_ == other.shape_id_ && edge_id_ == other.edge_id_;
         public override int GetHashCode() => HashCode.Combine(index_, shape_id_, edge_id_);
         public static bool operator ==(EdgeEnumerator x, EdgeEnumerator y) => Equals(x, y);
         public static bool operator !=(EdgeEnumerator x, EdgeEnumerator y) => !Equals(x, y);

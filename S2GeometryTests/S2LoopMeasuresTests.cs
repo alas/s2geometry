@@ -346,8 +346,8 @@ public class S2LoopMeasuresTests
     private static void ExpectSameOrder(S2PointLoopSpan loop1, S2.LoopOrder order1, S2PointLoopSpan loop2, S2.LoopOrder order2)
     {
         Assert.Equal(loop1.Count, loop2.Count);
-        int i1 = order1.first, i2 = order2.first;
-        int dir1 = order1.dir, dir2 = order2.dir;
+        int i1 = order1.First, i2 = order2.First;
+        int dir1 = order1.Dir, dir2 = order2.Dir;
         for (int n = loop1.Count; --n >= 0;)
         {
             Assert.Equal(loop1[i1], loop2[i2]);

@@ -178,7 +178,7 @@ public class S2MemoryTracker
         public Client() { }
 
         // Convenience constructor that calls Init().
-        public Client(S2MemoryTracker tracker)
+        public Client(S2MemoryTracker? tracker)
         {
             Init(tracker);
         }

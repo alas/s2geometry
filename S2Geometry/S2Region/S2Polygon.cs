@@ -1677,9 +1677,9 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
         }
         var ao = a.GetCanonicalLoopOrder();
         var bo = b.GetCanonicalLoopOrder();
-        if (ao.dir != bo.dir) return ao.dir - bo.dir;
-        for (int n = a.NumVertices, ai = ao.first, bi = bo.first;
-             --n >= 0; ai += ao.dir, bi += bo.dir)
+        if (ao.Dir != bo.Dir) return ao.Dir - bo.Dir;
+        for (int n = a.NumVertices, ai = ao.First, bi = bo.First;
+             --n >= 0; ai += ao.Dir, bi += bo.Dir)
         {
             if (a.Vertex(ai) < b.Vertex(bi)) return -1;
             if (a.Vertex(ai) > b.Vertex(bi)) return 1;

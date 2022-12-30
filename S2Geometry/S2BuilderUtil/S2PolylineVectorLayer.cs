@@ -28,7 +28,7 @@ public class S2PolylineVectorLayer : Layer
             DuplicateEdges_ = DuplicateEdges.KEEP;
             sibling_pairs_ = SiblingPairs.KEEP;
             Validate = false;
-            s2debug_override_ = S2Debug.ALLOW;
+            S2DebugOverride = S2Debug.ALLOW;
         }
 
         // Constructor that specifies the edge type.
@@ -39,7 +39,7 @@ public class S2PolylineVectorLayer : Layer
             DuplicateEdges_ = DuplicateEdges.KEEP;
             sibling_pairs_ = SiblingPairs.KEEP;
             Validate = false;
-            s2debug_override_ = S2Debug.ALLOW;
+            S2DebugOverride = S2Debug.ALLOW;
         }
 
         // Indicates whether the input edges provided to S2Builder are directed or
@@ -111,7 +111,7 @@ public class S2PolylineVectorLayer : Layer
             get => _Validate; set 
             {
                 _Validate = value;
-                if (value) s2debug_override_ = S2Debug.DISABLE;
+                if (value) S2DebugOverride = S2Debug.DISABLE;
             }
         }
         private bool _Validate = false;
@@ -129,7 +129,7 @@ public class S2PolylineVectorLayer : Layer
         // this can't happen because S2Builder does not generate such polylines.
         //
         // DEFAULT: S2Debug::ALLOW
-        public S2Debug s2debug_override_ { get; set; }
+        public S2Debug S2DebugOverride { get; set; }
     }
 
     // Specifies that a vector of polylines should be constructed using the

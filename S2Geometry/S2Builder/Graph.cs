@@ -103,8 +103,8 @@ public partial class S2Builder
         //   - a predicate called to determine whether a graph consisting only of
         //     polygon degeneracies represents the empty polygon or the full polygon
         //     (see s2builder.h for details).
-        public Graph(GraphOptions options, List<S2Point> vertices, List<Edge> edges,
-            EdgeIdSet input_edge_id_set_ids, IdSetLexicon? input_edge_id_set_lexicon,
+        public Graph(GraphOptions options, List<S2Point>? vertices, List<Edge>? edges,
+            EdgeIdSet? input_edge_id_set_ids, IdSetLexicon? input_edge_id_set_lexicon,
             LabelSet? label_set_ids, IdSetLexicon? label_set_lexicon,
             IsFullPolygonPredicate? is_full_polygon_predicate)
         {
@@ -276,7 +276,7 @@ public partial class S2Builder
         // Returns a method that determines whether a graph that consists only of
         // polygon degeneracies represents the empty polygon or the full polygon
         // (see s2builder.h for details).
-        public IsFullPolygonPredicate IsFullPolygonPredicate() => is_full_polygon_predicate_;
+        public IsFullPolygonPredicate? IsFullPolygonPredicate() => is_full_polygon_predicate_;
 
         // Returns a map "m" that maps each edge e=(v0,v1) to the following outgoing
         // edge around "v1" in clockwise order.  (This corresponds to making a "left

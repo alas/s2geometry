@@ -1068,8 +1068,10 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
                     foreach (var cellid_u in S2CellUnion.FromBeginEnd(begin, fill_end))
                     {
                         S2ShapeIndexCell icell = new();
-                        S2ClippedShape clipped = new(shape_id, 0);
-                        clipped.ContainsCenter = true;
+                        S2ClippedShape clipped = new(shape_id, 0)
+                        {
+                            ContainsCenter = true,
+                        };
                         icell.AddShape(clipped);
                         index_it = cell_map_.AddSorted(new(cellid_u, icell));
                         ++index_it;
@@ -1121,8 +1123,10 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
             {
                 // The partial shape contains the center of an existing index cell that
                 // does not intersect any of its edges.
-                S2ClippedShape clipped = new(shape_id, 0);
-                clipped.ContainsCenter = true;
+                S2ClippedShape clipped = new(shape_id, 0)
+                {
+                    ContainsCenter = true,
+                };
                 cell.AddShape(clipped);
             }
             begin = cellid.RangeMax().Next();

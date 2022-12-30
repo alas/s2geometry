@@ -125,7 +125,7 @@ public class EncodedStringVector : IInitEncoder<EncodedStringVector>
             var countBytes = limit - start;
             var count = countBytes / sizeof(char);
             var buff = new char[count];
-            Buffer.BlockCopy(data_, start, buff, 0, countBytes);
+            Buffer.BlockCopy(data_!, start, buff, 0, countBytes);
             return new string(buff);
         }
     }
@@ -143,7 +143,7 @@ public class EncodedStringVector : IInitEncoder<EncodedStringVector>
     public (byte[] buffer, int offset) GetStart(int i)
     {
         UInt64 start = (i == 0) ? 0 : offsets_[i - 1];
-        return (data_, (int)start);
+        return (data_!, (int)start);
     }
 
     // Returns the entire vector of original strings.  Requires that the

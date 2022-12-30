@@ -119,7 +119,7 @@ public class S2BuilderUtil_S2PolylineVectorLayerTests
         // Verifies that calling set_validate(false) does not turn off s2 debugging.
         S2PolylineVectorLayer.Options layer_options=new();
         layer_options.Validate = false;
-        Assert.Equal(layer_options.s2debug_override_, S2Debug.ALLOW);
+        Assert.Equal(layer_options.S2DebugOverride, S2Debug.ALLOW);
     }
 
     [Fact]
@@ -128,7 +128,7 @@ public class S2BuilderUtil_S2PolylineVectorLayerTests
         // Verifies that the validate() option works.
         S2PolylineVectorLayer.Options layer_options=new();
         layer_options.Validate = true;
-        Assert.Equal(layer_options.s2debug_override_, S2Debug.DISABLE);
+        Assert.Equal(layer_options.S2DebugOverride, S2Debug.DISABLE);
         S2Builder builder=new(new S2Builder.Options());
         List<S2Polyline> output=new();
         builder.StartLayer(

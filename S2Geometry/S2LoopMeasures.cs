@@ -202,7 +202,7 @@ public static partial class S2
         // in the number of vertices.)  To avoid this we use the Kahan summation
         // algorithm (http://en.wikipedia.org/wiki/Kahan_summation_algorithm).
         LoopOrder order = GetCanonicalLoopOrder(loop);
-        int i = order.first, dir = order.dir, n = loop.Count;
+        int i = order.First, dir = order.Dir, n = loop.Count;
         var sum = S2.TurnAngle(
             loop.GetRemIndex(i + n - dir),
             loop.GetRemIndex(i),
@@ -288,36 +288,9 @@ public static partial class S2
     // the index "first" and proceeding in direction "dir" (either +1 or -1).
     // "first" and "dir" must be chosen such that (first, ..., first + n * dir)
     // are all in the range [0, 2*n-1] as required by S2Point[].operator[].
-    public readonly struct LoopOrder : IEquatable<LoopOrder>
+    public readonly record struct LoopOrder(int First, int Dir)
     {
-        #region IEquatable
-
-        public readonly int first;
-        public readonly int dir;
-
-        #endregion
-
-        #region Constructors
-
-        public LoopOrder(int _first, int _dir) { first = _first; dir = _dir; }
-
-        #endregion
-
-        #region IEquatable
-
-        public override bool Equals(object obj) => obj is LoopOrder lo && Equals(lo);
-        public bool Equals(LoopOrder other) => first == other.first && dir == other.dir;
-        public static bool operator ==(LoopOrder x, LoopOrder y) => Equals(x, y);
-        public static bool operator !=(LoopOrder x, LoopOrder y) => !Equals(x, y);
-        public override int GetHashCode() => HashCode.Combine(first, dir);
-
-        #endregion
-
-        #region Object
-
-        public override string ToString() => $"({first}, {dir})";
-
-        #endregion
+        public override string ToString() => $"({First}, {Dir})";
     }
 
     // Returns an index "first" and a direction "dir" such that the vertex
@@ -547,8 +520,8 @@ public static partial class S2
     {
         if (order1 == order2) return false;
 
-        int i1 = order1.first, i2 = order2.first;
-        int dir1 = order1.dir, dir2 = order2.dir;
+        int i1 = order1.First, i2 = order2.First;
+        int dir1 = order1.Dir, dir2 = order2.Dir;
         System.Diagnostics.Debug.Assert(loop.GetRemIndex(i1) == loop.GetRemIndex(i2));
         for (int n = loop.Count; --n > 0;)
         {
