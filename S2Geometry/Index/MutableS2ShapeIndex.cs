@@ -391,7 +391,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
     {
         MaybeApplyUpdates();
 
-        var tup = new S2ShapeIndexIdCell(target, null);
+        var tup = new S2ShapeIndexIdCell(target, new());
         var pos = cell_map_.BinarySearch(tup);
         if (pos < 0) return (~pos, false);
 

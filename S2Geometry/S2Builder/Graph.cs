@@ -38,17 +38,17 @@ public partial class S2Builder
         public int NumVertices { get; }  // vertices_.Count requires division by 24.
 
         // Returns the entire set of vertices.
-        public List<S2Point> Vertices { get; }
+        public List<S2Point>? Vertices { get; }
 
         // Returns the entire set of edges.
-        public List<Edge> Edges { get; }
+        public List<Edge>? Edges { get; }
 
         // Low-level method that returns a vector where each element represents the
         // set of input edge ids that were snapped to a particular output edge.
-        public EdgeIdSet InputEdgeIdSetIds { get; }
+        public EdgeIdSet? InputEdgeIdSetIds { get; }
 
         // Returns a mapping from an int to a set of input edge ids.
-        public IdSetLexicon InputEdgeIdSetLexicon { get; }
+        public IdSetLexicon? InputEdgeIdSetLexicon { get; }
 
         // Low-level method that returns a vector where each element represents the
         // set of labels associated with a particular input edge.  Note that this
@@ -66,6 +66,14 @@ public partial class S2Builder
         private const int kNoInputEdgeId = kMaxInputEdgeId - 1;
 
         #region Constructors
+
+        public Graph()
+        {
+            Options = new(); NumVertices = -1; Vertices = null;
+            Edges = null; InputEdgeIdSetIds = null;
+            InputEdgeIdSetLexicon = null; LabelSetIds = null;
+            LabelSetLexicon = null;
+        }
 
         // Note that most of the parameters are passed by reference and must
         // exist for the duration of the Graph object.  Notes on parameters:
@@ -96,7 +104,7 @@ public partial class S2Builder
         //     polygon degeneracies represents the empty polygon or the full polygon
         //     (see s2builder.h for details).
         public Graph(GraphOptions options, List<S2Point> vertices, List<Edge> edges,
-            EdgeIdSet input_edge_id_set_ids, IdSetLexicon input_edge_id_set_lexicon,
+            EdgeIdSet input_edge_id_set_ids, IdSetLexicon? input_edge_id_set_lexicon,
             LabelSet? label_set_ids, IdSetLexicon? label_set_lexicon,
             IsFullPolygonPredicate? is_full_polygon_predicate)
         {
@@ -256,7 +264,7 @@ public partial class S2Builder
         // Low-level method that returns an integer representing the set of
         // labels associated with a given input edge.  The elements of
         // the IdSet can be accessed using label_set_lexicon().
-        public int LabelSetId(int e) => !LabelSetIds.Any()
+        public int LabelSetId(int e) => (LabelSetIds == null || !LabelSetIds.Any())
             ? IdSetLexicon.kEmptySetId
             : LabelSetIds[e];
 
@@ -860,7 +868,7 @@ public partial class S2Builder
         // of memory and is not tracked.
         public static void ProcessEdges(GraphOptions options, List<Edge> edges,
             List<int> input_ids, IdSetLexicon id_set_lexicon,
-            out S2Error error, S2MemoryTracker.Client tracker = null)
+            out S2Error error, S2MemoryTracker.Client? tracker = null)
         {
             error = S2Error.OK;
             // Graph::EdgeProcessor uses 8 bytes per input edge (out_edges_ and
@@ -996,34 +1004,40 @@ public partial class S2Builder
         public Graph? MakeSubgraph(
             GraphOptions new_options, List<Edge> new_edges,
             List<InputEdgeIdSetId> new_input_edge_id_set_ids,
-            IdSetLexicon new_input_edge_id_set_lexicon,
-            IsFullPolygonPredicate is_full_polygon_predicate,
-            out S2Error error, S2MemoryTracker.Client tracker = null)
+            IdSetLexicon? new_input_edge_id_set_lexicon,
+            IsFullPolygonPredicate? is_full_polygon_predicate,
+            out S2Error error, S2MemoryTracker.Client? tracker = null)
         {
             if (Options.EdgeType_ == EdgeType.DIRECTED &&
-      new_options.EdgeType_ == EdgeType.UNDIRECTED) {
-    // Create a reversed edge for every edge.
-    int n = new_edges.Count;
-    if (tracker == null) {
-      new_edges.Capacity = 2 * n;
-        new_input_edge_id_set_ids.Capacity = 2 * n;
-    } else if (!tracker.AddSpaceExact(new_edges, n) ||
-               !tracker.AddSpaceExact(new_input_edge_id_set_ids, n)) {
-      error = tracker.Error();
-      return null;
-}
-    for (int i = 0; i<n; ++i) {
-      new_edges.Add(Graph.Reverse(new_edges[i]));
-new_input_edge_id_set_ids.Add(IdSetLexicon.kEmptySetId);
-    }
-  }
-  Graph.ProcessEdges(new_options, new_edges, new_input_edge_id_set_ids,
-                      new_input_edge_id_set_lexicon, out error, tracker);
-if (tracker != null && !tracker.Ok()) return null;  // Graph would be invalid.
-return new Graph(new_options, Vertices, new_edges, new_input_edge_id_set_ids,
-             new_input_edge_id_set_lexicon, LabelSetIds,
-             LabelSetLexicon, is_full_polygon_predicate);
-}
+                new_options.EdgeType_ == EdgeType.UNDIRECTED)
+            {
+                // Create a reversed edge for every edge.
+                int n = new_edges.Count;
+                if (tracker == null)
+                {
+                    new_edges.Capacity = 2 * n;
+                    new_input_edge_id_set_ids.Capacity = 2 * n;
+                }
+                else if (!tracker.AddSpaceExact(new_edges, n) ||
+                           !tracker.AddSpaceExact(new_input_edge_id_set_ids, n))
+                {
+                    error = tracker.Error();
+                    return null;
+                }
+                for (int i = 0; i<n; ++i)
+                {
+                    new_edges.Add(Graph.Reverse(new_edges[i]));
+                    new_input_edge_id_set_ids.Add(IdSetLexicon.kEmptySetId);
+                }
+            }
+            Graph.ProcessEdges(new_options, new_edges, new_input_edge_id_set_ids,
+                                new_input_edge_id_set_lexicon, out error, tracker);
+            if (tracker != null && !tracker.Ok()) return null;  // Graph would be invalid.
+
+            return new Graph(new_options, Vertices, new_edges, new_input_edge_id_set_ids,
+                         new_input_edge_id_set_lexicon, LabelSetIds,
+                         LabelSetLexicon, is_full_polygon_predicate);
+        }
 
         // Indicates whether loops should be simple cycles (no repeated vertices) or
         // circuits (which allow repeated vertices but not repeated edges).  In

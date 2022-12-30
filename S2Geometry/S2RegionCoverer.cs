@@ -629,7 +629,7 @@ public class S2RegionCoverer
     // We save a temporary copy of the pointer passed to GetCovering() in order
     // to avoid passing this parameter around internally.  It is only used (and
     // only valid) for the duration of a single GetCovering() call.
-    private IS2Region region_ = null;
+    private IS2Region? region_ = null;
 
     public class Options
     {

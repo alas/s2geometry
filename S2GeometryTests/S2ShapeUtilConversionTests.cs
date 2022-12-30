@@ -108,6 +108,11 @@ public class S2ShapeUtilConversionTests
     [Fact]
     internal void Test_S2ShapeConversionUtilTest_FullPolygonToS2Polygon()
     {
+        S2Point kFullVertex = new(0, 0, -1);
+        var q1 = new S2Point[] { kFullVertex };
+        S2Loop kFull = new(q1);
+        var q2 = kFull.CloneVertices();
+        Loop q3 = new(q2);
         // verify that a full polygon is converted correctly
         Loop loop1 = new(S2Loop.kFull.CloneVertices());
         List<Loop> loops = new() { loop1 };

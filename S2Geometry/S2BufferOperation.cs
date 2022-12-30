@@ -119,9 +119,7 @@ public class S2BufferOperation
     public S2BufferOperation() { }
 
     // Convenience constructor that calls Init().
-    public S2BufferOperation(S2Builder.Layer result_layer, Options? options = null)
-        => Init(result_layer, options ?? new());
-
+    //
     // Starts a buffer operation that sends the output polygon to the given
     // S2Builder layer.  This method may be called more than once.
     //
@@ -129,18 +127,17 @@ public class S2BufferOperation
     // polylines and points.  If the buffer radius is zero, points and polylines
     // will be converted into degenerate polygon loops; if the buffer radius is
     // negative, points and polylines will be removed.
-    public void Init(S2Builder.Layer result_layer,
-        Options? options = null)
+    public S2BufferOperation(S2Builder.Layer result_layer, Options? options = null)
     {
         Options_ = options ?? new();
         ref_point_ = S2.Origin;
         ref_winding_ = 0;
         have_input_start_ = false;
         have_offset_start_ = false;
-        buffer_sign_ = MathUtils.Sgn(Options_.buffer_radius_.Radians);
-        S1Angle abs_radius = S1Angle.Abs(Options_.buffer_radius_);
+        buffer_sign_ = MathUtils.Sgn(Options_.BufferRadius.Radians);
+        S1Angle abs_radius = S1Angle.Abs(Options_.BufferRadius);
         S1Angle requested_error = S1Angle.Max(kMinRequestedError,
-            Options_.error_fraction_ * abs_radius);
+            Options_.ErrorFraction * abs_radius);
         S1Angle max_error = kMaxAbsoluteInterpolationErrorS1Angle + requested_error;
         if (abs_radius <= max_error)
         {
@@ -185,12 +182,13 @@ public class S2BufferOperation
         // purpose of keeping degeneracies is to allow points/polylines in the input
         // geometry to be converted back to points/polylines in the output if the
         // client so desires.
-        S2WindingOperation.Options winding_options = new(options.snap_function_);
-        winding_options.IncludeDegeneracies = (
-            buffer_sign_ == 0 && Options_.buffer_radius_ >= S1Angle.Zero);
-        winding_options.MemoryTracker = options.memory_tracker_;
-        op_.Init(result_layer, winding_options);
-        tracker_.Init(options.memory_tracker_);
+        S2WindingOperation.Options winding_options = new(options.SnapFunction_)
+        {
+            IncludeDegeneracies = (buffer_sign_ == 0 && Options_.BufferRadius >= S1Angle.Zero),
+            MemoryTracker = options.MemoryTracker
+        };
+        op_ = new(result_layer, winding_options);
+        tracker_.Init(options.MemoryTracker);
     }
 
     public Options Options_ { get; private set; }
@@ -255,7 +253,7 @@ public class S2BufferOperation
     {
         // Left-sided buffering is supported by reversing the polyline and then
         // buffering on the right.
-        if (Options_.polyline_side_ == PolylineSide.LEFT)
+        if (Options_.PolylineSide_ == PolylineSide.LEFT)
         {
             polyline.Reverse();
         }
@@ -301,7 +299,7 @@ public class S2BufferOperation
             AddEdgeArc(polyline[n - 2], polyline[n - 1]);
             AddEndCap(polyline[n - 2], polyline[n - 1]);
 
-            if (Options_.polyline_side_ == PolylineSide.BOTH)
+            if (Options_.PolylineSide_ == PolylineSide.BOTH)
             {
                 for (int i = n - 3; i >= 0; --i)
                 {
@@ -622,19 +620,19 @@ public class S2BufferOperation
     private void AddStartCap(S2Point a, S2Point b)
     {
         S2Point axis = GetEdgeAxis(a, b);
-        if (Options_.end_cap_style_ == EndCapStyle.FLAT)
+        if (Options_.EndCapStyle_ == EndCapStyle.FLAT)
         {
             // One-sided flat end caps require no additional vertices since the
             // "offset curve" for the opposite side is simply the reversed polyline.
-            if (Options_.polyline_side_ == PolylineSide.BOTH)
+            if (Options_.PolylineSide_ == PolylineSide.BOTH)
             {
                 AddOffsetVertex(S2.GetPointOnRay(a, -axis, abs_radius_));
             }
         }
         else
         {
-            System.Diagnostics.Debug.Assert(Options_.end_cap_style_ == EndCapStyle.ROUND);
-            if (Options_.polyline_side_ == PolylineSide.BOTH)
+            System.Diagnostics.Debug.Assert(Options_.EndCapStyle_ == EndCapStyle.ROUND);
+            if (Options_.PolylineSide_ == PolylineSide.BOTH)
             {
                 // The end cap consists of a semicircle.
                 AddVertexArc(a, -axis, axis);
@@ -653,14 +651,14 @@ public class S2BufferOperation
     private void AddEndCap(S2Point a, S2Point b)
     {
         S2Point axis = GetEdgeAxis(a, b);
-        if (Options_.end_cap_style_ == EndCapStyle.FLAT)
+        if (Options_.EndCapStyle_ == EndCapStyle.FLAT)
         {
             CloseEdgeArc(a, b);  // Close the previous semi-open edge arc if necessary.
         }
         else
         {
-            System.Diagnostics.Debug.Assert(Options_.end_cap_style_ == EndCapStyle.ROUND);
-            if (Options_.polyline_side_ == PolylineSide.BOTH)
+            System.Diagnostics.Debug.Assert(Options_.EndCapStyle_ == EndCapStyle.ROUND);
+            if (Options_.PolylineSide_ == PolylineSide.BOTH)
             {
                 // The end cap consists of a semicircle.
                 AddVertexArc(b, axis, -axis);
@@ -749,15 +747,15 @@ public class S2BufferOperation
     private int num_polygon_layers_ = 0;
 
     // Parameters for buffering vertices and edges.
-    private int buffer_sign_;  // The sign of buffer_radius (-1, 0, or +1).
-    private S1ChordAngle abs_radius_;
-    private S1ChordAngle vertex_step_, edge_step_;
+    private readonly int buffer_sign_;  // The sign of buffer_radius (-1, 0, or +1).
+    private readonly S1ChordAngle abs_radius_;
+    private readonly S2MinDistance vertex_step_, edge_step_;
 
     // We go to extra effort to ensure that points are transformed into regular
     // polygons.  (We don't do this for arcs in general because we would rather
     // use the allowable error to reduce the complexity of the output rather
     // than increase its symmetry.)
-    private S1ChordAngle point_step_;
+    private readonly S1ChordAngle point_step_;
 
     // Contains the buffered loops that have been accumulated so far.
     private readonly S2WindingOperation op_;
@@ -769,7 +767,7 @@ public class S2BufferOperation
     // As buffered loops are added we keep track of the winding number of a
     // fixed reference point.  This is used to derive the winding numbers of
     // every region in the spherical partition induced by the buffered loops.
-    private S2Point ref_point_;
+    private readonly S2Point ref_point_;
 
     // The winding number associated with ref_point_.
     private int ref_winding_;
@@ -786,7 +784,7 @@ public class S2BufferOperation
     // Used internally as a temporary to avoid excessive memory allocation.
     private S2Point[] tmp_vertices_;
 
-    private readonly S2MemoryTracker.Client tracker_;
+    //private readonly S2MemoryTracker.Client tracker_;
 
     // For polylines, specifies whether the end caps should be round or flat.
     // See Options.set_end_cap_style() below.
@@ -798,21 +796,21 @@ public class S2BufferOperation
 
     public class Options
     {
-        public Options() => snap_function_ = new S2BuilderUtil.IdentitySnapFunction(S1Angle.Zero);
+        public Options() => SnapFunction_ = new S2BuilderUtil.IdentitySnapFunction(S1Angle.Zero);
 
         // Convenience constructor that calls set_buffer_radius().
         public Options(S1Angle buffer_radius)
-            : this() => buffer_radius_ = buffer_radius;
+            : this() => BufferRadius = buffer_radius;
 
         // Options may be assigned and copied.
         public Options(Options options)
         {
-            buffer_radius_ = options.buffer_radius_;
-            error_fraction_ = options.error_fraction_;
-            end_cap_style_ = options.end_cap_style_;
-            polyline_side_ = options.polyline_side_;
-            snap_function_ = (S2BuilderUtil.SnapFunction)options.snap_function_.CustomClone();
-            memory_tracker_ = options.memory_tracker_;
+            BufferRadius = options.BufferRadius;
+            ErrorFraction = options.ErrorFraction;
+            EndCapStyle_ = options.EndCapStyle_;
+            PolylineSide_ = options.PolylineSide_;
+            SnapFunction_ = (S2BuilderUtil.SnapFunction)options.SnapFunction_.CustomClone();
+            MemoryTracker = options.MemoryTracker;
         }
 
         // If positive, specifies that all points within the given radius of the
@@ -823,7 +821,7 @@ public class S2BufferOperation
         // after first converting points and polylines into degenerate loops.
         //
         // DEFAULT: S1Angle.Zero()
-        public S1Angle buffer_radius_ { get; set; } = S1Angle.Zero;
+        public S1Angle BufferRadius { get; set; } = S1Angle.Zero;
 
         // Specifies the allowable error when buffering, expressed as a fraction
         // of buffer_radius().  The actual buffer distance will be in the range
@@ -841,7 +839,7 @@ public class S2BufferOperation
         //
         public const double kMinErrorFraction = 1e-6;
         //public double error_fraction_ { get; set; } = 0.01;
-        public double error_fraction_ { get; set; } = 0.02;
+        public double ErrorFraction { get; set; } = 0.02;
 
         // Returns the maximum error in the buffered result for the current
         // buffer_radius(), error_fraction(), and snap_function().  Note that the
@@ -851,12 +849,14 @@ public class S2BufferOperation
         // absolute error is about 10 nanometers on the Earth's surface and is
         // defined internally.  The error due to snapping is defined by the
         // specified snap_function().
-        public S1Angle max_error()
+        public S1Angle GetMaxError()
         {
             // See comments for kMinRequestedError above.
-            S2Builder.Options builder_options = new(snap_function_);
-            builder_options.SplitCrossingEdges = true;
-            return S1Angle.Max(kMinRequestedError, error_fraction_ * S1Angle.Abs(buffer_radius_))
+            S2Builder.Options builder_options = new(SnapFunction_)
+            {
+                SplitCrossingEdges = true,
+            };
+            return S1Angle.Max(kMinRequestedError, ErrorFraction * S1Angle.Abs(BufferRadius))
                 + kMaxAbsoluteInterpolationErrorS1Angle + builder_options.MaxEdgeDeviation();
         }
 
@@ -876,7 +876,7 @@ public class S2BufferOperation
         //
         // DEFAULT: about 15.76 (corresponding to  error_fraction() default value)
         public double kMaxCircleSegments = 1570.7968503979573;
-        public double circle_segments_
+        public double CircleSegments
         {
             get
             {
@@ -885,7 +885,7 @@ public class S2BufferOperation
                 return S2Constants.M_PI / Math.Acos((1 - error_fraction_) / (1 + error_fraction_));
 #else
                 // This formula assumes that all vertices are placed on the midline.
-                return S2.M_PI / Math.Acos(1 - error_fraction_);
+                return S2.M_PI / Math.Acos(1 - ErrorFraction);
 #endif
             }
             set
@@ -914,7 +914,7 @@ public class S2BufferOperation
                 // When all vertices are on the midline, the relationships are
                 //        e = 1 - cos(Pi/n)
                 //        n = Pi / acos(1 - e)
-                error_fraction_ = 1 - Math.Cos(S2.M_PI / value) + 1e-15;
+                ErrorFraction = 1 - Math.Cos(S2.M_PI / value) + 1e-15;
 #endif
             }
         }
@@ -925,7 +925,7 @@ public class S2BufferOperation
         // endpoints (unlike "square" end caps, which are not implemented).
         //
         // DEFAULT: EndCapStyle.ROUND
-        public EndCapStyle end_cap_style_ { get; set; } = EndCapStyle.ROUND;
+        public EndCapStyle EndCapStyle_ { get; set; } = EndCapStyle.ROUND;
 
         // Specifies whether polylines should be buffered only on the left, only
         // on the right, or on both sides.  For one-sided buffering please note
@@ -950,14 +950,14 @@ public class S2BufferOperation
         //    unspecified whether buffering of AB extends across CD and vice versa.
         //
         // DEFAULT: PolylineSide.BOTH
-        public PolylineSide polyline_side_ { get; set; } = PolylineSide.BOTH;
+        public PolylineSide PolylineSide_ { get; set; } = PolylineSide.BOTH;
 
         // Specifies the function used for snap rounding the output during the
         // call to Build().  Note that any errors due to snapping are in addition
         // to those specified by error_fraction().
         //
         // DEFAULT: s2builderutil.IdentitySnapFunction(S1Angle.Zero())
-        public S2BuilderUtil.SnapFunction snap_function_
+        public S2BuilderUtil.SnapFunction SnapFunction_
         { get => snap_function__; set => snap_function__ = (S2BuilderUtil.SnapFunction)value.CustomClone(); }
         private S2BuilderUtil.SnapFunction snap_function__;
 
@@ -988,6 +988,6 @@ public class S2BufferOperation
         //    purpose of preventing clients from running out of memory.
         //
         // DEFAULT: nullptr (memory tracking disabled)
-        public S2MemoryTracker memory_tracker_ { get; set; } = null;
+        public S2MemoryTracker? MemoryTracker { get; set; } = null;
     }
 }

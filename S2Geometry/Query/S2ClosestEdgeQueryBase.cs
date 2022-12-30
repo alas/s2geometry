@@ -60,7 +60,7 @@ public class S2ClosestEdgeQueryBase<Distance> where Distance : IEquatable<Distan
     // The covering needs to be stored in a vector so that we can use
     // S2CellUnion.GetIntersection().
     private readonly List<S2CellId> index_covering_ = new();
-    private readonly Array6<S2ShapeIndexCell> index_cells_ = new(() => new S2ShapeIndexCell());
+    private readonly Array6<S2ShapeIndexCell?> index_cells_ = new(() => new S2ShapeIndexCell());
 
     // The decision about whether to use the brute force algorithm is based on
     // counting the total number of edges in the index.  However if the index
@@ -612,7 +612,7 @@ public class S2ClosestEdgeQueryBase<Distance> where Distance : IEquatable<Distan
     // S2ShapeIndexCell, or null if "id" is not an index cell.
     //
     // This version is called directly only by InitQueue().
-    private void ProcessOrEnqueue2(S2CellId id, S2ShapeIndexCell index_cell)
+    private void ProcessOrEnqueue2(S2CellId id, S2ShapeIndexCell? index_cell)
     {
         if (index_cell != null)
         {

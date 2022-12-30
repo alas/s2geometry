@@ -270,7 +270,7 @@ public class S2MemoryTracker
         // current operation should be cancelled.
         public /*inline*/ bool AddSpaceExact<T>(List<T> v, int n)
         {
-            return AddSpaceInternal<T>(v, n, true);
+            return AddSpaceInternal(v, n, true);
         }
 
         public /*inline*/ bool AddSpaceInternal<T>(List<T> v, int n, bool exact)

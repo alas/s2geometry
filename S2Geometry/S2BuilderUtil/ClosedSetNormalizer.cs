@@ -1,8 +1,3 @@
-namespace S2Geometry.S2BuilderUtil;
-
-using static S2Builder;
-using static S2Builder.GraphOptions;
-
 // The purpose of this class is to allow S2Builder.Layer implementations to
 // remove polygon and polyline degeneracies by converting them to polylines or
 // points.  Note that most clients should not use ClosedSetNormalizer itself,
@@ -54,18 +49,22 @@ using static S2Builder.GraphOptions;
 // Keeping degeneracies has many advantages, such as not needing to deal with
 // geometry of multiple dimensions, and being able to preserve polygon
 // boundaries accurately (including degenerate holes).
+
+namespace S2Geometry.S2BuilderUtil;
+
+using static S2Builder;
+using static S2Builder.GraphOptions;
+
 public class ClosedSetNormalizer
 {
     public class Options
     {
-        public Options() => SuppressLowerDimensions = true;
-
         // If "suppress_lower_dimensions" is true, then the graphs are further
         // normalized by discarding lower-dimensional edges that coincide with
         // higher-dimensional edges.
         //
         // DEFAULT: true
-        public bool SuppressLowerDimensions { get; set; }
+        public bool SuppressLowerDimensions { get; set; } = true;
     }
 
     // Constructs a ClosedSetNormalizer whose output will be three
@@ -363,13 +362,14 @@ public class NormalizeClosedSetImpl
     private NormalizeClosedSetImpl(List<Layer> output_layers, ClosedSetNormalizer.Options options)
     {
         output_layers_ = output_layers;
-        normalizer_ = new ClosedSetNormalizer(options, new List<GraphOptions>
-                {
-                    output_layers_[0].GraphOptions_(),
-                    output_layers_[1].GraphOptions_(),
-                    output_layers_[2].GraphOptions_(),
-                });
-        graphs_ = new List<Graph?>() { null, null, null }; graphs_left_ = 3;
+        normalizer_ =
+            new ClosedSetNormalizer(options, new List<GraphOptions>
+            {
+                output_layers_[0].GraphOptions_(),
+                output_layers_[1].GraphOptions_(),
+                output_layers_[2].GraphOptions_(),
+            });
+        graphs_ = new List<Graph>() { new(), new(), new() }; graphs_left_ = 3;
         System.Diagnostics.Debug.Assert(3 == output_layers_.Count);
     }
 
@@ -408,7 +408,7 @@ public class NormalizeClosedSetImpl
 
     private readonly List<Layer> output_layers_;
     private readonly ClosedSetNormalizer normalizer_;
-    private readonly List<Graph?> graphs_;
+    private readonly List<Graph> graphs_;
     private int graphs_left_;
 }
 

@@ -175,7 +175,7 @@ public class S2LaxPolygonShape : S2Shape, IInitEncoder<S2LaxPolygonShape>
         }
         else
         {
-            return (int)(loop_starts_[i + 1] - loop_starts_[i]);
+            return (int)(loop_starts_![i + 1] - loop_starts_[i]);
         }
     }
 
@@ -194,7 +194,7 @@ public class S2LaxPolygonShape : S2Shape, IInitEncoder<S2LaxPolygonShape>
         }
         else
         {
-            return vertices_.Skip((int)loop_starts_[i] + j).FirstOrDefault();
+            return vertices_.Skip((int)loop_starts_![i] + j).FirstOrDefault();
         }
     }
 
@@ -279,7 +279,7 @@ public class S2LaxPolygonShape : S2Shape, IInitEncoder<S2LaxPolygonShape>
         EncodedS2PointVector.EncodeS2PointVector(vertices_, hint, encoder);
         if (NumLoops > 1)
         {
-            EncodedUintVector.EncodeUintVector(loop_starts_, encoder);
+            EncodedUintVector.EncodeUintVector(loop_starts_!, encoder);
         }
     } 
 

@@ -96,7 +96,7 @@ public static partial class S2ShapeUtil
         }
         // Assign each outer loop to the component whose depth is one less.
         // Components at depth 0 become a single face.
-        Dictionary<S2Shape, List<S2Shape>> children = new(); // btree_map
+        Dictionary<ValueTuple<S2Shape?>, List<S2Shape>> children = new(); // btree_map
         for (int i = 0; i < outer_loops.Count; ++i)
         {
             S2Shape? ancestor = null;
@@ -113,7 +113,7 @@ public static partial class S2ShapeUtil
                 }
                 System.Diagnostics.Debug.Assert(ancestor is not null);
             }
-            S2Shape notNullAncestor = ancestor!;
+            ValueTuple<S2Shape?> notNullAncestor = new(ancestor!);
             if (!children.ContainsKey(notNullAncestor)) children.Add(notNullAncestor, new List<S2Shape>());
             children[notNullAncestor].Add(outer_loops[i]);
         }
@@ -124,14 +124,15 @@ public static partial class S2ShapeUtil
         {
             var polygon = polygons[i];
             var loop = index.Shape(i);
-            var itr = children.ContainsKey(loop) ? children[loop] : null;
+            ValueTuple<S2Shape?> loopKey = new(loop);
+            var itr = children.ContainsKey(loopKey) ? children[loopKey] : null;
             if (itr != null)
             {
                 polygon = itr;
             }
             polygon.Add(loop);
         }
-        polygons[^1] = children[null];
+        polygons[^1] = children[new(null)];
 
         // Explicitly release the shapes from the index so they are not deleted.
         index.ReleaseAll();

@@ -184,7 +184,7 @@ public class S2BuilderUtil_S2PolylineLayerTests
     private static void TestS2Polyline(
         string[] input_strs,
         string expected_str, EdgeType edge_type,
-        Options options = null)
+        Options? options = null)
     {
         S2Builder builder = new(options ?? new Options());
         S2Polyline output = new();

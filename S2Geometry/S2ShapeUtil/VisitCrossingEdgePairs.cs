@@ -492,7 +492,7 @@ public static partial class S2ShapeUtil
                 return false;
             }
 
-            //Assert.Equal(1, index.num_shape_ids());
+            System.Diagnostics.Debug.Assert(index.NumShapeIds() == 1);
             var shape = index.Shape(0);
 
             // Visit all crossing pairs except possibly for ones of the form (AB, BC),

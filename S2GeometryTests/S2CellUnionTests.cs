@@ -1,7 +1,5 @@
 namespace S2Geometry;
 
-using rnd = S2Testing.Random;
-
 public class S2CellUnionTests
 {
     private readonly ITestOutputHelper _logger;
@@ -149,8 +147,8 @@ public class S2CellUnionTests
             var x_and_y = new List<S2CellId>();
             foreach (var input_id in input)
             {
-                var in_x = rnd.OneIn(2);
-                var in_y = rnd.OneIn(2);
+                var in_x = S2Testing.Random.OneIn(2);
+                var in_y = S2Testing.Random.OneIn(2);
                 if (in_x) x.Add(input_id);
                 if (in_y) y.Add(input_id);
                 if (in_x || in_y) x_or_y.Add(input_id);
@@ -237,14 +235,14 @@ public class S2CellUnionTests
             // Expand the cap area by a random factor whose log is uniformly
             // distributed between 0 and log(1e2).
             var expanded_cap = S2Cap.FromCenterHeight(
-                cap.Center, Math.Min(2.0, Math.Pow(1e2, rnd.RandDouble()) * cap.Height()));
+                cap.Center, Math.Min(2.0, Math.Pow(1e2, S2Testing.Random.RandDouble()) * cap.Height()));
 
             var radius = (expanded_cap.Radius - cap.Radius).Radians();
-            var max_level_diff = rnd.Uniform(8);
+            var max_level_diff = S2Testing.Random.Uniform(8);
 
             // Generate a covering for the original cap, and measure the maximum
             // distance from the cap center to any point in the covering.
-            coverer.Options_.MaxCells = 1 + rnd.Skewed(10);
+            coverer.Options_.MaxCells = 1 + S2Testing.Random.Skewed(10);
             var covering = coverer.GetCovering(cap);
             S2Testing.CheckCovering(cap, covering, true);
             var covering_radius = GetRadius(covering, cap.Center);
@@ -633,7 +631,7 @@ public class S2CellUnionTests
         // The following code ensures that the probability of selecting a cell
         // at each level is approximately the same, i.e. we test normalization
         // of cells at all levels.
-        if (!selected && rnd.OneIn(S2.kMaxCellLevel - id.Level()))
+        if (!selected && S2Testing.Random.OneIn(S2.kMaxCellLevel - id.Level()))
         {
             // Once a cell has been selected, the expected output is predetermined.
             // We then make sure that cells are selected that will normalize to
@@ -650,7 +648,7 @@ public class S2CellUnionTests
 
         // If a cell is selected, we add it to "input" with probability 5/6.
         bool added = false;
-        if (selected && !rnd.OneIn(6))
+        if (selected && !S2Testing.Random.OneIn(6))
         {
             input.Add(id);
             added = true;
@@ -667,7 +665,7 @@ public class S2CellUnionTests
             // We also make sure that we do not recurse on all 4 children, since
             // then we might include all 4 children in the input case by accident
             // (in which case the expected output would not be correct).
-            if (rnd.OneIn(selected ? 12 : 4) && num_children < 3)
+            if (S2Testing.Random.OneIn(selected ? 12 : 4) && num_children < 3)
             {
                 AddCells(child, selected, input, expected);
                 ++num_children;

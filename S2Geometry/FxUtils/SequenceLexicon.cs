@@ -27,7 +27,9 @@
 
 namespace S2Geometry;
 
-public class SequenceLexicon<T> where T : IComparable<T>
+using System.Numerics;
+
+public class SequenceLexicon<T> where T : IComparable<T>, INumber<T>
 {
     private readonly List<T> values_ = new();
     private readonly List<int> begins_ = new() { 0 };

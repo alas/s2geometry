@@ -30,7 +30,7 @@ public class S2BuilderUtil_LaxPolylineLayerTests
     // Convenience function that tests both directed and undirected edges.
     private static void TestS2LaxPolylineShape(
                 List<string> input_strs, string expected_str,
-                Options options = null)
+                Options? options = null)
     {
         options ??= new Options();
         TestS2LaxPolylineShape(input_strs, expected_str, EdgeType.DIRECTED, options);

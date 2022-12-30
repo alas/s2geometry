@@ -597,7 +597,7 @@ public class S2ClosestCellQueryBase<Distance> where Distance : IEquatable<Distan
         // point, it is faster to use a PointTarget with set_max_distance()
         // instead.  You can also call both methods, e.g. to set a maximum
         // distance and also require that cells lie within a given rectangle.
-        public IS2Region Region { get; set; } = null;
+        public IS2Region? Region { get; set; } = null;
 
         // Specifies that distances should be computed by examining every cell
         // rather than using the S2ShapeIndex.  This is useful for testing,

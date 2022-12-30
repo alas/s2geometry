@@ -180,7 +180,7 @@ public partial class S2Builder
     // options, C++ syntax requires an extra layer of parentheses:
     //
     //   S2Builder builder{S2Builder.Options()};
-    public S2Builder(Options options = null)
+    public S2Builder(Options? options = null)
     {
         Options_ = options ?? new Options();
         var snap_function = Options_.SnapFunction;

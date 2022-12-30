@@ -34,8 +34,8 @@ public class S2BufferOperationTests
         S1Angle buffer_radius, double error_fraction)
     {
         Options options = new();
-        options.buffer_radius_ = buffer_radius;
-        options.error_fraction_ = error_fraction;
+        options.BufferRadius = buffer_radius;
+        options.ErrorFraction = error_fraction;
         return DoBuffer(input_callback, options);
     }
 
@@ -114,7 +114,7 @@ public class S2BufferOperationTests
         S2BufferOperation.Options options=new(S1Angle.FromRadians(1e-12));
         S2LaxPolygonShape output=new();
         S2BufferOperation op = new(new LaxPolygonLayer(output), options);
-        Assert.Equal(options.buffer_radius_, op.Options_.buffer_radius_);
+        Assert.Equal(options.BufferRadius, op.Options_.BufferRadius);
     }
 
     [Fact]
@@ -206,8 +206,8 @@ public class S2BufferOperationTests
         Options options = new(S1Angle.FromRadians(1e-12));
         for (int circle_segments = 3; circle_segments <= 20; ++circle_segments)
         {
-            options.circle_segments_ = circle_segments;
-            Assert.Equal(circle_segments, options.circle_segments_);
+            options.CircleSegments = circle_segments;
+            Assert.Equal(circle_segments, options.CircleSegments);
             var output = DoBuffer((S2BufferOperation op) =>
             {
                 op.AddPoint(new S2Point(1, 0, 0));
@@ -222,7 +222,7 @@ public class S2BufferOperationTests
         // Verify that the snap function is passed through to S2Builder.
         // We use a buffer radius of zero to make the test simpler.
         Options options = new();
-        options.snap_function_ = new IntLatLngSnapFunction(0);
+        options.SnapFunction_ = new IntLatLngSnapFunction(0);
         var output = DoBuffer((S2BufferOperation op) =>
         {
             op.AddPoint(MakePointOrDie("0.1:-0.4"));
@@ -381,8 +381,8 @@ public class S2BufferOperationTests
         // loop of B is missing, such as returning a disc in the place of an
         // annulus) but it is sufficient to detect many types of errors.
         Options options = new();
-        options.buffer_radius_ = buffer_radius;
-        options.error_fraction_ = error_fraction;
+        options.BufferRadius = buffer_radius;
+        options.ErrorFraction = error_fraction;
         MutableS2ShapeIndex output = new();
         output.Add(DoBuffer(
 
@@ -394,7 +394,7 @@ input = {S2TextFormat.ToDebugString(input)}
 output = {S2TextFormat.ToDebugString(output)}");
 
         // Check the 1a*/1b* condition above.
-        S1Angle max_error = options.max_error();
+        S1Angle max_error = options.GetMaxError();
         TestContainment(input, output, buffer_radius, max_error);
 
         S1ChordAngle min_dist = new(S1Angle.Max(S1Angle.Zero, S1Angle.Abs(buffer_radius) - max_error));
@@ -571,12 +571,12 @@ output = {S2TextFormat.ToDebugString(output)}");
                             Options options)
         {
             polyline_ = ParsePointsOrDie(input_str);
-            buffer_radius_ = options.buffer_radius_;
-            max_error_ = options.max_error();
+            buffer_radius_ = options.BufferRadius;
+            max_error_ = options.GetMaxError();
             min_dist_ = new(S1Angle.Max(S1Angle.Zero, buffer_radius_ - max_error_));
             max_dist_ = new(buffer_radius_ + max_error_);
-            round_ = options.end_cap_style_ == EndCapStyle.ROUND;
-            two_sided_ = options.polyline_side_ == PolylineSide.BOTH;
+            round_ = options.EndCapStyle_ == EndCapStyle.ROUND;
+            two_sided_ = options.PolylineSide_ == PolylineSide.BOTH;
 
             Assert.True(polyline_.Count >= 2);
             Assert.True(buffer_radius_ > S1Angle.Zero);
@@ -607,7 +607,7 @@ output = {S2TextFormat.ToDebugString(output)}");
 
             // Left-sided buffering is tested by reversing the polyline and then testing
             // whether it has been buffered correctly on the right.
-            if (options.polyline_side_ == PolylineSide.LEFT)
+            if (options.PolylineSide_ == PolylineSide.LEFT)
             {
                 polyline_.Reverse();
             }
@@ -735,8 +735,8 @@ output = {S2TextFormat.ToDebugString(output)}");
             {
                 _logger.WriteLine(
                     $"two_sided = {polyline_side == PolylineSide.BOTH}, round = {end_cap_style == EndCapStyle.ROUND}");
-                options.polyline_side_ = polyline_side;
-                options.end_cap_style_ = end_cap_style;
+                options.PolylineSide_ = polyline_side;
+                options.EndCapStyle_ = end_cap_style;
                 _ = new TestBufferPolyline("0:0, 0:7, 5:3, 5:10", options);  // NOLINT
                 _ = new TestBufferPolyline("10:0, 0:0, 5:1", options);       // NOLINT
             }

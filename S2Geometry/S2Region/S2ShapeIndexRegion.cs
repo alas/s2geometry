@@ -113,7 +113,7 @@ public sealed class S2ShapeIndexRegion<TIndex> : IS2Region<S2ShapeIndexRegion<TI
         int num_edges = clipped.NumEdges;
         for (int i = 0; i < num_edges; ++i)
         {
-            var edge = shape.GetEdge(clipped.Edge(i));
+            var edge = shape!.GetEdge(clipped.Edge(i));
             if (S2EdgeClipping.ClipToPaddedFace(edge.V0, edge.V1, face, kMaxError, out var p0, out var p1) &&
                 S2EdgeClipping.IntersectsRect(p0, p1, bound))
             {

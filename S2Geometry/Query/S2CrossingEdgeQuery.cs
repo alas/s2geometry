@@ -69,7 +69,7 @@ public class S2CrossingEdgeQuery
         int min_sign = (type == CrossingType.ALL) ? 0 : 1;
         var crosser = new S2CopyingEdgeCrosser(a0, a1);
         int shape_id = -1;
-        S2Shape shape = null;
+        S2Shape? shape = null;
         foreach (var (shapeId, edgeId) in tmp_candidates_)
         {
             if (shapeId != shape_id)

@@ -191,7 +191,7 @@ public sealed class S2ShapeIndexBufferedRegion : IS2Region<S2ShapeIndexBufferedR
 
     public bool Equals(S2ShapeIndexBufferedRegion? other)
     {
-        return Radius.Equals(other.Radius);
+        return Radius.Equals(other?.Radius);
     }
 
     public static bool operator ==(S2ShapeIndexBufferedRegion x, S2ShapeIndexBufferedRegion y)

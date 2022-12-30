@@ -550,7 +550,7 @@ public class S2BooleanOperation
         //    purpose of preventing clients from running out of memory.
         //
         // DEFAULT: nullptr (memory tracking disabled)
-        public S2MemoryTracker memory_tracker_ { get; set; } = null;
+        public S2MemoryTracker? memory_tracker_ { get; set; } = null;
 
         // If specified, then each output edge will be labelled with one or more
         // SourceIds indicating which input edge(s) it corresponds to.  This
@@ -588,9 +588,11 @@ public class S2BooleanOperation
                 error = S2Error.OK;
                 return;
             }
-            builder_options_ = new S2Builder.Options(op_.Options_.SnapFunction_);
-            builder_options_.IntersectionTolerance = S2.kIntersectionErrorS1Angle;
-            builder_options_.MemoryTracker = tracker_.Tracker;
+            builder_options_ = new(op_.Options_.SnapFunction_)
+            {
+                IntersectionTolerance = S2.kIntersectionErrorS1Angle,
+                MemoryTracker = tracker_.Tracker,
+            };
             if (op_.Options_.split_all_crossing_polyline_edges_)
             {
                 builder_options_.SplitCrossingEdges = true;
@@ -1640,7 +1642,7 @@ public class S2BooleanOperation
             // and up to two more to represent an isolated start and/or end vertex.  The
             // crossing edges must be associated with the S2Builder edge that represents
             // the edge interior, and they are stored here until that edge is created.
-            private readonly List<SourceEdgeCrossing> pending_source_edge_crossings_;
+            private readonly List<SourceEdgeCrossing> pending_source_edge_crossings_ = new();
 
             // A map that translates from SourceId (the (region_id, shape_id, edge_id)
             // triple that identifies an S2ShapeIndex edge) to InputEdgeId (the
@@ -1651,7 +1653,7 @@ public class S2BooleanOperation
             // loop or a sibling pair), indicates whether that loop represents a shell
             // or a hole.  This information is used during the second pass of
             // AddBoundaryPair() to determine the output for degenerate edges.
-            private readonly Dictionary<ShapeEdgeId, bool> is_degenerate_hole_;
+            private readonly Dictionary<ShapeEdgeId, bool> is_degenerate_hole_ = new();
 
             // The value of that "inside_" would have just before the end of the
             // previous edge added to S2Builder.  This value is used to determine

@@ -37,4 +37,4 @@ global using SourceEdgeCrossing = System.ValueTuple<S2Geometry.SourceId, bool>;
 global using SourceEdgeCrossings = System.Collections.Generic.List<(System.Int32, (S2Geometry.SourceId, bool))>; //SourceEdgeCrossing
 global using SourceIdLexicon = System.Collections.Generic.Dictionary<S2Geometry.SourceId, System.Int32>; // ValueLexicon<SourceId>
 
-global using S2ShapeIndexIdCell = S2Geometry.KeyData<S2Geometry.S2CellId, S2Geometry.S2ShapeIndexCell?>;
+global using S2ShapeIndexIdCell = S2Geometry.KeyData<S2Geometry.S2CellId, S2Geometry.S2ShapeIndexCell>;

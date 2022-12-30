@@ -35,11 +35,13 @@
 
 namespace S2Geometry;
 
+using System.Numerics;
+
 public static class HashMix
 {
     private const ulong kMul = 0xdc3eb94af8ab4c93UL;
 
-    public static ulong GetHash<T>(IEnumerable<T> values)
+    public static ulong GetHash<T>(IEnumerable<T> values) where T : INumber<T>
     {
         ulong mix = 1;
         foreach (var value in values)

@@ -162,8 +162,8 @@ public class LaxPolygonLayer : Layer
     {
         if (label_set_ids_ == null) return;
 
-        var labels = new List<Int32>();  // Temporary storage for labels.
-        var fetcher = new Graph.LabelFetcher(g, options_.EdgeType);
+        List<Int32> labels = new();  // Temporary storage for labels.
+        Graph.LabelFetcher fetcher = new(g, options_.EdgeType);
         foreach (var edge_loop in edge_loops)
         {
             var loop_label_set_ids = new List<Int32>(edge_loop.Count);

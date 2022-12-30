@@ -73,9 +73,11 @@ public class S2WindingOperation
     public void Init(S2Builder.Layer result_layer, Options? options = null)
     {
         options_ = options ?? new();
-        S2Builder.Options builder_options = new(options_.SnapFunction);
-        builder_options.SplitCrossingEdges = true;
-        builder_options.MemoryTracker = options.MemoryTracker;
+        S2Builder.Options builder_options = new(options_.SnapFunction)
+        {
+            SplitCrossingEdges = true,
+            MemoryTracker = options_.MemoryTracker,
+        };
         builder_ = new(builder_options);
         builder_.StartLayer(new WindingLayer(this, result_layer));
     }
@@ -261,10 +263,14 @@ public class S2WindingOperation
             // edges.  It also saves memory, which is important when the graph is very
             // large (e.g. because the input loops have many self-intersections).
             const int kMaxEdgesPerCell = 40;
-            MutableS2ShapeIndex.Options options = new();
-            options.MaxEdgesPerCell = kMaxEdgesPerCell;
-            index_ = new(options);
-            index_.MemoryTracker = builder.Options_.MemoryTracker;
+            MutableS2ShapeIndex.Options options = new()
+            {
+                MaxEdgesPerCell = kMaxEdgesPerCell,
+            };
+            index_ = new(options)
+            {
+                MemoryTracker = builder.Options_.MemoryTracker,
+            };
             index_.Add(new S2BuilderUtil.GraphShape(g_));
         }
 
@@ -383,7 +389,7 @@ public class S2WindingOperation
             List<InputEdgeIdSetId> new_input_edge_ids = new();
             if (!tracker_.AddSpace(new_edges, g.NumEdges - 1)) return;
             if (!tracker_.AddSpace(new_input_edge_ids, g.NumEdges - 1)) return;
-            IdSetLexicon new_input_edge_id_set_lexicon = g.InputEdgeIdSetLexicon;
+            var new_input_edge_id_set_lexicon = g.InputEdgeIdSetLexicon;
 
             // Copy all of the edges except the reference edge.
             for (int e = 0; e < g.NumEdges; ++e)
@@ -404,7 +410,7 @@ public class S2WindingOperation
             // points/polylines in the output using s2builderutil::ClosedSetNormalizer.
             GraphOptions new_options = new(EdgeType.DIRECTED, DegenerateEdges.DISCARD_EXCESS,
                                      DuplicateEdges.MERGE, SiblingPairs.CREATE);
-            Graph new_graph = g.MakeSubgraph(
+            Graph? new_graph = g.MakeSubgraph(
                 new_options, new_edges, new_input_edge_ids,
                 new_input_edge_id_set_lexicon, null, out error, tracker_);
             if (!error.IsOk()) return;
@@ -413,7 +419,7 @@ public class S2WindingOperation
             // into loops.  For each loop we determine the winding number of the region
             // to its left, and if the winding number matches the given rule then we
             // add its edges to result_edges_.
-            if (!ComputeBoundary(new_graph, oracle, error)) return;
+            if (!ComputeBoundary(new_graph!, oracle, out error)) return;
 
             // Now we construct yet another S2Builder::Graph by starting with the edges
             // that bound the desired output region and then processing them according to
@@ -428,18 +434,19 @@ public class S2WindingOperation
                 error = S2Error.OK;
                 return MatchesRule(oracle.CurrentRefWinding);
             };
-            IdSetLexicon result_id_set_lexicon = new_graph.InputEdgeIdSetLexicon;
-            Graph result_graph = new_graph.MakeSubgraph(
+            var result_id_set_lexicon = new_graph.InputEdgeIdSetLexicon;
+            var result_graph = new_graph.MakeSubgraph(
                 result_layer_.GraphOptions_(), result_edges_, result_input_edge_ids_,
                 result_id_set_lexicon, is_full_polygon_predicate, out error, tracker_);
             if (tracker_.Clear(new_edges) && tracker_.Clear(new_input_edge_ids))
             {
-                result_layer_.Build(result_graph, out error);
+                result_layer_.Build(result_graph!, out error);
             }
         }
 
-        private bool ComputeBoundary(Graph g, WindingOracle oracle, S2Error error)
+        private bool ComputeBoundary(Graph g, WindingOracle oracle, out S2Error error)
         {
+            error = S2Error.OK;
             // We assemble the edges into loops using an algorithm similar to
             // S2Builder::Graph::GetDirectedComponents(), except that we also keep track
             // of winding numbers and output the relevant edges as we go along.
@@ -618,9 +625,9 @@ public class S2WindingOperation
         private readonly S2Builder.Layer result_layer_;
 
         // The graph data that will be sent to result_layer_.
-        private List<Edge> result_edges_;
-        private List<InputEdgeIdSetId> result_input_edge_ids_;
+        private readonly List<Edge> result_edges_ = new();
+        private readonly List<InputEdgeIdSetId> result_input_edge_ids_ = new();
 
-        private S2MemoryTracker.Client tracker_;
+        private readonly S2MemoryTracker.Client tracker_;
     }
 }

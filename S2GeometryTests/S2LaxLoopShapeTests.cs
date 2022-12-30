@@ -106,7 +106,7 @@ public class S2LaxLoopShapeTests
     [Fact]
     internal void Test_S2VertexIdLaxLoopShape_EmptyLoop()
     {
-        var shape = new S2VertexIdLaxLoopShape(Array.Empty<int>(), null);
+        S2VertexIdLaxLoopShape shape = new(Array.Empty<int>(), null);
         Assert.Equal(0, shape.NumEdges());
         Assert.Equal(0, shape.NumVertices);
         Assert.Equal(0, shape.NumChains());

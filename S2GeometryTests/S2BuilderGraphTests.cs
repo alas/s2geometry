@@ -23,7 +23,7 @@ public class S2BuilderGraphTests
         Graph g = new(
             options, vertices, edges, input_edge_id_set_ids,
             input_edge_id_set_lexicon, label_set_ids, label_set_lexicon, null);
-        Assert.True(!g.LabelSetIds.Any());
+        Assert.True(!g.LabelSetIds!.Any());
         Assert.Equal(g.LabelSetId(0), IdSetLexicon.kEmptySetId);
         Assert.Equal(g.Labels(0).Count, 0);  // Labels for input edge 0.
         LabelFetcher fetcher = new(g, EdgeType.DIRECTED);

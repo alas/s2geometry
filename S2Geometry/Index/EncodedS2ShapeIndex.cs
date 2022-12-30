@@ -90,6 +90,7 @@
 
 namespace S2Geometry;
 
+using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
@@ -365,13 +366,14 @@ public sealed class EncodedS2ShapeIndex : S2ShapeIndex, IDisposable
 
     private class EncodedS2ShapeIndexEnumerator : IReversableEnumerator<S2ShapeIndexIdCell>
     {
+        private readonly EncodedS2ShapeIndex _index;
         private readonly EncodedS2CellIdVector _cellIds;
         private int position;
 
         public EncodedS2ShapeIndexEnumerator(EncodedS2ShapeIndex index)
-        { _cellIds = index.CellIds; position = -1; }
+        { _index = index; _cellIds = index.CellIds; position = -1; }
 
-        public S2ShapeIndexIdCell Current => new(_cellIds[position], null);
+        public S2ShapeIndexIdCell Current => _index.GetIndexCell(position)!.Value;
 
         object IEnumerator.Current => Current;
 
