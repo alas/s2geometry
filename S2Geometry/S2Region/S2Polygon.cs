@@ -541,9 +541,11 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
     // has no boundary).  "x" should be unit length.
     public S1Angle GetDistanceToBoundary(S2Point x)
     {
-        S2ClosestEdgeQuery.Options options = new();
-        options.IncludeInteriors = (false);
-        var t = new S2ClosestEdgeQuery.PointTarget(x);
+        S2ClosestEdgeQuery.Options options = new()
+        {
+            IncludeInteriors = false,
+        };
+        S2ClosestEdgeQuery.PointTarget t = new(x);
         return new S2ClosestEdgeQuery(Index, options).GetDistance(t).ToAngle();
     }
 
@@ -576,10 +578,12 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
     // polygon has no boundary).  "x" should be unit length.
     public S2Point ProjectToBoundary(S2Point x)
     {
-        S2ClosestEdgeQuery.Options? options = new();
-        options.IncludeInteriors = false;
-        var q = new S2ClosestEdgeQuery(Index, options);
-        var target = new S2ClosestEdgeQuery.PointTarget(x);
+        S2ClosestEdgeQuery.Options? options = new()
+        {
+            IncludeInteriors = false,
+        };
+        S2ClosestEdgeQuery q = new(Index, options);
+        S2ClosestEdgeQuery.PointTarget target = new(x);
         var edge = q.FindClosestEdge(target);
         return q.Project(x, edge);
     }
@@ -1491,9 +1495,9 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
                 depth = loop.Depth;
                 loops_.Add(loop);
             }
-            if (loop_map.ContainsKey(loop))
+            if (loop_map.TryGetValue(loop, out List<S2Loop>? value))
             {
-                var children = loop_map[loop];
+                var children = value;
                 for (var i = children.Count - 1; i >= 0; --i)
                 {
                     var child = children[i];
@@ -1577,9 +1581,11 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
             SnapFunction_ = snap_function
         };
         var result = new List<S2Polyline>();
-        S2PolylineVectorLayer.Options layer_options = new();
-        layer_options.PolylineType_ = S2Builder.Graph.PolylineType.WALK;
-        var op = new S2BooleanOperation(op_type, new S2PolylineVectorLayer(result, layer_options), options);
+        S2PolylineVectorLayer.Options layer_options = new()
+        {
+            PolylineType_ = S2Builder.Graph.PolylineType.WALK,
+        };
+        S2BooleanOperation op = new(op_type, new S2PolylineVectorLayer(result, layer_options), options);
         MutableS2ShapeIndex a_index = new();
         a_index.Add(new S2Polyline.Shape(a));
         if (!op.Build(a_index, Index, out var error))
