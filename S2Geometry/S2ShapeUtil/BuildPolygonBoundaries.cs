@@ -125,8 +125,8 @@ public static partial class S2ShapeUtil
             var polygon = polygons[i];
             var loop = index.Shape(i);
             ValueTuple<S2Shape?> loopKey = new(loop);
-            var itr = children.ContainsKey(loopKey) ? children[loopKey] : null;
-            if (itr != null)
+            var itr = children.TryGetValue(loopKey, out List<S2Shape>? value) ? value : null;
+            if (itr is not null)
             {
                 polygon = itr;
             }
