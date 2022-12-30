@@ -275,7 +275,7 @@ public abstract class S2ShapeIndex
         {
             id = GetCellId(pos);
 
-            if (id != null && id.Value.RangeMax() >= target)
+            if (id is not null && id.Value.RangeMax() >= target)
                 return (CellRelation.INDEXED, pos);
         }
         return (CellRelation.DISJOINT, 0);

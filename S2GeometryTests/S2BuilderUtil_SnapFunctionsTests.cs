@@ -737,7 +737,7 @@ public class S2BuilderUtil_SnapFunctionsTests
     {
         public int CompareTo(IntLatLng? other) 
         {
-            if (other == null) return 1;
+            if (other is null) return 1;
 
             var c = Lat.CompareTo(other.Lat);
             if (c != 0) return c;
@@ -751,7 +751,7 @@ public class S2BuilderUtil_SnapFunctionsTests
     {
         public int CompareTo(LatLngConfig? other)
         {
-            if (other == null) return 1;
+            if (other is null) return 1;
 
             var c = LL0.CompareTo(other.LL0);
             if (c != 0) return c;

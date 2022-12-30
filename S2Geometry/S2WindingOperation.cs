@@ -246,9 +246,8 @@ public class S2WindingOperation
             VertexId ref_v = S2BuilderUtil.SnappedWindingDelta.FindFirstVertexId(ref_input_edge_id, g_);
             System.Diagnostics.Debug.Assert(ref_v >= 0);  // No errors are possible.
             CurrentRefPoint = g_.Vertex(ref_v);
-            S2Error error;
             CurrentRefWinding = ref_winding_in + S2BuilderUtil.SnappedWindingDelta.GetSnappedWindingDelta(
-                ref_in, ref_v, ie => true, builder, g_, out error);
+                ref_in, ref_v, ie => true, builder, g_, out S2Error error);
             System.Diagnostics.Debug.Assert(error.IsOk());  // No errors are possible.
 
             // Winding numbers at other points are computed by counting signed edge
@@ -430,10 +429,11 @@ public class S2WindingOperation
             // empty results (including cases where there are degeneracies).  Note that
             // we can use the winding number at any point on the sphere for this
             // purpose.
-            S2Builder.IsFullPolygonPredicate is_full_polygon_predicate = (Graph g, out S2Error error) => {
+            bool is_full_polygon_predicate(Graph g, out S2Error error)
+            {
                 error = S2Error.OK;
                 return MatchesRule(oracle.CurrentRefWinding);
-            };
+            }
             var result_id_set_lexicon = new_graph.InputEdgeIdSetLexicon;
             var result_graph = new_graph.MakeSubgraph(
                 result_layer_.GraphOptions_(), result_edges_, result_input_edge_ids_,
@@ -456,9 +456,8 @@ public class S2WindingOperation
             var kTempUsage = 3 * sizeof(EdgeId) * g.NumEdges;
             if (!tracker_.Tally(kTempUsage)) return false;
 
-            List<EdgeId> sibling_map = g.GetSiblingMap();
-            List<EdgeId> left_turn_map;
-            g.GetLeftTurnMap(sibling_map, out left_turn_map, out error);
+            var sibling_map = g.GetSiblingMap();
+            g.GetLeftTurnMap(sibling_map, out InputEdgeLoop left_turn_map, out error);
             System.Diagnostics.Debug.Assert(error.IsOk());
 
             // A map from EdgeId to the winding number of the region it bounds.
@@ -560,14 +559,14 @@ public class S2WindingOperation
 
         private bool MatchesRule(int winding)
         {
-            switch (op_.rule_)
+            return op_.rule_ switch
             {
-                case WindingRule.POSITIVE: return winding > 0;
-                case WindingRule.NEGATIVE: return winding < 0;
-                case WindingRule.NON_ZERO: return winding != 0;
-                case WindingRule.ODD: return (winding & 1) != 0;
-            }
-            throw new Exception("Shoul not be possible to get here");
+                WindingRule.POSITIVE => winding > 0,
+                WindingRule.NEGATIVE => winding < 0,
+                WindingRule.NON_ZERO => winding != 0,
+                WindingRule.ODD => (winding & 1) != 0,
+                _ => throw new Exception("Shoul not be possible to get here"),
+            };
         }
 
         private bool MatchesDegeneracy(int winding, int winding_minus, int winding_plus)

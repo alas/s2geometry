@@ -52,7 +52,7 @@ public class S2PointVectorLayer : Layer
                 continue;
             }
             points_.Add(g.Vertex(edge.ShapeId));
-            if (label_set_ids_ != null)
+            if (label_set_ids_ is not null)
             {
                 fetcher.Fetch(edge_id, labels);
                 label_set_ids_.Add(label_set_lexicon_.Add(labels));

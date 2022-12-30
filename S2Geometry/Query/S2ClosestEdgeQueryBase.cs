@@ -298,7 +298,7 @@ public class S2ClosestEdgeQueryBase<Distance> where Distance : IEquatable<Distan
     {
         foreach (var shape in Index)
         {
-            if (shape == null) continue;
+            if (shape is null) continue;
             int num_edges = shape.NumEdges();
             for (int e = 0; e < num_edges; ++e)
             {
@@ -327,7 +327,7 @@ public class S2ClosestEdgeQueryBase<Distance> where Distance : IEquatable<Distan
                 break;
             }
             // If this is already known to be an index cell, just process it.
-            if (entry.IndexCell != null)
+            if (entry.IndexCell is not null)
             {
                 ProcessEdges(entry);
                 continue;
@@ -339,23 +339,23 @@ public class S2ClosestEdgeQueryBase<Distance> where Distance : IEquatable<Distan
             S2CellId id = entry.Id;
             var (pos, _) = Index.SeekCell(id.Child(1).RangeMin());
             var cm1 = Index.GetIndexCell(pos);
-            if (cm1 != null && cm1.Value.Item1 <= id.Child(1).RangeMax())
+            if (cm1 is not null && cm1.Value.Item1 <= id.Child(1).RangeMax())
             {
                 ProcessOrEnqueue(id.Child(1), cm1.Value);
             }
             var cm2 = Index.GetIndexCell(pos - 1);
-            if (cm2 != null && cm2.Value.Item1 >= id.RangeMin())
+            if (cm2 is not null && cm2.Value.Item1 >= id.RangeMin())
             {
                 ProcessOrEnqueue(id.Child(0), cm2.Value);
             }
             var (pos2, _) = Index.SeekCell(id.Child(3).RangeMin());
             var cm3 = Index.GetIndexCell(pos2);
-            if (cm3 != null && cm3.Value.Item1 <= id.RangeMax())
+            if (cm3 is not null && cm3.Value.Item1 <= id.RangeMax())
             {
                 ProcessOrEnqueue(id.Child(3), cm3.Value);
             }
             var cm4 = Index.GetIndexCell(pos - 1);
-            if (cm4 != null && cm4.Value.Item1 >= id.Child(2).RangeMin())
+            if (cm4 is not null && cm4.Value.Item1 >= id.Child(2).RangeMin())
             {
                 ProcessOrEnqueue(id.Child(2), cm4.Value);
             }
@@ -614,7 +614,7 @@ public class S2ClosestEdgeQueryBase<Distance> where Distance : IEquatable<Distan
     // This version is called directly only by InitQueue().
     private void ProcessOrEnqueue2(S2CellId id, S2ShapeIndexCell? index_cell)
     {
-        if (index_cell != null)
+        if (index_cell is not null)
         {
             // If this index cell has only a few edges, then it is faster to check
             // them directly rather than computing the minimum distance to the S2Cell

@@ -187,7 +187,7 @@ public class Encoder : IEquatable<Encoder>
         int new_capacity = Math.Max(current_len + N, 2 * current_len);
 
         var new_buffer = new byte[new_capacity];
-        if (Buffer != null)
+        if (Buffer is not null)
         {
             System.Buffer.BlockCopy(Buffer, 0, new_buffer, 0, current_len);
         }

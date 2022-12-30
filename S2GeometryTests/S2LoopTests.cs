@@ -624,7 +624,7 @@ public class S2LoopTests
 
             var a = MakeCellLoop(a_begin, a_end);
             var b = MakeCellLoop(b_begin, b_end);
-            if (a != null && b != null)
+            if (a is not null && b is not null)
             {
                 bool contained = (a_begin <= b_begin && b_end <= a_end);
                 bool intersects = (a_begin < b_end && b_begin < a_end);

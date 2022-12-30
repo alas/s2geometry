@@ -286,7 +286,7 @@ public static partial class S2
             method = Internal.IntersectionMethod.EXACT;
         }
 
-        if (intersectionMethodTally != null)
+        if (intersectionMethodTally is not null)
         {
             intersectionMethodTally[method]++;
         }

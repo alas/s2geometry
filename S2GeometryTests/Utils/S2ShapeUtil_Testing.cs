@@ -40,7 +40,7 @@ internal class S2ShapeUtil_Testing
         {
             var a_shape = a.Shape(shape_id);
             var b_shape = b.Shape(shape_id);
-            if (a_shape == null || b_shape == null)
+            if (a_shape is null || b_shape is null)
             {
                 Assert.True(a_shape == b_shape);
             }

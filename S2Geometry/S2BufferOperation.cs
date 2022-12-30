@@ -182,13 +182,13 @@ public class S2BufferOperation
         // purpose of keeping degeneracies is to allow points/polylines in the input
         // geometry to be converted back to points/polylines in the output if the
         // client so desires.
-        S2WindingOperation.Options winding_options = new(options.SnapFunction_)
+        S2WindingOperation.Options winding_options = new(Options_.SnapFunction_)
         {
             IncludeDegeneracies = (buffer_sign_ == 0 && Options_.BufferRadius >= S1Angle.Zero),
-            MemoryTracker = options.MemoryTracker
+            MemoryTracker = Options_.MemoryTracker
         };
         op_ = new(result_layer, winding_options);
-        tracker_.Init(options.MemoryTracker);
+        tracker_ = new(Options_.MemoryTracker);
     }
 
     public Options Options_ { get; private set; }
@@ -364,7 +364,7 @@ public class S2BufferOperation
         int max_dimension = -1;
         foreach (var shape in index)
         {
-            if (shape == null) continue;
+            if (shape is null) continue;
 
             max_dimension = Math.Max(max_dimension, shape.Dimension());
             BufferShape(shape);
@@ -784,7 +784,7 @@ public class S2BufferOperation
     // Used internally as a temporary to avoid excessive memory allocation.
     private S2Point[] tmp_vertices_;
 
-    //private readonly S2MemoryTracker.Client tracker_;
+    private readonly S2MemoryTracker.Client tracker_;
 
     // For polylines, specifies whether the end caps should be round or flat.
     // See Options.set_end_cap_style() below.

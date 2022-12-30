@@ -127,7 +127,7 @@ public class LaxPolygonLayer : Layer
     }
     public override void Build(Graph g, out S2Error error)
     {
-        if (label_set_ids_ != null) label_set_ids_.Clear();
+        if (label_set_ids_ is not null) label_set_ids_.Clear();
         if (g.Options.EdgeType_ == EdgeType.DIRECTED)
         {
             BuildDirected(g, out error);
@@ -140,7 +140,7 @@ public class LaxPolygonLayer : Layer
 
     private void Init(S2LaxPolygonShape polygon, LabelSetIds? label_set_ids, IdSetLexicon? label_set_lexicon, Options options)
     {
-        System.Diagnostics.Debug.Assert((label_set_ids == null) == (label_set_lexicon == null));
+        System.Diagnostics.Debug.Assert((label_set_ids is null) == (label_set_lexicon == null));
         polygon_ = polygon;
         label_set_ids_ = label_set_ids;
         label_set_lexicon_ = label_set_lexicon;
@@ -160,7 +160,7 @@ public class LaxPolygonLayer : Layer
     }
     private void AppendEdgeLabels(Graph g, List<EdgeLoop> edge_loops)
     {
-        if (label_set_ids_ == null) return;
+        if (label_set_ids_ is null) return;
 
         List<Int32> labels = new();  // Temporary storage for labels.
         Graph.LabelFetcher fetcher = new(g, options_.EdgeType);

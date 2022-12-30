@@ -175,7 +175,7 @@ public class S2CrossingEdgeQuery
             for (int s = 0; s < num_shape_ids; ++s)
             {
                 var shape = Index.Shape(s);
-                if (shape == null) continue;
+                if (shape is null) continue;
                 int num_shape_edges = shape.NumEdges();
                 for (int e = 0; e < num_shape_edges; ++e)
                 {
@@ -215,7 +215,7 @@ public class S2CrossingEdgeQuery
         return VisitCells(a0, a1, (S2ShapeIndexCell cell) =>
         {
             var clipped = cell.FindClipped(shape.Id);
-            if (clipped == null) return true;
+            if (clipped is null) return true;
             for (int j = 0; j < clipped.NumEdges; ++j)
             {
                 if (!visitor(new(shape.Id, clipped.Edge(j)))) return false;

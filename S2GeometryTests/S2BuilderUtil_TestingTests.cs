@@ -29,7 +29,7 @@ public class S2BuilderUtil_TestingTests
         fetcher.Fetch(0, labels);
         Assert.Equal(new List<int> { 14 }, labels);
         // S2Builder sets a default IsFullPolygonPredicate that returns an error.
-        Assert.True(g.IsFullPolygonPredicate() != null);
+        Assert.True(g.IsFullPolygonPredicate() is not null);
     }
 
     [Fact]

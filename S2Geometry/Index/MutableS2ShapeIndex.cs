@@ -268,7 +268,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         mem_tracker_.Tally(-mem_tracker_.ClientUsageBytes);
         cell_map_.Clear();
         pending_additions_begin_ = 0;
-        if (pending_removals_ != null) pending_removals_.Clear();
+        if (pending_removals_ is not null) pending_removals_.Clear();
         ResetChannel();
         MarkIndexStale();
         if (mem_tracker_.IsActive()) mem_tracker_.Tally(SpaceUsed());
@@ -343,7 +343,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         for (var shape_id = 0; shape_id < num_shapes; ++shape_id)
         {
             var shape = shape_factory[shape_id];
-            if (shape != null) shape.SetId(shape_id);
+            if (shape is not null) shape.SetId(shape_id);
             shapes_.Add(shape);
         }
 
@@ -518,7 +518,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         // client is free to delete "shape" once this call is finished.
 
         var shape = shapes_[shape_id];
-        System.Diagnostics.Debug.Assert(shape != null);
+        System.Diagnostics.Debug.Assert(shape is not null);
         if (shape_id < pending_additions_begin_)
         {
             var num_edges = shape.NumEdges();
@@ -528,7 +528,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
                 edges.Add(shape.GetEdge(e));
             }
 
-            if (pending_removals_ == null)
+            if (pending_removals_ is null)
             {
                 if (!mem_tracker_.Tally(Marshal.SizeOf<List<RemovedShape>>()))
                 {
@@ -593,7 +593,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
                 size += clipped.NumEdges * sizeof(Int32);
             }
         }
-        if (pending_removals_ != null)
+        if (pending_removals_ is not null)
         {
             size += Marshal.SizeOf(pending_removals_);
             size += pending_removals_.Count * Marshal.SizeOf(typeof(RemovedShape));
@@ -720,7 +720,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
             }
 
             InteriorTracker tracker = new();
-            if (pending_removals_ != null)
+            if (pending_removals_ is not null)
             {
                 // The first batch implicitly includes all shapes being removed.
                 foreach (var pending_removal in pending_removals_)
@@ -739,7 +739,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
                 ++beginShapeId, beginEdgeId = 0)
             {
                 var shape = shapes_[beginShapeId];
-                if (shape == null) continue;  // Already removed.
+                if (shape is null) continue;  // Already removed.
                 int edges_end = beginShapeId == batch.End.ShapeId
                     ? batch.End.EdgeId
                     : shape.NumEdges();
@@ -784,7 +784,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         var res = new List<BatchDescriptor>();
         // Count the edges being removed and added.
         var num_edges_removed = 0;
-        if (pending_removals_ != null)
+        if (pending_removals_ is not null)
         {
             foreach (var pending_removal in pending_removals_)
             {
@@ -807,7 +807,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         for (int id = pending_additions_begin_; id < shapes_.Count; ++id)
         {
             var shape = shapes_[id];
-            if (shape != null) batch_gen.AddShape(id, shape.NumEdges());
+            if (shape is not null) batch_gen.AddShape(id, shape.NumEdges());
         }
         return batch_gen.Finish();
     }
@@ -895,7 +895,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         var edge_id = sample_interval / 2;
         var actual_sample_size = (batch.NumEdges + edge_id) / sample_interval;
         var face_count = new int[6] { 0, 0, 0, 0, 0, 0 };
-        if (pending_removals_ != null)
+        if (pending_removals_ is not null)
         {
             foreach (var removed in pending_removals_)
             {
@@ -914,7 +914,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
              ++beginShapeId, beginEdgeId = 0)
         {
             var shape = shapes_[begin.ShapeId];
-            if (shape == null) continue;  // Already removed.
+            if (shape is null) continue;  // Already removed.
             int edges_end = begin.ShapeId == batch.End.ShapeId ? batch.End.EdgeId
                 : shape.NumEdges();
             edge_id += edges_end - begin.EdgeId;
@@ -1486,7 +1486,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
             var clipped = cell.Clipped(s);
             int shape_id = clipped.ShapeId;
             var shape = shapes_[shape_id];
-            if (shape == null) continue;  // This shape is being removed.
+            if (shape is null) continue;  // This shape is being removed.
             int num_edges = clipped.NumEdges;
 
             // If this shape has an interior, start tracking whether we are inside the

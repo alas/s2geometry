@@ -167,7 +167,7 @@ public class S2PolylineVectorLayer : Layer
         var edge_polylines = g.GetPolylines(
             options_.PolylineType_);
         polylines_.Capacity = edge_polylines.Count;
-        if (label_set_ids_ != null) label_set_ids_.Capacity = edge_polylines.Count;
+        if (label_set_ids_ is not null) label_set_ids_.Capacity = edge_polylines.Count;
         var vertices = new List<S2Point>();  // Temporary storage for vertices.
         var labels = new List<Label>();  // Temporary storage for labels.
         foreach (var edge_polyline in edge_polylines)
@@ -184,7 +184,7 @@ public class S2PolylineVectorLayer : Layer
                 polyline.FindValidationError(out error);
             }
             polylines_.Add(polyline);
-            if (label_set_ids_ != null)
+            if (label_set_ids_ is not null)
             {
                 var fetcher = new Graph.LabelFetcher(g, options_.EdgeType_);
                 var polyline_labels = new List<Int32>(edge_polyline.Count);
@@ -202,7 +202,7 @@ public class S2PolylineVectorLayer : Layer
         LabelSetIds? label_set_ids, IdSetLexicon? label_set_lexicon,
         Options options)
     {
-        System.Diagnostics.Debug.Assert((label_set_ids == null) == (label_set_lexicon == null));
+        System.Diagnostics.Debug.Assert((label_set_ids is null) == (label_set_lexicon is null));
         polylines_ = polylines;
         label_set_ids_ = label_set_ids;
         label_set_lexicon_ = label_set_lexicon;

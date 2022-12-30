@@ -952,7 +952,7 @@ public class S2BooleanOperation
             // as soon as the result is known to be non-empty.
             private bool AddEdge(Edge a_id, S2Shape.Edge a, int dimension, int interior_crossings)
             {
-                if (builder_ == null) return false;  // Boolean output.
+                if (builder_ is null) return false;  // Boolean output.
                 if (interior_crossings > 0)
                 {
                     // Add the edges that cross this edge to the output so that
@@ -990,7 +990,7 @@ public class S2BooleanOperation
             // as soon as the result is known to be non-empty.
             private bool AddPointEdge(S2Point p, int dimension)
             {
-                if (builder_ == null) return false;  // Boolean output.
+                if (builder_ is null) return false;  // Boolean output.
                 if (!prev_inside_) SetClippingState(kSetInside, true);
                 if (!tracker_.AddSpace(input_dimensions_, 1)) return false;
                 input_dimensions_.Add((sbyte)dimension);
@@ -1765,7 +1765,7 @@ public class S2BooleanOperation
             private int index_;
         }
 
-        private bool IsBooleanOutput() => op_.result_empty_ != null;
+        private bool IsBooleanOutput() => op_.result_empty_ is not null;
 
         // All of the methods below support "early exit" in the case of boolean
         // results by returning "false" as soon as the result is known to be
@@ -1880,7 +1880,7 @@ public class S2BooleanOperation
                 for (int shape_id = 0; shape_id < num_shape_ids; ++shape_id)
                 {
                     var a_shape = a_index.Shape(shape_id);
-                    if (a_shape == null) continue;
+                    if (a_shape is null) continue;
 
                     // If region A is being subtracted from region B, points and polylines
                     // in region A can be ignored since these shapes never contribute to the
@@ -1942,7 +1942,7 @@ public class S2BooleanOperation
             for (var s = index.NumShapeIds(); --s >= 0;)
             {
                 var shape = index.Shape(s);
-                if (shape != null && shape.Dimension() == 2) return true;
+                if (shape is not null && shape.Dimension() == 2) return true;
             }
             return false;
         }

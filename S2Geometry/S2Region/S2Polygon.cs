@@ -1497,7 +1497,7 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
                 for (var i = children.Count - 1; i >= 0; --i)
                 {
                     var child = children[i];
-                    //System.Diagnostics.Debug.Assert(child != null);
+                    //System.Diagnostics.Debug.Assert(child is not null);
                     child!.Depth = depth + 1;
                     loop_stack.Add(child);
                 }
@@ -1957,7 +1957,7 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
         var current_loop_vertices = 0;
         for (var i = 0; i < NumLoops(); ++i)
         {
-            //if NumLoops() != 0 => all_vertices != null
+            //if NumLoops() != 0 => all_vertices is not null
             loops_[i].EncodeCompressed(encoder, all_vertices!, current_loop_vertices, snap_level);
             current_loop_vertices += loops_[i].NumVertices;
         }
@@ -2077,10 +2077,10 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
                 }
                 for (var i = 0; i < num_loops; ++i)
                 {
-                    if (loop_starts_ != null) loop_starts_[i] = offset;
+                    if (loop_starts_ is not null) loop_starts_[i] = offset;
                     offset += polygon.Loop(i).NumVertices;
                 }
-                if (loop_starts_ != null) loop_starts_[num_loops] = offset;
+                if (loop_starts_ is not null) loop_starts_[num_loops] = offset;
             }
         }
 
@@ -2134,7 +2134,7 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
         public sealed override Chain GetChain(int i)
         {
             System.Diagnostics.Debug.Assert(i < NumChains());
-            if (loop_starts_ != null)
+            if (loop_starts_ is not null)
             {
                 var start = loop_starts_[i];
                 return new Chain(start, loop_starts_[i + 1] - start);
@@ -2162,7 +2162,7 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
         {
             System.Diagnostics.Debug.Assert(e < NumEdges());
             int i;
-            if (loop_starts_ == null)
+            if (loop_starts_ is null)
             {
                 // When the number of loops is small, linear search is faster.  Most often
                 // there is exactly one loop and the code below executes zero times.

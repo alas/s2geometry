@@ -586,7 +586,7 @@ public class MutableS2ShapeIndexTests
             for (int id = 0; id < index.NumShapeIds(); ++id)
             {
                 S2Shape shape = index.Shape(id);
-                S2ClippedShape clipped = null;
+                S2ClippedShape? clipped = null;
                 if (!done) clipped = it.Current.Item2.FindClipped(id);
 
                 // First check that contains_center() is set correctly.
@@ -596,17 +596,17 @@ public class MutableS2ShapeIndexTests
                 }
                 if (!done)
                 {
-                    bool contains_center = clipped != null && clipped.ContainsCenter;
+                    bool contains_center = clipped is not null && clipped.ContainsCenter;
                     ValidateInterior(shape, it.Current.Item1, contains_center);
                     S2PaddedCell pcell = new(it.Current.Item1, kCellPadding);
-                    if (shape != null)
+                    if (shape is not null)
                     {
                         num_containing_shapes +=
                             shape.ContainsBruteForce(pcell.GetEntryVertex()) ? 1 : 0;
                     }
                 }
                 // If this shape has been released, it should not be present at all.
-                if (shape == null)
+                if (shape is null)
                 {
                     Assert.Null(clipped);
                     continue;
@@ -621,7 +621,7 @@ public class MutableS2ShapeIndexTests
                     }
                     if (!done)
                     {
-                        bool has_edge = clipped != null && clipped.ContainsEdge(e);
+                        bool has_edge = clipped is not null && clipped.ContainsEdge(e);
                         ValidateEdge(edge.V0, edge.V1, it.Current.Item1, has_edge);
                         int max_level = GetEdgeMaxLevel(edge);
                         if (has_edge)
@@ -668,7 +668,7 @@ public class MutableS2ShapeIndexTests
     // the cell center and verify that this matches "index_contains_center".
     private static void ValidateInterior(S2Shape shape, S2CellId id, bool index_contains_center)
     {
-        if (shape == null)
+        if (shape is null)
         {
             Assert.False(index_contains_center);
         }

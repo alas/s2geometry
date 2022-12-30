@@ -244,7 +244,7 @@ public class S2MaxDistanceShapeIndexTarget : S2MaxDistanceTargets
         // the code with S2BooleanOperation.
         foreach (var shape in index_)
         {
-            if (shape == null) continue;
+            if (shape is null) continue;
             int num_chains = shape.NumChains();
             // Shapes that don't have any edges require a special case (below).
             var tested_point = false;

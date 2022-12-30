@@ -198,7 +198,7 @@ public class S2MemoryTracker
         public S2MemoryTracker? Tracker { get; private set; } = null;
 
         // Returns true if this client has been initialized.
-        public bool IsActive() { return Tracker != null; }
+        public bool IsActive() { return Tracker is not null; }
 
         // When a Client object is destroyed, any remaining memory is subtracted
         // from the associated S2MemoryTracker (under the assumption that the
@@ -329,7 +329,7 @@ public class S2MemoryTracker
         AllocBytes += Math.Max(0L, delta_bytes);
         MaxUsageBytes = Math.Max(MaxUsageBytes, UsageBytes);
         if (UsageBytes > LimitBytes && IsOk()) SetLimitExceededError();
-        if (PeriodicCallback != null && AllocBytes >= CallbackAllocLimitBytes)
+        if (PeriodicCallback is not null && AllocBytes >= CallbackAllocLimitBytes)
         {
             CallbackAllocLimitBytes = AllocBytes + CallbackAllocDeltaBytes;
             if (IsOk()) PeriodicCallback();

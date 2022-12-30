@@ -450,7 +450,7 @@ public class S2BuilderGraphTests
         foreach (var e in input)
         {
             edges.Add(new Edge(e.Item1, e.Item2));
-            if (e.InputIds != null)
+            if (e.InputIds is not null)
                 input_id_set_ids.Add(id_set_lexicon.Add(e.InputIds));
         }
         Graph.ProcessEdges(options, edges, input_id_set_ids, id_set_lexicon, out var error);

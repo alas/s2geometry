@@ -72,7 +72,7 @@ public class S2ShapeNestingQuery
     public List<ChainRelation> ComputeShapeNesting(int shape_id)
     {
         var shape = Index.Shape(shape_id);
-        if (shape == null || shape.NumChains() == 0)
+        if (shape is null || shape.NumChains() == 0)
         {
             return new();
         }

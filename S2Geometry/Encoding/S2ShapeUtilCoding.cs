@@ -156,7 +156,7 @@ public static class S2ShapeUtilCoding
         foreach (var shape in index)
         {
             var sub_encoder = shape_vector.AddViaEncoder();
-            if (shape == null) continue;  // Encode as zero bytes.
+            if (shape is null) continue;  // Encode as zero bytes.
 
             sub_encoder.Ensure(Encoder.kVarintMax32);
             sub_encoder.PutVarInt32((int)shape.GetTypeTag());
@@ -284,7 +284,7 @@ public static class S2ShapeUtilCoding
             get
             {
                 var shape = index_.Shape(shape_id);
-                if (shape == null) return null;
+                if (shape is null) return null;
                 return new S2WrappedShape(shape);
             }
         }
@@ -308,7 +308,7 @@ public static class S2ShapeUtilCoding
         var shape_vector = new StringVectorEncoder();
         foreach (var shape in index)
         {
-            System.Diagnostics.Debug.Assert(shape != null);
+            System.Diagnostics.Debug.Assert(shape is not null);
             (shape as IEncoder)!.Encode(shape_vector.AddViaEncoder(), hint);
         }
         shape_vector.Encode(encoder);

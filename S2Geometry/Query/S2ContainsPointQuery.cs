@@ -78,7 +78,7 @@ public class S2ContainsPointQuery<TIndex> where TIndex : S2ShapeIndex
         var icell = Index.GetIndexCell(pos);
         var cell = icell.Value.Item2;
         var clipped = cell.FindClipped(shape.Id);
-        if (clipped == null) return false;
+        if (clipped is null) return false;
         return ShapeContains(icell.Value.Item1, clipped, p);
     }
 

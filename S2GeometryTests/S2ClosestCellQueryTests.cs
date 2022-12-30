@@ -184,7 +184,7 @@ public class S2ClosestCellQueryTests
         var query_results = query.FindClosestCells(target);
         Assert.True(query_results.Count <= query.Options_.MaxResults);
         var region = query.Options_.Region;
-        if (region == null && query.Options_.MaxDistance== S1ChordAngle.Infinity)
+        if (region is null && query.Options_.MaxDistance== S1ChordAngle.Infinity)
         {
             // We can predict exactly how many cells should be returned.
             Assert.Equal(Math.Min(query.Options_.MaxResults,
@@ -194,7 +194,7 @@ public class S2ClosestCellQueryTests
         foreach (var result in query_results)
         {
             // Check that the cell satisfies the region() condition.
-            if (region != null) Assert.True(region.MayIntersect(new S2Cell(result.CellId)));
+            if (region is not null) Assert.True(region.MayIntersect(new S2Cell(result.CellId)));
 
             // Check that it satisfies the max_distance() condition.
             Assert.True(result.Distance < query.Options_.MaxDistance);

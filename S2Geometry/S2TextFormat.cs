@@ -568,7 +568,7 @@ public static class S2TextFormat
             var count = 0;
             foreach (var shape in index)
             {
-                if (shape == null || shape.Dimension() != dim) continue;
+                if (shape is null || shape.Dimension() != dim) continue;
 
                 sb.Append((count > 0) ? " | " : (dim > 0) ? " " : "");
                 for (var i = 0; i < shape.NumChains(); ++i, ++count)

@@ -41,7 +41,7 @@ public class LaxPolylineLayer : S2Builder.Layer
     public LaxPolylineLayer(S2LaxPolylineShape polyline, LabelSetIds? label_set_ids,
                    IdSetLexicon? label_set_lexicon, Options? options = null)
     {
-        System.Diagnostics.Debug.Assert((label_set_ids == null) == (label_set_lexicon == null));
+        System.Diagnostics.Debug.Assert((label_set_ids is null) == (label_set_lexicon is null));
         polyline_ = polyline;
         label_set_ids_ = label_set_ids;
         label_set_lexicon_ = label_set_lexicon;
@@ -79,7 +79,7 @@ public class LaxPolylineLayer : S2Builder.Layer
         {
             vertices.Add(g.Vertex(g.GetEdge(e).EdgeId));
         }
-        if (label_set_ids_ != null)
+        if (label_set_ids_ is not null)
         {
             S2Builder.Graph.LabelFetcher fetcher = new(g, options_.edge_type_);
             List<Label> labels = new();  // Temporary storage for labels.

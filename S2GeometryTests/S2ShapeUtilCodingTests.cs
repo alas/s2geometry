@@ -105,6 +105,6 @@ public class S2ShapeUtilCodingTests
 
         // And nullptr after that.
         var shape3 = shape_factory[0];
-        Assert.True(shape3 == null);
+        Assert.True(shape3 is null);
     }
 }

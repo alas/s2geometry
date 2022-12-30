@@ -16,7 +16,7 @@ public static partial class S2ShapeUtil
         int num_edges = 0;
         foreach (var shape in index)
         {
-            if (shape == null) continue;
+            if (shape is null) continue;
             num_edges += shape.NumEdges();
             if (num_edges >= max_edges) break;
         }

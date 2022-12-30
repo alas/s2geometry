@@ -149,7 +149,7 @@ public class S2ClosestPointQueryTests
         var query_results = query.FindClosestPoints(target);
         Assert.True(query_results.Count <= query.Options_.MaxResults);
         var region = query.Options_.Region;
-        if (region == null && query.Options_.MaxDistance.Equals(S1ChordAngle.Infinity)) {
+        if (region is null && query.Options_.MaxDistance.Equals(S1ChordAngle.Infinity)) {
             // We can predict exactly how many points should be returned.
             Assert.Equal(Math.Min(query.Options_.MaxResults,
                                query.Index().NumPoints()),
@@ -157,7 +157,7 @@ public class S2ClosestPointQueryTests
         }
         foreach (var result in query_results) {
             // Check that the point satisfies the region() condition.
-            if (region != null) Assert.True(region.Contains(result.Point));
+            if (region is not null) Assert.True(region.Contains(result.Point));
 
             // Check that it satisfies the max_distance() condition.
             Assert.True(result.Distance < query.Options_.MaxDistance);

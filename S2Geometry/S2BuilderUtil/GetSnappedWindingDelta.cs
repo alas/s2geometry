@@ -194,7 +194,7 @@ public class SnappedWindingDelta
             var edge = g.GetEdge(e);
             foreach (var input_id in g.InputEdgeIds(e))
             {
-                if (input_edge_filter != null && input_edge_filter(input_id)) continue;
+                if (input_edge_filter is not null && input_edge_filter(input_id)) continue;
                 var snap = input_id_edge_map[input_id];
                 snap.input = builder.InputEdge(input_id);
                 if (edge.ShapeId != ref_v) snap.v_in = edge.ShapeId;
@@ -426,7 +426,7 @@ public class SnappedWindingDelta
                     break;
                 }
             }
-            if (snapCopy == null)
+            if (snapCopy is null)
             {
                 snapKey = input_vertex_edge_map.First().Point;
                 // Pick an arbitrary edge to start a closed loop.

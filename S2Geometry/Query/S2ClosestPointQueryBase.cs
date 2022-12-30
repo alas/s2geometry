@@ -294,7 +294,7 @@ public class S2ClosestPointQueryBase<Distance, Data> where Distance : IEquatable
                 MaybeAddResult(it_!.Value.Point, it_.Value.Data);
             }
             var it = Index.Get(--i);
-            if (it != null)
+            if (it is not null)
             {
                 MaybeAddResult(it.Value.Point, it.Value.Data);
             }
@@ -306,7 +306,7 @@ public class S2ClosestPointQueryBase<Distance, Data> where Distance : IEquatable
         if (!index_covering_.Any()) InitCovering();
         var initial_cells = index_covering_;
         var region = Options_.Region;
-        if (region != null)
+        if (region is not null)
         {
             var coverer = new S2RegionCoverer();
             coverer.Options_.MaxCells = 4;
@@ -401,7 +401,7 @@ public class S2ClosestPointQueryBase<Distance, Data> where Distance : IEquatable
         if (!target_.UpdateMinDistance(point, ref distance)) return;
 
         var region = Options_.Region;
-        if (region != null && !region.Contains(point)) return;
+        if (region is not null && !region.Contains(point)) return;
 
         var result = new Result(distance, point, data);
         if (Options_.MaxResults == 1)
@@ -464,7 +464,7 @@ public class S2ClosestPointQueryBase<Distance, Data> where Distance : IEquatable
                 var distance = distance_limit_;
                 // We check "region_" second because it may be relatively expensive.
                 if (target_.UpdateMinDistance(cell, ref distance) &&
-                    (Options_.Region == null || Options_.Region.MayIntersect(cell)))
+                    (Options_.Region is null || Options_.Region.MayIntersect(cell)))
                 {
                     if (use_conservative_cell_distance_)
                     {

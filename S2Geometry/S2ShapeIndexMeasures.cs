@@ -18,7 +18,7 @@ public static class S2ShapeIndexMeasures
         for (int i = 0; i < index.NumShapeIds(); ++i)
         {
             var shape = index.Shape(i);
-            if (shape != null) dim = Math.Max(dim, shape.Dimension());
+            if (shape is not null) dim = Math.Max(dim, shape.Dimension());
         }
         return dim;
     }
@@ -31,7 +31,7 @@ public static class S2ShapeIndexMeasures
         for (int i = 0; i < index.NumShapeIds(); ++i)
         {
             var shape = index.Shape(i);
-            if (shape != null && shape.Dimension() == 0)
+            if (shape is not null && shape.Dimension() == 0)
             {
                 count += shape.NumEdges();
             }
@@ -51,7 +51,7 @@ public static class S2ShapeIndexMeasures
         for (int i = 0; i < index.NumShapeIds(); ++i)
         {
             var shape = index.Shape(i);
-            if (shape != null) length += S2.GetLength(shape);
+            if (shape is not null) length += S2.GetLength(shape);
         }
         return length;
     }
@@ -68,7 +68,7 @@ public static class S2ShapeIndexMeasures
         for (int i = 0; i < index.NumShapeIds(); ++i)
         {
             var shape = index.Shape(i);
-            if (shape != null) perimeter += S2.GetPerimeter(shape);
+            if (shape is not null) perimeter += S2.GetPerimeter(shape);
         }
         return perimeter;
     }
@@ -87,7 +87,7 @@ public static class S2ShapeIndexMeasures
         for (int i = 0; i < index.NumShapeIds(); ++i)
         {
             var shape = index.Shape(i);
-            if (shape != null) area += S2.GetArea(shape);
+            if (shape is not null) area += S2.GetArea(shape);
         }
         return area;
     }
@@ -103,7 +103,7 @@ public static class S2ShapeIndexMeasures
         for (int i = 0; i < index.NumShapeIds(); ++i)
         {
             var shape = index.Shape(i);
-            if (shape != null) area += S2.GetApproxArea(shape);
+            if (shape is not null) area += S2.GetApproxArea(shape);
         }
         return area;
     }
@@ -135,7 +135,7 @@ public static class S2ShapeIndexMeasures
         for (int i = 0; i < index.NumShapeIds(); ++i)
         {
             var shape = index.Shape(i);
-            if (shape != null && shape.Dimension() == dim)
+            if (shape is not null && shape.Dimension() == dim)
             {
                 centroid += S2.GetCentroid(shape);
             }

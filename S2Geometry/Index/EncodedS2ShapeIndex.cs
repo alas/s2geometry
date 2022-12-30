@@ -215,7 +215,7 @@ public sealed class EncodedS2ShapeIndex : S2ShapeIndex, IDisposable
     public override S2Shape? Shape(int id)
     {
         var shape = Shapes[id];
-        if (shape != null) return shape;
+        if (shape is not null) return shape;
         return GetShape(id);
     }
 
@@ -225,11 +225,11 @@ public sealed class EncodedS2ShapeIndex : S2ShapeIndex, IDisposable
     // Like all non-methods, this method is not thread-safe.
     public override void Minimize()
     {
-        if (Cells == null) return;  // Not initialized yet.
+        if (Cells is null) return;  // Not initialized yet.
 
         foreach (var atomic_shape in Shapes)
         {
-            if (atomic_shape.Value != null)
+            if (atomic_shape.Value is not null)
                 Shapes[atomic_shape.Key] = null;
         }
 
@@ -310,7 +310,7 @@ public sealed class EncodedS2ShapeIndex : S2ShapeIndex, IDisposable
         if (Cells[index].IsValueCreated)
         {
             var cell2 = Cells[index].Value;
-            if (cell2 != null) return new(GetCellId(index)!.Value, cell2);
+            if (cell2 is not null) return new(GetCellId(index)!.Value, cell2);
         }
 
         // Decode the cell before acquiring the spinlock in order to minimize the
@@ -326,7 +326,7 @@ public sealed class EncodedS2ShapeIndex : S2ShapeIndex, IDisposable
         if (Cells[index].IsValueCreated)
         {
             var cell2 = Cells[index].Value;
-            if (cell2 != null) return new(GetCellId(index)!.Value, cell2);
+            if (cell2 is not null) return new(GetCellId(index)!.Value, cell2);
         }
 
         // Update the cell, setting cells_[i] before cell_decoded(i).

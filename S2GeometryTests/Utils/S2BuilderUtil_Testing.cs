@@ -113,7 +113,7 @@ internal class IndexMatchingLayer : Layer
         }
         foreach (var shape in index_)
         {
-            if (shape == null) continue;
+            if (shape is null) continue;
             if (dimension_ >= 0 && shape.Dimension() != dimension_) continue;
             for (int e = shape.NumEdges(); --e >= 0;)
             {

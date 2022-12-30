@@ -66,7 +66,7 @@ public class S2ShapeUtilEdgeEnumeratorTests
         var result = new List<S2Shape.Edge>();
         foreach (var shape in index)
         {
-            if (shape == null) continue;
+            if (shape is null) continue;
 
             for (var j = 0; j < shape.NumEdges(); ++j)
             {

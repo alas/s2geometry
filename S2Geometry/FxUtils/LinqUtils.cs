@@ -72,7 +72,7 @@ public static class LinqUtils
     /// <remarks>from: https://stackoverflow.com/questions/16323386/fast-efficient-way-to-get-index-of-minimum-value-in-listt/16323480</remarks>
     public static int IndexOfMin<T>(this IList<T> self) where T : IComparable<T>
     {
-        if (self == null)
+        if (self is null)
         {
             throw new ArgumentNullException(nameof(self));
         }
@@ -100,7 +100,7 @@ public static class LinqUtils
     /// <remarks>from: https://stackoverflow.com/questions/8094867/good-gethashcode-override-for-list-of-foo-objects-respecting-the-order</remarks>
     public static int GetSequenceHashCode<T>(this IEnumerable<T> list)
     {
-        if (list == null) return 0;
+        if (list is null) return 0;
         const int seedValue = 0x2D2816FE;
         const int primeNumber = 397;
         return list.Aggregate(seedValue, (current, item) => (current * primeNumber)
@@ -145,7 +145,7 @@ public static class LinqUtils
 
     public static int GetLowerBound<T>(this List<T> arr, T value, IComparer<T>? comp)
     {
-        var i = comp == null ? arr.BinarySearch(value) : arr.BinarySearch(0, arr.Count, value, comp);
+        var i = comp is null ? arr.BinarySearch(value) : arr.BinarySearch(0, arr.Count, value, comp);
         if (i < 0) return ~i;
 
         while (i > 0 && comp.Compare(arr[i], value) == 0) i--;

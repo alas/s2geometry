@@ -49,7 +49,7 @@ public static partial class S2ShapeUtil
             {
                 if (++shape_id_ >= index_.NumShapeIds()) break;
                 var shape = index_.Shape(shape_id_);
-                num_edges_ = (shape == null) ? 0 : shape.NumEdges();
+                num_edges_ = (shape is null) ? 0 : shape.NumEdges();
                 edge_id_ = -1;
             }
             return !Done();

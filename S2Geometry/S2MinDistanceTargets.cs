@@ -295,7 +295,7 @@ public class S2MinDistanceShapeIndexTarget : S2MinDistanceTarget
 
         foreach (var shape in index_)
         {
-            if (shape == null) continue;
+            if (shape is null) continue;
             int num_chains = shape.NumChains();
             // Shapes that don't have any edges require a special case (below).
             bool tested_point = false;

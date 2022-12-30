@@ -999,7 +999,7 @@ public partial class S2Builder
             S2ClosestPointQuery<int>.EdgeTarget target = new(v0, v1);
             site_query.FindClosestPoints(target, results);
             var sites = edge_sites_[e];
-            if (sites == null)
+            if (sites is null)
             {
                 sites = new();
                 edge_sites_[e] = sites;

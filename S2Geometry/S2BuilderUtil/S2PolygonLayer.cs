@@ -113,7 +113,7 @@ public class S2PolygonLayer : Layer
 
     public override void Build(Graph g, out S2Error error)
     {
-        if (label_set_ids_ != null) label_set_ids_.Clear();
+        if (label_set_ids_ is not null) label_set_ids_.Clear();
 
         // It's tricky to compute the edge labels for S2Polygons because the
         // S2Polygon.Init methods can reorder and/or invert the loops.  We handle
@@ -182,7 +182,7 @@ public class S2PolygonLayer : Layer
 
     private void Init(S2Polygon polygon, LabelSetIds? label_set_ids, IdSetLexicon? label_set_lexicon, Options options)
     {
-        System.Diagnostics.Debug.Assert((label_set_ids == null) == (label_set_lexicon == null));
+        System.Diagnostics.Debug.Assert((label_set_ids is null) == (label_set_lexicon is null));
         polygon_ = polygon;
         label_set_ids_ = label_set_ids;
         label_set_lexicon_ = label_set_lexicon;
@@ -210,7 +210,7 @@ public class S2PolygonLayer : Layer
     }
     private void AppendEdgeLabels(Graph g, EdgeLoops edge_loops)
     {
-        if (label_set_ids_ == null) return;
+        if (label_set_ids_ is null) return;
 
         var labels = new InputEdgeLoop();  // Temporary storage for labels.
         var fetcher = new Graph.LabelFetcher(g, options_.EdgeType);
@@ -227,7 +227,7 @@ public class S2PolygonLayer : Layer
     }
     private void InitLoopMap(List<S2Loop> loops, LoopMap loop_map)
     {
-        if (label_set_ids_ == null) return;
+        if (label_set_ids_ is null) return;
         for (int i = 0; i < loops.Count; i++)
         {
             S2Loop loop = loops[i];
@@ -236,7 +236,7 @@ public class S2PolygonLayer : Layer
     }
     private void ReorderEdgeLabels(LoopMap loop_map)
     {
-        if (label_set_ids_ == null) return;
+        if (label_set_ids_ is null) return;
 
         var new_ids = new LabelSetIds(label_set_ids_.Count);
         for (int i = 0; i < polygon_.NumLoops(); ++i)

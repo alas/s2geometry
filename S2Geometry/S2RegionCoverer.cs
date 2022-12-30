@@ -382,7 +382,7 @@ public class S2RegionCoverer
     // Passing an argument of null does nothing.
     private void AddCandidate(Candidate candidate, List<S2CellId> result)
     {
-        if (candidate == null) return;
+        if (candidate is null) return;
 
         if (candidate.IsTerminal)
         {
@@ -450,7 +450,7 @@ public class S2RegionCoverer
                 continue;
             }
             var child = NewCandidate(child_cells[i]);
-            if (child != null)
+            if (child is not null)
             {
                 candidate.Children[candidate.NumChildren++] = child;
                 if (child.IsTerminal) ++num_terminals;

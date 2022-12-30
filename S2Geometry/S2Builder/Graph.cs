@@ -264,7 +264,7 @@ public partial class S2Builder
         // Low-level method that returns an integer representing the set of
         // labels associated with a given input edge.  The elements of
         // the IdSet can be accessed using label_set_lexicon().
-        public int LabelSetId(int e) => (LabelSetIds == null || !LabelSetIds.Any())
+        public int LabelSetId(int e) => (LabelSetIds is null || !LabelSetIds.Any())
             ? IdSetLexicon.kEmptySetId
             : LabelSetIds[e];
 
@@ -887,12 +887,12 @@ public partial class S2Builder
             // correctly, we untally these vectors now and retally them at the end.
             var kFinalPerEdge = Marshal.SizeOf(typeof(Edge)) + sizeof(InputEdgeIdSetId);
             var kTempPerEdge = kFinalPerEdge + 2 * sizeof(EdgeId);
-            if (tracker != null)
+            if (tracker is not null)
             {
                 tracker.TallyTemp(edges.Count * kTempPerEdge);
                 tracker.Tally(-edges.Capacity * kFinalPerEdge);
             }
-            if (tracker == null || tracker.Ok())
+            if (tracker is null || tracker.Ok())
             {
                 var processor = new EdgeProcessor(options, edges, input_ids, id_set_lexicon);
                 processor.Run(out error);
@@ -904,7 +904,7 @@ public partial class S2Builder
             {
                 options.EdgeType_ = EdgeType.DIRECTED;
             }
-            if (tracker != null && !tracker.Tally(edges.Capacity * kFinalPerEdge))
+            if (tracker is not null && !tracker.Tally(edges.Capacity * kFinalPerEdge))
             {
                 error = tracker.Error();
             }
@@ -1013,7 +1013,7 @@ public partial class S2Builder
             {
                 // Create a reversed edge for every edge.
                 int n = new_edges.Count;
-                if (tracker == null)
+                if (tracker is null)
                 {
                     new_edges.Capacity = 2 * n;
                     new_input_edge_id_set_ids.Capacity = 2 * n;
@@ -1032,7 +1032,7 @@ public partial class S2Builder
             }
             Graph.ProcessEdges(new_options, new_edges, new_input_edge_id_set_ids,
                                 new_input_edge_id_set_lexicon, out error, tracker);
-            if (tracker != null && !tracker.Ok()) return null;  // Graph would be invalid.
+            if (tracker is not null && !tracker.Ok()) return null;  // Graph would be invalid.
 
             return new Graph(new_options, Vertices, new_edges, new_input_edge_id_set_ids,
                          new_input_edge_id_set_lexicon, LabelSetIds,
