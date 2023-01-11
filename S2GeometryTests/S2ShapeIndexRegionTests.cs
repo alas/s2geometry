@@ -2,7 +2,7 @@ namespace S2Geometry;
 
 public class S2ShapeIndexRegionTests
 {
-    private static S2CellId MakeCellId(string str) => S2CellId.FromDebugString(str);
+    private static S2CellId MakeCellId(string str) => S2CellIdUtils.FromDebugString(str);
 
     // Pad by at least twice the maximum error for reliable results.
     private static readonly double kPadding = 2 * (S2EdgeClipping.kFaceClipErrorUVCoord + S2EdgeClipping.kIntersectsRectErrorUVDist);
@@ -23,7 +23,7 @@ public class S2ShapeIndexRegionTests
     [Fact]
     internal void Test_S2ShapeIndexRegion_GetCapBound()
     {
-        var id = S2CellId.FromDebugString("3/0123012301230123012301230123");
+        var id = S2CellIdUtils.FromDebugString("3/0123012301230123012301230123");
 
         // Add a polygon that is slightly smaller than the cell being tested.
         MutableS2ShapeIndex index = new();
@@ -40,7 +40,7 @@ public class S2ShapeIndexRegionTests
     [Fact]
     internal void Test_S2ShapeIndexRegion_GetRectBound()
     {
-        var id = S2CellId.FromDebugString("3/0123012301230123012301230123");
+        var id = S2CellIdUtils.FromDebugString("3/0123012301230123012301230123");
 
         // Add a polygon that is slightly smaller than the cell being tested.
         MutableS2ShapeIndex index = new();
@@ -98,7 +98,7 @@ public class S2ShapeIndexRegionTests
     {
         Assert.True(false); //TODO
 
-        var id = S2CellId.FromDebugString("3/0123012301230123012301230123");
+        var id = S2CellIdUtils.FromDebugString("3/0123012301230123012301230123");
 
         // Add a polygon that is slightly smaller than the cell being tested.
         MutableS2ShapeIndex index = new();
@@ -120,7 +120,7 @@ public class S2ShapeIndexRegionTests
     [Fact]
     internal void Test_S2ShapeIndexRegion_IntersectsShrunkenCell()
     {
-        var target = S2CellId.FromDebugString("3/0123012301230123012301230123");
+        var target = S2CellIdUtils.FromDebugString("3/0123012301230123012301230123");
 
         // Add a polygon that is slightly smaller than the cell being tested.
         MutableS2ShapeIndex index = new();
@@ -141,7 +141,7 @@ public class S2ShapeIndexRegionTests
     [Fact]
     internal void Test_S2ShapeIndexRegion_IntersectsExactCell()
     {
-        var target = S2CellId.FromDebugString("3/0123012301230123012301230123");
+        var target = S2CellIdUtils.FromDebugString("3/0123012301230123012301230123");
 
         // Adds a polygon that exactly follows a cell boundary.
         MutableS2ShapeIndex index = new();

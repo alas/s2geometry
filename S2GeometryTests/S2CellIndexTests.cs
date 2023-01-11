@@ -160,7 +160,7 @@ public class S2CellIndexTests
         // constructed so that interesting cases are more likely to arise.
         for (int iter = 0; iter < 200; ++iter) {
             Clear();
-            var id = S2CellId.FromDebugString("1/0123012301230123");
+            var id = S2CellIdUtils.FromDebugString("1/0123012301230123");
             var target = new List<S2CellId>();
             for (int i = 0; i < 100; ++i) {
                 if (S2Testing.Random.OneIn(10)) Add(id, i);
@@ -190,7 +190,7 @@ public class S2CellIndexTests
         var ids = new List<S2CellId>();
         foreach (var str in strs)
         {
-            ids.Add(S2CellId.FromDebugString(str));
+            ids.Add(S2CellIdUtils.FromDebugString(str));
         }
         return new S2CellUnion(ids);
     }
@@ -205,7 +205,7 @@ public class S2CellIndexTests
 
     private void Add(string cell_str, int label)
     {
-        Add(S2CellId.FromDebugString(cell_str), label);
+        Add(S2CellIdUtils.FromDebugString(cell_str), label);
     }
 
     private void Add(S2CellUnion cell_union, int label)
@@ -400,11 +400,11 @@ public class S2CellIndexTests
     // (cell_id, label) pairs given by "expected_strs".
     private void ExpectContents(string target_str, S2CellIndex.ContentsEnumerator contents, (string, int)[] expected_strs)
     {
-        var expected = expected_strs.Select(t => new LabelledCell(S2CellId.FromDebugString(t.Item1), t.Item2))
+        var expected = expected_strs.Select(t => new LabelledCell(S2CellIdUtils.FromDebugString(t.Item1), t.Item2))
             .ToList();
 
         var range = _index.GetRangeNodeEnumerator();
-        range.Seek(S2CellId.FromDebugString(target_str).RangeMin());
+        range.Seek(S2CellIdUtils.FromDebugString(target_str).RangeMin());
         contents.StartUnion(range.Current);
 
         var actual = new List<LabelledCell>();

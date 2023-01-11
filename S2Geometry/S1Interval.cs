@@ -481,10 +481,6 @@ public readonly record struct S1Interval
         return (b + Math.PI) - (a - Math.PI);
     }
 
-#if s2debug
-    public double[] Bounds() => new double[2] { Lo, Hi };
-#endif
-
     #endregion
 
     #region Object

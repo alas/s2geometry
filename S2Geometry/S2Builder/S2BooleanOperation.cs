@@ -3066,8 +3066,7 @@ public class EdgeClippingLayer : Layer
         Debug.WriteLine("Edges after clipping: ");
         for (int i = 0; i < new_edges.Count; ++i)
         {
-            Debug.WriteLine(
-                $"  {new_input_edge_ids[i]} ({new_edges[i].ShapeId}, {new_edges[i].EdgeId})");
+            Debug.WriteLine($"  {new_input_edge_ids[i]} ({new_edges[i].ShapeId}, {new_edges[i].EdgeId})");
         }
 #endif
         // Construct one or more subgraphs from the clipped edges and pass them to

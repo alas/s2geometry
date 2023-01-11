@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+
 namespace S2Geometry;
 
 public class S1IntervalTestsBase

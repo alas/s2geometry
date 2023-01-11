@@ -501,19 +501,19 @@ public class S2CellIdTests
     [Fact]
     internal void Test_S2CellId_FromDebugString()
     {
-        Assert.Equal(S2CellId.FromFace(3), S2CellId.FromDebugString("3/"));
+        Assert.Equal(S2CellId.FromFace(3), S2CellIdUtils.FromDebugString("3/"));
         Assert.Equal(S2CellId.FromFace(0).Child(2).Child(1),
-                  S2CellId.FromDebugString("0/21"));
+                  S2CellIdUtils.FromDebugString("0/21"));
         Assert.Equal(S2CellId.FromFace(4).RangeMin(),
-                  S2CellId.FromDebugString("4/000000000000000000000000000000"));
+                  S2CellIdUtils.FromDebugString("4/000000000000000000000000000000"));
         Assert.Equal(S2CellId.None,
-                  S2CellId.FromDebugString("4/0000000000000000000000000000000"));
-        Assert.Equal(S2CellId.None, S2CellId.FromDebugString(""));
-        Assert.Equal(S2CellId.None, S2CellId.FromDebugString("7/"));
-        Assert.Equal(S2CellId.None, S2CellId.FromDebugString(" /"));
-        Assert.Equal(S2CellId.None, S2CellId.FromDebugString("3:0"));
-        Assert.Equal(S2CellId.None, S2CellId.FromDebugString("3/ 12"));
-        Assert.Equal(S2CellId.None, S2CellId.FromDebugString("3/1241"));
+                  S2CellIdUtils.FromDebugString("4/0000000000000000000000000000000"));
+        Assert.Equal(S2CellId.None, S2CellIdUtils.FromDebugString(""));
+        Assert.Equal(S2CellId.None, S2CellIdUtils.FromDebugString("7/"));
+        Assert.Equal(S2CellId.None, S2CellIdUtils.FromDebugString(" /"));
+        Assert.Equal(S2CellId.None, S2CellIdUtils.FromDebugString("3:0"));
+        Assert.Equal(S2CellId.None, S2CellIdUtils.FromDebugString("3/ 12"));
+        Assert.Equal(S2CellId.None, S2CellIdUtils.FromDebugString("3/1241"));
     }
 
     [Fact]

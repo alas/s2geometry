@@ -268,7 +268,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         mem_tracker_.Tally(-mem_tracker_.ClientUsageBytes);
         cell_map_.Clear();
         pending_additions_begin_ = 0;
-        if (pending_removals_ is not null) pending_removals_.Clear();
+        pending_removals_?.Clear();
         ResetChannel();
         MarkIndexStale();
         if (mem_tracker_.IsActive()) mem_tracker_.Tally(SpaceUsed());
@@ -343,7 +343,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         for (var shape_id = 0; shape_id < num_shapes; ++shape_id)
         {
             var shape = shape_factory[shape_id];
-            if (shape is not null) shape.SetId(shape_id);
+            shape?.SetId(shape_id);
             shapes_.Add(shape);
         }
 
@@ -660,8 +660,12 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
     {
         lock (_channelLock)
         {
-            _channelPendingOperations = 0;
+            ResetChannelInternal();
         }
+    }
+    public void ResetChannelInternal()
+    {
+        _channelPendingOperations = 0;
     }
 
     // Given that the given shape is being updated, return true if it is being
@@ -688,15 +692,31 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
     // Apply any pending updates in a thread-safe way.
     private void ApplyUpdatesThreadSafe()
     {
-        lock (_channelLock)
+        if (index_status_ == IndexStatus.FRESH)
         {
-            ApplyUpdatesInternal();
+        }
+        else if (index_status_ == IndexStatus.UPDATING)
+        {
+            // Wait until the updating thread is finished.  We do this by attempting
+            // to lock a mutex that is held by the updating thread.  When this mutex
+            // is unlocked the index_status_ is guaranteed to be FRESH.
+            Awaiter.Wait();
+        }
+        else
+        {
+            lock (_channelLock)
+            {
+                index_status_ = IndexStatus.UPDATING;
+                Awaiter = ApplyUpdatesInternalAsync();
+                index_status_ = IndexStatus.FRESH;
+            }
         }
     }
+    private Task Awaiter;
 
     // This method updates the index by applying all pending additions and
     // removals.  It does *not* update index_status_ (see ApplyUpdatesThreadSafe).
-    private void ApplyUpdatesInternal()
+    private async Task ApplyUpdatesInternalAsync()
     {
         // Check whether we have so many edges to process that we should process
         // them in multiple batches to save memory.  Building the index can use up
@@ -773,7 +793,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
             }
 
         }
-        ResetChannel();
+        ResetChannelInternal();
     }
 
     // Count the number of edges being updated, and break them into several
@@ -2299,12 +2319,12 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         // many edges will be split over several batches if necessary.
         public void AddShape(int shape_id, int num_edges)
         {
-            int batch_remaining = max_batch_size() - batch_size_;
+            int batch_remaining = MaxBatchSize() - batch_size_;
             if (num_edges <= batch_remaining)
             {
                 ExtendBatch(num_edges);
             }
-            else if (num_edges <= next_max_batch_size())
+            else if (num_edges <= NextMaxBatchSize())
             {
                 // Avoid splitting shapes across batches unnecessarily.
                 FinishBatch(0, new ShapeEdgeId(shape_id, 0));
@@ -2317,16 +2337,16 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
                 // divide those edges such that both batches have the same amount of
                 // remaining space relative to their maximum size.
                 int e_begin = 0;
-                while (batch_remaining + next_max_batch_size() < num_edges)
+                while (batch_remaining + NextMaxBatchSize() < num_edges)
                 {
                     e_begin += batch_remaining;
                     FinishBatch(batch_remaining, new ShapeEdgeId(shape_id, e_begin));
                     num_edges -= batch_remaining;
-                    batch_remaining = max_batch_size();
+                    batch_remaining = MaxBatchSize();
                 }
                 // Figure out how many edges to add to the current batch so that it will
                 // have the same amount of remaining space as the next batch.
-                int n = (num_edges + batch_remaining - next_max_batch_size()) / 2;
+                int n = (num_edges + batch_remaining - NextMaxBatchSize()) / 2;
                 FinishBatch(n, new ShapeEdgeId(shape_id, e_begin + n));
                 FinishBatch(num_edges - n, new ShapeEdgeId(shape_id + 1, 0));
             }
@@ -2416,10 +2436,10 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         }
 
         // Returns the maximum number of edges in the current batch.
-        private int max_batch_size() { return max_batch_sizes_[batch_index_]; }
+        private int MaxBatchSize() { return max_batch_sizes_[batch_index_]; }
 
         // Returns the maximum number of edges in the next batch.
-        private int next_max_batch_size() { return max_batch_sizes_[batch_index_ + 1]; }
+        private int NextMaxBatchSize() { return max_batch_sizes_[batch_index_ + 1]; }
 
         // Adds the given number of edges to the current batch.
         private void ExtendBatch(int num_edges)
@@ -2437,7 +2457,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
             batch_index_edges_left_ -= batch_size_;
             while (batch_index_edges_left_ < 0)
             {
-                batch_index_edges_left_ += max_batch_size();
+                batch_index_edges_left_ += MaxBatchSize();
                 batch_index_ += 1;
                 batch_size_ = 0;
             }

@@ -105,26 +105,6 @@ public readonly record struct S2CellId(UInt64 Id) : IComparable<S2CellId>, IDeco
         return cell.Parent(level);
     }
 
-#if s2debug
-    public static S2CellId FromDebugString(string str)
-    {
-        // This function is reasonably efficient, but is only intended for use in
-        // tests.
-        int level = (int)str.Length - 2;
-        if (level < 0 || level > S2.kMaxCellLevel) return None;
-        int face = str[0] - '0';
-        if (face < 0 || face > 5 || str[1] != '/') return None;
-        S2CellId id = FromFace(face);
-        for (int i = 2; i < str.Length; ++i)
-        {
-            int child_pos = str[i] - '0';
-            if (child_pos < 0 || child_pos > 3) return None;
-            id = id.Child(child_pos);
-        }
-        return id;
-    }
-#endif
-
     public static S2CellId FromS2Point(S2Point p)
     {
         int face = S2.XYZtoFaceUV(p, out double u, out double v);

@@ -2079,7 +2079,7 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
             "37.8011647:-122.3247403, 37.8011646:-122.3247408, " +
             "37.8011645:-122.3247411, 37.8011633:-122.3247449, " +
             "37.8011621:-122.3247334");
-        S2Cell cell = new(S2CellId.FromDebugString("4/001013300"));
+        S2Cell cell = new(S2CellIdUtils.FromDebugString("4/001013300"));
         S1Angle snap_radius = S2Testing.MetersToAngle(1.0);
         S1Angle boundary_tolerance =
             S1Angle.FromRadians(0.5 * S2.kMaxWidth.GetValue(S2.kMaxCellLevel - 1)) +

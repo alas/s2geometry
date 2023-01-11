@@ -107,10 +107,6 @@ public readonly record struct R2Point(double X, double Y) : IComparable<R2Point>
         .Select(t => t.Item1)
         .ToArray();
 
-#if s2debug
-    public double[] Bounds() => new double[2] { X, Y };
-#endif
-
     #endregion
 
     #region Operators

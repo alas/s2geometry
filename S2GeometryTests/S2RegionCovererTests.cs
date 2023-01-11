@@ -301,7 +301,7 @@ public class S2RegionCovererTests
         options.MinLevel = (10);
         S2RegionCoverer coverer = new(options);
         var covering = new List<S2CellId>();
-        S2Cell region = new(S2CellId.FromDebugString("1/23"));
+        S2Cell region = new(S2CellIdUtils.FromDebugString("1/23"));
         coverer.GetFastCovering(region, covering);
         Assert.True(covering.Count >= 1 << 16);
     }
@@ -311,7 +311,7 @@ public class S2RegionCovererTests
         var input = new List<S2CellId>();
         foreach (var str in input_str)
         {
-            input.Add(S2CellId.FromDebugString(str));
+            input.Add(S2CellIdUtils.FromDebugString(str));
         }
         S2RegionCoverer coverer = new(options);
         return coverer.IsCanonical(input);
@@ -408,11 +408,11 @@ public class S2RegionCovererTests
         List<S2CellId> expected = new();
         foreach (var str in input_str)
         {
-            actual.Add(S2CellId.FromDebugString(str));
+            actual.Add(S2CellIdUtils.FromDebugString(str));
         }
         foreach (var str in expected_str)
         {
-            expected.Add(S2CellId.FromDebugString(str));
+            expected.Add(S2CellIdUtils.FromDebugString(str));
         }
         S2RegionCoverer coverer = new(options);
         Assert.False(coverer.IsCanonical(actual));

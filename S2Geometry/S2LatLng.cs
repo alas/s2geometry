@@ -302,17 +302,5 @@ public readonly record struct S2LatLng : IComparable<S2LatLng>
 
     public override string ToString() => $"[{Lat()}, {Lng()}]";
 
-#if s2debug
-    /// <summary>
-    /// Exports the latitude and longitude in degrees, separated by a comma.
-    /// e.g. "94.518000,150.300000"
-    /// </summary>
-    public string ToStringInDegrees()
-    {
-        var pt = Normalized();
-        return FormattableString.Invariant($"{pt.LatDegrees():F6},{pt.LngDegrees():F6}");
-    }
-#endif
-
     #endregion
 }

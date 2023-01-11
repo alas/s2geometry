@@ -140,9 +140,9 @@ public readonly record struct S1Angle : IComparable<S1Angle>
     public double Cos() => Math.Cos(Radians);
 
     public double Tan() => Math.Tan(Radians);
-#if s2debug
+
     public double Abs() => Math.Abs(Radians);
-#endif
+
     public static S1Angle Abs(S1Angle a) => new(Math.Abs(a.Radians));
     public S1Angle Normalize()
     {

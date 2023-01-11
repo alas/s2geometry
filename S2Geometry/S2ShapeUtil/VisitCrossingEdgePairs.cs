@@ -499,8 +499,9 @@ public static partial class S2ShapeUtil
             // since such pairs are very common and FindCrossingError() only needs pairs
             // of the form (AB, AC).
             S2Error tmpErr = S2Error.OK;
-            var res = !VisitCrossings(index, CrossingType.ALL, false /*need_adjacent*/, (a, b, is_interior) =>
-                !FindCrossingError(shape, a, b, is_interior, out tmpErr));
+            var res = !VisitCrossings(index, CrossingType.ALL, false /*need_adjacent*/,
+                (a, b, is_interior) =>
+                    !FindCrossingError(shape, a, b, is_interior, out tmpErr));
             error = tmpErr;
             return res;
         }
