@@ -1,5 +1,3 @@
-using System.Runtime.CompilerServices;
-
 namespace S2Geometry;
 
 public class S1IntervalTestsBase
@@ -24,7 +22,7 @@ public class S1IntervalTestsBase
     //    quad2 == [Pi/2, Pi]
     //    quad3 == [-Pi, -Pi/2]
     //    quad4 == [-Pi/2, 0]
-    internal S1IntervalTestsBase()
+    public S1IntervalTestsBase()
     {
         empty = S1Interval.Empty;
         full = S1Interval.Full;

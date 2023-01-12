@@ -12,7 +12,7 @@ public class S2ClosestCellQueryTests
     private const int kNumQueries = 100;
     private static ITestOutputHelper _logger;
 
-    internal S2ClosestCellQueryTests(ITestOutputHelper logger) { _logger = logger; }
+    public S2ClosestCellQueryTests(ITestOutputHelper logger) { _logger = logger; }
 
     [Fact]
     internal void Test_S2ClosestCellQuery_NoCells() {

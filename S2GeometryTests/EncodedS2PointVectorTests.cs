@@ -5,7 +5,7 @@ public class EncodedS2PointVectorTests
     private const int kBlockSize = 16;  // Number of deltas per block in implementation.
     private readonly ITestOutputHelper _logger;
 
-    internal EncodedS2PointVectorTests(ITestOutputHelper logger) { _logger = logger; }
+    public EncodedS2PointVectorTests(ITestOutputHelper logger) { _logger = logger; }
 
     [Fact]
     internal void Test_EncodedS2PointVectorTest_Empty()

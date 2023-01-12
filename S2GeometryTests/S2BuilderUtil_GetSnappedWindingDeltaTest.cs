@@ -11,7 +11,7 @@ public class S2BuilderUtil_GetSnappedWindingDeltaTest
 {
     private readonly ITestOutputHelper _logger;
 
-    internal S2BuilderUtil_GetSnappedWindingDeltaTest(ITestOutputHelper logger) { _logger = logger; }
+    public S2BuilderUtil_GetSnappedWindingDeltaTest(ITestOutputHelper logger) { _logger = logger; }
 
     // This S2Builder layer simply calls s2builderutil::GetSnappedWindingDelta()
     // with the given "ref_input_edge_id" and compares the result to

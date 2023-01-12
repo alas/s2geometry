@@ -6,7 +6,7 @@ public class S2BuilderUtil_LaxPolylineLayerTests
 {
     private static ITestOutputHelper _logger;
 
-    internal S2BuilderUtil_LaxPolylineLayerTests(ITestOutputHelper logger) { _logger = logger; }
+    public S2BuilderUtil_LaxPolylineLayerTests(ITestOutputHelper logger) { _logger = logger; }
 
     private static void TestS2LaxPolylineShape(
                     List<string> input_strs,

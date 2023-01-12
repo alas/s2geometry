@@ -7,7 +7,7 @@ public class S2LaxPolygonShapeTests
 {
     private readonly ITestOutputHelper _logger;
 
-    internal S2LaxPolygonShapeTests(ITestOutputHelper logger) { _logger = logger; }
+    public S2LaxPolygonShapeTests(ITestOutputHelper logger) { _logger = logger; }
 
     // Verifies that EncodedS2LaxPolygonShape behaves identically to
     // S2LaxPolygonShape. Also supports testing that the encoded form is identical

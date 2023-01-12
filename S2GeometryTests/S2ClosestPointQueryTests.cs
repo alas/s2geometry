@@ -14,7 +14,7 @@ public class S2ClosestPointQueryTests
     private const int kNumQueries = 50;
     private static ITestOutputHelper _logger;
 
-    internal S2ClosestPointQueryTests(ITestOutputHelper logger) { _logger = logger; }
+    public S2ClosestPointQueryTests(ITestOutputHelper logger) { _logger = logger; }
 
     [Fact]
     internal void Test_S2ClosestPointQuery_NoPoints() {

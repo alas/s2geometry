@@ -12,7 +12,7 @@ public class S2EdgeTessellatorTests
     private static readonly S1Angle kMaxProjError = S1Angle.FromRadians(2e-15);
     private readonly ITestOutputHelper _logger;
 
-    internal S2EdgeTessellatorTests(ITestOutputHelper logger) { _logger = logger; }
+    public S2EdgeTessellatorTests(ITestOutputHelper logger) { _logger = logger; }
 
     [Fact]
     internal void Test_S2EdgeTessellator_ProjectedNoTessellation() {

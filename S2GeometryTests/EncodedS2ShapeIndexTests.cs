@@ -6,7 +6,7 @@ public class EncodedS2ShapeIndexTests
 {
     private readonly ITestOutputHelper _logger;
 
-    internal EncodedS2ShapeIndexTests(ITestOutputHelper logger) { _logger = logger; }
+    public EncodedS2ShapeIndexTests(ITestOutputHelper logger) { _logger = logger; }
 
     private static void TestEncodedS2ShapeIndex<Shape>(MutableS2ShapeIndex expected, int expected_bytes)
          where Shape : S2Shape, IInitEncoder<Shape>, new()

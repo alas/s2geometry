@@ -12,7 +12,7 @@ public class S2BuilderTests
     private const S2ErrorCode INPUT_EDGE_ID_MISMATCH = S2ErrorCode.USER_DEFINED_START;
     private readonly ITestOutputHelper _logger;
 
-    internal S2BuilderTests(ITestOutputHelper logger) { _logger = logger; }
+    public S2BuilderTests(ITestOutputHelper logger) { _logger = logger; }
 
     [Fact]
     internal void Test_S2Builder_AddShape()

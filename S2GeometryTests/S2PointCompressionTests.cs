@@ -163,21 +163,21 @@ public class S2PointCompressionTests
         // an S2Cell face edge (with ti == S2.kMaxSiTi), and the second point is
         // encodable at snap level 8.  This used to cause the code to try encoding
         // qi = 256 in 8 bits.
-        var points = new S2PointCompression.S2XYZFaceSiTi[]{
-new S2PointCompression.S2XYZFaceSiTi(
-  new S2Point(0.054299323861222645, -0.70606358900180299,
-          0.70606358900180299),
-  2,                      // face
-  956301312, 2147483648,  // si, ti
-  -1                      // level
-),
-new S2PointCompression.S2XYZFaceSiTi(
-  new S2Point(0.056482651436986935, -0.70781701406865505,
-          0.70413406726388494),
-  4,                    // face
-  4194304, 1195376640,  // si, ti
-  8                     // level
-)};
+        var points = new S2PointCompression.S2XYZFaceSiTi[]
+        {
+            new S2PointCompression.S2XYZFaceSiTi(
+                new S2Point(0.054299323861222645, -0.70606358900180299, 0.70606358900180299),
+                2,                      // face
+                956301312, 2147483648,  // si, ti
+                -1                      // level
+            ),
+            new S2PointCompression.S2XYZFaceSiTi(
+                new S2Point(0.056482651436986935, -0.70781701406865505, 0.70413406726388494),
+                4,                    // face
+                4194304, 1195376640,  // si, ti
+                8                     // level
+            )
+        };
 
         Encoder encoder = new();
         S2PointCompression.S2EncodePointsCompressed(points, 8, encoder);

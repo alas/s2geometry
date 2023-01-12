@@ -10,7 +10,7 @@ public class S2BufferOperationTests
 {
     private readonly ITestOutputHelper _logger;
 
-    internal S2BufferOperationTests(ITestOutputHelper logger) { _logger = logger; }
+    public S2BufferOperationTests(ITestOutputHelper logger) { _logger = logger; }
 
     // Convenience function that calls the given lambda expression to add input to
     // an S2BufferOperation and returns the buffered result.

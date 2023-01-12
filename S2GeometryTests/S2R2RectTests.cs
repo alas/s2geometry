@@ -7,7 +7,7 @@ public class S2R2RectTests
 {
     private readonly ITestOutputHelper _logger;
 
-    internal S2R2RectTests(ITestOutputHelper testOutputHelper) => _logger = testOutputHelper;
+    public S2R2RectTests(ITestOutputHelper testOutputHelper) => _logger = testOutputHelper;
 
     [Fact]
     internal void Test_S2R2Rect_EmptyRectangles()

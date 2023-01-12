@@ -4,7 +4,7 @@ public class S2ConvexHullQueryTests
 {
     private readonly ITestOutputHelper _logger;
 
-    internal S2ConvexHullQueryTests(ITestOutputHelper logger) { _logger = logger; }
+    public S2ConvexHullQueryTests(ITestOutputHelper logger) { _logger = logger; }
 
     [Fact]
     internal void Test_S2ConvexHullQuery_NoPoints()

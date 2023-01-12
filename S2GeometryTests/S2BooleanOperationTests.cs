@@ -9,7 +9,7 @@ public class S2BooleanOperationTests
     private readonly ITestOutputHelper _logger;
     private readonly DegeneracyCoverageTest dct;
 
-    internal S2BooleanOperationTests(ITestOutputHelper logger)
+    public S2BooleanOperationTests(ITestOutputHelper logger)
     {
         _logger = logger;
         dct = new DegeneracyCoverageTest(logger);

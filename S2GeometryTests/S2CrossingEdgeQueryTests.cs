@@ -6,7 +6,7 @@ public class S2CrossingEdgeQueryTests
 {
     private readonly ITestOutputHelper _logger;
 
-    internal S2CrossingEdgeQueryTests(ITestOutputHelper logger) { _logger = logger; }
+    public S2CrossingEdgeQueryTests(ITestOutputHelper logger) { _logger = logger; }
 
     // Test edges that lie in the plane of one of the S2 cube edges.  Such edges
     // may lie on the boundary between two cube faces, or pass through a cube

@@ -6,7 +6,7 @@ public class S2RegionCovererTests
     private const string MAX_CELLS = "4,8"; // Comma-separated list of values to use for 'max_cells'
     private const int ITERS = 100000; // Number of random caps to try for each max_cells value
 
-    internal S2RegionCovererTests(ITestOutputHelper testOutputHelper)
+    public S2RegionCovererTests(ITestOutputHelper testOutputHelper)
     {
         _logger = testOutputHelper;
     }

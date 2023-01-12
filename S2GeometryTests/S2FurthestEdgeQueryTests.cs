@@ -12,7 +12,7 @@ public class S2FurthestEdgeQueryTests
     private static readonly S1Angle kTestCapRadius = S2Testing.KmToAngle(10);
     private static ITestOutputHelper _logger;
 
-    internal S2FurthestEdgeQueryTests(ITestOutputHelper logger) { _logger = logger; }
+    public S2FurthestEdgeQueryTests(ITestOutputHelper logger) { _logger = logger; }
 
     [Fact]
     internal void Test_S2FurthestEdgeQuery_NoEdges()

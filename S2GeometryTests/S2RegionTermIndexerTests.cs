@@ -5,7 +5,7 @@ public class S2RegionTermIndexerTests
     private const int iters = 400; // number of iterations for testing
     private readonly ITestOutputHelper _logger;
 
-    internal S2RegionTermIndexerTests(ITestOutputHelper logger) { _logger = logger; }
+    public S2RegionTermIndexerTests(ITestOutputHelper logger) { _logger = logger; }
 
     // We run one test case for each combination of space vs. time optimization,
     // and indexing regions vs. only points.

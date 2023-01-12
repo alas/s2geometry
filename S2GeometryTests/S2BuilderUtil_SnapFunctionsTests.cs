@@ -13,7 +13,7 @@ public class S2BuilderUtil_SnapFunctionsTests
     private static readonly S2CellId kSearchFocusId = S2CellId.FromFace(0).Child(3);
     private readonly ITestOutputHelper _logger;
 
-    internal S2BuilderUtil_SnapFunctionsTests(ITestOutputHelper logger) { _logger = logger; }
+    public S2BuilderUtil_SnapFunctionsTests(ITestOutputHelper logger) { _logger = logger; }
 
     [Fact]
     internal void Test_S2CellIdSnapFunction_LevelToFromSnapRadius()

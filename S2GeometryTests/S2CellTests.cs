@@ -4,7 +4,7 @@ public class S2CellTests
 {
     private readonly ITestOutputHelper _logger;
 
-    internal S2CellTests(ITestOutputHelper logger) { _logger = logger; }
+    public S2CellTests(ITestOutputHelper logger) { _logger = logger; }
 
     [Fact]
     internal void Test_S2Cell_TestFaces()

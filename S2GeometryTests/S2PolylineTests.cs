@@ -7,7 +7,7 @@ public class S2PolylineTests
 {
     private readonly ITestOutputHelper _logger;
 
-    internal S2PolylineTests(ITestOutputHelper logger) => _logger = logger;
+    public S2PolylineTests(ITestOutputHelper logger) => _logger = logger;
 
     [Fact]
     internal void Test_S2Polyline_Basic()

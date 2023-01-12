@@ -4,7 +4,7 @@ public class S2CellUnionTests
 {
     private readonly ITestOutputHelper _logger;
 
-    internal S2CellUnionTests(ITestOutputHelper logger) { _logger = logger; }
+    public S2CellUnionTests(ITestOutputHelper logger) { _logger = logger; }
 
     [Fact]
     internal void Test_S2CellUnion_DefaultConstructor()

@@ -40,7 +40,7 @@ public class S2LoopTests
     private readonly S2Loop loop_i_;
     private readonly S2Loop snapped_loop_a_;
 
-    internal S2LoopTests(ITestOutputHelper logger)
+    public S2LoopTests(ITestOutputHelper logger)
     {
         _logger = logger;
         // The empty loop.

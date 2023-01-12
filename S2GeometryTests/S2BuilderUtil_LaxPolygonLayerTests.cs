@@ -11,7 +11,7 @@ public class S2BuilderUtil_LaxPolygonLayerTests
         DegenerateBoundaries.DISCARD, DegenerateBoundaries.DISCARD_HOLES,
         DegenerateBoundaries.DISCARD_SHELLS, DegenerateBoundaries.KEEP};
 
-    internal S2BuilderUtil_LaxPolygonLayerTests(ITestOutputHelper logger) { _logger = logger; }
+    public S2BuilderUtil_LaxPolygonLayerTests(ITestOutputHelper logger) { _logger = logger; }
 
     [Fact]
     internal void Test_LaxPolygonLayer_Empty()

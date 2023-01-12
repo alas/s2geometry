@@ -7,7 +7,7 @@ public class S2EdgeClippingTests
 {
     private readonly ITestOutputHelper _logger;
 
-    internal S2EdgeClippingTests(ITestOutputHelper logger) { _logger = logger; }
+    public S2EdgeClippingTests(ITestOutputHelper logger) { _logger = logger; }
 
     private void TestFaceClipping(S2Point a_raw, S2Point b_raw)
     {

@@ -204,12 +204,12 @@ public class S2PolygonTests
     #if DEBUG
 
     private readonly S2PolygonDecodeTest decodeTest;
-    
-    #endif
+
+#endif
 
     #endregion
 
-    internal S2PolygonTests(ITestOutputHelper logger)
+    public S2PolygonTests(ITestOutputHelper logger)
     {
         _logger = logger;
         empty_ = new S2Polygon();

@@ -2,9 +2,9 @@
 // and s2polyline_measures_test.  This file only checks the handling of shapes
 // of different dimensions and shapes with multiple edge chains.
 
-using static S2Geometry.S2ShapeUtilCoding;
-
 namespace S2Geometry;
+
+using static S2Geometry.S2ShapeUtilCoding;
 
 public class S2ShapeUtilCodingTests
 {

@@ -12,7 +12,7 @@ public class S2EdgeCrossingsTests
     internal enum Precision { DOUBLE, LONG_DOUBLE, EXACT, SYMBOLIC, NUM_PRECISIONS }
     private static readonly string[] kPrecisionNames = new[] { "double", "long double", "exact", "symbolic" };
 
-    internal S2EdgeCrossingsTests(ITestOutputHelper logger) { _logger = logger; }
+    public S2EdgeCrossingsTests(ITestOutputHelper logger) { _logger = logger; }
 
     // A helper class that keeps track of how often each precision was used and
     // generates a string for logging purposes.

@@ -19,7 +19,7 @@ public class S2ClosestEdgeQueryTests
     private const int kNumQueries = 200;
     private static ITestOutputHelper _logger;
 
-    internal S2ClosestEdgeQueryTests(ITestOutputHelper logger) { _logger = logger; }
+    public S2ClosestEdgeQueryTests(ITestOutputHelper logger) { _logger = logger; }
 
     [Fact]
     internal void Test_S2ClosestEdgeQuery_NoEdges()

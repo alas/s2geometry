@@ -15,7 +15,7 @@ public class S2LoopMeasuresTests
     private readonly S2PointLoopSpan three_leaf_clover_;
     private readonly S2PointLoopSpan tessellated_loop_;
 
-    internal S2LoopMeasuresTests()
+    public S2LoopMeasuresTests()
     {
         // The full loop is represented as a loop with no vertices.
         full_ = new();
