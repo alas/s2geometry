@@ -271,7 +271,7 @@ public class S2FurthestEdgeQuery
     // (in which case edge_id() == -1).
     public Result FindFurthestEdge(Target target)
     {
-        // Debug.Assert(Marshal.SizeOf(typeof(Options)) <= 32); // Consider not copying Options here
+        // Assert.True(Marshal.SizeOf(typeof(Options)) <= 32); // Consider not copying Options here
         Options tmp_options = Options_;
         tmp_options.MaxResults = 1;
         Base.Result base_result = base_.FindClosestEdge(target, tmp_options);
@@ -293,7 +293,7 @@ public class S2FurthestEdgeQuery
     // threshold than it is to calculate the actual maximum distance.
     public bool IsDistanceGreater(Target target, S1ChordAngle limit)
     {
-        // Debug.Assert(Marshal.SizeOf(typeof(Options)) <= 32); // Consider not copying Options here
+        // Assert.True(Marshal.SizeOf(typeof(Options)) <= 32); // Consider not copying Options here
         Options tmp_options = Options_;
         tmp_options.MaxResults = 1;
         tmp_options.MinDistance = limit;
@@ -305,7 +305,7 @@ public class S2FurthestEdgeQuery
     // "target" is exactly equal to "limit".
     public bool IsDistanceGreaterOrEqual(Target target, S1ChordAngle limit)
     {
-        // Debug.Assert(Marshal.SizeOf(typeof(Options)) <= 32); // Consider not copying Options here
+        // Assert.True(Marshal.SizeOf(typeof(Options)) <= 32); // Consider not copying Options here
         Options tmp_options = Options_;
         tmp_options.MaxResults = 1;
         tmp_options.InclusiveMinDistance = (limit);
@@ -319,7 +319,7 @@ public class S2FurthestEdgeQuery
     // or equal to "limit".
     public bool IsConservativeDistanceGreaterOrEqual(Target target, S1ChordAngle limit)
     {
-        // Debug.Assert(Marshal.SizeOf(typeof(Options)) <= 32); // Consider not copying Options here
+        // Assert.True(Marshal.SizeOf(typeof(Options)) <= 32); // Consider not copying Options here
         Options tmp_options = Options_;
         tmp_options.MaxResults = 1;
         tmp_options.ConservativeMinDistance = limit;

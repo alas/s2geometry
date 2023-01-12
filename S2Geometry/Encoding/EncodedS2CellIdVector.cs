@@ -115,8 +115,8 @@ public class EncodedS2CellIdVector
             if (((e_shift & 1) != 0) && (e_max_delta_msb & 7) != 7) --e_shift;
         }
 
-        Debug.Assert(e_base_len <= 7);
-        Debug.Assert(e_shift <= 56);
+        MyDebug.Assert(e_base_len <= 7);
+        MyDebug.Assert(e_shift <= 56);
         encoder.Ensure(2 + e_base_len);
 
         // As described above, "shift" and "base_len" are encoded in 1 or 2 bytes.

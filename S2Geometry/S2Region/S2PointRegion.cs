@@ -19,7 +19,7 @@ public readonly record struct S2PointRegion : IS2Region<S2PointRegion>, IDecoder
     // Create a region containing the given point, which must be unit length.
     public S2PointRegion(S2Point point)
     {
-        Debug.Assert(point.IsUnitLength());
+        MyDebug.Assert(point.IsUnitLength());
         Point = point;
     }
 
@@ -57,7 +57,7 @@ public readonly record struct S2PointRegion : IS2Region<S2PointRegion>, IDecoder
         {
             encoder.PutDouble(Point[i]);
         }
-        Debug.Assert(encoder.Avail() >= 0);
+        MyDebug.Assert(encoder.Avail() >= 0);
     }
 
     // Decodes an S2Point encoded with Encode().  Returns true on success.

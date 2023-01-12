@@ -25,8 +25,8 @@ public static class S2PointLoopSpanExtensions
     // where each index i >= size() is mapped to i - size().
     public static S2Point GetPoint(this IList<S2Point> span, int i)
     {
-        Debug.Assert(i >= 0);
-        Debug.Assert(i < 2 * span.Count);
+        MyDebug.Assert(i >= 0);
+        MyDebug.Assert(i < 2 * span.Count);
 
         int j = i - span.Count;
         return span[j < 0 ? i : j];

@@ -92,8 +92,8 @@ public class S2EdgeCrosserBase
         a_cross_b_ = A.CrossProd(B);
         have_tangents_ = false;
         C = S2Point.Empty;
-        Debug.Assert(a.IsUnitLength());
-        Debug.Assert(b.IsUnitLength());
+        MyDebug.Assert(a.IsUnitLength());
+        MyDebug.Assert(b.IsUnitLength());
     }
 
     // Initialize the object with the given fixed edge AB.
@@ -232,8 +232,8 @@ public class S2EdgeCrosserBase
         B = b;
         a_cross_b_ = A.CrossProd(B);
         have_tangents_ = false;
-        Debug.Assert(a.IsUnitLength());
-        Debug.Assert(b.IsUnitLength());
+        MyDebug.Assert(a.IsUnitLength());
+        MyDebug.Assert(b.IsUnitLength());
         RestartAt(c);
     }
 
@@ -246,7 +246,7 @@ public class S2EdgeCrosserBase
     // void S2CopyingEdgeCrosser::RestartAt(S2Point const& c);
     public void RestartAt(S2Point c)
     {
-        Debug.Assert(c.IsUnitLength());
+        MyDebug.Assert(c.IsUnitLength());
         C = c;
         acb_ = -S2Pred.TriageSign(A, B, C, a_cross_b_);
     }
@@ -261,7 +261,7 @@ public class S2EdgeCrosserBase
     // int S2CopyingEdgeCrosser::CrossingSign(S2Point const& d);
     public int CrossingSign(S2Point d)
     {
-        Debug.Assert(d.IsUnitLength());
+        MyDebug.Assert(d.IsUnitLength());
         // For there to be an edge crossing, the triangles ACB, CBD, BDA, DAC must
         // all be oriented the same way (CW or CCW).  We keep the orientation of ACB
         // as part of our state.  When each new point D arrives, we compute the
@@ -380,17 +380,17 @@ public class S2EdgeCrosserBase
 
         // Otherwise it's time to break out the big guns.
         if (acb_ == 0) acb_ = -S2Pred.ExpensiveSign(A, B, C);
-        Debug.Assert(acb_ != 0);
+        MyDebug.Assert(acb_ != 0);
         if (bda_ == 0) bda_ = S2Pred.ExpensiveSign(A, B, d);
-        Debug.Assert(bda_ != 0);
+        MyDebug.Assert(bda_ != 0);
         if (bda_ != acb_) return -1;
 
         var c_cross_d = C.CrossProd(d);
         int cbd = -S2Pred.Sign(C, d, B, c_cross_d);
-        Debug.Assert(cbd != 0);
+        MyDebug.Assert(cbd != 0);
         if (cbd != acb_) return -1;
         int dac = S2Pred.Sign(C, d, A, c_cross_d);
-        Debug.Assert(dac != 0);
+        MyDebug.Assert(dac != 0);
         return (dac != acb_) ? -1 : 1;
     }
 

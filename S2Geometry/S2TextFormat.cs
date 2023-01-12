@@ -21,11 +21,11 @@ public static class S2TextFormat
     public static List<S2LatLng> ParseLatLngsOrDie(string str)
     {
         var latlngs = new List<S2LatLng>();
-        Debug.Assert(ParseLatLngs(str, latlngs));
+        MyDebug.Assert(ParseLatLngs(str, latlngs));
         return latlngs;
     }
 
-    // As above, but does not Debug.Assert-fail on invalid input. Returns true if
+    // As above, but does not Assert.True-fail on invalid input. Returns true if
     // conversion is successful.
     public static bool ParseLatLngs(string str, List<S2LatLng> latlngs)
     {
@@ -49,11 +49,11 @@ public static class S2TextFormat
     public static List<S2Point> ParsePointsOrDie(string str)
     {
         var vertices = new List<S2Point>();
-        Debug.Assert(ParsePoints(str, vertices));
+        MyDebug.Assert(ParsePoints(str, vertices));
         return vertices;
     }
 
-    // As above, but does not Debug.Assert-fail on invalid input. Returns true if
+    // As above, but does not Assert.True-fail on invalid input. Returns true if
     // conversion is successful.
     public static bool ParsePoints(string str, List<S2Point> vertices)
     {
@@ -67,11 +67,11 @@ public static class S2TextFormat
 
     public static S2Point MakePointOrDie(string str)
     {
-        Debug.Assert(MakePoint(str, out var point));
+        MyDebug.Assert(MakePoint(str, out var point));
         return point;
     }
 
-    // As above, but do not Debug.Assert-fail on invalid input. Returns true if conversion
+    // As above, but do not Assert.True-fail on invalid input. Returns true if conversion
     // is successful.
     public static bool MakePoint(string str, out S2Point point)
     {
@@ -83,7 +83,7 @@ public static class S2TextFormat
         return true;
     }
 
-    // As above, but does not Debug.Assert-fail on invalid input. Returns true if
+    // As above, but does not Assert.True-fail on invalid input. Returns true if
     // conversion is successful.
     public static bool MakeLatLng(string str, out S2LatLng latlng)
     {
@@ -98,7 +98,7 @@ public static class S2TextFormat
     // Given a string in the same format as ParseLatLngs, returns a single S2LatLng.
     public static S2LatLng MakeLatLngOrDie(string str)
     {
-        Debug.Assert(MakeLatLng(str, out var latlng));
+        MyDebug.Assert(MakeLatLng(str, out var latlng));
         return latlng;
     }
 
@@ -106,11 +106,11 @@ public static class S2TextFormat
     // bounding S2LatLngRect that contains the coordinates.
     public static S2LatLngRect? MakeLatLngRectOrDie(string str)
     {
-        Debug.Assert(MakeLatLngRect(str, out var rect));
+        MyDebug.Assert(MakeLatLngRect(str, out var rect));
         return rect;
     }
 
-    // As above, but does not Debug.Assert-fail on invalid input. Returns true if
+    // As above, but does not Assert.True-fail on invalid input. Returns true if
     // conversion is successful.
     public static bool MakeLatLngRect(string str, out S2LatLngRect? rect)
     {
@@ -126,7 +126,7 @@ public static class S2TextFormat
         return true;
     }
 
-    // As above, but does not Debug.Assert-fail on invalid input. Returns true if
+    // As above, but does not Assert.True-fail on invalid input. Returns true if
     // conversion is successful.
     public static bool MakeCellId(string str, out S2CellId cellId)
     {
@@ -145,7 +145,7 @@ public static class S2TextFormat
     // This function is a wrapper for S2CellId.FromDebugString().
     public static S2CellId MakeCellIdOrDie(string str)
     {
-        Debug.Assert(MakeCellId(str, out var cell_id));
+        MyDebug.Assert(MakeCellId(str, out var cell_id));
         return cell_id;
     }
 
@@ -176,7 +176,7 @@ public static class S2TextFormat
         return id;
     }
 
-    // As above, but does not Debug.Assert-fail on invalid input. Returns true if
+    // As above, but does not Assert.True-fail on invalid input. Returns true if
     // conversion is successful.
     public static bool MakeCellUnion(string str, out S2CellUnion? cell_union)
     {
@@ -197,7 +197,7 @@ public static class S2TextFormat
     // cells by their parent cell.)
     public static S2CellUnion MakeCellUnionOrDie(string str)
     {
-        Debug.Assert(MakeCellUnion(str, out var cell_union));
+        MyDebug.Assert(MakeCellUnion(str, out var cell_union));
         return cell_union;
     }
 
@@ -207,11 +207,11 @@ public static class S2TextFormat
     // The strings "empty" or "full" create an empty or full loop respectively.
     public static S2Loop MakeLoopOrDie(string str, S2Debug override_ = S2Debug.ALLOW)
     {
-        Debug.Assert(MakeLoop(str, out var loop, override_));
+        MyDebug.Assert(MakeLoop(str, out var loop, override_));
         return loop!;
     }
 
-    // As above, but does not Debug.Assert-fail on invalid input. Returns true if
+    // As above, but does not Assert.True-fail on invalid input. Returns true if
     // conversion is successful.
     public static bool MakeLoop(string str, out S2Loop? loop, S2Debug override_ = S2Debug.ALLOW)
     {
@@ -237,11 +237,11 @@ public static class S2TextFormat
     // Similar to MakeLoop(), but returns an S2Polyline rather than an S2Loop.
     public static S2Polyline MakePolylineOrDie(string str, S2Debug override_ = S2Debug.ALLOW)
     {
-        Debug.Assert(MakePolyline(str, out var polyline, override_));
+        MyDebug.Assert(MakePolyline(str, out var polyline, override_));
         return polyline!.Value;
     }
 
-    // As above, but does not Debug.Assert-fail on invalid input. Returns true if
+    // As above, but does not Assert.True-fail on invalid input. Returns true if
     // conversion is successful.
     public static bool MakePolyline(string str, out S2Polyline? polyline, S2Debug override_ = S2Debug.ALLOW)
     {
@@ -255,11 +255,11 @@ public static class S2TextFormat
     // Like MakePolyline, but returns an S2LaxPolylineShape instead.
     public static S2LaxPolylineShape MakeLaxPolylineOrDie(string str)
     {
-        Debug.Assert(MakeLaxPolyline(str, out var lax_polyline));
+        MyDebug.Assert(MakeLaxPolyline(str, out var lax_polyline));
         return lax_polyline;
     }
 
-    // As above, but does not Debug.Assert-fail on invalid input. Returns true if
+    // As above, but does not Assert.True-fail on invalid input. Returns true if
     // conversion is successful.
     public static bool MakeLaxPolyline(string str, out S2LaxPolylineShape? lax_polyline)
     {
@@ -303,11 +303,11 @@ public static class S2TextFormat
     //     "full"   // the full polygon (consisting of one full loop).
     public static S2Polygon MakePolygonOrDie(string str)
     {
-        Debug.Assert(MakePolygon(str, out var polygon));
+        MyDebug.Assert(MakePolygon(str, out var polygon));
         return polygon;
     }
 
-    // As above, but does not Debug.Assert-fail on invalid input. Returns true if
+    // As above, but does not Assert.True-fail on invalid input. Returns true if
     // conversion is successful.
     public static bool MakePolygon(string str, out S2Polygon polygon)
     {
@@ -318,11 +318,11 @@ public static class S2TextFormat
     // gives you exactly what you asked for).
     public static S2Polygon MakeVerbatimPolygonOrDie(string str)
     {
-        Debug.Assert(MakeVerbatimPolygon(str, out var polygon));
+        MyDebug.Assert(MakeVerbatimPolygon(str, out var polygon));
         return polygon;
     }
 
-    // As above, but does not Debug.Assert-fail on invalid input. Returns true if
+    // As above, but does not Assert.True-fail on invalid input. Returns true if
     // conversion is successful.
     public static bool MakeVerbatimPolygon(string str, out S2Polygon? polygon)
     {
@@ -335,11 +335,11 @@ public static class S2TextFormat
     // denotes the full polygon and "" or "empty" denote the empty polygon.
     public static S2LaxPolygonShape MakeLaxPolygonOrDie(string str)
     {
-        Debug.Assert(MakeLaxPolygon(str, out var lax_polygon));
+        MyDebug.Assert(MakeLaxPolygon(str, out var lax_polygon));
         return lax_polygon;
     }
 
-    // As above, but does not Debug.Assert-fail on invalid input. Returns true if
+    // As above, but does not Assert.True-fail on invalid input. Returns true if
     // conversion is successful.
     public static bool MakeLaxPolygon(string str, out S2LaxPolygonShape? lax_polygon)
     {
@@ -389,18 +389,18 @@ public static class S2TextFormat
     //         as the string "empty" rather than as the empty string ("").
     public static MutableS2ShapeIndex MakeIndexOrDie(string str)
     {
-        Debug.Assert(MakeIndex(str, out var index));
+        MyDebug.Assert(MakeIndex(str, out var index));
         return index;
     }
 
-    // As above, but does not Debug.Assert-fail on invalid input. Returns true if
+    // As above, but does not Assert.True-fail on invalid input. Returns true if
     // conversion is successful.
     public static bool MakeIndex(string str, out MutableS2ShapeIndex? index)
     {
         index = null;
         var result = new MutableS2ShapeIndex();
         var strs = str.Split('#');
-        Debug.Assert(3 == strs.Length);
+        MyDebug.Assert(3 == strs.Length);
 
         var points = new List<S2Point>();
         foreach (var point_str in SplitString(strs[0], '|'))
@@ -577,7 +577,7 @@ public static class S2TextFormat
                     var chain = shape.GetChain(i);
                     if (chain.Length == 0)
                     {
-                        Debug.Assert(dim == 2);
+                        MyDebug.Assert(dim == 2);
                         sb.Append("full");
                     }
                     else

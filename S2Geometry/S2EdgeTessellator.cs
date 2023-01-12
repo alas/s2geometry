@@ -193,7 +193,7 @@ public class S2EdgeTessellator
         else
         {
             pa = proj_.WrapDestination(vertices.Last(), pa);
-            Debug.Assert(vertices.Last() == pa); // Appended edges must form a chain
+            MyDebug.Assert(vertices.Last() == pa); // Appended edges must form a chain
         }
         var pb = proj_.Project(b);
         AppendProjected(pa, a, pb, b, vertices);
@@ -227,7 +227,7 @@ public class S2EdgeTessellator
             // transformed into "0:-175, 0:-181" while the second is transformed into
             // "0:179, 0:183".  The two coordinate pairs for the middle vertex
             // ("0:-181" and "0:179") may not yield exactly the same S2Point.
-            Debug.Assert(S2.ApproxEquals(vertices.Last(), pointA)); // Appended edges must form a chain
+            MyDebug.Assert(S2.ApproxEquals(vertices.Last(), pointA)); // Appended edges must form a chain
         }
         AppendUnprojected(a, pointA, b, pointB, vertices);
     }

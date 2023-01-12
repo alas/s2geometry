@@ -30,7 +30,7 @@ public sealed record class S2RegionUnion : IS2Region<S2RegionUnion>
         Regions_ = regions;
         if (check)
         {
-            Debug.Assert(!Regions_.Any());
+            MyDebug.Assert(!Regions_.Any());
         }
     }
 

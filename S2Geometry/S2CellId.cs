@@ -266,10 +266,10 @@ public readonly record struct S2CellId(UInt64 Id) : IComparable<S2CellId>, IDeco
     // Return the subdivision level of the cell (range 0..kMaxLevel).
     public int Level()
     {
-        // We can't just Debug.Assert(IsValid) because we want Level to be
+        // We can't just Assert.True(IsValid) because we want Level to be
         // defined for end-iterators, i.e. S2CellId.End(kLevel).  However there is
         // no good way to define None.Level, so we do prohibit that.
-        Debug.Assert(Id != 0);
+        MyDebug.Assert(Id != 0);
 
         // A special case for leaf cells is not worthwhile.
         // Fast path for leaf cells.
@@ -306,7 +306,7 @@ public readonly record struct S2CellId(UInt64 Id) : IComparable<S2CellId>, IDeco
         {
             level += 1;
         }
-        Debug.Assert(level >= 0 && level <= S2.kMaxCellLevel);
+        MyDebug.Assert(level >= 0 && level <= S2.kMaxCellLevel);
         return level;
     }
 
@@ -338,9 +338,9 @@ public readonly record struct S2CellId(UInt64 Id) : IComparable<S2CellId>, IDeco
     // REQUIRES: 1 <= level <= this.Level.
     public int ChildPosition(int level)
     {
-        Debug.Assert(IsValid());
-        Debug.Assert(level >= 1);
-        Debug.Assert(level <= Level());
+        MyDebug.Assert(IsValid());
+        MyDebug.Assert(level >= 1);
+        MyDebug.Assert(level <= Level());
         return (int)(Id >> (2 * (S2.kMaxCellLevel - level) + 1)) & 3;
     }
 
@@ -376,16 +376,16 @@ public readonly record struct S2CellId(UInt64 Id) : IComparable<S2CellId>, IDeco
     // Return true if the given cell is contained within this one.
     public bool Contains(S2CellId other)
     {
-        Debug.Assert(IsValid());
-        Debug.Assert(other.IsValid());
+        MyDebug.Assert(IsValid());
+        MyDebug.Assert(other.IsValid());
         return other >= RangeMin() && other <= RangeMax();
     }
 
     // Return true if the given cell intersects this one.
     public bool Intersects(S2CellId other)
     {
-        Debug.Assert(IsValid());
-        Debug.Assert(other.IsValid());
+        MyDebug.Assert(IsValid());
+        MyDebug.Assert(other.IsValid());
         return other.RangeMin() <= RangeMax() && other.RangeMax() >= RangeMin();
     }
 
@@ -393,17 +393,17 @@ public readonly record struct S2CellId(UInt64 Id) : IComparable<S2CellId>, IDeco
     // be less than or equal to the current level).
     public S2CellId Parent()
     {
-        Debug.Assert(IsValid());
-        Debug.Assert(!IsFace());
+        MyDebug.Assert(IsValid());
+        MyDebug.Assert(!IsFace());
         UInt64 new_lsb = LowestOnBit() << 2;
         return new S2CellId((Id & (~new_lsb + 1)) | new_lsb);
     }
 
     public S2CellId Parent(int level)
     {
-        Debug.Assert(IsValid());
-        Debug.Assert(level >= 0);
-        Debug.Assert(level <= Level());
+        MyDebug.Assert(IsValid());
+        MyDebug.Assert(level >= 0);
+        MyDebug.Assert(level <= Level());
         UInt64 new_lsb = LowestOnBitForLevel(level);
         return new S2CellId((Id & (~new_lsb + 1)) | new_lsb);
     }
@@ -412,8 +412,8 @@ public readonly record struct S2CellId(UInt64 Id) : IComparable<S2CellId>, IDeco
     // position (in the range 0 to 3).  This cell must not be a leaf cell.
     public S2CellId Child(int position)
     {
-        Debug.Assert(IsValid());
-        Debug.Assert(!IsLeaf());
+        MyDebug.Assert(IsValid());
+        MyDebug.Assert(!IsLeaf());
         // To change the level, we need to move the least-significant bit two
         // positions downward.  We do this by subtracting (4 * new_lsb) and adding
         // new_lsb.  Then to advance to the given child cell, we add
@@ -436,33 +436,33 @@ public readonly record struct S2CellId(UInt64 Id) : IComparable<S2CellId>, IDeco
     // underlying 64-bit cell id.
     public S2CellId ChildBegin()
     {
-        Debug.Assert(IsValid());
-        Debug.Assert(!IsLeaf());
+        MyDebug.Assert(IsValid());
+        MyDebug.Assert(!IsLeaf());
         UInt64 old_lsb = LowestOnBit();
         return new S2CellId(Id - old_lsb + (old_lsb >> 2));
     }
 
     public S2CellId ChildBegin(int level)
     {
-        Debug.Assert(IsValid());
-        Debug.Assert(level >= Level());
-        Debug.Assert(level <= S2.kMaxCellLevel);
+        MyDebug.Assert(IsValid());
+        MyDebug.Assert(level >= Level());
+        MyDebug.Assert(level <= S2.kMaxCellLevel);
         return new S2CellId(Id - LowestOnBit() + LowestOnBitForLevel(level));
     }
 
     public S2CellId ChildEnd()
     {
-        Debug.Assert(IsValid());
-        Debug.Assert(!IsLeaf());
+        MyDebug.Assert(IsValid());
+        MyDebug.Assert(!IsLeaf());
         UInt64 old_lsb = LowestOnBit();
         return new S2CellId(Id + old_lsb + (old_lsb >> 2));
     }
 
     public S2CellId ChildEnd(int level)
     {
-        Debug.Assert(IsValid());
-        Debug.Assert(level >= Level());
-        Debug.Assert(level <= S2.kMaxCellLevel);
+        MyDebug.Assert(IsValid());
+        MyDebug.Assert(level >= Level());
+        MyDebug.Assert(level <= S2.kMaxCellLevel);
         return new(Id + LowestOnBit() + LowestOnBitForLevel(level));
     }
 
@@ -514,7 +514,7 @@ public readonly record struct S2CellId(UInt64 Id) : IComparable<S2CellId>, IDeco
     // input must be a valid cell id.
     public S2CellId NextWrap()
     {
-        Debug.Assert(IsValid());
+        MyDebug.Assert(IsValid());
         S2CellId n = Next();
         if (n.Id < kWrapOffset) return n;
         return new S2CellId(n.Id - kWrapOffset);
@@ -522,7 +522,7 @@ public readonly record struct S2CellId(UInt64 Id) : IComparable<S2CellId>, IDeco
 
     public S2CellId PrevWrap()
     {
-        Debug.Assert(IsValid());
+        MyDebug.Assert(IsValid());
         S2CellId p = Prev();
         if (p.Id < kWrapOffset) return p;
         return new S2CellId(p.Id + kWrapOffset);
@@ -534,7 +534,7 @@ public readonly record struct S2CellId(UInt64 Id) : IComparable<S2CellId>, IDeco
     // must be a valid cell id.
     public S2CellId AdvanceWrap(Int64 steps)
     {
-        Debug.Assert(IsValid());
+        MyDebug.Assert(IsValid());
         if (steps == 0) return this;
 
         int step_shift = 2 * (S2.kMaxCellLevel - Level()) + 1;
@@ -614,7 +614,7 @@ public readonly record struct S2CellId(UInt64 Id) : IComparable<S2CellId>, IDeco
         // differ and convert that to a level.  The Math.Max() below is necessary for the
         // case where one S2CellId is a descendant of the other.
         UInt64 bits = Math.Max(Id ^ other.Id, Math.Max(LowestOnBit(), other.LowestOnBit()));
-        Debug.Assert(bits != 0);  // Because LowestOnBit is non-zero.
+        MyDebug.Assert(bits != 0);  // Because LowestOnBit is non-zero.
 
         // Compute the position of the most significant bit, and then map the bit
         // position as follows:
@@ -711,7 +711,7 @@ public readonly record struct S2CellId(UInt64 Id) : IComparable<S2CellId>, IDeco
     {
         // "level" must be strictly less than this cell's level so that we can
         // determine which vertex this cell is closest to.
-        Debug.Assert(level < Level());
+        MyDebug.Assert(level < Level());
         int face = ToFaceIJOrientation(out int i, out int j, out _, false);
 
         // Determine the i- and j-offsets to the closest neighboring cell in each
@@ -763,7 +763,7 @@ public readonly record struct S2CellId(UInt64 Id) : IComparable<S2CellId>, IDeco
     // REQUIRES: nbr_level >= this.Level.
     public void AppendAllNeighbors(int nbr_level, List<S2CellId> cellsId)
     {
-        Debug.Assert(nbr_level >= Level());
+        MyDebug.Assert(nbr_level >= Level());
         int face = ToFaceIJOrientation(out int i, out int j, out _, false);
 
         // Find the coordinates of the lower left-hand leaf cell.  We need to
@@ -774,7 +774,7 @@ public readonly record struct S2CellId(UInt64 Id) : IComparable<S2CellId>, IDeco
         j &= -size;
 
         int nbr_size = SizeIJ(nbr_level);
-        Debug.Assert(nbr_size <= size);
+        MyDebug.Assert(nbr_size <= size);
 
         // We compute the top-bottom, left-right, and diagonal neighbors in one
         // pass.  The loop test is at the end of the loop to avoid 32-bit overflow.
@@ -900,8 +900,8 @@ public readonly record struct S2CellId(UInt64 Id) : IComparable<S2CellId>, IDeco
             // by (kMaxLevel-n-1) repetitions of "00", followed by "0".  The "10" has
             // no effect, while each occurrence of "00" has the effect of reversing
             // the kSwapMask bit.
-            Debug.Assert(0 == S2.kPosToOrientation[2]);
-            Debug.Assert(S2.kSwapMask == S2.kPosToOrientation[0]);
+            MyDebug.Assert(0 == S2.kPosToOrientation[2]);
+            MyDebug.Assert(S2.kSwapMask == S2.kPosToOrientation[0]);
             if ((LowestOnBit() & 0x1111111111111110UL) != 0)
             {
                 bits ^= S2.kSwapMask;
@@ -968,7 +968,7 @@ public readonly record struct S2CellId(UInt64 Id) : IComparable<S2CellId>, IDeco
         // coordinates enough so that we end up in the wrong leaf cell.
 
         // The arithmetic below is designed to avoid 32-bit integer overflows.
-        Debug.Assert(0 == kMaxSize % 2);
+        MyDebug.Assert(0 == kMaxSize % 2);
         double u = Math.Max(-kLimit, Math.Min(kLimit, kScale * (2 * (i - kMaxSize / 2) + 1)));
         double v = Math.Max(-kLimit, Math.Min(kLimit, kScale * (2 * (j - kMaxSize / 2) + 1)));
 

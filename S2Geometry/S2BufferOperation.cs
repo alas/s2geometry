@@ -397,7 +397,7 @@ public class S2BufferOperation
         // we like, however we always use at least 3 edges to approximate a circle.
         S1Angle step = S1Angle.FromRadians(2 * S2.M_PI / 3 + 1e-15);
         S1Angle min_radius = radius - requested_error;
-        Debug.Assert(min_radius >= S1Angle.Zero);
+        MyDebug.Assert(min_radius >= S1Angle.Zero);
         if (radius.Radians < S2.M_PI_2)
         {
             step = S1Angle.Min(step, S1Angle.FromRadians(2 * Math.Acos(min_radius.Tan() / radius.Tan())));
@@ -417,7 +417,7 @@ public class S2BufferOperation
     {
         if (have_input_start_)
         {
-            Debug.Assert(have_offset_start_);
+            MyDebug.Assert(have_offset_start_);
             UpdateRefWinding(sweep_a_, sweep_b_, new_a);
         }
         else
@@ -437,7 +437,7 @@ public class S2BufferOperation
         path_.Add(new_b);
         if (have_offset_start_)
         {
-            Debug.Assert(have_input_start_);
+            MyDebug.Assert(have_input_start_);
             UpdateRefWinding(sweep_a_, sweep_b_, new_b);
         }
         else
@@ -510,7 +510,7 @@ public class S2BufferOperation
     // of AB if buffer_sign_ < 0.
     private S2Point GetEdgeAxis(S2Point a, S2Point b)
     {
-        Debug.Assert(buffer_sign_ != 0);
+        MyDebug.Assert(buffer_sign_ != 0);
         return buffer_sign_ * S2.RobustCrossProd(b, a).Normalize();
     }
 
@@ -582,9 +582,9 @@ public class S2BufferOperation
     // not leave the valid buffer zone of the previous edge and vertex.
     private void BufferEdgeAndVertex(S2Point a, S2Point b, S2Point c)
     {
-        Debug.Assert(a != b);
-        Debug.Assert(b != c);
-        Debug.Assert(buffer_sign_ != 0);
+        MyDebug.Assert(a != b);
+        MyDebug.Assert(b != c);
+        MyDebug.Assert(buffer_sign_ != 0);
         if (!tracker_.Ok()) return;
 
         // For left (convex) turns we need to add an offset arc.  For right
@@ -631,7 +631,7 @@ public class S2BufferOperation
         }
         else
         {
-            Debug.Assert(Options_.EndCapStyle_ == EndCapStyle.ROUND);
+            MyDebug.Assert(Options_.EndCapStyle_ == EndCapStyle.ROUND);
             if (Options_.PolylineSide_ == PolylineSide.BOTH)
             {
                 // The end cap consists of a semicircle.
@@ -657,7 +657,7 @@ public class S2BufferOperation
         }
         else
         {
-            Debug.Assert(Options_.EndCapStyle_ == EndCapStyle.ROUND);
+            MyDebug.Assert(Options_.EndCapStyle_ == EndCapStyle.ROUND);
             if (Options_.PolylineSide_ == PolylineSide.BOTH)
             {
                 // The end cap consists of a semicircle.
@@ -890,8 +890,8 @@ public class S2BufferOperation
             }
             set
             {
-                Debug.Assert(value >= 2.0);
-                Debug.Assert(value <= kMaxCircleSegments);
+                MyDebug.Assert(value >= 2.0);
+                MyDebug.Assert(value <= kMaxCircleSegments);
                 value = Math.Max(2.0, Math.Min(kMaxCircleSegments, value));
 
                 // We convert value to error_fraction using planar geometry,

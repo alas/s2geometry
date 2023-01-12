@@ -71,7 +71,7 @@ public readonly record struct S2LatLng : IComparable<S2LatLng>
         : this(Latitude(p).Radians, Longitude(p).Radians)
     {
         // The latitude and longitude are already normalized.
-        if (!IsValid()) Debug.WriteLine($"Invalid S2LatLng in constructor {this}");
+        if (!IsValid()) MyDebug.WriteLine($"Invalid S2LatLng in constructor {this}");
     }
 
     #endregion
@@ -126,7 +126,7 @@ public readonly record struct S2LatLng : IComparable<S2LatLng>
     /// </summary>
     public S2Point ToPoint()
     {
-        if (!IsValid()) Debug.WriteLine($"Invalid S2LatLng in ToPoint {this}");
+        if (!IsValid()) MyDebug.WriteLine($"Invalid S2LatLng in ToPoint {this}");
         var phi = LatRadians;
         var theta = LngRadians;
         var cosphi = Math.Cos(phi);
@@ -196,8 +196,8 @@ public readonly record struct S2LatLng : IComparable<S2LatLng>
         // distance that way (which gives about 15 digits of accuracy for all
         // distances).
 
-        if (!IsValid()) Debug.WriteLine($"Invalid S2LatLng in GetDistance {this}");
-        if (!o.IsValid()) Debug.WriteLine($"Invalid S2LatLng in GetDistance {o}");
+        if (!IsValid()) MyDebug.WriteLine($"Invalid S2LatLng in GetDistance {this}");
+        if (!o.IsValid()) MyDebug.WriteLine($"Invalid S2LatLng in GetDistance {o}");
 
         var lat1 = LatRadians;
         var lat2 = o.LatRadians;

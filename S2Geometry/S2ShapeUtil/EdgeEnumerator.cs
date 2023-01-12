@@ -36,7 +36,7 @@ public static partial class S2ShapeUtil
         {
             get
             {
-                Debug.Assert(!Done());
+                MyDebug.Assert(!Done());
                 return index_.Shape(shape_id_).GetEdge(edge_id_);
             }
         }

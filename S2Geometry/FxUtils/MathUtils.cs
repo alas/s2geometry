@@ -96,7 +96,7 @@ public static class MathUtils
     // You can also use any type for which operator*= is defined.
     public static double IPow(double @base, int exp)
     {
-        Debug.Assert(exp >= 0);
+        MyDebug.Assert(exp >= 0);
         var uexp = (UInt32)exp;
 
         if (uexp < 16)

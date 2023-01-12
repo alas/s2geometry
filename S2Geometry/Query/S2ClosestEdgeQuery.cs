@@ -237,7 +237,7 @@ public class S2ClosestEdgeQuery
     // (in which case edge_id() == -1).
     public Result FindClosestEdge(Target target)
     {
-        // Debug.Assert(Marshal.SizeOf(Options_) <= 32); // Consider not copying Options here
+        // Assert.True(Marshal.SizeOf(Options_) <= 32); // Consider not copying Options here
         Options tmp_options = Options_;
         tmp_options.MaxResults = (1);
         return base_.FindClosestEdge(target, tmp_options);
@@ -257,7 +257,7 @@ public class S2ClosestEdgeQuery
     // threshold than it is to calculate the actual minimum distance.
     public bool IsDistanceLess(Target target, Distance limit)
     {
-        Debug.Assert(Marshal.SizeOf(Options_) <= 32); // Consider not copying Options here
+        MyDebug.Assert(Marshal.SizeOf(Options_) <= 32); // Consider not copying Options here
         Options tmp_options = Options_;
         tmp_options.MaxResults = (1);
         tmp_options.MaxDistance = (limit);
@@ -269,7 +269,7 @@ public class S2ClosestEdgeQuery
     // is exactly equal to "limit".
     public bool IsDistanceLessOrEqual(Target target, Distance limit)
     {
-        Debug.Assert(Marshal.SizeOf(Options_) <= 32); // Consider not copying Options here
+        MyDebug.Assert(Marshal.SizeOf(Options_) <= 32); // Consider not copying Options here
         Options tmp_options = Options_;
         tmp_options.MaxResults = (1);
         tmp_options.InclusiveMaxDistance = (limit);
@@ -291,7 +291,7 @@ public class S2ClosestEdgeQuery
     // are guaranteed to not intersect after snapping.
     public bool IsConservativeDistanceLessOrEqual(Target target, Distance limit)
     {
-        Debug.Assert(Marshal.SizeOf(Options_) <= 32); // Consider not copying Options here
+        MyDebug.Assert(Marshal.SizeOf(Options_) <= 32); // Consider not copying Options here
         Options tmp_options = Options_;
         tmp_options.MaxResults = (1);
         tmp_options.ConservativeMaxDistance = (limit);

@@ -97,8 +97,8 @@ public class IdSetLexicon
 
     public static int AddSingleton(int id)
     {
-        Debug.Assert(id >= 0);
-        Debug.Assert(id <= int.MaxValue);
+        MyDebug.Assert(id >= 0);
+        MyDebug.Assert(id <= int.MaxValue);
         // Singleton sets are represented by their element.
         return id;
     }

@@ -39,8 +39,8 @@ public static partial class S2
         ApproxEquals(a, b, S1Angle.FromRadians(S2.DoubleError));
     public static bool ApproxEquals(S2Point a, S2Point b, S1Angle maxError)
     {
-        Debug.Assert(a != S2Point.Empty);
-        Debug.Assert(b != S2Point.Empty);
+        MyDebug.Assert(a != S2Point.Empty);
+        MyDebug.Assert(b != S2Point.Empty);
         return new S1Angle(a, b) <= maxError;
     }
 
@@ -81,8 +81,8 @@ public static partial class S2
     // S2::GetPointOnLine(), which are declared in s2edge_distances.h.
     public static S2Point Rotate(S2Point p, S2Point axis, S1Angle angle)
     {
-        Debug.Assert(p.IsUnitLength());
-        Debug.Assert(axis.IsUnitLength());
+        MyDebug.Assert(p.IsUnitLength());
+        MyDebug.Assert(axis.IsUnitLength());
         // Let M be the plane through P that is perpendicular to "axis", and let
         // "center" be the point where M intersects "axis".  We construct a
         // right-handed orthogonal frame (dx, dy, center) such that "dx" is the
@@ -102,7 +102,7 @@ public static partial class S2
     // "z" itself is an orthonormal frame for the normal space at "z".
     public static S2PointS2Point GetFrame(S2Point z)
     {
-        Debug.Assert(z.IsUnitLength());
+        MyDebug.Assert(z.IsUnitLength());
 
         var ortho = Ortho(z);
         return new S2PointS2Point(

@@ -2674,7 +2674,7 @@ for (int i = 0; i < 100000; ++i) {
         }
         else
         {
-            // Debug.Assert.Near only works with doubles.
+            // Assert.True.Near only works with doubles.
             Assert2.Near(new S1Angle(x, boundary_x).GetDegrees(),
                         polygon.GetDistanceToBoundary(x).GetDegrees(),
                         kMaxError.GetDegrees());

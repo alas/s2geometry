@@ -75,7 +75,7 @@ public static class S2PointCompression
             // but since this would only help if there were more than 21 faces, it will
             // be a small overall savings, much smaller than the bound encoding.
             encoder.PutVarUInt64((UInt64)(S2CellId.kNumFaces * (Int64)Count + Face));
-            Debug.Assert(encoder.Avail() >= 0);
+            MyDebug.Assert(encoder.Avail() >= 0);
         }
 
         public static (bool, FaceRun?) Decode(Decoder decoder)
@@ -129,8 +129,8 @@ public static class S2PointCompression
 
             public bool MoveNext()
             {
-                Debug.Assert(faces_.Count != face_index_);
-                Debug.Assert(num_faces_used_for_index_ <= faces_[face_index_].Count);
+                MyDebug.Assert(faces_.Count != face_index_);
+                MyDebug.Assert(num_faces_used_for_index_ <= faces_[face_index_].Count);
                 if (num_faces_used_for_index_ == faces_[face_index_].Count)
                 {
                     face_index_++;
@@ -253,10 +253,10 @@ public static class S2PointCompression
         var little_endian_interleaved_pi_qi = BitConverter.GetBytes(interleaved_pi_qi);
 
         int bytes_required = (level + 7) / 8 * 2;
-        Debug.Assert(bytes_required <= 8);
+        MyDebug.Assert(bytes_required <= 8);
         encoder.Ensure(bytes_required);
         encoder.PutN(little_endian_interleaved_pi_qi, bytes_required);
-        Debug.Assert(encoder.Avail() >= 0);
+        MyDebug.Assert(encoder.Avail() >= 0);
     }
 
 #pragma warning disable IDE0060 // Quitar el parámetro no utilizado
@@ -272,7 +272,7 @@ public static class S2PointCompression
 
         encoder.Ensure(Encoder.kVarintMax64);
         encoder.PutVarUInt64(interleaved_zig_zag_encoded_derivs); // TODO: check if it would be better to use signed int and remove zigzag encoding here, modify "DecodePointCompressed" accordingly
-        Debug.Assert(encoder.Avail() >= 0);
+        MyDebug.Assert(encoder.Avail() >= 0);
     }
 
     private static void EncodePointsCompressed(List<(int, int)> vertices_pi_qi, int level, Encoder encoder)
@@ -295,7 +295,7 @@ public static class S2PointCompression
             }
         }
 
-        Debug.Assert(encoder.Avail() >= 0);
+        MyDebug.Assert(encoder.Avail() >= 0);
     }
 
     private static bool DecodeFirstPointFixedLength(Decoder decoder, int level, NthDerivativeCoder pi_coder, NthDerivativeCoder qi_coder, out (int, int) vertex_pi_qi)
@@ -363,12 +363,12 @@ public static class S2PointCompression
         var num_off_center = off_center.Count;
         encoder.Ensure(Encoder.kVarintMax32 + (Encoder.kVarintMax32 + Marshal.SizeOf(typeof(S2Point))) * num_off_center);
         encoder.PutVarUInt32((uint)num_off_center);
-        Debug.Assert(encoder.Avail() >= 0);
+        MyDebug.Assert(encoder.Avail() >= 0);
         foreach (var index in off_center)
         {
             encoder.PutVarUInt32((uint)index);
             encoder.PutPoints(new[] { points[index].XYZ });
-            Debug.Assert(encoder.Avail() >= 0);
+            MyDebug.Assert(encoder.Avail() >= 0);
         }
     }
 
@@ -379,7 +379,7 @@ public static class S2PointCompression
     /// </summary>
     public static bool S2DecodePointsCompressed(Decoder decoder, int level, S2Point[] points, int offset)
     {
-        Debug.Assert(level <= S2.kMaxCellLevel);
+        MyDebug.Assert(level <= S2.kMaxCellLevel);
 
         var faces = new Faces();
         var len = points.Length - offset;

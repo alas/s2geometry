@@ -26,22 +26,22 @@ public class EncodedUintVector
 #endif
 
         // UInt16 checks
-        Debug.Assert(UInt16.MinValue == 0); // Unsupported signed integer
-        Debug.Assert((sizeof(UInt16) & 0xE) != 0); // Unsupported integer length
-        Debug.Assert(2 <= sizeof(UInt16)); // Unsupported integer length
-        Debug.Assert(sizeof(UInt16) <= 8); // Unsupported integer length
+        MyDebug.Assert(UInt16.MinValue == 0); // Unsupported signed integer
+        MyDebug.Assert((sizeof(UInt16) & 0xE) != 0); // Unsupported integer length
+        MyDebug.Assert(2 <= sizeof(UInt16)); // Unsupported integer length
+        MyDebug.Assert(sizeof(UInt16) <= 8); // Unsupported integer length
 
         // UInt32 checks
-        Debug.Assert(UInt32.MinValue == 0); // Unsupported signed integer
-        Debug.Assert((sizeof(UInt32) & 0xE) != 0); // Unsupported integer length
-        Debug.Assert(2 <= sizeof(UInt32)); // Unsupported integer length
-        Debug.Assert(sizeof(UInt32) <= 8); // Unsupported integer length
+        MyDebug.Assert(UInt32.MinValue == 0); // Unsupported signed integer
+        MyDebug.Assert((sizeof(UInt32) & 0xE) != 0); // Unsupported integer length
+        MyDebug.Assert(2 <= sizeof(UInt32)); // Unsupported integer length
+        MyDebug.Assert(sizeof(UInt32) <= 8); // Unsupported integer length
 
         // UInt64 checks
-        Debug.Assert(UInt64.MinValue == 0); // Unsupported signed integer
-        Debug.Assert((sizeof(UInt64) & 0xE) != 0); // Unsupported integer length
-        Debug.Assert(2 <= sizeof(UInt64)); // Unsupported integer length
-        Debug.Assert(sizeof(UInt64) <= 8); // Unsupported integer length
+        MyDebug.Assert(UInt64.MinValue == 0); // Unsupported signed integer
+        MyDebug.Assert((sizeof(UInt64) & 0xE) != 0); // Unsupported integer length
+        MyDebug.Assert(2 <= sizeof(UInt64)); // Unsupported integer length
+        MyDebug.Assert(sizeof(UInt64) <= 8); // Unsupported integer length
     }
 
     // Encodes a vector of unsigned integers in a format that can later be
@@ -65,7 +65,7 @@ public class EncodedUintVector
         foreach (var x in v)
             one_bits |= x;
         int len = (BitsUtils.FindMSBSetNonZero64(one_bits) >> 3) + 1;
-        Debug.Assert(len >= 1 && len <= 8);
+        MyDebug.Assert(len >= 1 && len <= 8);
 
         // Note that the multiplication is optimized into a bit shift.
         encoder.Ensure(Encoder.kVarintMax64 + v.Length * len);
@@ -89,15 +89,15 @@ public class EncodedUintVector
     /// </summary>
     public static void EncodeUintWithLength(UInt16 value, int length, Encoder encoder)
     {
-        Debug.Assert(length >= 0 && length <= sizeof(UInt16));
-        Debug.Assert(encoder.Avail() >= length);
+        MyDebug.Assert(length >= 0 && length <= sizeof(UInt16));
+        MyDebug.Assert(encoder.Avail() >= length);
 
         while (--length >= 0)
         {
             encoder.Put8((byte)value);
             value = (UInt16)(value >> 8);
         }
-        Debug.Assert(value == 0);
+        MyDebug.Assert(value == 0);
     }
 
     // Decodes and consumes a variable-length integer consisting of "length" bytes
@@ -136,7 +136,7 @@ public class EncodedUintVector
         foreach (var x in v)
             one_bits |= x;
         int len = (BitsUtils.FindMSBSetNonZero64(one_bits) >> 3) + 1;
-        Debug.Assert(len >= 1 && len <= 8);
+        MyDebug.Assert(len >= 1 && len <= 8);
 
         // Note that the multiplication is optimized into a bit shift.
         encoder.Ensure(Encoder.kVarintMax64 + v.Length * len);
@@ -160,15 +160,15 @@ public class EncodedUintVector
     /// </summary>
     public static void EncodeUintWithLength(UInt32 value, int length, Encoder encoder)
     {
-        Debug.Assert(length >= 0 && length <= sizeof(UInt32));
-        Debug.Assert(encoder.Avail() >= length);
+        MyDebug.Assert(length >= 0 && length <= sizeof(UInt32));
+        MyDebug.Assert(encoder.Avail() >= length);
 
         while (--length >= 0)
         {
             encoder.Put8((byte)value);
             value = (UInt32)(value >> 8);
         }
-        Debug.Assert(value == 0);
+        MyDebug.Assert(value == 0);
     }
 
     // Decodes and consumes a variable-length integer consisting of "length" bytes
@@ -207,7 +207,7 @@ public class EncodedUintVector
         foreach (var x in v)
             one_bits |= x;
         int len = (BitsUtils.FindMSBSetNonZero64(one_bits) >> 3) + 1;
-        Debug.Assert(len >= 1 && len <= 8);
+        MyDebug.Assert(len >= 1 && len <= 8);
 
         // Note that the multiplication is optimized into a bit shift.
         encoder.Ensure(Encoder.kVarintMax64 + v.Length * len);
@@ -231,15 +231,15 @@ public class EncodedUintVector
     /// </summary>
     public static void EncodeUintWithLength(UInt64 value, int length, Encoder encoder)
     {
-        Debug.Assert(length >= 0 && length <= sizeof(UInt64));
-        Debug.Assert(encoder.Avail() >= length);
+        MyDebug.Assert(length >= 0 && length <= sizeof(UInt64));
+        MyDebug.Assert(encoder.Avail() >= length);
 
         while (--length >= 0)
         {
             encoder.Put8((byte)value);
             value = (UInt64)(value >> 8);
         }
-        Debug.Assert(value == 0);
+        MyDebug.Assert(value == 0);
     }
 
     // Decodes and consumes a variable-length integer consisting of "length" bytes
@@ -271,7 +271,7 @@ public class EncodedUintVector_UInt16
     /// </summary>
     public static UInt16 GetUintWithLength(byte[] ptr, int index, int length)
     {
-        Debug.Assert(length >= 0 && length <= sizeof(UInt16));
+        MyDebug.Assert(length >= 0 && length <= sizeof(UInt16));
 
         // Note that the following code is faster than any of the following:
         //
@@ -331,7 +331,7 @@ public class EncodedUintVector_UInt16
     {
         get
         {
-            Debug.Assert(i >= 0 && i < Count);
+            MyDebug.Assert(i >= 0 && i < Count);
             return GetUintWithLength(data_, i * len_, len_);
         }
     }
@@ -342,7 +342,7 @@ public class EncodedUintVector_UInt16
     // REQUIRES: The vector elements are sorted in non-decreasing order.
     public int LowerBound(UInt16 target)
     {
-        Debug.Assert(len_ >= 1 && len_ <= sizeof(UInt16));
+        MyDebug.Assert(len_ >= 1 && len_ <= sizeof(UInt16));
 
         // TODO(ericv): Consider using the unused 28 bits of "len_" to store the
         // last result of GetLowerBound() to be used as a hint.  This should help in
@@ -421,7 +421,7 @@ public class EncodedUintVector_UInt32
     /// </summary>
     public static UInt32 GetUintWithLength(byte[] ptr, int index, int length)
     {
-        Debug.Assert(length >= 0 && length <= sizeof(UInt32));
+        MyDebug.Assert(length >= 0 && length <= sizeof(UInt32));
 
         // Note that the following code is faster than any of the following:
         //
@@ -486,7 +486,7 @@ public class EncodedUintVector_UInt32
     {
         get
         {
-            Debug.Assert(i >= 0 && i < Count);
+            MyDebug.Assert(i >= 0 && i < Count);
             return GetUintWithLength(data_, i * len_, len_);
         }
     }
@@ -497,7 +497,7 @@ public class EncodedUintVector_UInt32
     // REQUIRES: The vector elements are sorted in non-decreasing order.
     public int LowerBound(UInt32 target)
     {
-        Debug.Assert(len_ >= 1 && len_ <= sizeof(UInt32));
+        MyDebug.Assert(len_ >= 1 && len_ <= sizeof(UInt32));
 
         // TODO(ericv): Consider using the unused 28 bits of "len_" to store the
         // last result of GetLowerBound() to be used as a hint.  This should help in
@@ -576,7 +576,7 @@ public class EncodedUintVector_UInt64
     /// </summary>
     public static UInt64 GetUintWithLength(byte[] ptr, int index, int length)
     {
-        Debug.Assert(length >= 0 && length <= sizeof(UInt64));
+        MyDebug.Assert(length >= 0 && length <= sizeof(UInt64));
 
         // Note that the following code is faster than any of the following:
         //
@@ -646,7 +646,7 @@ public class EncodedUintVector_UInt64
     {
         get
         {
-            Debug.Assert(i >= 0 && i < Count);
+            MyDebug.Assert(i >= 0 && i < Count);
             return GetUintWithLength(data_, i * len_, len_);
         }
     }
@@ -657,7 +657,7 @@ public class EncodedUintVector_UInt64
     // REQUIRES: The vector elements are sorted in non-decreasing order.
     public int LowerBound(UInt64 target)
     {
-        Debug.Assert(len_ >= 1 && len_ <= sizeof(UInt64));
+        MyDebug.Assert(len_ >= 1 && len_ <= sizeof(UInt64));
 
         // TODO(ericv): Consider using the unused 28 bits of "len_" to store the
         // last result of GetLowerBound() to be used as a hint.  This should help in

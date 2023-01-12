@@ -56,7 +56,7 @@ public readonly record struct S2LatLngRect : IS2Region<S2LatLngRect>, IDecoder<S
     {
         Lat = new R1Interval(lo.LatRadians, hi.LatRadians);
         Lng = new S1Interval(lo.LngRadians, hi.LngRadians);
-        if (!IsValid()) Debug.WriteLine($"Invalid rect: lo={lo}, hi={hi}");
+        if (!IsValid()) MyDebug.WriteLine($"Invalid rect: lo={lo}, hi={hi}");
     }
 
     // Construct a rectangle from latitude and longitude intervals.  The two
@@ -67,7 +67,7 @@ public readonly record struct S2LatLngRect : IS2Region<S2LatLngRect>, IDecoder<S
     {
         Lat = lat;
         Lng = lng;
-        if (!IsValid()) Debug.WriteLine($"Invalid rect: lat={lat}, lng={lng}");
+        if (!IsValid()) MyDebug.WriteLine($"Invalid rect: lat={lat}, lng={lng}");
     }
 
     #endregion
@@ -91,7 +91,7 @@ public readonly record struct S2LatLngRect : IS2Region<S2LatLngRect>, IDecoder<S
     // Construct a rectangle containing a single (normalized) point.
     public static S2LatLngRect FromPoint(S2LatLng p)
     {
-        if (!p.IsValid()) Debug.WriteLine($"Invalid S2LatLng: {p}");
+        if (!p.IsValid()) MyDebug.WriteLine($"Invalid S2LatLng: {p}");
 
         return new S2LatLngRect(p, p);
     }
@@ -103,8 +103,8 @@ public readonly record struct S2LatLngRect : IS2Region<S2LatLngRect>, IDecoder<S
     // used as the lower-left corner of the resulting rectangle.
     public static S2LatLngRect FromPointPair(S2LatLng p1, S2LatLng p2)
     {
-        if (!p1.IsValid()) Debug.WriteLine($"Invalid S2LatLng 1: {p1}");
-        if (!p2.IsValid()) Debug.WriteLine($"Invalid S2LatLng 2: {p2}");
+        if (!p1.IsValid()) MyDebug.WriteLine($"Invalid S2LatLng 1: {p1}");
+        if (!p2.IsValid()) MyDebug.WriteLine($"Invalid S2LatLng 2: {p2}");
 
         return new S2LatLngRect(
             R1Interval.FromPointPair(p1.LatRadians, p2.LatRadians),
@@ -257,7 +257,7 @@ public readonly record struct S2LatLngRect : IS2Region<S2LatLngRect>, IDecoder<S
     // an S2Point.  The argument must be normalized.
     public bool Contains(S2LatLng ll)
     {
-        if (!ll.IsValid()) Debug.WriteLine($"Invalid S2LatLng in S2LatLngRect.Contains: {ll}");
+        if (!ll.IsValid()) MyDebug.WriteLine($"Invalid S2LatLng in S2LatLngRect.Contains: {ll}");
 
         return (Lat.Contains(ll.LatRadians) &&
                 Lng.Contains(ll.LngRadians));
@@ -275,7 +275,7 @@ public readonly record struct S2LatLngRect : IS2Region<S2LatLngRect>, IDecoder<S
     // rather than an S2Point.  The argument must be normalized.
     public bool InteriorContains(S2LatLng ll)
     {
-        if (!ll.IsValid()) Debug.WriteLine($"Invalid S2LatLng in S2LatLngRect.InteriorContains: {ll}");
+        if (!ll.IsValid()) MyDebug.WriteLine($"Invalid S2LatLng in S2LatLngRect.InteriorContains: {ll}");
 
         return (Lat.InteriorContains(ll.LatRadians) &&
                 Lng.InteriorContains(ll.LngRadians));
@@ -396,7 +396,7 @@ public readonly record struct S2LatLngRect : IS2Region<S2LatLngRect>, IDecoder<S
     }
     public S2LatLngRect AddPoint(S2LatLng ll)
     {
-        if (!ll.IsValid()) Debug.WriteLine($"Invalid S2LatLng in S2LatLngRect.AddPoint: {ll}");
+        if (!ll.IsValid()) MyDebug.WriteLine($"Invalid S2LatLng in S2LatLngRect.AddPoint: {ll}");
 
         return new S2LatLngRect(
             R1Interval.AddPoint(Lat, ll.LatRadians),
@@ -563,8 +563,8 @@ public readonly record struct S2LatLngRect : IS2Region<S2LatLngRect>, IDecoder<S
     {
         var a = this;
         var b = other;
-        Debug.Assert(!a.IsEmpty());
-        Debug.Assert(!b.IsEmpty());
+        MyDebug.Assert(!a.IsEmpty());
+        MyDebug.Assert(!b.IsEmpty());
 
         // First, handle the trivial cases where the longitude intervals overlap.
         if (a.Lng.Intersects(b.Lng))
@@ -634,8 +634,8 @@ public readonly record struct S2LatLngRect : IS2Region<S2LatLngRect>, IDecoder<S
         // The algorithm here is the same as in GetDistance(S2LatLngRect), only
         // with simplified calculations.
         S2LatLngRect a = this;
-        if (a.IsEmpty()) Debug.WriteLine($"Empty S2LatLngRect in GetDistance: {a}");
-        if (!p.IsValid()) Debug.WriteLine($"Invalid S2LatLng in S2LatLngRect.GetDistance: {p}");
+        if (a.IsEmpty()) MyDebug.WriteLine($"Empty S2LatLngRect in GetDistance: {a}");
+        if (!p.IsValid()) MyDebug.WriteLine($"Invalid S2LatLng in S2LatLngRect.GetDistance: {p}");
 
         if (a.Lng.Contains(p.LngRadians))
         {
@@ -676,7 +676,7 @@ public readonly record struct S2LatLngRect : IS2Region<S2LatLngRect>, IDecoder<S
         }
 
         double lng_distance = Lng.GetDirectedHausdorffDistance(other.Lng);
-        Debug.Assert(lng_distance >= 0);
+        MyDebug.Assert(lng_distance >= 0);
         return GetDirectedHausdorffDistance(lng_distance, Lat, other.Lat);
     }
     public S1Angle GetHausdorffDistance(S2LatLngRect other)
@@ -726,8 +726,8 @@ public readonly record struct S2LatLngRect : IS2Region<S2LatLngRect>, IDecoder<S
         // Return true if the segment AB intersects the given edge of constant
         // latitude.  Unfortunately, lines of constant latitude are curves on
         // the sphere.  They can intersect a straight edge in 0, 1, or 2 points.
-        Debug.Assert(a.IsUnitLength());
-        Debug.Assert(b.IsUnitLength());
+        MyDebug.Assert(a.IsUnitLength());
+        MyDebug.Assert(b.IsUnitLength());
 
         // First, compute the normal to the plane AB that points vaguely north.
         var z = S2.RobustCrossProd(a, b).Normalize();
@@ -737,8 +737,8 @@ public readonly record struct S2LatLngRect : IS2Region<S2LatLngRect>, IDecoder<S
         // where the great circle through AB achieves its maximium latitude.
         var y = S2.RobustCrossProd(z, new S2Point(0, 0, 1)).Normalize();
         var x = y.CrossProd(z);
-        Debug.Assert(x.IsUnitLength());
-        Debug.Assert(x[2] >= 0);
+        MyDebug.Assert(x.IsUnitLength());
+        MyDebug.Assert(x[2] >= 0);
 
         // Compute the angle "theta" from the x-axis (in the x-y plane defined
         // above) where the great circle intersects the given line of latitude.
@@ -747,7 +747,7 @@ public readonly record struct S2LatLngRect : IS2Region<S2LatLngRect>, IDecoder<S
         {
             return false;  // The great circle does not reach the given latitude.
         }
-        Debug.Assert(x[2] > 0);
+        MyDebug.Assert(x[2] > 0);
         double cos_theta = sin_lat / x[2];
         double sin_theta = Math.Sqrt(1 - cos_theta * cos_theta);
         double theta = Math.Atan2(sin_theta, cos_theta);
@@ -809,8 +809,8 @@ public readonly record struct S2LatLngRect : IS2Region<S2LatLngRect>, IDecoder<S
         //     b_hi to the interior of U, if any, where D (resp. U) is the portion
         //     of edge a below (resp. above) the intersection point from B2.
 
-        Debug.Assert(lng_diff >= 0);
-        Debug.Assert(lng_diff <= Math.PI);
+        MyDebug.Assert(lng_diff >= 0);
+        MyDebug.Assert(lng_diff <= Math.PI);
 
         if (lng_diff == 0)
         {
@@ -1014,7 +1014,7 @@ public readonly record struct S2LatLngRect : IS2Region<S2LatLngRect>, IDecoder<S
         encoder.PutDouble(Lng.Lo);
         encoder.PutDouble(Lng.Hi);
 
-        Debug.Assert(encoder.Avail() >= 0);
+        MyDebug.Assert(encoder.Avail() >= 0);
     }
 
     // Decodes an S2LatLngRect encoded with Encode().  Returns true on success.
@@ -1037,7 +1037,7 @@ public readonly record struct S2LatLngRect : IS2Region<S2LatLngRect>, IDecoder<S
         if (!result.IsValid())
         {
 #if s2debug
-            Debug.WriteLine($"Invalid result in S2LatLngRect.Decode: {result}");
+            MyDebug.WriteLine($"Invalid result in S2LatLngRect.Decode: {result}");
 #endif
             return (false, default);
         }

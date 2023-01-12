@@ -59,7 +59,7 @@ public class S2PointVectorShape : S2Shape, IInitEncoder<S2PointVectorShape>
     public sealed override int NumChains() { return NumPoints; }
     public sealed override Chain GetChain(int i) { return new Chain(i, 1); }
     public sealed override Edge ChainEdge(int i, int j)
-    { Debug.Assert(j == 0); return new Edge(points_[i], points_[i]); }
+    { MyDebug.Assert(j == 0); return new Edge(points_[i], points_[i]); }
     public sealed override ChainPosition GetChainPosition(int e) => new(e, 0);
 
     // Define as enum so we don't have to declare storage.
@@ -114,7 +114,7 @@ public class EncodedS2PointVectorShape : S2Shape, IInitEncoder<EncodedS2PointVec
     public sealed override int NumChains() { return NumPoints; }
     public sealed override Chain GetChain(int i) { return new Chain(i, 1); }
     public sealed override Edge ChainEdge(int i, int j)
-    { Debug.Assert(j == 0); return new Edge(points_[i], points_[i]); }
+    { MyDebug.Assert(j == 0); return new Edge(points_[i], points_[i]); }
     public sealed override ChainPosition GetChainPosition(int e) => new(e, 0);
     public override TypeTag GetTypeTag() => S2PointVectorShape.kTypeTag;
 

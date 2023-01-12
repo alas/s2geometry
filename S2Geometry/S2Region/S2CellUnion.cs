@@ -72,7 +72,7 @@ public record class S2CellUnion : IS2Region<S2CellUnion>, IEnumerable<S2CellId>,
     public static S2CellUnion FromNormalized(List<S2CellId> cell_ids)
     {
         var result = new S2CellUnion(cell_ids);
-        Debug.Assert(result.IsNormalized());
+        MyDebug.Assert(result.IsNormalized());
         return result;
     }
 
@@ -90,7 +90,7 @@ public record class S2CellUnion : IS2Region<S2CellUnion>, IEnumerable<S2CellId>,
     {
         var result = new S2CellUnion(cell_ids);
 #if s2debug
-        Debug.Assert(result.IsValid());
+        MyDebug.Assert(result.IsValid());
 #endif
         return result;
     }
@@ -132,19 +132,19 @@ public record class S2CellUnion : IS2Region<S2CellUnion>, IEnumerable<S2CellId>,
 
     public void InitFromMinMax(S2CellId min_id, S2CellId max_id)
     {
-        Debug.Assert(max_id.IsValid());
+        MyDebug.Assert(max_id.IsValid());
         InitFromBeginEnd(min_id, max_id.Next());
     }
     public void InitFromBeginEnd(S2CellId begin, S2CellId end)
     {
-        Debug.Assert(begin.IsLeaf());
-        Debug.Assert(end.IsLeaf());
+        MyDebug.Assert(begin.IsLeaf());
+        MyDebug.Assert(end.IsLeaf());
 
         var kLeafEnd = S2CellId.End(S2CellId.kMaxLevel);
-        Debug.Assert(begin.IsValid() || begin == kLeafEnd);
-        Debug.Assert(end.IsValid() || end == kLeafEnd);
+        MyDebug.Assert(begin.IsValid() || begin == kLeafEnd);
+        MyDebug.Assert(end.IsValid() || end == kLeafEnd);
 
-        Debug.Assert(begin <= end);
+        MyDebug.Assert(begin <= end);
 
         // We repeatedly add the largest cell we can.
         CellIds.Clear();
@@ -153,7 +153,7 @@ public record class S2CellUnion : IS2Region<S2CellUnion>, IEnumerable<S2CellId>,
             CellIds.Add(id);
         }
         // The output is already normalized.
-        Debug.Assert(IsNormalized());
+        MyDebug.Assert(IsNormalized());
     }
 
     // Clears the contents of the cell union and minimizes memory usage.
@@ -283,7 +283,7 @@ public record class S2CellUnion : IS2Region<S2CellUnion>, IEnumerable<S2CellId>,
         // the space-filling curve.  So we simply find the first cell that might
         // intersect (is not entirely before) the target (using binary search).
         // There is containment if and only if this cell id contains the target id.
-        Debug.Assert(id.IsValid());
+        MyDebug.Assert(id.IsValid());
 
         var i = CellIds.GetLowerBound(id, new EntirelyPrecedes_Comparer());
         return i != CellIds.Count && CellIds[i].Contains(id);
@@ -302,7 +302,7 @@ public record class S2CellUnion : IS2Region<S2CellUnion>, IEnumerable<S2CellId>,
     public bool Intersects(S2CellId id)
     {
         // This is an exact test; see the comments for Contains() above.
-        Debug.Assert(id.IsValid());
+        MyDebug.Assert(id.IsValid());
 
         var i = CellIds.GetLowerBound(id, new EntirelyPrecedes_Comparer());
         return i != CellIds.Count && CellIds[i].Intersects(id);
@@ -360,7 +360,7 @@ public record class S2CellUnion : IS2Region<S2CellUnion>, IEnumerable<S2CellId>,
                 continue;
             }
             // Neither cell is to the left of the other, so they must intersect.
-            Debug.Assert(i.Intersects(j));
+            MyDebug.Assert(i.Intersects(j));
             return true;
         }
         return false;
@@ -380,7 +380,7 @@ public record class S2CellUnion : IS2Region<S2CellUnion>, IEnumerable<S2CellId>,
     // union into pieces.
     public S2CellUnion Intersection(S2CellId id)
     {
-        Debug.Assert(id.IsValid());
+        MyDebug.Assert(id.IsValid());
         S2CellUnion result = new();
         if (Contains(id))
         {
@@ -393,7 +393,7 @@ public record class S2CellUnion : IS2Region<S2CellUnion>, IEnumerable<S2CellId>,
             while (i != CellIds.Count && CellIds[i] <= id_max)
                 result.CellIds.Add(CellIds[i++]);
         }
-        Debug.Assert(result.IsNormalized() || !IsNormalized());
+        MyDebug.Assert(result.IsNormalized() || !IsNormalized());
         return result;
     }
 
@@ -403,7 +403,7 @@ public record class S2CellUnion : IS2Region<S2CellUnion>, IEnumerable<S2CellId>,
         var result = new S2CellUnion();
         GetIntersection(CellIds, y.CellIds, result.CellIds);
         // The output is normalized as long as both inputs are normalized.
-        Debug.Assert(result.IsNormalized() || !IsNormalized() || !y.IsNormalized());
+        MyDebug.Assert(result.IsNormalized() || !IsNormalized() || !y.IsNormalized());
         return result;
     }
 
@@ -419,7 +419,7 @@ public record class S2CellUnion : IS2Region<S2CellUnion>, IEnumerable<S2CellId>,
         }
         var result = new S2CellUnion(ret);
         // The output is normalized as long as the first argument is normalized.
-        Debug.Assert(result.IsNormalized() || !IsNormalized());
+        MyDebug.Assert(result.IsNormalized() || !IsNormalized());
         return result;
     }
 
@@ -559,7 +559,7 @@ public record class S2CellUnion : IS2Region<S2CellUnion>, IEnumerable<S2CellId>,
         {
             // var skipInc = false;
             var id = ids[i];
-            Debug.Assert(id.IsValid());
+            MyDebug.Assert(id.IsValid());
 
             // Check whether this cell is contained by the previous cell.
             if (output <= 0 || !ids[output - 1].Contains(id))
@@ -589,11 +589,11 @@ public record class S2CellUnion : IS2Region<S2CellUnion>, IEnumerable<S2CellId>,
     // REQUIRES: output != &input
     public static void Denormalize(List<S2CellId> input, int min_level, int level_mod, List<S2CellId> output)
     {
-        Debug.Assert(min_level >= 0);
-        Debug.Assert(min_level <= S2.kMaxCellLevel);
-        Debug.Assert(level_mod >= 1);
-        Debug.Assert(level_mod <= 3);
-        Debug.Assert(!ReferenceEquals(input, output));
+        MyDebug.Assert(min_level >= 0);
+        MyDebug.Assert(min_level <= S2.kMaxCellLevel);
+        MyDebug.Assert(level_mod >= 1);
+        MyDebug.Assert(level_mod <= 3);
+        MyDebug.Assert(!ReferenceEquals(input, output));
 
         output.Clear();
         foreach (var id in input)
@@ -633,8 +633,8 @@ public record class S2CellUnion : IS2Region<S2CellUnion>, IEnumerable<S2CellId>,
     // always replaced by the parent cell.)
     public static void GetIntersection(List<S2CellId> x, List<S2CellId> y, List<S2CellId> output)
     {
-        Debug.Assert(x.IsSorted());
-        Debug.Assert(y.IsSorted());
+        MyDebug.Assert(x.IsSorted());
+        MyDebug.Assert(y.IsSorted());
 
         // This is a fairly efficient calculation that uses binary search to skip
         // over sections of both input vectors.  It takes logarithmic time if all the
@@ -682,7 +682,7 @@ public record class S2CellUnion : IS2Region<S2CellUnion>, IEnumerable<S2CellId>,
             }
         }
         // The output is generated in sorted order.
-        Debug.Assert(output.IsSorted());
+        MyDebug.Assert(output.IsSorted());
     }
 
     // Returns true if the given four cells have a common parent.

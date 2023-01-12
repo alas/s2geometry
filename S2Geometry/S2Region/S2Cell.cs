@@ -121,7 +121,7 @@ public readonly record struct S2Cell : IS2Region<S2Cell>, IComparable<S2Cell>, I
     // except that it is more than two times faster.
     public bool Subdivide(S2Cell[] children)
     {
-        //Debug.Assert(children.Length == 4);
+        //Assert.True(children.Length == 4);
 
         // This function is equivalent to just iterating over the child cell ids
         // and calling the S2Cell constructor, but it is about 2.5 times faster.
@@ -599,7 +599,7 @@ public readonly record struct S2Cell : IS2Region<S2Cell>, IComparable<S2Cell>, I
         }
 
         // The face centers are the +X, +Y, +Z, -X, -Y, -Z axes in that order.
-        Debug.Assert(((Face < 3) ? 1 : -1) == S2.GetNorm(Face)[Face % 3]);
+        MyDebug.Assert(((Face < 3) ? 1 : -1) == S2.GetNorm(Face)[Face % 3]);
         var bound = Face switch
         {
             0 => new S2LatLngRect(new R1Interval(-S2.M_PI_4, S2.M_PI_4),

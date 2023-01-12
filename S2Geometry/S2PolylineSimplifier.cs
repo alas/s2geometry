@@ -214,7 +214,7 @@ public class S2PolylineSimplifier
         // that the next input vertex is either inside "avoid_interval" or somewhere
         // in the 180 degrees to its right/left according to "disc_on_left", which
         // means that it cannot be contained by the subinterval that we ignore.
-        Debug.Assert(!window_.IsFull());
+        MyDebug.Assert(!window_.IsFull());
         if (window_.Contains(avoid_interval))
         {
             if (disc_on_left)

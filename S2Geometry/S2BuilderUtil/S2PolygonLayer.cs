@@ -182,7 +182,7 @@ public class S2PolygonLayer : Layer
 
     private void Init(S2Polygon polygon, LabelSetIds? label_set_ids, IdSetLexicon? label_set_lexicon, Options options)
     {
-        Debug.Assert((label_set_ids is null) == (label_set_lexicon is null));
+        MyDebug.Assert((label_set_ids is null) == (label_set_lexicon is null));
         polygon_ = polygon;
         label_set_ids_ = label_set_ids;
         label_set_lexicon_ = label_set_lexicon;

@@ -35,7 +35,7 @@
 //   but       Degrees(60).degrees() != 60.
 // 
 // This means that when testing for equality, you should allow for numerical
-// errors (Debug.Assert.Near) or convert to discrete E5/E6/E7 values first.
+// errors (Assert.True.Near) or convert to discrete E5/E6/E7 values first.
 // 
 // CAVEAT: All of the above properties depend on "double" being the usual
 // 64-bit IEEE 754 type (which is true on almost all modern platforms).

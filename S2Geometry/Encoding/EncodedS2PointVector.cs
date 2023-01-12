@@ -327,10 +327,10 @@ public class EncodedS2PointVector
         int base_bytes = base_bits >> 3;
         encoder.Ensure(2 + base_bytes);
         int last_block_count = values.Length - kBlockSize * (num_blocks - 1);
-        Debug.Assert(last_block_count >= 0);
-        Debug.Assert(last_block_count <= kBlockSize);
-        Debug.Assert(base_bytes <= 7);
-        Debug.Assert(level <= 30);
+        MyDebug.Assert(last_block_count >= 0);
+        MyDebug.Assert(last_block_count <= kBlockSize);
+        MyDebug.Assert(base_bytes <= 7);
+        MyDebug.Assert(level <= 30);
         encoder.Put8((byte)(
             (byte)Format.CELL_IDS |
             ((have_exceptions ? 1 : 0) << 3) |
@@ -358,9 +358,9 @@ public class EncodedS2PointVector
             int delta_nibbles = code.DeltaBits >> 2;
             int overlap_nibbles = code.OverlapBits >> 2;
             block.Ensure(1 + offset_bytes + (kBlockSize / 2) * delta_nibbles);
-            Debug.Assert(offset_bytes - overlap_nibbles <= 7);
-            Debug.Assert(overlap_nibbles <= 1);
-            Debug.Assert(delta_nibbles <= 16);
+            MyDebug.Assert(offset_bytes - overlap_nibbles <= 7);
+            MyDebug.Assert(overlap_nibbles <= 1);
+            MyDebug.Assert(delta_nibbles <= 16);
             block.Put8((byte)((offset_bytes - overlap_nibbles) | (overlap_nibbles << 3) | (delta_nibbles - 1) << 4));
 
             // Determine the offset for this block, and whether there are exceptions.
@@ -374,7 +374,7 @@ public class EncodedS2PointVector
                 }
                 else
                 {
-                    Debug.Assert(values[i + j] >= base_);
+                    MyDebug.Assert(values[i + j] >= base_);
                     offset = Math.Min(offset, values[i + j] - base_);
                 }
             }
@@ -383,7 +383,7 @@ public class EncodedS2PointVector
             // Encode the offset.
             int offset_shift = code.DeltaBits - code.OverlapBits;
             offset &= ~BitMask(offset_shift);
-            Debug.Assert((offset == 0) == (offset_bytes == 0));
+            MyDebug.Assert((offset == 0) == (offset_bytes == 0));
             if (offset > 0)
             {
                 EncodedUintVector.EncodeUintWithLength(offset >> offset_shift, offset_bytes, block);
@@ -402,15 +402,15 @@ public class EncodedS2PointVector
                 }
                 else
                 {
-                    Debug.Assert(values[i + j] >= offset + base_);
+                    MyDebug.Assert(values[i + j] >= offset + base_);
                     delta = values[i + j] - (offset + base_);
                     if (have_exceptions)
                     {
-                        Debug.Assert(delta <= (~0UL - kBlockSize));
+                        MyDebug.Assert(delta <= (~0UL - kBlockSize));
                         delta += kBlockSize;
                     }
                 }
-                Debug.Assert(delta <= BitMask(code.DeltaBits));
+                MyDebug.Assert(delta <= BitMask(code.DeltaBits));
                 if ((delta_nibbles & 1) != 0 && (j & 1) != 0)
                 {
                     // Combine this delta with the high-order 4 bits of the previous delta.
@@ -471,7 +471,7 @@ public class EncodedS2PointVector
         if (decoder.Avail() < 2) return false;
         byte header1 = decoder.Get8();
         byte header2 = decoder.Get8();
-        Debug.Assert((header1 & 7) == (byte)Format.CELL_IDS);
+        MyDebug.Assert((header1 & 7) == (byte)Format.CELL_IDS);
         int last_block_count, base_bytes;
         have_exceptions = (header1 & 8) != 0;
         last_block_count = (header1 >> 4) + 1;
@@ -669,7 +669,7 @@ public class EncodedS2PointVector
                 UInt32 sj = (((UInt32)((cp.Face & 3) << 30)) | (cp.Si >> 1)) >> shift;
                 UInt32 tj = (((UInt32)((cp.Face & 4) << 29)) | cp.Ti) >> (shift + 1);
                 UInt64 v = InterleaveUInt32BitPairs(sj, tj);
-                Debug.Assert(v <= BitMask(MaxBitsForLevel(level)));
+                MyDebug.Assert(v <= BitMask(MaxBitsForLevel(level)));
                 values[i] = v;
             }
         }
@@ -825,11 +825,11 @@ public class EncodedS2PointVector
             }
             else
             {
-                Debug.Assert(delta_bits <= 60);
+                MyDebug.Assert(delta_bits <= 60);
                 delta_bits += 4;
                 if (!CanEncode(b_min, b_max, delta_bits, 0, have_exceptions))
                 {
-                    Debug.Assert(CanEncode(b_min, b_max, delta_bits, 4, have_exceptions));
+                    MyDebug.Assert(CanEncode(b_min, b_max, delta_bits, 4, have_exceptions));
                     overlap_bits = 4;
                 }
             }
@@ -842,7 +842,7 @@ public class EncodedS2PointVector
         // may be 0 or 4.  These cases are covered by the unit tests.)
         if (values.Count == 1 && !have_exceptions)
         {
-            Debug.Assert(delta_bits == 4 && overlap_bits == 0);
+            MyDebug.Assert(delta_bits == 4 && overlap_bits == 0);
             delta_bits = 8;
         }
 
@@ -857,7 +857,7 @@ public class EncodedS2PointVector
             int offset_shift = delta_bits - overlap_bits;
             UInt64 mask = BitMask(offset_shift);
             UInt64 min_offset = (b_max - max_delta + mask) & ~mask;
-            Debug.Assert(min_offset > 0);
+            MyDebug.Assert(min_offset > 0);
             offset_bits = (BitsUtils.FindMSBSetNonZero64(min_offset) + 1 - offset_shift + 7) & ~7;
             // A 64-bit offset can only be encoded with an overlap of 4 bits.
             if (offset_bits == 64) overlap_bits = 4;

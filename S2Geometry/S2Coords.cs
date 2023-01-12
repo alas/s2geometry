@@ -185,7 +185,7 @@ public static partial class S2
     // cell indices.
     public static double IJtoSTMin(int i)
     {
-        Debug.Assert(i >= 0 && i <= S2.kLimitIJ);
+        MyDebug.Assert(i >= 0 && i <= S2.kLimitIJ);
         return (1.0 / S2.kLimitIJ) * i;
     }
 
@@ -202,7 +202,7 @@ public static partial class S2
     // Convert an si- or ti-value to the corresponding s- or t-value.
     public static double SiTitoST(uint si)
     {
-        Debug.Assert(si <= S2.kMaxSiTi);
+        MyDebug.Assert(si <= S2.kMaxSiTi);
         return (1.0 / S2.kMaxSiTi) * si;
     }
 
@@ -264,7 +264,7 @@ public static partial class S2
     // u and v values (which may lie outside the range [-1,1]).
     public static void ValidFaceXYZtoUV(int face, S2Point p, out double pu, out double pv)
     {
-        Debug.Assert(p.DotProd(GetNorm(face)) > 0);
+        MyDebug.Assert(p.DotProd(GetNorm(face)) > 0);
         switch (face)
         {
             case 0: pu = p[1] / p[0]; pv = p[2] / p[0]; break;
@@ -339,7 +339,7 @@ public static partial class S2
         {
             return -1;
         }
-        Debug.Assert(level <= S2.kMaxCellLevel);
+        MyDebug.Assert(level <= S2.kMaxCellLevel);
         // In infinite precision, this test could be changed to ST == SiTi. However,
         // due to rounding errors, UVtoST(XYZtoFaceUV(FaceUVtoXYZ(STtoUV(...)))) is
         // not idempotent. On the other hand, center_raw is computed exactly the same
@@ -418,9 +418,9 @@ public static partial class S2
     public static int GetUVWFace(int face, int axis, bool direction) => GetUVWFace(face, axis, direction ? 1 : 0);
     public static int GetUVWFace(int face, int axis, int direction)
     {
-        Debug.Assert(face >= 0 && face <= 5);
-        Debug.Assert(axis >= 0 && axis <= 2);
-        Debug.Assert(new[] { 0, 1 }.Contains(direction));
+        MyDebug.Assert(face >= 0 && face <= 5);
+        MyDebug.Assert(axis >= 0 && axis <= 2);
+        MyDebug.Assert(new[] { 0, 1 }.Contains(direction));
         return kFaceUVWFaces[face][axis][direction];
     }
 

@@ -79,7 +79,7 @@ public static class S2Pred
     // REQUIRES: a != o && b != o && c != o
     public static bool OrderedCCW(S2Point a, S2Point b, S2Point c, S2Point o)
     {
-        Debug.Assert(a != o && b != o && c != o);
+        MyDebug.Assert(a != o && b != o && c != o);
 
         // The last inequality below is ">" rather than ">=" so that we return true
         // if A == B or B == C, and otherwise false if A == C.  Recall that
@@ -191,7 +191,7 @@ public static class S2Pred
     {
         // Check that the edge does not consist of antipodal points.  (This catches
         // the most common case -- the full test is in ExactCompareEdgeDistance.)
-        Debug.Assert(a0 != -a1);
+        MyDebug.Assert(a0 != -a1);
 
         int sign = TriageCompareEdgeDistance(x, a0, a1, r.Length2);
         if (sign != 0) return sign;
@@ -254,8 +254,8 @@ public static class S2Pred
     {
         // Check that no edge consists of antipodal points.  (This catches the most
         // common case -- the full test is in ExactCompareEdgeDirections.)
-        Debug.Assert(a0 != -a1);
-        Debug.Assert(b0 != -b1);
+        MyDebug.Assert(a0 != -a1);
+        MyDebug.Assert(b0 != -b1);
 
         int sign = TriageCompareEdgeDirections(a0, a1, b0, b1);
         if (sign != 0) return sign;
@@ -288,7 +288,7 @@ public static class S2Pred
     {
         // Check that the edge does not consist of antipodal points.  (This catches
         // the most common case -- the full test is in ExactEdgeCircumcenterSign.)
-        Debug.Assert(x0 != -x1);
+        MyDebug.Assert(x0 != -x1);
 
         int abc_sign = Sign(a, b, c);
         int sign = TriageEdgeCircumcenterSign(x0, x1, a, b, c, abc_sign);
@@ -344,13 +344,13 @@ public static class S2Pred
     //           (see comments in CompareEdgeDistance).
     public static Excluded GetVoronoiSiteExclusion(S2Point a, S2Point b, S2Point x0, S2Point x1, S1ChordAngle r)
     {
-        Debug.Assert(r < S1ChordAngle.Right);
-        Debug.Assert(CompareDistances(x0, a, b) < 0);  // (implies a != b)
-        Debug.Assert(CompareEdgeDistance(a, x0, x1, r) <= 0);
-        Debug.Assert(CompareEdgeDistance(b, x0, x1, r) <= 0);
+        MyDebug.Assert(r < S1ChordAngle.Right);
+        MyDebug.Assert(CompareDistances(x0, a, b) < 0);  // (implies a != b)
+        MyDebug.Assert(CompareEdgeDistance(a, x0, x1, r) <= 0);
+        MyDebug.Assert(CompareEdgeDistance(b, x0, x1, r) <= 0);
         // Check that the edge does not consist of antipodal points.  (This catches
         // the most common case -- the full test is in ExactVoronoiSiteExclusion.)
-        Debug.Assert(x0 != -x1);
+        MyDebug.Assert(x0 != -x1);
 
         // If one site is closer than the other to both endpoints of X, then it is
         // closer to every point on X.  Note that this also handles the case where A
@@ -437,15 +437,15 @@ public static class S2Pred
         //
         // which is about 3.6548 * e, or 1.8274 * S2Constants.DoubleEpsilon.
         double kMaxDetError = 1.8274 * S2.DoubleEpsilon;
-        Debug.Assert(a.IsUnitLength());
-        Debug.Assert(b.IsUnitLength());
-        Debug.Assert(c.IsUnitLength());
-        Debug.Assert(a_cross_b == a.CrossProd(b));
+        MyDebug.Assert(a.IsUnitLength());
+        MyDebug.Assert(b.IsUnitLength());
+        MyDebug.Assert(c.IsUnitLength());
+        MyDebug.Assert(a_cross_b == a.CrossProd(b));
         double det = a_cross_b.DotProd(c);
 
 #if s2debug
         // Double-check borderline cases in debug mode.
-        Debug.Assert(Math.Abs(det) <= kMaxDetError || Math.Abs(det) >= 100 * kMaxDetError || det * ExpensiveSign(a, b, c) > 0);
+        MyDebug.Assert(Math.Abs(det) <= kMaxDetError || Math.Abs(det) >= 100 * kMaxDetError || det * ExpensiveSign(a, b, c) > 0);
 #endif
 
         if (det > kMaxDetError) return 1;
@@ -609,7 +609,7 @@ public static class S2Pred
         // the sign of the permutation, but it is more efficient to do this before
         // converting the inputs to the multi-precision representation, and this
         // also lets us re-use the result of the cross product B x C.
-        Debug.Assert(a < b && b < c);
+        MyDebug.Assert(a < b && b < c);
 
         // Every input coordinate x[i] is assigned a symbolic perturbation dx[i].
         // We then compute the sign of the determinant of the perturbed points,
@@ -677,7 +677,7 @@ public static class S2Pred
         if (det_sign != 0) return det_sign;
         // The following test is listed in the paper, but it is redundant because
         // the previous tests guarantee that C == (0, 0, 0).
-        Debug.Assert(0 == (c[1] * a[2] - c[2] * a[1]).Sgn());  // db[0]
+        MyDebug.Assert(0 == (c[1] * a[2] - c[2] * a[1]).Sgn());  // db[0]
 
         det_sign = (a[0] * b[1] - a[1] * b[0]).Sgn();     // dc[2]
         if (det_sign != 0) return det_sign;
@@ -696,7 +696,7 @@ public static class S2Pred
     /// </summary>
     public static int ExactSign(S2Point a, S2Point b, S2Point c, bool perturb)
     {
-        Debug.Assert(a != b && b != c && c != a);
+        MyDebug.Assert(a != b && b != c && c != a);
 
         // Sort the three points in lexicographic order, keeping track of the sign
         // of the permutation.  (Each exchange inverts the sign of the determinant.)
@@ -705,7 +705,7 @@ public static class S2Pred
         if (a > b) { buff = a; a = b; b = buff; perm_sign = -perm_sign; }
         if (b > c) { buff = b; b = c; c = buff; perm_sign = -perm_sign; }
         if (a > b) { buff = a; a = b; b = buff; perm_sign = -perm_sign; }
-        Debug.Assert(a < b && b < c);
+        MyDebug.Assert(a < b && b < c);
 
         // ~Construct multiple-precision versions of the sorted points and~ compute
         // their exact 3x3 determinant.
@@ -714,8 +714,8 @@ public static class S2Pred
 
         // The precision of ExactFloat is high enough that the result should always
         // be exact (no rounding was performed).
-        Debug.Assert(!double.IsNaN(det));
-        //Debug.Assert(det.prec() < det.max_prec());
+        MyDebug.Assert(!double.IsNaN(det));
+        //Assert.True(det.prec() < det.max_prec());
 
         // If the exact determinant is non-zero, we're done.
         int det_sign = det.Sgn();
@@ -724,7 +724,7 @@ public static class S2Pred
             // Otherwise, we need to resort to symbolic perturbations to resolve the
             // sign of the determinant.
             det_sign = SymbolicallyPerturbedSign(a, b, c, b_cross_c);
-            Debug.Assert(0 != det_sign);
+            MyDebug.Assert(0 != det_sign);
         }
         return perm_sign * det_sign;
     }
@@ -874,7 +874,7 @@ public static class S2Pred
 
     private static int TriageCompareSin2Distance(S2Point x, S2Point y, double r2)
     {
-        Debug.Assert(r2 < 2.0);  // Only valid for distance limits < 90 degrees.
+        MyDebug.Assert(r2 < 2.0);  // Only valid for distance limits < 90 degrees.
 
         double sin2_xy = GetSin2Distance(x, y, out var sin2_xy_error);
         double sin2_r = r2 * (1 - 0.25 * r2);
@@ -1144,8 +1144,8 @@ public static class S2Pred
 
     private static int ExactCompareEdgeDirections(S2Point a0, S2Point a1, S2Point b0, S2Point b1)
     {
-        Debug.Assert(!ArePointsAntipodal(a0, a1));
-        Debug.Assert(!ArePointsAntipodal(b0, b1));
+        MyDebug.Assert(!ArePointsAntipodal(a0, a1));
+        MyDebug.Assert(!ArePointsAntipodal(b0, b1));
         return a0.CrossProd(a1).DotProd(b0.CrossProd(b1)).Sgn();
     }
 
@@ -1202,7 +1202,7 @@ public static class S2Pred
         // SymbolicEdgeCircumcenterSign.)
         if (ArePointsLinearlyDependent(x0, x1))
         {
-            Debug.Assert(x0.DotProd(x1) > 0);  // Antipodal edges not allowed.
+            MyDebug.Assert(x0.DotProd(x1) > 0);  // Antipodal edges not allowed.
             return 0;
         }
         // The simplest predicate for testing whether the sign is positive is
@@ -1561,7 +1561,7 @@ public static class S2Pred
             if (ca <= 0 && cb <= 0) return Excluded.UNCERTAIN;  // One or both kept?
                                                                  // Since either ca or cb is 1, we know the result even if the distance
                                                                  // comparison for the other site was uncertain.
-            Debug.Assert(ca <= 0 || cb <= 0);
+            MyDebug.Assert(ca <= 0 || cb <= 0);
             return (ca > 0) ? Excluded.FIRST : Excluded.SECOND;
         }
         if (sin_d <= sin_d_error) return Excluded.UNCERTAIN;
@@ -1585,13 +1585,13 @@ public static class S2Pred
 
         // Now we can finish checking the results of predicate (3).
         if (result <= result_error) return Excluded.UNCERTAIN;
-        Debug.Assert(abs_lhs3 > lhs3_error);
+        MyDebug.Assert(abs_lhs3 > lhs3_error);
         return (lhs3 > 0) ? Excluded.FIRST : Excluded.SECOND;
     }
 
     private static Excluded ExactVoronoiSiteExclusion(S2Point a, S2Point b, S2Point x0, S2Point x1, double r2)
     {
-        Debug.Assert(!ArePointsAntipodal(x0, x1));
+        MyDebug.Assert(!ArePointsAntipodal(x0, x1));
 
         // Recall that one site excludes the other if
         //
@@ -1628,8 +1628,8 @@ public static class S2Pred
             int ca = ExactCompareDistance(a, x0, r90);
             int cb = ExactCompareDistance(b, x1, r90);
             if (ca < 0 && cb < 0) return Excluded.NEITHER;
-            Debug.Assert(ca != 0 && cb != 0);  // This is guaranteed since d < 0.
-            Debug.Assert(ca < 0 || cb < 0);    // At least one site must be kept.
+            MyDebug.Assert(ca != 0 && cb != 0);  // This is guaranteed since d < 0.
+            MyDebug.Assert(ca < 0 || cb < 0);    // At least one site must be kept.
             return (ca > 0) ? Excluded.FIRST : Excluded.SECOND;
         }
 
@@ -1660,7 +1660,7 @@ public static class S2Pred
             // equidistant from every point on edge X.  This case requires symbolic
             // perturbations, but it should already have been handled in
             // GetVoronoiSiteExclusion() (see the call to CompareDistances).
-            Debug.Assert(rhs2_sgn > 0);
+            MyDebug.Assert(rhs2_sgn > 0);
             return Excluded.NEITHER;
         }
         // Next we square both sides of (2), yielding

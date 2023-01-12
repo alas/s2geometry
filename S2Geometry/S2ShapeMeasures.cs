@@ -91,7 +91,7 @@ public static partial class S2
         }
         // Note that S2.GetSignedArea() guarantees that the full loop (containing
         // all points on the sphere) has a very small negative area.
-        Debug.Assert(Math.Abs(area) <= S2.M_4_PI + max_error);
+        MyDebug.Assert(Math.Abs(area) <= S2.M_4_PI + max_error);
         if (area < 0.0) area += S2.M_4_PI;
         return area;
     }

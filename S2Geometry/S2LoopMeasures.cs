@@ -30,7 +30,7 @@ public static partial class S2
     public static double GetArea(S2PointLoopSpan loop)
     {
         var area = GetSignedArea(loop);
-        Debug.Assert(Math.Abs(area) <= S2.M_2_PI);
+        MyDebug.Assert(Math.Abs(area) <= S2.M_2_PI);
         if (area < 0.0) area += S2.M_4_PI;
         return area;
     }
@@ -146,7 +146,7 @@ public static partial class S2
         {
             double curvature = GetCurvature(loop);
             // Zero-area loops should have a curvature of approximately +/- 2*Pi.
-            Debug.Assert(!(area == 0 && curvature == 0));
+            MyDebug.Assert(!(area == 0 && curvature == 0));
             if (curvature == S2.M_2_PI) return 0.0;  // Degenerate
             if (area <= 0 && curvature > 0)
             {
@@ -418,8 +418,8 @@ public static partial class S2
             //  2. Either O == V_0, or O is approximately perpendicular to V_0.
             //  3. "sum" is the oriented integral of f over the area defined by
             //     (O, V_0, V_1, ..., V_i).
-            Debug.Assert(i == 1 || origin.Angle(loop[i]) < kMaxLength);
-            Debug.Assert(origin == loop[0] || Math.Abs(origin.DotProd(loop[0])) < S2.DoubleError);
+            MyDebug.Assert(i == 1 || origin.Angle(loop[i]) < kMaxLength);
+            MyDebug.Assert(origin == loop[0] || Math.Abs(origin.DotProd(loop[0])) < S2.DoubleError);
 
             if (loop[i + 1].Angle(origin) > kMaxLength)
             {
@@ -522,7 +522,7 @@ public static partial class S2
 
         int i1 = order1.First, i2 = order2.First;
         int dir1 = order1.Dir, dir2 = order2.Dir;
-        Debug.Assert(loop.GetRemIndex(i1) == loop.GetRemIndex(i2));
+        MyDebug.Assert(loop.GetRemIndex(i1) == loop.GetRemIndex(i2));
         for (int n = loop.Count; --n > 0;)
         {
             i1 += dir1;

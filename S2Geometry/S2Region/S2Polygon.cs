@@ -314,7 +314,7 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
 #if s2debug
                 // The s2debug validity checking usually happens in InitIndex(),
                 // but this error is detected too late for that.
-                Debug.Assert(IsValid());  // Always fails.
+                MyDebug.Assert(IsValid());  // Always fails.
 #endif
             }
         }
@@ -958,7 +958,7 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
         if (NumLoops() == 0)
         {
             if (cells.IsEmpty()) return;
-            Debug.Assert(6UL << (2 * S2.kMaxCellLevel) == cells.LeafCellsCovered());
+            MyDebug.Assert(6UL << (2 * S2.kMaxCellLevel) == cells.LeafCellsCovered());
             Invert();
         }
     }
@@ -969,7 +969,7 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
     // initialized with a single non-empty loop.
     private void InitOneLoop()
     {
-        Debug.Assert(1 == NumLoops());
+        MyDebug.Assert(1 == NumLoops());
         var loop = loops_[0];
         loop.Depth = 0;
         error_inconsistent_loop_orientations_ = false;
@@ -1069,7 +1069,7 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
             loops_.AddRange(new_loops);
             new_loops.Clear();
             new_loops.AddRange(tmp);
-            Debug.Assert(new_loops.Count == NumLoops());
+            MyDebug.Assert(new_loops.Count == NumLoops());
         }
         ClearIndex();
         InitLoopProperties();
@@ -1501,7 +1501,7 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
                 for (var i = children.Count - 1; i >= 0; --i)
                 {
                     var child = children[i];
-                    //Debug.Assert(child is not null);
+                    //Assert.True(child is not null);
                     child!.Depth = depth + 1;
                     loop_stack.Add(child);
                 }
@@ -1513,14 +1513,14 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
     // building the index only happens when the index is first used.)
     private void InitIndex()
     {
-        Debug.Assert(Index.NumShapeIds() == 0);
+        MyDebug.Assert(Index.NumShapeIds() == 0);
         Index.Add(new Shape(this));
 #if s2polygon_not_lazy_indexing
             index_.ForceBuild();
 #endif
 #if s2debug
         // Note that s2debug is false in optimized builds (by default).
-        Debug.Assert(IsValid());
+        MyDebug.Assert(IsValid());
 #endif
     }
 
@@ -1624,7 +1624,7 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
                     // separate polyline for each edge to keep things simple.)  We call
                     // ForceVertex on all boundary vertices to ensure that they don't
                     // move, and so that nearby interior edges are snapped to them.
-                    Debug.Assert(!in_interior);
+                    MyDebug.Assert(!in_interior);
                     builder.ForceVertex(v1);
                     polylines.Add(new S2Polyline(new S2Point[] { v0, v1 }));
                 }
@@ -1699,7 +1699,7 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
         {
             var bound = cell.BoundUV;
 #if s2debug
-            Debug.Assert(bound.Expanded(tolerance_uv).Contains(uv));
+            MyDebug.Assert(bound.Expanded(tolerance_uv).Contains(uv));
 #endif
             if (Math.Abs(uv[1] - bound[1][0]) <= tolerance_uv) mask |= 1;
             if (Math.Abs(uv[0] - bound[0][1]) <= tolerance_uv) mask |= 2;
@@ -1875,7 +1875,7 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
         }
         encoder.Put8((byte)has_holes);
         encoder.Put32(loops_.Count);
-        Debug.Assert(encoder.Avail() >= 0);
+        MyDebug.Assert(encoder.Avail() >= 0);
 
         for (var i = 0; i < NumLoops(); ++i)
         {
@@ -1953,13 +1953,13 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
     // REQUIRES: snap_level >= 0.
     private void EncodeCompressed(Encoder encoder, S2PointCompression.S2XYZFaceSiTi[]? all_vertices, int snap_level)
     {
-        Debug.Assert(snap_level >= 0);
+        MyDebug.Assert(snap_level >= 0);
         // Sufficient for what we write. Typically enough for a 4 vertex polygon.
         encoder.Ensure(40);
         encoder.Put8(kCurrentCompressedEncodingVersionNumber);
         encoder.Put8((byte)snap_level);
         encoder.PutVarUInt32((uint)NumLoops());
-        Debug.Assert(encoder.Avail() >= 0);
+        MyDebug.Assert(encoder.Avail() >= 0);
         var current_loop_vertices = 0;
         for (var i = 0; i < NumLoops(); ++i)
         {
@@ -2139,7 +2139,7 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
         public sealed override int NumChains() => Polygon.NumLoops();
         public sealed override Chain GetChain(int i)
         {
-            Debug.Assert(i < NumChains());
+            MyDebug.Assert(i < NumChains());
             if (loop_starts_ is not null)
             {
                 var start = loop_starts_[i];
@@ -2158,15 +2158,15 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
         public sealed override Edge ChainEdge(int i, int j) => ChainEdgeInternal(i, j);
         private Edge ChainEdgeInternal(int i, int j)
         {
-            Debug.Assert(i < NumChains());
+            MyDebug.Assert(i < NumChains());
             var loop = Polygon.Loop(i);
-            Debug.Assert(j < loop.NumVertices);
+            MyDebug.Assert(j < loop.NumVertices);
             return new Edge(loop.OrientedVertex(j), loop.OrientedVertex(j + 1));
         }
         public sealed override ChainPosition GetChainPosition(int e) => GetChainPositionInternal(e);
         private ChainPosition GetChainPositionInternal(int e)
         {
-            Debug.Assert(e < NumEdges());
+            MyDebug.Assert(e < NumEdges());
             int i;
             if (loop_starts_ is null)
             {

@@ -1364,7 +1364,7 @@ public class S2LoopTests
         }
         else
         {
-            // Debug.Assert.Near only works with doubles.
+            // Assert.True.Near only works with doubles.
             Assert2.Near(new S1Angle(x, boundary_x).GetDegrees(), loop.DistanceToBoundary(x).GetDegrees(), kMaxError.GetDegrees());
         }
         if (loop.Contains(x))

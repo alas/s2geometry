@@ -41,7 +41,7 @@ public class LaxPolylineLayer : S2Builder.Layer
     public LaxPolylineLayer(S2LaxPolylineShape polyline, LabelSetIds? label_set_ids,
                    IdSetLexicon? label_set_lexicon, Options? options = null)
     {
-        Debug.Assert((label_set_ids is null) == (label_set_lexicon is null));
+        MyDebug.Assert((label_set_ids is null) == (label_set_lexicon is null));
         polyline_ = polyline;
         label_set_ids_ = label_set_ids;
         label_set_lexicon_ = label_set_lexicon;

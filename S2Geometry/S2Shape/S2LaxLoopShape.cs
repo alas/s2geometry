@@ -46,7 +46,7 @@ public class S2LaxLoopShape : S2Shape
     //           [Use S2LaxPolygonShape if you need to represent a full loop.]
     public void Init(S2Loop loop)
     {
-        Debug.Assert(!loop.IsFull()); // Full loops not supported; use S2LaxPolygonShape
+        MyDebug.Assert(!loop.IsFull()); // Full loops not supported; use S2LaxPolygonShape
         if (loop.IsEmpty())
         {
             NumVertices = 0;
@@ -78,7 +78,7 @@ public class S2LaxLoopShape : S2Shape
 
     public sealed override Edge GetEdge(int e0)
     {
-        Debug.Assert(e0 < NumEdges());
+        MyDebug.Assert(e0 < NumEdges());
         int e1 = e0 + 1;
         if (e1 == NumVertices) e1 = 0;
         return new Edge(Vertex(e0), Vertex(e1));
@@ -94,8 +94,8 @@ public class S2LaxLoopShape : S2Shape
     public sealed override Chain GetChain(int i) => new(0, NumVertices);
     public sealed override Edge ChainEdge(int i, int j)
     {
-        Debug.Assert(i == 0);
-        Debug.Assert(j < NumEdges());
+        MyDebug.Assert(i == 0);
+        MyDebug.Assert(j < NumEdges());
         int k = (j + 1 == NumVertices) ? 0 : j + 1;
         return new Edge(Vertex(j), Vertex(k));
     }
@@ -188,7 +188,7 @@ public class S2VertexIdLaxLoopShape : S2Shape
 
     public sealed override Edge GetEdge(int e0)
     {
-        Debug.Assert(e0 < NumEdges());
+        MyDebug.Assert(e0 < NumEdges());
         int e1 = e0 + 1;
         if (e1 == NumVertices) e1 = 0;
         return new Edge(Vertex(e0), Vertex(e1));
@@ -204,8 +204,8 @@ public class S2VertexIdLaxLoopShape : S2Shape
     public sealed override Chain GetChain(int i) => new(0, NumVertices);
     public sealed override Edge ChainEdge(int i, int j)
     {
-        Debug.Assert(i == 0);
-        Debug.Assert(j < NumEdges());
+        MyDebug.Assert(i == 0);
+        MyDebug.Assert(j < NumEdges());
         int k = (j + 1 == NumVertices) ? 0 : j + 1;
         return new Edge(Vertex(j), Vertex(k));
     }

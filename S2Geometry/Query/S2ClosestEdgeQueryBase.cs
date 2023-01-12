@@ -199,7 +199,7 @@ public class S2ClosestEdgeQueryBase<Distance> where Distance : IEquatable<Distan
     // REQUIRES: options.max_results() == 1
     public Result FindClosestEdge(S2DistanceTarget<Distance> target, Options options)
     {
-        Debug.Assert(options.MaxResults == 1);
+        MyDebug.Assert(options.MaxResults == 1);
         FindClosestEdgesInternal(target, options);
         return result_singleton_;
     }
@@ -212,9 +212,9 @@ public class S2ClosestEdgeQueryBase<Distance> where Distance : IEquatable<Distan
         tested_edges_.Clear();
         distance_limit_ = options.MaxDistance;
         result_singleton_ = new Result();
-        Debug.Assert(!result_vector_.Any());
-        Debug.Assert(!result_set_.Any());
-        Debug.Assert(target.MaxBruteForceIndexSize >= 0);
+        MyDebug.Assert(!result_vector_.Any());
+        MyDebug.Assert(!result_set_.Any());
+        MyDebug.Assert(target.MaxBruteForceIndexSize >= 0);
         if (Equals(distance_limit_, Distance.Zero)) return;
 
         if (options.IncludeInteriors)
@@ -364,7 +364,7 @@ public class S2ClosestEdgeQueryBase<Distance> where Distance : IEquatable<Distan
 
     private void InitQueue()
     {
-        Debug.Assert(!queue_.Any());
+        MyDebug.Assert(!queue_.Any());
 
         // Optimization: if the user is searching for just the closest edge, and the
         // center of the target's bounding cap happens to intersect an index cell,
@@ -527,7 +527,7 @@ public class S2ClosestEdgeQueryBase<Distance> where Distance : IEquatable<Distan
         {
             // Add the lowest common ancestor of the given range.
             int level = first.CommonAncestorLevel(last);
-            Debug.Assert(level >= 0);
+            MyDebug.Assert(level >= 0);
             index_covering_.Add(first.Parent(level));
             index_cells_.Add(null);
         }
@@ -597,7 +597,7 @@ public class S2ClosestEdgeQueryBase<Distance> where Distance : IEquatable<Distan
 
     private void ProcessOrEnqueue(S2CellId id, S2ShapeIndexIdCell cm)
     {
-        Debug.Assert(id.Contains(cm.Item1));
+        MyDebug.Assert(id.Contains(cm.Item1));
         if (cm.Item1 == id)
         {
             ProcessOrEnqueue2(id, cm.Item2);
@@ -667,7 +667,7 @@ public class S2ClosestEdgeQueryBase<Distance> where Distance : IEquatable<Distan
             get => _maxResults;
             set
             {
-                Debug.Assert(value >= 1);
+                MyDebug.Assert(value >= 1);
                 _maxResults = value;
             }
         }

@@ -83,7 +83,7 @@ public static partial class S2ShapeUtil
                 }
             }
             // Check that there is exactly one outer loop in each component.
-            Debug.Assert(i + 1 == outer_loops.Count); // Component is not a subdivision
+            MyDebug.Assert(i + 1 == outer_loops.Count); // Component is not a subdivision
         }
         // Find the loops containing each component.
         var ancestors = new List<List<S2Shape>>(components.Count);
@@ -91,7 +91,7 @@ public static partial class S2ShapeUtil
         for (int i = 0; i < outer_loops.Count; ++i)
         {
             var loop = outer_loops[i];
-            Debug.Assert(loop.NumEdges() > 0);
+            MyDebug.Assert(loop.NumEdges() > 0);
             ancestors[i] = contains_query.GetContainingShapes(loop.GetEdge(0).V0);
         }
         // Assign each outer loop to the component whose depth is one less.
@@ -107,11 +107,11 @@ public static partial class S2ShapeUtil
                 {
                     if (ancestors[component_ids[candidate.Id]].Count == depth - 1)
                     {
-                        Debug.Assert(ancestor is null);
+                        MyDebug.Assert(ancestor is null);
                         ancestor = candidate;
                     }
                 }
-                Debug.Assert(ancestor is not null);
+                MyDebug.Assert(ancestor is not null);
             }
             ValueTuple<S2Shape?> notNullAncestor = new(ancestor!);
             if (!children.ContainsKey(notNullAncestor)) children.Add(notNullAncestor, new List<S2Shape>());

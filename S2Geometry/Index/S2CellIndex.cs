@@ -99,8 +99,8 @@ public class S2CellIndex
     // REQUIRES: cell_id.IsValid
     public void Add(S2CellId cell_id, Int32 label)
     {
-        Debug.Assert(cell_id.IsValid());
-        Debug.Assert(label >= 0);
+        MyDebug.Assert(cell_id.IsValid());
+        MyDebug.Assert(label >= 0);
         cell_tree_.Add(new CellNode(cell_id, label, -1));
     }
 
@@ -287,14 +287,14 @@ public class S2CellIndex
         {
             range_nodes_ = index.range_nodes_;
             Position = -1;
-            Debug.Assert(range_nodes_.Any()); // Call Build() first.
+            MyDebug.Assert(range_nodes_.Any()); // Call Build() first.
         }
 
         public RangeNodeEnumerator(List<RangeNode> rangeNodes, int position)
         {
             range_nodes_ = rangeNodes;
             Position = position;
-            Debug.Assert(range_nodes_.Any()); // Call Build() first.
+            MyDebug.Assert(range_nodes_.Any()); // Call Build() first.
         }
 
         public virtual bool MoveNext()
@@ -344,7 +344,7 @@ public class S2CellIndex
         // REQUIRES: target.IsLeaf
         public void Seek(S2CellId target)
         {
-            Debug.Assert(target.IsLeaf());
+            MyDebug.Assert(target.IsLeaf());
             Position = range_nodes_.GetUpperBound(new RangeNode(target, -1)) - 1;
         }
 
