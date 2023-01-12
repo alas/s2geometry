@@ -16,7 +16,7 @@ public class S2ShapeUtilVisitCrossingEdgePairsTests
 
     private readonly ITestOutputHelper _logger;
 
-    internal S2ShapeUtilVisitCrossingEdgePairsTests(ITestOutputHelper logger) { _logger = logger; }
+    public S2ShapeUtilVisitCrossingEdgePairsTests(ITestOutputHelper logger) { _logger = logger; }
 
     [Fact]
     internal void Test_GetCrossingEdgePairs_NoIntersections()

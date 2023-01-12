@@ -4,7 +4,7 @@ public static partial class S2ShapeUtil
 {
     // A class representing a ShapeEdgeId together with the two endpoints of that
     // edge.  It should be passed by reference.
-    public record struct ShapeEdgeId(Int32 ShapeId, Int32 EdgeId)
+    public readonly record struct ShapeEdgeId(Int32 ShapeId, Int32 EdgeId)
         : IComparable<ShapeEdgeId>
     {
         public override string ToString() => $"{ShapeId}:{EdgeId}";

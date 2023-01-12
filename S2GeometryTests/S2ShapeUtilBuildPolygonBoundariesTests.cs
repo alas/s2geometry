@@ -5,8 +5,8 @@ public class S2ShapeUtilBuildPolygonBoundariesTests
     [Fact]
     internal void Test_BuildPolygonBoundaries_NoComponents()
     {
-        List<List<S2Shape>> faces = new ();
-        List<List<S2Shape>> components = new ();
+        List<List<S2Shape>> faces = new();
+        List<List<S2Shape>> components = new();
         S2ShapeUtil.BuildPolygonBoundaries(components, faces);
         Assert.Empty(faces);
     }
@@ -14,8 +14,8 @@ public class S2ShapeUtilBuildPolygonBoundariesTests
     [Fact]
     internal void Test_BuildPolygonBoundaries_OneLoop()
     {
-        TestLaxLoop a0 = new("0:0, 1:0, 0:1");  // Outer face
-        TestLaxLoop a1 = new("0:0, 0:1, 1:0");
+        var a0 = BuildTestLaxLoop("0:0, 1:0, 0:1");  // Outer face
+        var a1 = BuildTestLaxLoop("0:0, 0:1, 1:0");
         var faces = new List<List<S2Shape>>();
         var components = new List<List<S2Shape>> { new List<S2Shape> { a0, a1 } };
         S2ShapeUtil.BuildPolygonBoundaries(components, faces);
@@ -25,9 +25,9 @@ public class S2ShapeUtilBuildPolygonBoundariesTests
     [Fact]
     internal void Test_BuildPolygonBoundaries_TwoLoopsSameComponent()
     {
-        TestLaxLoop a0 = new("0:0, 1:0, 0:1");  // Outer face
-        TestLaxLoop a1 = new("0:0, 0:1, 1:0");
-        TestLaxLoop a2 = new("1:0, 0:1, 1:1");
+        var a0 = BuildTestLaxLoop("0:0, 1:0, 0:1");  // Outer face
+        var a1 = BuildTestLaxLoop("0:0, 0:1, 1:0");
+        var a2 = BuildTestLaxLoop("1:0, 0:1, 1:1");
         var faces = new List<List<S2Shape>>();
         var components = new List<List<S2Shape>> { new List<S2Shape> { a0, a1, a2 } };
         S2ShapeUtil.BuildPolygonBoundaries(components, faces);
@@ -37,10 +37,10 @@ public class S2ShapeUtilBuildPolygonBoundariesTests
     [Fact]
     internal void Test_BuildPolygonBoundaries_TwoNestedLoops()
     {
-        TestLaxLoop a0 = new("0:0, 3:0, 0:3");  // Outer face
-        TestLaxLoop a1 = new("0:0, 0:3, 3:0");
-        TestLaxLoop b0 = new("1:1, 2:0, 0:2");  // Outer face
-        TestLaxLoop b1 = new("1:1, 0:2, 2:0");
+        var a0 = BuildTestLaxLoop("0:0, 3:0, 0:3");  // Outer face
+        var a1 = BuildTestLaxLoop("0:0, 0:3, 3:0");
+        var b0 = BuildTestLaxLoop("1:1, 2:0, 0:2");  // Outer face
+        var b1 = BuildTestLaxLoop("1:1, 0:2, 2:0");
         var faces = new List<List<S2Shape>>();
         var components = new List<List<S2Shape>> { new List<S2Shape> { a0, a1 }, new List<S2Shape> { b0, b1 } };
         S2ShapeUtil.BuildPolygonBoundaries(components, faces);
@@ -51,10 +51,10 @@ public class S2ShapeUtilBuildPolygonBoundariesTests
     [Fact]
     internal void Test_BuildPolygonBoundaries_TwoLoopsDifferentComponents()
     {
-        TestLaxLoop a0 = new("0:0, 1:0, 0:1");  // Outer face
-        TestLaxLoop a1 = new("0:0, 0:1, 1:0");
-        TestLaxLoop b0 = new("0:2, 1:2, 0:3");  // Outer face
-        TestLaxLoop b1 = new("0:2, 0:3, 1:2");
+        var a0 = BuildTestLaxLoop("0:0, 1:0, 0:1");  // Outer face
+        var a1 = BuildTestLaxLoop("0:0, 0:1, 1:0");
+        var b0 = BuildTestLaxLoop("0:2, 1:2, 0:3");  // Outer face
+        var b1 = BuildTestLaxLoop("0:2, 0:3, 1:2");
         var faces = new List<List<S2Shape>>();
         var components = new List<List<S2Shape>> { new List<S2Shape> { a0, a1 }, new List<S2Shape> { b0, b1 } };
         S2ShapeUtil.BuildPolygonBoundaries(components, faces);
@@ -65,7 +65,7 @@ public class S2ShapeUtilBuildPolygonBoundariesTests
     [Fact]
     internal void Test_BuildPolygonBoundaries_OneDegenerateLoop()
     {
-        TestLaxLoop a0 = new("0:0, 1:0, 0:0");
+        var a0 = BuildTestLaxLoop("0:0, 1:0, 0:0");
         var faces = new List<List<S2Shape>>();
         var components = new List<List<S2Shape>> { new List<S2Shape> { a0 } };
         S2ShapeUtil.BuildPolygonBoundaries(components, faces);
@@ -75,8 +75,8 @@ public class S2ShapeUtilBuildPolygonBoundariesTests
     [Fact]
     internal void Test_BuildPolygonBoundaries_TwoDegenerateLoops()
     {
-        TestLaxLoop a0 = new("0:0, 1:0, 0:0");
-        TestLaxLoop b0 = new("2:0, 3:0, 2:0");
+        var a0 = BuildTestLaxLoop("0:0, 1:0, 0:0");
+        var b0 = BuildTestLaxLoop("2:0, 3:0, 2:0");
         var faces = new List<List<S2Shape>>();
         var components = new List<List<S2Shape>> { new List<S2Shape> { a0, b0 } };
         S2ShapeUtil.BuildPolygonBoundaries(components, faces);
@@ -89,32 +89,32 @@ public class S2ShapeUtilBuildPolygonBoundariesTests
     {
         // Loops at index 0 are the outer (clockwise) loops.
         // Component "a" consists of 4 adjacent squares forming a larger square.
-        TestLaxLoop a0 = new("0:0, 25:0, 50:0, 50:25, 50:50, 25:50, 0:50, 0:50");
-        TestLaxLoop a1 = new("0:0, 0:25, 25:25, 25:0");
-        TestLaxLoop a2 = new("0:25, 0:50, 25:50, 25:25");
-        TestLaxLoop a3 = new("25:0, 25:25, 50:25, 50:0");
-        TestLaxLoop a4 = new("25:25, 25:50, 50:50, 50:25");
+        var a0 = BuildTestLaxLoop("0:0, 25:0, 50:0, 50:25, 50:50, 25:50, 0:50, 0:50");
+        var a1 = BuildTestLaxLoop("0:0, 0:25, 25:25, 25:0");
+        var a2 = BuildTestLaxLoop("0:25, 0:50, 25:50, 25:25");
+        var a3 = BuildTestLaxLoop("25:0, 25:25, 50:25, 50:0");
+        var a4 = BuildTestLaxLoop("25:25, 25:50, 50:50, 50:25");
         // Component "b" consists of a degenerate loop to the left of "a".
-        TestLaxLoop b0 = new("0:-10, 10:-10");
+        var b0 = BuildTestLaxLoop("0:-10, 10:-10");
         // Components "a1_a", "a1_b", and "a1_c" are located within "a1".
-        TestLaxLoop a1_a0 = new("5:5, 20:5, 20:10, 5:10");
-        TestLaxLoop a1_a1 = new("5:5, 5:10, 10:10, 10:5");
-        TestLaxLoop a1_a2 = new("10:5, 10:10, 15:10, 15:5");
-        TestLaxLoop a1_a3 = new("15:5, 15:10, 20:10, 20:5");
-        TestLaxLoop a1_b0 = new("5:15, 20:15, 20:20, 5:20");
-        TestLaxLoop a1_b1 = new("5:15, 5:20, 20:20, 20:15");
-        TestLaxLoop a1_c0 = new("2:5, 2:10, 2:5");
+        var a1_a0 = BuildTestLaxLoop("5:5, 20:5, 20:10, 5:10");
+        var a1_a1 = BuildTestLaxLoop("5:5, 5:10, 10:10, 10:5");
+        var a1_a2 = BuildTestLaxLoop("10:5, 10:10, 15:10, 15:5");
+        var a1_a3 = BuildTestLaxLoop("15:5, 15:10, 20:10, 20:5");
+        var a1_b0 = BuildTestLaxLoop("5:15, 20:15, 20:20, 5:20");
+        var a1_b1 = BuildTestLaxLoop("5:15, 5:20, 20:20, 20:15");
+        var a1_c0 = BuildTestLaxLoop("2:5, 2:10, 2:5");
         // Two components located inside "a1_a2" and "a1_a3".
-        TestLaxLoop a1_a2_a0 = new("11:6, 14:6, 14:9, 11:9");
-        TestLaxLoop a1_a2_a1 = new("11:6, 11:9, 14:9, 14:6");
-        TestLaxLoop a1_a3_a0 = new("16:6, 19:9, 16:6");
+        var a1_a2_a0 = BuildTestLaxLoop("11:6, 14:6, 14:9, 11:9");
+        var a1_a2_a1 = BuildTestLaxLoop("11:6, 11:9, 14:9, 14:6");
+        var a1_a3_a0 = BuildTestLaxLoop("16:6, 19:9, 16:6");
         // Five component located inside "a3" and "a4".
-        TestLaxLoop a3_a0 = new("30:5, 45:5, 45:20, 30:20");
-        TestLaxLoop a3_a1 = new("30:5, 30:20, 45:20, 45:5");
-        TestLaxLoop a4_a0 = new("30:30, 40:30, 30:30");
-        TestLaxLoop a4_b0 = new("30:35, 40:35, 30:35");
-        TestLaxLoop a4_c0 = new("30:40, 40:40, 30:40");
-        TestLaxLoop a4_d0 = new("30:45, 40:45, 30:45");
+        var a3_a0 = BuildTestLaxLoop("30:5, 45:5, 45:20, 30:20");
+        var a3_a1 = BuildTestLaxLoop("30:5, 30:20, 45:20, 45:5");
+        var a4_a0 = BuildTestLaxLoop("30:30, 40:30, 30:30");
+        var a4_b0 = BuildTestLaxLoop("30:35, 40:35, 30:35");
+        var a4_c0 = BuildTestLaxLoop("30:40, 40:40, 30:40");
+        var a4_d0 = BuildTestLaxLoop("30:45, 40:45, 30:45");
         var components = new List<List<S2Shape>>
             {
                 new List<S2Shape>{a0, a1, a2, a3, a4},
@@ -161,12 +161,9 @@ public class S2ShapeUtilBuildPolygonBoundariesTests
         faces.Sort();
     }
 
-    internal class TestLaxLoop : S2LaxLoopShape
+    private static S2LaxLoopShape BuildTestLaxLoop(string vertex_str)
     {
-        internal TestLaxLoop(string vertex_str)
-        {
-            var vertices = ParsePointsOrDie(vertex_str);
-            Init(vertices.ToArray());
-        }
+        var vertices = ParsePointsOrDie(vertex_str);
+        return new S2LaxLoopShape(vertices.ToArray());
     }
 }

@@ -700,7 +700,10 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
             // Wait until the updating thread is finished.  We do this by attempting
             // to lock a mutex that is held by the updating thread.  When this mutex
             // is unlocked the index_status_ is guaranteed to be FRESH.
-            Awaiter.Wait();
+#if DEBUG
+            if (Awaiter is not null)
+#endif
+                Awaiter.Wait();
         }
         else
         {

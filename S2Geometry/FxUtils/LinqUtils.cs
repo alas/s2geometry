@@ -117,7 +117,7 @@ public static class LinqUtils
         return newArr;
     }
 
-    public static List<T> DeepCustomClone<T>(this List<T> arr) where T : ICustomCloneable
+    public static List<T> DeepCloneCustom<T>(this List<T> arr) where T : ICustomCloneable
     {
         return arr.ConvertAll(t => (T)t.CustomClone());
     }

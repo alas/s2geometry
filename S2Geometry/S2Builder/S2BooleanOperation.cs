@@ -635,28 +635,22 @@ public class S2BooleanOperation
         // ("a_edge" and "b_edge").  We store all such intersections because the
         // algorithm needs them twice, once when processing the boundary of region A
         // and once when processing the boundary of region B.
-        public record struct IndexCrossing : IComparable<IndexCrossing>
-        {
-            public Edge A { get; set; }
-            public Edge B { get; set; }
+        public readonly record struct IndexCrossing(
+            Edge A, Edge B,
 
             // True if S2EdgeCrossings.CrossingSign(a_edge, b_edge) > 0.
-            public bool IsInteriorCrossing { get; set; }
+            bool IsInteriorCrossing,
 
             // True if "a_edge" crosses "b_edge" from left to right.  Undefined if
             // is_interior_crossing is false.
-            public bool LeftToRight { get; set; }
+            bool LeftToRight,
 
             // Equal to S2EdgeCrossings.VertexCrossing(a_edge, b_edge).  Undefined if "a_edge" and
             // "b_edge" do not share exactly one vertex or either edge is degenerate.
-            public bool IsVertexCrossing { get; set; }
-
+            bool IsVertexCrossing) : IComparable<IndexCrossing>
+        {
             // All flags are "false" by default.
-            public IndexCrossing(Edge a, Edge b)
-            {
-                A = a; B = b; IsInteriorCrossing = false;
-                LeftToRight = false; IsVertexCrossing = false;
-            }
+            public IndexCrossing(Edge a, Edge b) : this(a, b, false, false, false) { }
 
             public override int GetHashCode() => HashCode.Combine(A, B);
             public bool Equals(IndexCrossing other) => A == other.A && B == other.B;
@@ -1949,14 +1943,15 @@ public class S2BooleanOperation
         private bool AddIndexCrossing(ShapeEdge a, ShapeEdge b, bool is_interior, List<IndexCrossing> crossings)
         {
             if (!tracker_.AddSpace(crossings, 1)) return false;
-            crossings.Add(new IndexCrossing(a.Id, b.Id));
-            var crossing = crossings.Last();
+            var isInteriorCrossing = false;
+            var leftToRight = false;
+            var isVertexCrossing = false;
             if (is_interior)
             {
-                crossing.IsInteriorCrossing = true;
+                isInteriorCrossing = true;
                 if (S2Pred.Sign(a.V0, a.V1, b.V0) > 0)
                 {
-                    crossing.LeftToRight = true;
+                    leftToRight = true;
                 }
                 builder_.AddIntersection(
                     S2.GetIntersection(a.V0, a.V1, b.V0, b.V1, null));
@@ -1968,9 +1963,10 @@ public class S2BooleanOperation
                 // dimension information readily available here.
                 if (S2.VertexCrossing(a.V0, a.V1, b.V0, b.V1))
                 {
-                    crossing.IsVertexCrossing = true;
+                    isVertexCrossing = true;
                 }
             }
+            crossings.Add(new IndexCrossing(a.Id, b.Id, isInteriorCrossing, leftToRight, isVertexCrossing));
             return true;  // Continue visiting.
         }
         // Initialize index_crossings_ to the set of crossing edge pairs such that the
@@ -2015,10 +2011,10 @@ public class S2BooleanOperation
                 for (var i = 0; i < index_crossings_.Count; i++)
                 {
                     var crossing = index_crossings_[i];
-                    (crossing.B, crossing.A) = (crossing.A, crossing.B);
                     // The following predicates get inverted when the edges are swapped.
-                    crossing.LeftToRight ^= true;
-                    crossing.IsVertexCrossing ^= true;
+                    var leftToRight = crossing.LeftToRight ^ true;
+                    var isVertexCrossing = crossing.IsVertexCrossing ^ true;
+                    index_crossings_[i] = new(crossing.B, crossing.A, crossing.IsInteriorCrossing, leftToRight, isVertexCrossing);
                 }
                 index_crossings_.Sort();
                 index_crossings_first_region_id_ = region_id;

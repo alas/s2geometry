@@ -915,7 +915,7 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
     {
         _index.Add(new Shape(this));
 #if s2loop_not_lazy_indexing
-                index_.ForceBuild();
+        index_.ForceBuild();
 #endif
 #if s2debug
         if (S2DebugOverride == S2Debug.ALLOW)

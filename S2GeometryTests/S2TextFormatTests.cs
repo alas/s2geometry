@@ -195,7 +195,7 @@ public class S2TextFormatTests
     internal void Test_ToString_S2LatLngSpan()
     {
         List<S2LatLng> latlngs = ParseLatLngsOrDie("-20:150, -20:151, -19:150");
-        Assert.Equal("-20:150, -20:151, -19:150", latlngs.ToString());
+        Assert.Equal("-20:150, -20:151, -19:150", latlngs.ToDebugString());
     }
 
     [Fact]

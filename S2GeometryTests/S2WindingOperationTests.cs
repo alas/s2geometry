@@ -6,7 +6,7 @@ public class S2WindingOperationTests
 {
     private readonly ITestOutputHelper _logger;
 
-    internal S2WindingOperationTests(ITestOutputHelper logger) => _logger = logger;
+    public S2WindingOperationTests(ITestOutputHelper logger) => _logger = logger;
 
     // Verifies that the S2WindingOperation with the given arguments produces the
     // given result.  In order to ensure that results are not affected by the
@@ -307,7 +307,7 @@ public class S2WindingOperationTests
     internal void Test_S2WindingOperationOptions_SetGetSnapFunction()
     {
         // Prevent these from being detected as dead code.
-        S2WindingOperation.Options opts=new();
+        S2WindingOperation.Options opts = new();
         opts.SnapFunction = new IdentitySnapFunction();
         Assert.Equal(opts.SnapFunction.SnapRadius, S1Angle.Zero);
     }

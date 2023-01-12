@@ -6,9 +6,9 @@ public class S2PointTests
     internal void Test_S2_GoodFastHashSpreads()
     {
         int kTestPoints = 1 << 16;
-        var set = new List<int>();
-        var points = new SortedSet<S2Point>();
-        var base_ = new S2Point(1, 1, 1);
+        List<int> set = new();
+        SortedSet<S2Point> points = new();
+        S2Point base_ = new(1, 1, 1);
         for (var i = 0; i < kTestPoints; ++i)
         {
             // All points in a tiny cap to test avalanche property of hash

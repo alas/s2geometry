@@ -4,7 +4,7 @@ public class S2LatLngTests
 {
     private readonly ITestOutputHelper _logger;
 
-    internal S2LatLngTests(ITestOutputHelper logger) { _logger = logger; }
+    public S2LatLngTests(ITestOutputHelper logger) { _logger = logger; }
 
     [Fact]
     internal void Test_S2LatLng_TestBasic()

@@ -9,11 +9,11 @@
 
 namespace S2Geometry;
 
-public class S2LaxLoopShape : S2Shape
+public class S2LaxLoopShape : S2Shape, IEquatable<S2LaxLoopShape>
 {
     #region Fields, Constants
 
-    private S2Point[]? vertices_;
+    private readonly S2Point[] vertices_;
     public int NumVertices { get; private set; }
 
     #endregion
@@ -21,36 +21,30 @@ public class S2LaxLoopShape : S2Shape
     #region Constructors
 
     // Constructs an empty loop.
-    public S2LaxLoopShape() { NumVertices = 0; }
+    public S2LaxLoopShape() { NumVertices = 0; vertices_ = Array.Empty<S2Point>(); }
 
     // Constructs an S2LaxLoopShape with the given vertices.
-    public S2LaxLoopShape(S2Point[] vertices) { Init(vertices); }
-
-    // Constructs an S2LaxLoopShape from the given S2Loop, by copying its data.
-    public S2LaxLoopShape(S2Loop loop) { Init(loop); }
-
-    #endregion
-
-    #region S2LaxLoopShape
-
+    //
     // Initializes an S2LaxLoopShape with the given vertices.
-    public void Init(S2Point[] vertices)
+    public S2LaxLoopShape(S2Point[] vertices)
     {
         NumVertices = vertices.Length;
         vertices_ = vertices;
     }
 
+    // Constructs an S2LaxLoopShape from the given S2Loop, by copying its data.
+    //
     // Initializes an S2LaxLoopShape from the given S2Loop, by copying its data.
     //
     // REQUIRES: !loop.IsFull
     //           [Use S2LaxPolygonShape if you need to represent a full loop.]
-    public void Init(S2Loop loop)
+    public S2LaxLoopShape(S2Loop loop) 
     {
         MyDebug.Assert(!loop.IsFull()); // Full loops not supported; use S2LaxPolygonShape
         if (loop.IsEmpty())
         {
             NumVertices = 0;
-            vertices_ = null;
+            vertices_ = Array.Empty<S2Point>();
         }
         else
         {
@@ -59,12 +53,11 @@ public class S2LaxLoopShape : S2Shape
         }
     }
 
-    public S2Point Vertex(int i)
-    {
-        if (vertices_ is null) throw new ArgumentException("this shape contains no vertices.");
+    #endregion
 
-        return vertices_[i];
-    }
+    #region S2LaxLoopShape
+
+    public S2Point Vertex(int i) => vertices_[i];
 
     #endregion
 
@@ -86,10 +79,7 @@ public class S2LaxLoopShape : S2Shape
     // Not final; overridden by S2LaxClosedPolylineShape.
     public override int Dimension() { return 2; }
     // Not final; overridden by S2LaxClosedPolylineShape.
-    public override ReferencePoint GetReferencePoint()
-    {
-        return S2ShapeUtil.GetReferencePoint(this);
-    }
+    public override ReferencePoint GetReferencePoint() => S2ShapeUtil.GetReferencePoint(this);
     public sealed override int NumChains() => Math.Min(1, NumVertices);
     public sealed override Chain GetChain(int i) => new(0, NumVertices);
     public sealed override Edge ChainEdge(int i, int j)
@@ -100,6 +90,18 @@ public class S2LaxLoopShape : S2Shape
         return new Edge(Vertex(j), Vertex(k));
     }
     public sealed override ChainPosition GetChainPosition(int e) => new(0, e);
+
+    #endregion
+
+    #region IEquatable
+
+    public override bool Equals(object? other) => other is S2LaxLoopShape shape && Equals(shape);
+
+    public bool Equals(S2LaxLoopShape? other) =>
+        other is not null && other.Id == Id && other.NumVertices == NumVertices
+        && Enumerable.SequenceEqual(other.vertices_, vertices_);
+
+    public override int GetHashCode() => vertices_.GetHashCode();
 
     #endregion
 }
@@ -129,52 +131,48 @@ public class S2LaxClosedPolylineShape : S2LaxLoopShape
 // S2VertexIdLaxLoopShape is just like S2LaxLoopShape, except that vertices are
 // specified as indices into a vertex array.  This representation can be more
 // compact when many loops are arranged in a mesh structure.
-public class S2VertexIdLaxLoopShape : S2Shape
+public class S2VertexIdLaxLoopShape : S2Shape, IEquatable<S2VertexIdLaxLoopShape>
 {
     #region Fields, Constants
 
-    private Int32[] vertex_ids_ = Array.Empty<Int32>();
-    private S2Point[]? vertex_array_;
+    private readonly Int32[] vertex_ids_;
+    private readonly S2Point[] vertex_array_;
 
     #endregion
 
     #region Constructors
 
     // Constructs an empty loop.
-    public S2VertexIdLaxLoopShape() { NumVertices = 0; }
+    public S2VertexIdLaxLoopShape()
+    {
+        NumVertices = 0;
+        vertex_ids_ = Array.Empty<Int32>();
+        vertex_array_ = Array.Empty<S2Point>();
+    }
 
     // Constructs the shape from the given vertex array and indices.
     // "vertex_ids" is a vector of indices into "vertex_array".
     //
     // ENSURES:  loop.vertex(i) == (*vertex_array)[vertex_ids[i]]
     // REQUIRES: "vertex_array" persists for the lifetime of this object.
+    //
+    // Initializes the shape from the given vertex array and indices.
+    // "vertex_ids" is a vector of indices into "vertex_array".
     public S2VertexIdLaxLoopShape(Int32[] vertex_ids, S2Point[]? vertex_array)
     {
-        Init(vertex_ids, vertex_array);
+        NumVertices = vertex_ids.Length;
+        vertex_ids_ = (Int32[])vertex_ids.Clone();
+        vertex_array_ = vertex_array ?? Array.Empty<S2Point>();
     }
 
     #endregion
 
     #region S2VertexIdLaxLoopShape
 
-    // Initializes the shape from the given vertex array and indices.
-    // "vertex_ids" is a vector of indices into "vertex_array".
-    public void Init(Int32[] vertex_ids, S2Point[]? vertex_array)
-    {
-        NumVertices = vertex_ids.Length;
-        vertex_ids_ = (Int32[])vertex_ids.Clone();
-        vertex_array_ = vertex_array;
-    }
-
     // Returns the number of vertices in the loop.
     public int NumVertices { get; private set; }
     public Int32 VertexId(int i) => vertex_ids_[i];
-    public S2Point Vertex(int i)
-    {
-        if (vertex_array_ is null) throw new ArgumentException("this shape contains no vertices.");
-
-        return vertex_array_[VertexId(i)];
-    }
+    public S2Point Vertex(int i) => vertex_array_[VertexId(i)];
 
     #endregion
 
@@ -210,6 +208,20 @@ public class S2VertexIdLaxLoopShape : S2Shape
         return new Edge(Vertex(j), Vertex(k));
     }
     public sealed override ChainPosition GetChainPosition(int e) => new(0, e);
+
+    #endregion
+
+    #region IEquatable
+
+    public override bool Equals(object? other) => other is S2VertexIdLaxLoopShape shape && Equals(shape);
+
+    public bool Equals(S2VertexIdLaxLoopShape? other) =>
+        other is not null && other.Id == Id && other.NumVertices == NumVertices
+        && Enumerable.SequenceEqual(other.vertex_ids_, vertex_ids_)
+        && Enumerable.SequenceEqual(other.vertex_array_, vertex_array_);
+
+    public override int GetHashCode() =>
+        HashCode.Combine(vertex_ids_.GetHashCode(), vertex_array_.GetHashCode());
 
     #endregion
 }

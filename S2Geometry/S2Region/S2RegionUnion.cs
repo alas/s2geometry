@@ -25,13 +25,9 @@ public sealed record class S2RegionUnion : IS2Region<S2RegionUnion>
     #region Constructors
 
     // Create a region representing the union of the given regions.
-    public S2RegionUnion(List<IS2Region> regions, bool check = true)
+    public S2RegionUnion(List<IS2Region> regions)
     {
         Regions_ = regions;
-        if (check)
-        {
-            MyDebug.Assert(!Regions_.Any());
-        }
     }
 
     #endregion
@@ -102,7 +98,7 @@ public sealed record class S2RegionUnion : IS2Region<S2RegionUnion>
 
     #region ICustomCloneable
 
-    public object CustomClone() => new S2RegionUnion(Regions_.DeepCustomClone(), false);
+    public object CustomClone() => new S2RegionUnion(Regions_.DeepCloneCustom());
 
     #endregion
 
