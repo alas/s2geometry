@@ -519,7 +519,7 @@ public class S2EdgeCrossingsTests
     // (i.e., one ulp, or twice the double precision rounding error).
     private static S2Point GetIntersectionExact(S2Point a0, S2Point a1, S2Point b0, S2Point b1)
     {
-        S2Point x = GetIntersectionExact(a0, a1, b0, b1);
+        S2Point x = S2.Internal.GetIntersectionExact(a0, a1, b0, b1);
         if (x.DotProd((a0 + a1) + (b0 + b1)) < 0) x = -x;
         return x;
     }
