@@ -461,7 +461,7 @@ public class EncodedS2PointVector
         var pointBuffer = new S2Point[size_];
         decoder.GetPoints(pointBuffer, 0, (int)size_);
         points = pointBuffer;
-        //decoder.Skip(bytes); //note(Alas): in original code the GetPoints was a direct buffer access without advancing the pointer so here there is no need to skip
+        //decoder.Skip(bytes); //note(Alas): in the original code GetPoints was a direct buffer access without advancing the pointer so here there is no need to skip
         return true;
     }
     private bool InitCellIdsFormat(Decoder decoder)
