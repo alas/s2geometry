@@ -16,7 +16,7 @@ public class S2ShapeMeasuresTests
     [Fact]
     internal void Test_GetLength_NoPolylines()
     {
-        Assert.Equal(S1Angle.Zero, S2ShapeIndexMeasures.GetLength(MakeIndexOrDie("")));
+        Assert.Equal(S1Angle.Zero, S2.GetLength(MakeLaxPolylineOrDie("")));
     }
 
     [Fact]
@@ -35,7 +35,7 @@ public class S2ShapeMeasuresTests
         Assert.Equal(S1Angle.Zero,
                   S2.GetPerimeter(MakeIndexOrDie("0:0 # #").Shape(0)));
         Assert.Equal(S1Angle.Zero,
-                  S2ShapeIndexMeasures.GetPerimeter(MakeIndexOrDie("0:0, 0:1, 1:0")));
+                  S2.GetPerimeter(MakeLaxPolylineOrDie("0:0, 0:1, 1:0")));
     }
 
     [Fact]
@@ -122,7 +122,7 @@ public class S2ShapeMeasuresTests
         // GetCentroid returns the centroid multiplied by the length of the polyline.
         Assert.True(S2.ApproxEquals(
             new S2Point(1, 1, 0),
-            S2ShapeIndexMeasures.GetCentroid(MakeIndexOrDie("0:0, 0:90"))));
+            S2.GetCentroid(MakeLaxPolylineOrDie("0:0, 0:90"))));
     }
 
     [Fact]
