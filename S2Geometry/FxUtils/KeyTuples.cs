@@ -13,10 +13,10 @@ public readonly record struct KeyData<T, U>(T Item1, U Item2)
     public override int GetHashCode() => Item1.GetHashCode();
 
     public int CompareTo(KeyData<T, U> other) => Item1.CompareTo(other.Item1);
-    public static bool operator <(KeyData<T, U> x, KeyData<T, U> y) => x.Item1.CompareTo(y.Item1) < 0;
-    public static bool operator >(KeyData<T, U> x, KeyData<T, U> y) => x.Item1.CompareTo(y.Item1) > 0;
-    public static bool operator <=(KeyData<T, U> x, KeyData<T, U> y) => x.Item1.CompareTo(y.Item1) <= 0;
-    public static bool operator >=(KeyData<T, U> x, KeyData<T, U> y) => x.Item1.CompareTo(y.Item1) >= 0;
+    public static bool operator <(KeyData<T, U> x, KeyData<T, U> y) => x.CompareTo(y) < 0;
+    public static bool operator >(KeyData<T, U> x, KeyData<T, U> y) => x.CompareTo(y) > 0;
+    public static bool operator <=(KeyData<T, U> x, KeyData<T, U> y) => x.CompareTo(y) <= 0;
+    public static bool operator >=(KeyData<T, U> x, KeyData<T, U> y) => x.CompareTo(y) >= 0;
 }
 /// <summary>
 /// A tuple where Item1 is the identifier and has 3 Items in total
@@ -31,10 +31,10 @@ public readonly record struct KeyData2<T, U, V>(T Item1, U Item2, V Item3)
     public override int GetHashCode() => Item1.GetHashCode();
 
     public int CompareTo(KeyData2<T, U, V> other) => Item1.CompareTo(other.Item1);
-    public static bool operator <(KeyData2<T, U, V> x, KeyData2<T, U, V> y) => x.Item1.CompareTo(y.Item1) < 0;
-    public static bool operator >(KeyData2<T, U, V> x, KeyData2<T, U, V> y) => x.Item1.CompareTo(y.Item1) > 0;
-    public static bool operator <=(KeyData2<T, U, V> x, KeyData2<T, U, V> y) => x.Item1.CompareTo(y.Item1) <= 0;
-    public static bool operator >=(KeyData2<T, U, V> x, KeyData2<T, U, V> y) => x.Item1.CompareTo(y.Item1) >= 0;
+    public static bool operator <(KeyData2<T, U, V> x, KeyData2<T, U, V> y) => x.CompareTo(y) < 0;
+    public static bool operator >(KeyData2<T, U, V> x, KeyData2<T, U, V> y) => x.CompareTo(y) > 0;
+    public static bool operator <=(KeyData2<T, U, V> x, KeyData2<T, U, V> y) => x.CompareTo(y) <= 0;
+    public static bool operator >=(KeyData2<T, U, V> x, KeyData2<T, U, V> y) => x.CompareTo(y) >= 0;
 }
 /// <summary>
 /// KeyData2 with types tailored for S2PointIndex
@@ -66,10 +66,10 @@ public readonly record struct ReverseKeyData<T, U>(T Item1, U Item2)
     public override int GetHashCode() => Item1.GetHashCode();
 
     public int CompareTo(ReverseKeyData<T, U> other) => other.Item1.CompareTo(Item1);
-    public static bool operator <(ReverseKeyData<T, U> x, ReverseKeyData<T, U> y) => y.Item1.CompareTo(x.Item1) < 0;
-    public static bool operator >(ReverseKeyData<T, U> x, ReverseKeyData<T, U> y) => y.Item1.CompareTo(x.Item1) > 0;
-    public static bool operator <=(ReverseKeyData<T, U> x, ReverseKeyData<T, U> y) => y.Item1.CompareTo(x.Item1) <= 0;
-    public static bool operator >=(ReverseKeyData<T, U> x, ReverseKeyData<T, U> y) => y.Item1.CompareTo(x.Item1) >= 0;
+    public static bool operator <(ReverseKeyData<T, U> x, ReverseKeyData<T, U> y) => y.CompareTo(x) < 0;
+    public static bool operator >(ReverseKeyData<T, U> x, ReverseKeyData<T, U> y) => y.CompareTo(x) > 0;
+    public static bool operator <=(ReverseKeyData<T, U> x, ReverseKeyData<T, U> y) => y.CompareTo(x) <= 0;
+    public static bool operator >=(ReverseKeyData<T, U> x, ReverseKeyData<T, U> y) => y.CompareTo(x) >= 0;
 }
 /// <summary>
 /// A tuple where Item1 is the identifier and has 3 Items in total, Item1 is reverse compared
@@ -84,10 +84,10 @@ public readonly record struct ReverseKeyData2<T, U, V>(T Item1, U Item2, V Item3
     public override int GetHashCode() => Item1.GetHashCode();
 
     public int CompareTo(ReverseKeyData2<T, U, V> other) => other.Item1.CompareTo(Item1);
-    public static bool operator <(ReverseKeyData2<T, U, V> x, ReverseKeyData2<T, U, V> y) => y.Item1.CompareTo(x.Item1) < 0;
-    public static bool operator >(ReverseKeyData2<T, U, V> x, ReverseKeyData2<T, U, V> y) => y.Item1.CompareTo(x.Item1) > 0;
-    public static bool operator <=(ReverseKeyData2<T, U, V> x, ReverseKeyData2<T, U, V> y) => y.Item1.CompareTo(x.Item1) <= 0;
-    public static bool operator >=(ReverseKeyData2<T, U, V> x, ReverseKeyData2<T, U, V> y) => y.Item1.CompareTo(x.Item1) >= 0;
+    public static bool operator <(ReverseKeyData2<T, U, V> x, ReverseKeyData2<T, U, V> y) => y.CompareTo(x) < 0;
+    public static bool operator >(ReverseKeyData2<T, U, V> x, ReverseKeyData2<T, U, V> y) => y.CompareTo(x) > 0;
+    public static bool operator <=(ReverseKeyData2<T, U, V> x, ReverseKeyData2<T, U, V> y) => y.CompareTo(x) <= 0;
+    public static bool operator >=(ReverseKeyData2<T, U, V> x, ReverseKeyData2<T, U, V> y) => y.CompareTo(x) >= 0;
 }
 /// <summary>
 /// A tuple where Item1 and Item2 are the identifier and has 2 Items in total

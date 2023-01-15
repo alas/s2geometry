@@ -319,7 +319,7 @@ public class S2MemoryTracker
         // exact memory usage can be determined using "container.bytes_used()".
         public static int GetBtreeMinBytesPerEntry<T>()
         {
-            return (int)(1.12 * Marshal.SizeOf(typeof(T)));
+            return (int)(1.12 * SizeHelper.SizeOf(typeof(T)));
         }
     }
 

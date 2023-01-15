@@ -56,6 +56,15 @@ public static class LinqUtils
         return arr;
     }
 
+    public static IList<T> ReserveSpace<T>(this IList<T> arr, int count)
+    {
+        for (int i = 0; i < count; i++)
+        {
+            arr.Add(default);
+        }
+        return arr;
+    }
+
     public static void Iota(this List<int> arr, int value, int count)
     {
         if (count == 0) return;
@@ -456,15 +465,26 @@ public static class LinqUtils
     /// <summary>
     /// https://stackoverflow.com/questions/16192906/net-dictionary-get-or-create-new
     /// </summary>
-    public static TValue GetOrCreate<TKey, TValue>(this IDictionary<TKey, TValue> dict, TKey key, Func<TValue> createNew)
+    public static TValue GetOrCreate<TKey, TValue>(this IDictionary<TKey, TValue> dict, TKey key, Func<TValue>? createNew = null)
     {
         if (!dict.TryGetValue(key, out var val))
         {
-            val = createNew();
+            val = createNew is not null ? createNew() : default;
             dict.Add(key, val);
         }
 
         return val;
+    }
+
+    public static void Set<TKey, TValue>(this IDictionary<TKey, TValue> dict, TKey key, TValue value)
+    {
+        if (!dict.ContainsKey(key))
+        {
+            dict.Add(key, value);
+            return;
+        }
+
+        dict[key] = value;
     }
 
     public static T GetRemIndex<T>(this IList<T> arr, int index)

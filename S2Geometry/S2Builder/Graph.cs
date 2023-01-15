@@ -885,7 +885,7 @@ public partial class S2Builder
             // EdgeProcessor discards the "edges" and "input_ids" vectors and replaces
             // them with new vectors that could be larger or smaller.  To handle this
             // correctly, we untally these vectors now and retally them at the end.
-            var kFinalPerEdge = Marshal.SizeOf(typeof(Edge)) + sizeof(InputEdgeIdSetId);
+            var kFinalPerEdge = SizeHelper.SizeOf(typeof(Edge)) + sizeof(InputEdgeIdSetId);
             var kTempPerEdge = kFinalPerEdge + 2 * sizeof(EdgeId);
             if (tracker is not null)
             {

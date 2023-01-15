@@ -9,13 +9,20 @@ global using S2Point = S2Geometry.Vector3<double>;
 
 namespace S2Geometry;
 
+using System.Numerics;
+
 #if s2debug
 public static class S2PointExtensions
 {
-    public static string ToStringDegrees(this S2Point p)
+    public static string ToStringDegrees<T>(this Vector3<T> vec) where T : INumber<T>, IFloatingPointIeee754<T>
     {
-        var s2LatLng = new S2LatLng(p);
-        return $"({s2LatLng.LatDegrees():g}d, {s2LatLng.LngDegrees():g}d)";
+        if (vec is S2Point p)
+        {
+            var s2LatLng = new S2LatLng(p);
+            return $"({s2LatLng.LatDegrees():g}d, {s2LatLng.LngDegrees():g}d)";
+        }
+
+        return vec.ToString();
     }
 
     /// <summary>

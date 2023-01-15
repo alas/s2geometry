@@ -408,8 +408,8 @@ Level   Ratio  Ratio Aspect  Ratio Aspect    Min    Max    Min    Max
         {
             S2Cell cell = new(S2Testing.GetRandomCellId());
             S2Loop loop = new(cell);
-            S2LatLngRect cell_bound = cell.GetRectBound();
-            S2LatLngRect loop_bound = loop.GetRectBound();
+            var cell_bound = cell.GetRectBound();
+            var loop_bound = loop.GetRectBound();
             Assert.True(loop_bound.Expanded(kCellError).Contains(cell_bound));
             Assert.True(cell_bound.Expanded(kLoopError).Contains(loop_bound));
         }

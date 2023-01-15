@@ -2,9 +2,14 @@
 
 using System.Reflection.Emit;
 
-internal static class SizeHelper
+public static class SizeHelper
 {
     public static int SizeOf<T>()
+    {
+        return SizeOf(typeof(T));
+    }
+
+    public static int SizeOf<T>(T instance)
     {
         return SizeOf(typeof(T));
     }

@@ -9,7 +9,7 @@ public class S2ShapeUtilRangeEnumeratorTests
     {
         // Create an index with one point each on S2CellId faces 0, 1, and 2.
         var index = MakeIndexOrDie("0:0 | 0:90 | 90:0 # #");
-        RangeEnumerator it = new(index);
+        RangeEnumerator it = new(index); it.MoveNext();
         Assert.Equal(0UL, it.Id.Face());
         it.MoveNext();
         Assert.Equal(1UL, it.Id.Face());
@@ -25,8 +25,8 @@ public class S2ShapeUtilRangeEnumeratorTests
     {
         var empty = MakeIndexOrDie("# #");
         var non_empty = MakeIndexOrDie("0:0 # #");
-        RangeEnumerator empty_it = new(empty);
-        RangeEnumerator non_empty_it = new(non_empty);
+        RangeEnumerator empty_it = new(empty); empty_it.MoveNext();
+        RangeEnumerator non_empty_it = new(non_empty); non_empty_it.MoveNext();
         Assert.False(non_empty_it.Done());
         Assert.True(empty_it.Done());
 

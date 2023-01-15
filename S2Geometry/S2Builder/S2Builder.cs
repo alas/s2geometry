@@ -607,8 +607,8 @@ public partial class S2Builder
     public void SetLabel(int label)
     {
         MyDebug.Assert(label >= 0);
-        label_set_.Capacity = 1;
-        label_set_[0] = label;
+        label_set_.Clear();
+        label_set_.Add(label);
         label_set_modified_ = true;
     }
 
@@ -704,8 +704,10 @@ public partial class S2Builder
         // Note that although we always create an S2ShapeIndex, often it is not
         // actually built (because this happens lazily).  Therefore we only test
         // its memory usage at the places where it is used.
-        MutableS2ShapeIndex input_edge_index = new();
-        input_edge_index.MemoryTracker = tracker_.Tracker;
+        MutableS2ShapeIndex input_edge_index = new()
+        {
+            MemoryTracker = tracker_.Tracker
+        };
         input_edge_index.Add(new VertexIdEdgeVectorShape(input_edges_, input_vertices_));
         if (Options_.SplitCrossingEdges)
         {
@@ -987,7 +989,7 @@ public partial class S2Builder
         var site_query = new S2ClosestPointQuery<int>(site_index, options);
         var results = new List<S2ClosestPointQueryBase<S1ChordAngle, int>.Result>();
         if (!tracker_.AddSpaceExact(edge_sites_, input_edges_.Count)) return;
-        edge_sites_.Capacity = input_edges_.Count;  // Construct all elements.
+        edge_sites_.ReserveSpace(input_edges_.Count);  // Construct all elements.
         for (var e = 0; e < input_edges_.Count; ++e)
         {
             var edge = input_edges_[e];

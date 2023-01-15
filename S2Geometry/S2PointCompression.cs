@@ -361,7 +361,7 @@ public static class S2PointCompression
         faces.Encode(encoder);
         EncodePointsCompressed(vertices_pi_qi, level, encoder);
         var num_off_center = off_center.Count;
-        encoder.Ensure(Encoder.kVarintMax32 + (Encoder.kVarintMax32 + Marshal.SizeOf(typeof(S2Point))) * num_off_center);
+        encoder.Ensure(Encoder.kVarintMax32 + (Encoder.kVarintMax32 + SizeHelper.SizeOf(typeof(S2Point))) * num_off_center);
         encoder.PutVarUInt32((uint)num_off_center);
         MyDebug.Assert(encoder.Avail() >= 0);
         foreach (var index in off_center)

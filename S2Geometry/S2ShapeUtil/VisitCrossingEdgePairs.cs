@@ -156,8 +156,8 @@ public static partial class S2ShapeUtil
 
             // TODO(ericv): Use brute force if the total number of edges is small enough
             // (using a larger threshold if the S2ShapeIndex is not constructed yet).
-            var ai = new RangeEnumerator(a_index);
-            var bi = new RangeEnumerator(b_index);
+            var ai = new RangeEnumerator(a_index); ai.MoveNext();
+            var bi = new RangeEnumerator(b_index); bi.MoveNext();
             var ab = new IndexCrosser(a_index, b_index, type, visitor, false);  // Tests A against B
             var ba = new IndexCrosser(b_index, a_index, type, visitor, true);   // Tests B against A
             while (!ai.Done() || !bi.Done())

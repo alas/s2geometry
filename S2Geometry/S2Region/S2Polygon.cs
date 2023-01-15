@@ -1842,10 +1842,10 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
         // The compressed encoding requires approximately 4 bytes per vertex plus
         // "exact_point_size" for each unsnapped vertex (encoded as an S2Point plus
         // the index at which it is located).
-        var exact_point_size = Marshal.SizeOf(typeof(S2Point)) + 2;
+        var exact_point_size = SizeHelper.SizeOf(typeof(S2Point)) + 2;
         var num_unsnapped = NumVertices - num_snapped;
         var compressed_size = 4 * NumVertices + exact_point_size * num_unsnapped;
-        var lossless_size = Marshal.SizeOf(typeof(S2Point)) * NumVertices;
+        var lossless_size = SizeHelper.SizeOf(typeof(S2Point)) * NumVertices;
         if (compressed_size < lossless_size)
         {
             EncodeCompressed(encoder, all_vertices, snap_level);

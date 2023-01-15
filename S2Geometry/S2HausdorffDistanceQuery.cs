@@ -58,14 +58,13 @@
 // https://en.wikipedia.org/wiki/Hausdorff_distance.
 //
 
-using S2Geometry;
-using static S2Geometry.S2HausdorffDistanceQuery;
-
 namespace S2Geometry;
 
 public class S2HausdorffDistanceQuery
 {
     public Options Options_ { get; set; }
+
+    public S2HausdorffDistanceQuery() => Options_ = new();
 
     public class Options
     {
@@ -225,19 +224,20 @@ public class S2HausdorffDistanceQuery
     // This internally used function computes the closest edge distance from point
     // to the source index via closest_edge_query, and, if necessary, updates the
     // max_distance, the target_point and the source_point.
-    private void UpdateMaxDistance(S2Point point,
-                           S2ClosestEdgeQuery closest_edge_query,
-                           ref S1ChordAngle max_distance, ref S2Point target_point,
-                           ref S2Point source_point) {
-      // In case we already have a valid result, it can be used as the lower
-      // bound estimate for the final Hausdorff distance. Therefore, if the
-      // distance between the current target point and the last source point
-      // does not exceed this lower bound, we can safely skip this target point, not
-      // updating the maximim distance.
-      if (!max_distance.IsNegative() &&
-          S2Pred.CompareDistance(point, source_point, max_distance) <= 0) {
-        return;
-      }
+    private static void UpdateMaxDistance(S2Point point,
+                    S2ClosestEdgeQuery closest_edge_query,
+                    ref S1ChordAngle max_distance, ref S2Point target_point,
+                    ref S2Point source_point) {
+        // In case we already have a valid result, it can be used as the lower
+        // bound estimate for the final Hausdorff distance. Therefore, if the
+        // distance between the current target point and the last source point
+        // does not exceed this lower bound, we can safely skip this target point, not
+        // updating the maximim distance.
+        if (!max_distance.IsNegative() &&
+            S2Pred.CompareDistance(point, source_point, max_distance) <= 0)
+        {
+            return;
+        }
 
       // Find the closest edge and the closest point in the source geometry
       // to the target point.

@@ -721,7 +721,7 @@ public class S2BooleanOperation
                 prev_inside_ = false;
             }
 
-            private bool is_degenerate(ShapeEdgeId a_id)
+            private bool IsDegenerate(ShapeEdgeId a_id)
             {
                 return is_degenerate_hole_.ContainsKey(a_id);
             }
@@ -1240,7 +1240,7 @@ public class S2BooleanOperation
                 }
                 else if (r.matches_polygon())
                 {
-                    if (is_degenerate(a_id))
+                    if (IsDegenerate(a_id))
                     {
                         // The A edge has a sibling.  The edge is kept only:
                         //  - for closed intersection, open union, and open difference;
@@ -1260,7 +1260,7 @@ public class S2BooleanOperation
                 }
                 else if (r.matches_sibling())
                 {
-                    if (is_degenerate(a_id))
+                    if (IsDegenerate(a_id))
                     {
                         // The A edge has a sibling.  The edge is kept only if A is a sibling
                         // pair shell and the operation is closed intersection, open union, or
@@ -1304,7 +1304,7 @@ public class S2BooleanOperation
                 //  - the B geometry is not a sibling pair hole (since then only one edge
                 //    should be emitted).
                 if (r.matches_sibling() && (create_degen || keep_degen_b) &&
-                    !is_degenerate(a_id) && !is_b_hole)
+                    !IsDegenerate(a_id) && !is_b_hole)
                 {
                     S2Shape.Edge sibling = new(a.V1, a.V0);
                     if (!AddEdge(r.sibling_match_id, sibling, 2 /*dimension*/, 0))
@@ -3040,7 +3040,7 @@ public class EdgeClippingLayer : Layer
         Int64 tmp_bytes = g.NumEdges * (sizeof(EdgeId) + sizeof(int)) +
                           g.NumVertices * (2 * sizeof(EdgeId));
         Int64 final_bytes = g.NumEdges * (Marshal.SizeOf(typeof(Edge)) +
-                                             Marshal.SizeOf(typeof(InputEdgeIdSetId)));
+                                             sizeof(InputEdgeIdSetId));
 
         // The order of the calls below is important.  Note that all memory tracked
         // through this client is automatically untallied upon object destruction.

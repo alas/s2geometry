@@ -525,7 +525,8 @@ public class SnappedWindingDelta
             {
                 if (id == input_edge_id)
                 {
-                    excess_degree_map[g.GetEdge(e).ShapeId] += 1;
+                    var key = g.GetEdge(e).ShapeId;
+                    excess_degree_map.Set(key, excess_degree_map.GetOrCreate(key) + 1);
                     excess_degree_map[g.GetEdge(e).EdgeId] -= 1;
                     break;
                 }

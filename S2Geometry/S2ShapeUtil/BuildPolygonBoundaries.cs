@@ -86,7 +86,7 @@ public static partial class S2ShapeUtil
             MyDebug.Assert(i + 1 == outer_loops.Count); // Component is not a subdivision
         }
         // Find the loops containing each component.
-        var ancestors = new List<List<S2Shape>>(components.Count);
+        var ancestors = new List<List<S2Shape>>().ReserveSpace(components.Count);
         var contains_query = index.MakeS2ContainsPointQuery();
         for (int i = 0; i < outer_loops.Count; ++i)
         {

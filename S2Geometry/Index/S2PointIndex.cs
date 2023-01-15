@@ -127,8 +127,8 @@ public class S2PointIndex<Data> : IEnumerable<TreeNode<Data>>
     // Returns the number of bytes currently occupied by the index.
     public int SpaceUsed()
     {
-        var sizeoftreenode = Marshal.SizeOf(typeof(List<TreeNode<Data>>));
-        return Marshal.SizeOf(this) - sizeoftreenode + Marshal.SizeOf(map_);
+        var sizeoftreenode = SizeHelper.SizeOf(typeof(List<TreeNode<Data>>));
+        return SizeHelper.SizeOf(this) - sizeoftreenode + SizeHelper.SizeOf(map_);
     }
 
     public int Seek(S2CellId target)

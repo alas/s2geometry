@@ -224,8 +224,8 @@ public class DegeneracyFinder
     // Methods are documented below.
     private int ComputeDegeneracies()
     {
-        is_edge_degeneracy_.Capacity = g_.NumEdges;
-        is_vertex_unbalanced_.Capacity = g_.NumVertices;
+        is_edge_degeneracy_.ReserveSpace(g_.NumEdges);
+        is_vertex_unbalanced_.ReserveSpace(g_.NumVertices);
         int num_degeneracies = 0;
         var in_edge_ids = in_.InEdgeIds;
         int n = g_.NumEdges;

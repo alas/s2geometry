@@ -54,7 +54,7 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
 
     // We store the vertices in an array rather than a vector because we don't
     // need any STL methods, and computing the number of vertices using size()
-    // would be relatively expensive (due to division by Marshal.SizeOf(typeof(S2Point)) == 24).
+    // would be relatively expensive (due to division by SizeHelper.SizeOf(typeof(S2Point)) == 24).
     public S2Point[] Vertices { get; init; }
 
     // In general we build the index the first time it is needed, but we make an
@@ -703,7 +703,7 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
     public int SpaceUsed()
     {
         int size = Marshal.SizeOf(this);
-        size += NumVertices * Marshal.SizeOf(typeof(S2Point));
+        size += NumVertices * SizeHelper.SizeOf(typeof(S2Point));
         // index_ itself is already included in sizeof(*this).
         size += _index.SpaceUsed() - Marshal.SizeOf(_index);
         return size;
@@ -1500,7 +1500,7 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
     //           can be enlarged as necessary by calling Ensure(int).
     public void Encode(Encoder encoder, CodingHint hint = CodingHint.COMPACT)
     {
-        encoder.Ensure(NumVertices * Marshal.SizeOf(typeof(S2Point)) + 20);  // sufficient
+        encoder.Ensure(NumVertices * SizeHelper.SizeOf(typeof(S2Point)) + 20);  // sufficient
 
         encoder.Put8(S2.kCurrentLosslessEncodingVersionNumber);
         encoder.Put32(NumVertices);
@@ -1534,7 +1534,7 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
             return (false, null);
         }
 
-        var pvSize = Marshal.SizeOf(typeof(S2Point));
+        var pvSize = SizeHelper.SizeOf(typeof(S2Point));
 
         if (decoder.Avail() < (num_vertices * pvSize + sizeof(byte) + sizeof(UInt32)))
         {

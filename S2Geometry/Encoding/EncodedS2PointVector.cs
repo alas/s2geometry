@@ -140,7 +140,7 @@ public class EncodedS2PointVector
         //   bits 3-63: vector size
         //
         // This is followed by an array of S2Points in little-endian order.
-        encoder.Ensure(Encoder.kVarintMax64 + points.Length * Marshal.SizeOf(typeof(S2Point)));
+        encoder.Ensure(Encoder.kVarintMax64 + points.Length * SizeHelper.SizeOf(typeof(S2Point)));
         UInt64 size_format = (ulong)(points.Length << kEncodingFormatBits | (byte)Format.UNCOMPRESSED);
         encoder.Put64(size_format);
         encoder.PutPoints(points);
@@ -423,7 +423,7 @@ public class EncodedS2PointVector
             // Append any exceptions to the end of the block.
             if (num_exceptions > 0)
             {
-                int exceptions_bytes = exceptions.Count * Marshal.SizeOf(typeof(S2Point));
+                int exceptions_bytes = exceptions.Count * SizeHelper.SizeOf(typeof(S2Point));
                 block.Ensure(exceptions_bytes);
                 block.PutPoints(exceptions);
             }
@@ -455,7 +455,7 @@ public class EncodedS2PointVector
         if (size > UInt32.MaxValue) return false;
         size_ = (uint)size;
 
-        int bytes = (int)(size_ * Marshal.SizeOf(typeof(S2Point)));
+        int bytes = (int)(size_ * SizeHelper.SizeOf(typeof(S2Point)));
         if (decoder.Avail() < bytes) return false;
 
         var pointBuffer = new S2Point[size_];
@@ -521,9 +521,9 @@ public class EncodedS2PointVector
             {
                 int block_size = Math.Min(kBlockSize, (int)(size_ - (uint)(i & ~(kBlockSize - 1))));
                 offsetbytearr += (block_size * delta_nibbles + 1) >> 1;
-                offsetbytearr += (int)delta * Marshal.SizeOf(typeof(S2Point));
+                offsetbytearr += (int)delta * SizeHelper.SizeOf(typeof(S2Point));
                 var buff = new S2Point[1];
-                Buffer.BlockCopy(bytearr, offsetbytearr, buff, 0, Marshal.SizeOf(typeof(S2Point)));
+                Buffer.BlockCopy(bytearr, offsetbytearr, buff, 0, SizeHelper.SizeOf(typeof(S2Point)));
                 return buff[0];
             }
             delta -= kBlockSize;
