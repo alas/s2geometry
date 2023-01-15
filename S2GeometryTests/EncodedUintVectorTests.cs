@@ -8,7 +8,7 @@ public class EncodedUintVectorTests
     {
         // Make sure that this class is compact since it is extensively used.
         // 16 for 64-bit, 12 for 32-bit.
-        Assert.True(Marshal.SizeOf(typeof(EncodedUintVector_UInt64)) <= 16);
+        Assert.True(SizeHelper.SizeOf(typeof(EncodedUintVector_UInt64)) <= 16);
     }
 
     [Fact]

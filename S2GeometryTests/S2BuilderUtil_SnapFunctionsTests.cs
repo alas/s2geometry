@@ -131,8 +131,8 @@ public class S2BuilderUtil_SnapFunctionsTests
         // Computes the minimum edge separation (as a fraction of kMinDiag) for any
         // snap radius at each level.
         double score = GetS2CellIdMinEdgeSeparation("min_sep_for_level",
-            (int level, S1Angle edge_sep, S1Angle min_snap_radius, S1Angle max_snap_radius)
-            => edge_sep.Radians / S2.kMinDiag.GetValue(level));
+            (int level, S1Angle edge_sep, S1Angle min_snap_radius, S1Angle max_snap_radius) =>
+            edge_sep.Radians / S2.kMinDiag.GetValue(level));
         _logger.WriteLine($"min_edge_vertex_sep / kMinDiag ratio: {score:f15}");
     }
     
@@ -214,11 +214,11 @@ public class S2BuilderUtil_SnapFunctionsTests
         S2Cell cell = new(id);
         return new[]
         {
-    new S1Angle(p, cell.Vertex(0)),
-    new S1Angle(p, cell.Vertex(1)),
-    new S1Angle(p, cell.Vertex(2)),
-    new S1Angle(p, cell.Vertex(3)),
-}.Max();
+            new S1Angle(p, cell.Vertex(0)),
+            new S1Angle(p, cell.Vertex(1)),
+            new S1Angle(p, cell.Vertex(2)),
+            new S1Angle(p, cell.Vertex(3)),
+        }.Max();
     }
 
     // Helper function that computes the vertex separation between "id0" and its
@@ -745,6 +745,7 @@ public class S2BuilderUtil_SnapFunctionsTests
             return Lng.CompareTo(other.Lng);
         }
     }
+
     // A triple of scaled S2LatLng coordinates.  The coordinates are multiplied by
     // (Math.PI / scale) to convert them to radians.
     private record LatLngConfig(long Scale, IntLatLng LL0, IntLatLng LL1, IntLatLng LL2) : IComparable<LatLngConfig>
@@ -762,5 +763,15 @@ public class S2BuilderUtil_SnapFunctionsTests
             return LL2.CompareTo(other.LL2);
         }
     }
-    private record LatLngConfigScore(double Score, LatLngConfig LLC);
+
+    private record LatLngConfigScore(double Score, LatLngConfig LLC)
+        : IComparable<LatLngConfigScore>
+    {
+        public int CompareTo(LatLngConfigScore? other)
+        {
+            if (other is null) return 1;
+
+            return Score.CompareTo(other.Score);
+        }
+    }
 }

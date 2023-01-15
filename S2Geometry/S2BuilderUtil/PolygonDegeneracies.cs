@@ -172,7 +172,7 @@ public class DegeneracyFinder
         Int32 known_vertex = -1;
         int known_vertex_sign = 0;
         int num_unknown_signs = 0;
-        is_vertex_used_.Capacity = g_.NumVertices;
+        is_vertex_used_.ReserveSpace(g_.NumVertices);
         for (int e = 0; e < g_.NumEdges; ++e)
         {
             if (is_edge_degeneracy_[e])

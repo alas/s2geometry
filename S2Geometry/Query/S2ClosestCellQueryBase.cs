@@ -500,7 +500,7 @@ public class S2ClosestCellQueryBase<Distance> where Distance : IEquatable<Distan
             var distance = distance_limit_;
             // We check "region_" second because it may be relatively expensive.
             if (target_.UpdateMinDistance(cell, ref distance) &&
-                (Options_().Region is not null || Options_().Region.MayIntersect(cell)))
+                (Options_().Region is null || Options_().Region.MayIntersect(cell)))
             {
                 if (use_conservative_cell_distance_)
                 {

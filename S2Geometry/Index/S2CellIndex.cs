@@ -277,7 +277,7 @@ public class S2CellIndex
 
     public class RangeNodeEnumerator : IReversableEnumerator<RangeNode>, ICustomCloneable
     {
-        private readonly List<RangeNode> range_nodes_;
+        protected readonly List<RangeNode> range_nodes_;
         protected int Position;
 
         // Initializes a RangeIterator for the given S2CellIndex.  The iterator is
@@ -367,7 +367,7 @@ public class S2CellIndex
 
         public void Dispose() { GC.SuppressFinalize(this); }
 
-        public object CustomClone() => new RangeNodeEnumerator(range_nodes_, Position);
+        public virtual object CustomClone() => new RangeNodeEnumerator(range_nodes_, Position);
     }
 
     #endregion
@@ -383,6 +383,8 @@ public class S2CellIndex
     public class NonEmptyRangeEnumerator : RangeNodeEnumerator
     {
         public NonEmptyRangeEnumerator(S2CellIndex index) : base(index) { }
+        public NonEmptyRangeEnumerator(List<RangeNode> rangeNodes, int position)
+            : base(rangeNodes, position) { }
 
         // Advances the iterator to the next non-empty range of leaf cells.
         public override bool MoveNext()
@@ -412,6 +414,8 @@ public class S2CellIndex
             }
             return false;
         }
+
+        public override object CustomClone() => new NonEmptyRangeEnumerator(range_nodes_, Position);
     }
 
     #endregion

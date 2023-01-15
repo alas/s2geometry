@@ -762,7 +762,7 @@ public class S2BufferOperation
 
     // The current offset path.  When each path is completed into a loop it is
     // added to op_ (the S2WindingOperation).
-    private List<S2Point> path_;
+    private List<S2Point> path_ = new();
 
     // As buffered loops are added we keep track of the winding number of a
     // fixed reference point.  This is used to derive the winding numbers of

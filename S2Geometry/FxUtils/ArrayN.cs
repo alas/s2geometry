@@ -47,7 +47,24 @@ public abstract class ArrayN<T> : IEnumerable<T>
         if (Count < (index + 1)) Count++;
     }
 
-    public IEnumerator<T> GetEnumerator() => ((IEnumerable<T>)arr).GetEnumerator();
+    public IEnumerator<T> GetEnumerator() => new ArrayNEnumerator(this);
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+    private class ArrayNEnumerator : IEnumerator<T>
+    {
+        private readonly ArrayN<T> _arrayn;
+        private int position;
+
+        public ArrayNEnumerator(ArrayN<T> arrayn)
+        { _arrayn = arrayn; position = -1; }
+
+        public T Current => _arrayn[position];
+
+        object IEnumerator.Current => Current;
+
+        public void Dispose() { }
+        public bool MoveNext() => ++position >= 0 && position < _arrayn.Size;
+        public void Reset() => position = -1;
+    }
 }
