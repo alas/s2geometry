@@ -12,7 +12,7 @@
 
 namespace S2Geometry;
 
-public class S2EdgeVectorShape : S2Shape
+public class S2EdgeVectorShape : S2Shape, IEquatable<S2EdgeVectorShape>
 {
     #region Fields, Constants
 
@@ -65,4 +65,14 @@ public class S2EdgeVectorShape : S2Shape
     public sealed override ChainPosition GetChainPosition(int e) => new(e, 0);
 
     #endregion
+
+    public override bool Equals(object? other) => other is S2EdgeVectorShape shape && Equals(shape);
+
+    public bool Equals(S2EdgeVectorShape? other) => other is not null && edges_.SequenceEqual(other.edges_);
+
+    public static bool operator ==(S2EdgeVectorShape x, S2EdgeVectorShape y) => x.Equals(y);
+    public static bool operator !=(S2EdgeVectorShape x, S2EdgeVectorShape y) => !x.Equals(y);
+
+    public override int GetHashCode() => edges_.GetHashCode();
+
 }

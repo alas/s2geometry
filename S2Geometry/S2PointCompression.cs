@@ -424,7 +424,7 @@ public static class S2PointCompression
             {
                 return false;
             }
-            if (decoder.Avail() < Marshal.SizeOf(typeof(S2Point))) return false;
+            if (decoder.Avail() < SizeHelper.SizeOf(typeof(S2Point))) return false;
             decoder.GetPoints(points, offset + (int)index, 1);
         }
         return true;

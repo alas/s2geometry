@@ -40,6 +40,11 @@ public class S2PointCompressionTests
 
     #endregion
 
+    public S2PointCompressionTests()
+    {
+        SetUp();
+    }
+
     [Fact]
     internal void Test_S2PointCompressionTest_RoundtripsEmpty()
     {
@@ -224,9 +229,7 @@ public class S2PointCompressionTests
         }).ToArray();
     }
 
-#pragma warning disable IDE0051 // Quitar miembros privados no utilizados
     private void SetUp()
-#pragma warning restore IDE0051 // Quitar miembros privados no utilizados
     {
         loop_4_ = MakeRegularPoints(4, 0.1, S2.kMaxCellLevel);
 

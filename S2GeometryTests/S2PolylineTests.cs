@@ -327,7 +327,7 @@ public class S2PolylineTests
     internal void Test_S2Polyline_SpaceUsedNonEmptyPolyline()
     {
         var line = MakePolyline("1:1, 4:4, 4:6");
-        Assert.True(line.SpaceUsed() > 3 * Marshal.SizeOf(typeof(S2Point)));
+        Assert.True(line.SpaceUsed() > 3 * SizeHelper.SizeOf(typeof(S2Point)));
     }
 
     [Fact]

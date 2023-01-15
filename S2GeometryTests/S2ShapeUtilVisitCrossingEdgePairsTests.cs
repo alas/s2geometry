@@ -4,25 +4,6 @@ using static S2ShapeUtil;
 
 public class S2ShapeUtilVisitCrossingEdgePairsTests
 {
-    internal readonly record struct EdgePair(ShapeEdgeId Item1, ShapeEdgeId Item2)
-         : IComparable<EdgePair>
-    {
-        internal EdgePair(Int32Int32 id1, Int32Int32 id2)
-            : this(new ShapeEdgeId(id1.Item1, id1.Item2), new ShapeEdgeId(id2.Item1, id2.Item2))
-        {
-        }
-
-        public int CompareTo(EdgePair other)
-        {
-            var c = Item1.CompareTo(other.Item1);
-            if (c != 0) return c;
-
-            return Item2.CompareTo(other.Item2);
-        }
-
-        public override string ToString() => $"({Item1},{Item2})";
-    }
-
     private readonly ITestOutputHelper _logger;
 
     public S2ShapeUtilVisitCrossingEdgePairsTests(ITestOutputHelper logger) { _logger = logger; }
@@ -182,5 +163,33 @@ Actual number of edge pairs: {actual.Count}");
             }
             Assert.True(false);
         }
+    }
+
+    internal readonly record struct EdgePair(ShapeEdgeId Item1, ShapeEdgeId Item2)
+         : IComparable<EdgePair>
+    {
+        internal EdgePair(Int32Int32 id1, Int32Int32 id2)
+            : this(new ShapeEdgeId(id1.Item1, id1.Item2), new ShapeEdgeId(id2.Item1, id2.Item2))
+        {
+        }
+
+        #region IComparable
+
+        public int CompareTo(EdgePair other)
+        {
+            var c = Item1.CompareTo(other.Item1);
+            if (c != 0) return c;
+
+            return Item2.CompareTo(other.Item2);
+        }
+
+        public static bool operator <(EdgePair x, EdgePair y) => x.CompareTo(y) < 0;
+        public static bool operator >(EdgePair x, EdgePair y) => x.CompareTo(y) > 0;
+        public static bool operator <=(EdgePair x, EdgePair y) => x.CompareTo(y) <= 0;
+        public static bool operator >=(EdgePair x, EdgePair y) => x.CompareTo(y) >= 0;
+
+        #endregion
+
+        public override string ToString() => $"({Item1},{Item2})";
     }
 }

@@ -578,15 +578,15 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
     // as the other "const" methods (see introduction).
     public override int SpaceUsed()
     {
-        var size = Marshal.SizeOf(this);
-        size += NumShapeIds() * Marshal.SizeOf(typeof(S2Shape));
+        var size = SizeHelper.SizeOf(this);
+        size += NumShapeIds() * SizeHelper.SizeOf(typeof(S2Shape));
         // cell_map_ itself is already included in sizeof(*this).
-        size += cell_map_.Count - Marshal.SizeOf(cell_map_);
-        size += cell_map_.Count * Marshal.SizeOf(typeof(S2ShapeIndexCell));
+        size += cell_map_.Count - SizeHelper.SizeOf(cell_map_);
+        size += cell_map_.Count * SizeHelper.SizeOf(typeof(S2ShapeIndexCell));
         foreach (var it in GetNewEnumerable())
         {
             var cell = it.Item2;
-            size += cell.NumClipped() * Marshal.SizeOf(typeof(S2ClippedShape));
+            size += cell.NumClipped() * SizeHelper.SizeOf(typeof(S2ClippedShape));
             for (var s = 0; s < cell.NumClipped(); ++s)
             {
                 var clipped = cell.Clipped(s);

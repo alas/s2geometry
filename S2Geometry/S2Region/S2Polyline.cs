@@ -29,6 +29,8 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoder<S2Polyline>
 
     #region Constructors
 
+    public S2Polyline() : this(Array.Empty<S2Point>()) { }
+
     // Convenience constructor that call Init() with the given vertices.
     public S2Polyline(S2Point[] vertices, S2Debug s2debug_override = S2Debug.ALLOW)
     {

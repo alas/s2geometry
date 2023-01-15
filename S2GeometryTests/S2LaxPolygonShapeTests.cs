@@ -60,9 +60,9 @@ public class S2LaxPolygonShapeTests
     internal void Test_S2LaxPolygonShape_EmptyPolygon()
     {
         _logger.WriteLine(
-            $"(INFO) sizeof(S2LaxPolygonShape) == {Marshal.SizeOf(typeof(S2LaxPolygonShape))}");
+            $"(INFO) sizeof(S2LaxPolygonShape) == {SizeHelper.SizeOf(typeof(S2LaxPolygonShape))}");
         _logger.WriteLine(
-            $"(INFO) sizeof(EncodedS2LaxPolygonShape) == {Marshal.SizeOf(typeof(EncodedS2LaxPolygonShape))}");
+            $"(INFO) sizeof(EncodedS2LaxPolygonShape) == {SizeHelper.SizeOf(typeof(EncodedS2LaxPolygonShape))}");
 
         S2LaxPolygonShape shape = new(new S2Polygon());
         Assert.Equal(0, shape.NumLoops);

@@ -522,9 +522,9 @@ public class EncodedS2PointVector
                 int block_size = Math.Min(kBlockSize, (int)(size_ - (uint)(i & ~(kBlockSize - 1))));
                 offsetbytearr += (block_size * delta_nibbles + 1) >> 1;
                 offsetbytearr += (int)delta * SizeHelper.SizeOf(typeof(S2Point));
-                var buff = new S2Point[1];
+                var buff = new double[3];
                 Buffer.BlockCopy(bytearr, offsetbytearr, buff, 0, SizeHelper.SizeOf(typeof(S2Point)));
-                return buff[0];
+                return new S2Point(buff);
             }
             delta -= kBlockSize;
         }
