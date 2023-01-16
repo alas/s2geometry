@@ -232,7 +232,7 @@ public class S2ShapeNestingQuery
 
         // Each chain now points to its immediate parent.  Scan through and set child
         // to point to parent and vice-versa.
-        var relations = (List<ChainRelation>)new List<ChainRelation>().ReserveSpace(num_chains);
+        var relations = new List<ChainRelation>().Fill(() => new(), num_chains);
         for (int chain = 0; chain < num_chains; ++chain)
         {
             MyDebug.Assert(parents[chain].GetOnesCount() <= 1);

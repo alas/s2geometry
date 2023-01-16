@@ -179,7 +179,7 @@ public sealed class S2ShapeIndexRegion<TIndex> : IS2Region<S2ShapeIndexRegion<TI
         // The following code uses only a single Iterator object because creating an
         // Iterator may be relatively expensive for some S2ShapeIndex types (e.g.,
         // it may involve memory allocation).
-        cell_ids = new List<S2CellId>(); cell_ids.ReserveSpace(6);
+        cell_ids = new List<S2CellId>().ReserveSpace(6);
 
         // Find the last S2CellId in the index.
         var count = Index().GetEnumerableCount();

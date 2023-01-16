@@ -216,12 +216,12 @@ public class S2VertexIdLaxLoopShape : S2Shape, IEquatable<S2VertexIdLaxLoopShape
     public override bool Equals(object? other) => other is S2VertexIdLaxLoopShape shape && Equals(shape);
 
     public bool Equals(S2VertexIdLaxLoopShape? other) =>
-        other is not null && other.Id == Id && other.NumVertices == NumVertices
+        other is not null && other.Id == Id
         && Enumerable.SequenceEqual(other.vertex_ids_, vertex_ids_)
         && Enumerable.SequenceEqual(other.vertex_array_, vertex_array_);
 
     public override int GetHashCode() =>
-        HashCode.Combine(vertex_ids_.GetHashCode(), vertex_array_.GetHashCode());
+        HashCode.Combine(Id.GetHashCode(), vertex_ids_.GetHashCode(), vertex_array_.GetHashCode());
 
     #endregion
 }

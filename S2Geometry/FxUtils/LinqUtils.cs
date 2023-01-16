@@ -47,7 +47,7 @@ public static class LinqUtils
         return arr;
     }
 
-    public static IList<T> Fill<T>(this IList<T> arr, Func<T> getNewValue, int count)
+    public static List<T> Fill<T>(this List<T> arr, Func<T> getNewValue, int count)
     {
         for (int i = 0; i < count; i++)
         {
@@ -56,7 +56,7 @@ public static class LinqUtils
         return arr;
     }
 
-    public static IList<T> ReserveSpace<T>(this IList<T> arr, int count)
+    public static List<T> ReserveSpace<T>(this List<T> arr, int count)
     {
         for (int i = 0; i < count; i++)
         {

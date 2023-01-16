@@ -479,7 +479,7 @@ public class S2ClosestEdgeQueryBase<Distance> where Distance : IEquatable<Distan
         // TODO(ericv): Use a single iterator (iter_) below and save position
         // information using (S2CellId, S2ShapeIndexCell) type.
         var nextPos = 0;
-        var next = Index.GetCellId(nextPos)!.Value;
+        var next = Index.GetCellId(nextPos).Value;
         var lastPos = Index.GetEnumerableCount() - 1;
         var last = Index.GetCellId(lastPos)!.Value;
         if (next != last)
