@@ -711,7 +711,7 @@ Level   Ratio  Ratio Aspect  Ratio Aspect    Min    Max    Min    Max
         orig_cell.Encode(encoder);
 
         S2Cell decoded_cell = new(S2LatLng.FromDegrees(51.494987, -0.146585));
-        var decoder = encoder.Decoder();
+        var decoder = encoder.GetDecoder();
         var (success, decoded_cellTmp) = S2Cell.Decode(decoder);
         Assert.True(success);
         decoded_cell = decoded_cellTmp;

@@ -382,7 +382,7 @@ public class S2ShapeIndexCell
         {
             // If the entire S2ShapeIndex contains just one shape, then we don't need
             // to encode any shape ids.  This is a very important and common case.
-            MyDebug.Assert(NumClipped() == 1);  // Index invariant: no empty cells.
+            MyDebug.Assert(NumClipped() == 1, "Index invariant: no empty cells.");
             S2ClippedShape clipped = Clipped(0);
             MyDebug.Assert(clipped.ShapeId == 0);
             int n = clipped.NumEdges;

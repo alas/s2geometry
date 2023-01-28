@@ -641,7 +641,7 @@ public static partial class S2
         // None of the remaining cases can occur in practice, because we can only get
         // to this point if b = (0, 0, 0).  Nevertheless, even (0, 0, 0) has a
         // well-defined direction under the symbolic perturbation model.
-        MyDebug.Assert(b[1] == 0 && b[2] == 0);        // da[0] coefficients (always zero)
+        MyDebug.Assert(b[1] == 0 && b[2] == 0, "da[0] coefficients (always zero)");
 
         if (a[0] != 0 || a[1] != 0)
         {          // db[2]

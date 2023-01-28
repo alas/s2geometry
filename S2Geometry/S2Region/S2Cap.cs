@@ -517,7 +517,7 @@ public readonly record struct S2Cap : IS2Region<S2Cap>, IDecoder<S2Cap>
         var result = new S2Cap(cen, rad);
 
 #if s2debug
-        MyDebug.Assert(result.IsValid()); // Invalid S2Cap
+        MyDebug.Assert(result.IsValid(), "Invalid S2Cap");
 #endif
 
         return (true, result);

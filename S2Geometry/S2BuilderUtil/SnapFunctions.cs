@@ -458,7 +458,7 @@ public class IntLatLngSnapFunction : SnapFunction
     }
     public override S2Point SnapPoint(S2Point point)
     {
-        MyDebug.Assert(Exponent >= 0);  // Make sure the snap function was initialized.
+        MyDebug.Assert(Exponent >= 0, "Make sure the snap function was initialized.");
         var input = new S2LatLng(point);
         var lat = Math.Round(input.LatDegrees() * from_degrees_);
         var lng = Math.Round(input.LngDegrees() * from_degrees_);

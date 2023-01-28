@@ -684,7 +684,7 @@ public class MutableS2ShapeIndexTests
     {
         Encoder encoder = new();
         index.Encode(encoder);
-        var decoder = encoder.Decoder();
+        var decoder = encoder.GetDecoder();
         MutableS2ShapeIndex index2 = new();
         Assert.True(index2.Init(decoder, new S2ShapeUtilCoding.WrappedShapeFactory(index)));
         S2ShapeUtil_Testing.ExpectEqual(index, index2);

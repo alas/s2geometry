@@ -6,7 +6,7 @@
 <#@ output extension=".cs" #>
 namespace S2Geometry;
 
-internal class EncodedUintVectorTesting
+internal class EncodedUIntVectorTesting
 {<#
 var types = new List<(Type typename, int typesize, int typebitsize)>
 {
@@ -21,16 +21,16 @@ foreach (var tuple in types) {
     int bitsize = tuple.typebitsize;
     if (type != typeof(Byte)) Write(Environment.NewLine);
 #>
-    // TestEncodedUintVector
-    internal static void TestEncodedUintVector_<#= bitsize #>(<#= type.Name #>[] expected, int expected_bytes)
+    // TestEncodedUIntVector
+    internal static void TestEncodedUIntVector_<#= bitsize #>(<#= type.Name #>[] expected, int expected_bytes)
     {
         Encoder encoder = new();
-        EncodedUintVector.EncodeUintVector(expected, encoder);
+        EncodedUIntVector<<#= type.Name #>>.EncodeUIntVector(expected, encoder);
         Assert.Equal(expected_bytes, encoder.Length());
-        var decoder = encoder.Decoder();
-        EncodedUintVector_UInt<#= bitsize #> actual = new();
-        Assert.True(actual.Init(decoder));
-        Assert.Equal(actual.Decode(), expected);
+        var decoder = encoder.GetDecoder();
+        var (success, actual) = EncodedUIntVector<UInt<#= bitsize #>>.Init(decoder);
+        Assert.True(success);
+        Assert.Equal(actual!.Decode(), expected);
     }
 
     // TestLowerBound
@@ -65,13 +65,13 @@ foreach (var tuple in types) {
         return values.ToArray();
     }
 
-    internal static EncodedUintVector_UInt<#= bitsize #> MakeEncodedVector_<#= bitsize #>(<#= type.Name #>[] values, Encoder encoder)
+    internal static EncodedUIntVector<<#= type.Name #>> MakeEncodedVector_<#= bitsize #>(<#= type.Name #>[] values, Encoder encoder)
     {
-        EncodedUintVector.EncodeUintVector(values, encoder);
-        var decoder = encoder.Decoder();
-        EncodedUintVector_UInt<#= bitsize #> actual = new();
-        Assert.True(actual.Init(decoder));
-        return actual;
+        EncodedUIntVector<<#= type.Name #>>.EncodeUIntVector(values, encoder);
+        var decoder = encoder.GetDecoder();
+        var (success, actual) = EncodedUIntVector<<#= type.Name #>>.Init(decoder);
+        Assert.True(success);
+        return actual!;
     }
 <# } #>
 }

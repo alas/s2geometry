@@ -16,7 +16,7 @@ public class EncodedS2ShapeIndexTests
         int shapes_bytes = encoder.Length();
         expected.Encode(encoder);
         Assert.Equal(expected_bytes, encoder.Length() - shapes_bytes);
-        var decoder = encoder.Decoder();
+        var decoder = encoder.GetDecoder();
         var (success, actual) = EncodedS2ShapeIndex.Factory(decoder,
             new S2ShapeUtilCoding.HomogeneousShapeFactory<Shape>(decoder));
         Assert.True(success);
@@ -262,7 +262,7 @@ public class EncodedS2ShapeIndexTests
             Encoder encoder = new();
             Assert.True(S2ShapeUtilCoding.CompactEncodeTaggedShapes(input, encoder));
             input.Encode(encoder);
-            var decoder = encoder.Decoder();
+            var decoder = encoder.GetDecoder();
             var (success, index) = EncodedS2ShapeIndex.Factory(decoder,
                 S2ShapeUtilCoding.LazyDecodeShapeFactory(decoder));
             Assert.True(success);

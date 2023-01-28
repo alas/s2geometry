@@ -506,20 +506,20 @@ public readonly record struct S1ChordAngle : IComparable<S1ChordAngle>, IDistanc
 /// <summary>
 /// "surrogate singleton" from: https://stackoverflow.com/a/66927384/3323941
 /// </summary>
-/// <typeparam name="T"></typeparam>
-public interface IDistance<T> where T : IEquatable<T>, IComparable<T>, IDistance<T>
+/// <typeparam name="TSelf"></typeparam>
+public interface IDistance<TSelf> where TSelf : IEquatable<TSelf>, IComparable<TSelf>, IDistance<TSelf>
 {
-    static abstract T operator -(T me, S1ChordAngle other);
-    static abstract T operator -(T me, T other);
-    static abstract bool operator <(T me, S1ChordAngle other);
-    static abstract bool operator >(T me, S1ChordAngle other);
-    static abstract bool operator <=(T me, S1ChordAngle other);
-    static abstract bool operator >=(T me, S1ChordAngle other);
-    static abstract bool operator <(T me, T other);
-    static abstract bool operator >(T me, T other);
-    static abstract bool operator <=(T me, T other);
-    static abstract bool operator >=(T me, T other);
+    static abstract TSelf operator -(TSelf me, S1ChordAngle other);
+    static abstract TSelf operator -(TSelf me, TSelf other);
+    static abstract bool operator <(TSelf me, S1ChordAngle other);
+    static abstract bool operator >(TSelf me, S1ChordAngle other);
+    static abstract bool operator <=(TSelf me, S1ChordAngle other);
+    static abstract bool operator >=(TSelf me, S1ChordAngle other);
+    static abstract bool operator <(TSelf me, TSelf other);
+    static abstract bool operator >(TSelf me, TSelf other);
+    static abstract bool operator <=(TSelf me, TSelf other);
+    static abstract bool operator >=(TSelf me, TSelf other);
     S1ChordAngle GetChordAngleBound();
-    static abstract T Zero { get; }
-    static abstract T Infinity { get; }
+    static abstract TSelf Zero { get; }
+    static abstract TSelf Infinity { get; }
 }

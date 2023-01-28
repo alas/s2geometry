@@ -614,7 +614,7 @@ public readonly record struct S2CellId(UInt64 Id) : IComparable<S2CellId>, IDeco
         // differ and convert that to a level.  The Math.Max() below is necessary for the
         // case where one S2CellId is a descendant of the other.
         UInt64 bits = Math.Max(Id ^ other.Id, Math.Max(LowestOnBit(), other.LowestOnBit()));
-        MyDebug.Assert(bits != 0);  // Because LowestOnBit is non-zero.
+        MyDebug.Assert(bits != 0, "Because LowestOnBit is non-zero.");
 
         // Compute the position of the most significant bit, and then map the bit
         // position as follows:

@@ -451,7 +451,7 @@ public class S2PolylineTests
         var polyline = MakePolyline("0:0, 0:10, 10:20, 20:30");
         Encoder encoder = new();
         polyline.Encode(encoder);
-        var decoder = encoder.Decoder();
+        var decoder = encoder.GetDecoder();
         var (success, decoded_polyline) = S2Polyline.Decode(decoder);
         Assert.True(success);
         Assert.True(decoded_polyline.ApproxEquals(polyline, S1Angle.Zero));
@@ -466,7 +466,7 @@ public class S2PolylineTests
         polyline.EncodeMostCompact(compact_encoder);
         polyline.EncodeUncompressed(uncompressed_encoder);
         Assert.True(compact_encoder.Length() < uncompressed_encoder.Length());
-        var decoder = compact_encoder.Decoder();
+        var decoder = compact_encoder.GetDecoder();
         var (success, decoded_polyline) = S2Polyline.Decode(decoder);
         Assert.True(success);
         Assert.True(decoded_polyline.ApproxEquals(polyline, S1Angle.FromE7(1)));
@@ -478,7 +478,7 @@ public class S2PolylineTests
         S2Polyline polyline = new();
         Encoder encoder = new();
         polyline.EncodeMostCompact(encoder);
-        var decoder = encoder.Decoder();
+        var decoder = encoder.GetDecoder();
         var (success, decoded_polyline) = S2Polyline.Decode(decoder);
         Assert.True(success);
         Assert.Equal(decoded_polyline.NumVertices(), 0);
@@ -490,7 +490,7 @@ public class S2PolylineTests
         S2Polyline polyline = new();
         Encoder encoder = new();
         polyline.EncodeUncompressed(encoder);
-        var decoder = encoder.Decoder();
+        var decoder = encoder.GetDecoder();
         var (success, decoded_polyline) = S2Polyline.Decode(decoder);
         Assert.True(success);
         Assert.Equal(decoded_polyline.NumVertices(), 0);
@@ -513,7 +513,7 @@ public class S2PolylineTests
         encoder.Put8(2);  // kCurrentCompressedEncodingVersionNumber
         encoder.Put8(S2.kMaxCellLevel);
         encoder.Put32(0);
-        var decoder = encoder.Decoder();
+        var decoder = encoder.GetDecoder();
 
         var (success, _) = S2Polyline.Decode(decoder);
         Assert.True(success);
@@ -527,7 +527,7 @@ public class S2PolylineTests
         encoder.Put8(2);  // kCurrentCompressedEncodingVersionNumber
         encoder.Put8(S2.kMaxCellLevel + 1);
         encoder.Put32(0);
-        var decoder = encoder.Decoder();
+        var decoder = encoder.GetDecoder();
 
         var (success, _) = S2Polyline.Decode(decoder);
         Assert.False(success);
@@ -692,7 +692,7 @@ public class S2PolylineTests
         var polyline = MakePolylineOrDie(str, assertIsValid ? S2Debug.ALLOW : S2Debug.DISABLE);
         Encoder encoder = new();
         polyline.Encode(encoder);
-        var decoder = encoder.Decoder();
+        var decoder = encoder.GetDecoder();
         var (success, decoded_polyline) = S2Polyline.Decode(decoder);
         Assert.True(success); // << str
         return decoded_polyline;

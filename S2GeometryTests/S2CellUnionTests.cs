@@ -281,7 +281,7 @@ public class S2CellUnionTests
 
         Encoder encoder = new();
         cell_union.Encode(encoder);
-        var decoder = encoder.Decoder();
+        var decoder = encoder.GetDecoder();
         var (success, decoded_cell_union) = S2CellUnion.Decode(decoder);
         Assert.True(success);
         Assert.Equal(cell_union, decoded_cell_union);
@@ -294,7 +294,7 @@ public class S2CellUnionTests
 
         Encoder encoder = new();
         empty_cell_union.Encode(encoder);
-        var decoder = encoder.Decoder();
+        var decoder = encoder.GetDecoder();
         var (success, decoded_cell_union) = S2CellUnion.Decode(decoder);
         Assert.True(success);
         Assert.Equal(empty_cell_union, decoded_cell_union);
@@ -459,7 +459,7 @@ public class S2CellUnionTests
         S2CellUnion cell_union = S2CellUnion.FromVerbatim(cellids);
         Encoder encoder = new();
         cell_union.Encode(encoder);
-        var decoder = encoder.Decoder();
+        var decoder = encoder.GetDecoder();
         var (success, _) = S2CellUnion.Decode(decoder);
         Assert.False(success);
     }

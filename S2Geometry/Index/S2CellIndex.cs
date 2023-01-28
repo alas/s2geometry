@@ -287,14 +287,14 @@ public class S2CellIndex
         {
             range_nodes_ = index.range_nodes_;
             Position = -1;
-            MyDebug.Assert(range_nodes_.Any()); // Call Build() first.
+            MyDebug.Assert(range_nodes_.Any(), "Call Build() first.");
         }
 
         public RangeNodeEnumerator(List<RangeNode> rangeNodes, int position)
         {
             range_nodes_ = rangeNodes;
             Position = position;
-            MyDebug.Assert(range_nodes_.Any()); // Call Build() first.
+            MyDebug.Assert(range_nodes_.Any(), "Call Build() first.");
         }
 
         public virtual bool MoveNext()

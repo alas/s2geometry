@@ -8,7 +8,7 @@
 
 namespace S2Geometry;
 
-public interface IS2Region<T> : IS2Region, IEquatable<T> where T : IS2Region { }
+public interface IS2Region<TSelf> : IS2Region, IEquatable<TSelf> where TSelf : IS2Region { }
 
 public interface IEncoder
 {

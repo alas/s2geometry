@@ -43,7 +43,7 @@ public class StringVectorEncoder
         offsets_.Add((ulong)data_.Length());
         // We don't encode the first element of "offsets_", which is always zero.
         var newarr = offsets_.Skip(1).Take(offsets_.Count - 1).ToArray();
-        EncodedUintVector.EncodeUintVector(newarr, encoder);
+        EncodedUIntVector<ulong>.EncodeUIntVector(newarr, encoder);
         encoder.Ensure(data_.Length());
         encoder.PutEncoder(data_);
     }
@@ -79,8 +79,12 @@ public class StringVectorEncoder
 // the data structure is actually used.
 public class EncodedStringVector : IInitEncoder<EncodedStringVector>
 {
+    public EncodedUIntVector<ulong> offsets_ { private get; init; }
+
+    public byte[] data_ { private get; init; }
+
     // Constructs an uninitialized object; requires Init() to be called.
-    public EncodedStringVector() { }
+    public EncodedStringVector(byte[] data) => data_ = data;
 
     // Initializes the EncodedStringVector.  Returns false on errors, leaving
     // the vector in an unspecified state.
@@ -88,16 +92,18 @@ public class EncodedStringVector : IInitEncoder<EncodedStringVector>
     // REQUIRES: The Decoder data buffer must outlive this object.
     public static (bool, EncodedStringVector?) Init(Decoder decoder)
     {
-        EncodedStringVector shape = new();
-        if (!shape.offsets_.Init(decoder)) return (false, null);
+        var (success, offsets) = EncodedUIntVector<ulong>.Init(decoder);
+        if (!success) return (false, null);
 
-        shape.data_ = decoder.Buffer;
-        if (shape.offsets_.Count > 0)
+        var data_ = decoder.Buffer;
+        //var offset = decoder.offset;
+        if (offsets!.Count > 0)
         {
-            var length = (int)shape.offsets_[^1];
+            var length = (int)offsets[^1];
             if (decoder.Avail() < length) return (false, null);
             decoder.Skip(length);
         }
+        EncodedStringVector shape = new(data_);
 
         return (true, shape);
     }
@@ -105,8 +111,8 @@ public class EncodedStringVector : IInitEncoder<EncodedStringVector>
     // Resets the vector to be empty.
     public void Clear()
     {
-        offsets_.Clear();
-        data_ = null;
+        //offsets_ = null;
+        //data_ = Array.Empty<byte>();
     }
 
     // Returns the size of the original vector.
@@ -172,7 +178,4 @@ public class EncodedStringVector : IInitEncoder<EncodedStringVector>
             encoder.PutN(data_, length);
         }
     }
-
-    private readonly EncodedUintVector_UInt64 offsets_ = new();
-    private byte[]? data_;
 }

@@ -242,7 +242,7 @@ public class EncodedS2CellIdVectorTests
     private static EncodedS2CellIdVector MakeEncodedS2CellIdVector(List<S2CellId> input, Encoder encoder)
     {
         EncodedS2CellIdVector.EncodeS2CellIdVector(input, encoder);
-        var decoder = encoder.Decoder();
+        var decoder = encoder.GetDecoder();
         EncodedS2CellIdVector cell_ids = new();
         Assert.True(cell_ids.Init(decoder));
         return cell_ids;

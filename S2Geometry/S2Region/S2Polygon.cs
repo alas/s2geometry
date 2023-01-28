@@ -314,7 +314,7 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
 #if s2debug
                 // The s2debug validity checking usually happens in InitIndex(),
                 // but this error is detected too late for that.
-                MyDebug.Assert(IsValid());  // Always fails.
+                MyDebug.Assert(IsValid(), "Always fails.");
 #endif
             }
         }

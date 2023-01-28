@@ -1511,7 +1511,7 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
     internal void Test_S2PolygonTestBase_TestSimpleEncodeDecode() {
         Encoder encoder = new();
         cross1_.Encode(encoder);
-        var decoder = encoder.Decoder();
+        var decoder = encoder.GetDecoder();
         var (success, decoded_polygon) = S2Polygon.Decode(decoder);
         Assert.True(success);
         Assert.True(cross1_.BoundaryEquals(decoded_polygon));
@@ -1573,7 +1573,7 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
         Encoder encoder = new();
         snapped.Encode(encoder);
 
-        var decoder = encoder.Decoder();
+        var decoder = encoder.GetDecoder();
 
         var (success, decoded_polygon) = S2Polygon.Decode(decoder);
         Assert.True(success);
@@ -2230,7 +2230,7 @@ for (int i = 0; i < 100000; ++i) {
     {
         Encoder encoder = new();
         src.Encode(encoder);
-        var decoder = encoder.Decoder();
+        var decoder = encoder.GetDecoder();
         var (success, dst) = S2Polygon.Decode(decoder);
         Assert.True(success);
         return src == dst;

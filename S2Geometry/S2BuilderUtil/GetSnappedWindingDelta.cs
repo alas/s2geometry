@@ -258,8 +258,8 @@ public class SnappedWindingDelta
                 // compute the winding number of R by counting signed crossings of the
                 // edge ZR, while the winding number of R' relative to Z is always zero
                 // because the snapped chain collapses to a single point.
-                MyDebug.Assert(chain_out[0] == ref_out);         // Snaps to R'.
-                MyDebug.Assert(chain_in[0] == chain_in.Last());  // Chain is a loop.
+                MyDebug.Assert(chain_out[0] == ref_out, "Snaps to R'.");
+                MyDebug.Assert(chain_in[0] == chain_in.Last(), "Chain is a loop.");
                 S2Point z = S2.Ortho(ref_out);
                 winding_delta += 0 - GetEdgeWindingDelta(z, ref_in, chain_in);
             }

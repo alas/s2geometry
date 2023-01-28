@@ -356,7 +356,7 @@ public class S2CapTests
         S2Cap cap = S2Cap.FromCenterHeight(new S2Point(3, 2, 1).Normalize(), 1);
         Encoder encoder = new();
         cap.Encode(encoder);
-        var decoder = encoder.Decoder();
+        var decoder = encoder.GetDecoder();
         var (success, decoded_cap) = S2Cap.Decode(decoder);
         Assert.True(success);
         Assert.Equal(cap, decoded_cap);

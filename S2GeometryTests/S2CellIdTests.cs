@@ -304,7 +304,7 @@ public class S2CellIdTests
         S2CellId id = new(0x7837423);
         Encoder encoder = new();
         id.Encode(encoder);
-        var decoder = encoder.Decoder();
+        var decoder = encoder.GetDecoder();
         var (success, decoded_id) = S2CellId.Decode(decoder);
         Assert.True(success);
         Assert.Equal(id, decoded_id);
@@ -316,7 +316,7 @@ public class S2CellIdTests
         S2CellId none_id = S2CellId.None;
         Encoder encoder = new();
         none_id.Encode(encoder);
-        var decoder = encoder.Decoder();
+        var decoder = encoder.GetDecoder();
         var (success, decoded_id) = S2CellId.Decode(decoder);
         Assert.True(success);
         Assert.Equal(none_id, decoded_id);
@@ -330,7 +330,7 @@ public class S2CellIdTests
         id.Encode(encoder);
 
         // Truncate encoded buffer.
-        var decoder = encoder.Decoder(2);
+        var decoder = encoder.GetDecoder(2);
         var (success, _) = S2CellId.Decode(decoder);
         Assert.False(success);
     }

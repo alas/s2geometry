@@ -33,9 +33,11 @@ public class S2BufferOperationTests
         InputCallback input_callback,
         S1Angle buffer_radius, double error_fraction)
     {
-        Options options = new();
-        options.BufferRadius = buffer_radius;
-        options.ErrorFraction = error_fraction;
+        Options options = new()
+        {
+            BufferRadius = buffer_radius,
+            ErrorFraction = error_fraction,
+        };
         return DoBuffer(input_callback, options);
     }
 
@@ -221,8 +223,10 @@ public class S2BufferOperationTests
     {
         // Verify that the snap function is passed through to S2Builder.
         // We use a buffer radius of zero to make the test simpler.
-        Options options = new();
-        options.SnapFunction_ = new IntLatLngSnapFunction(0);
+        Options options = new()
+        {
+            SnapFunction_ = new IntLatLngSnapFunction(0),
+        };
         var output = DoBuffer((S2BufferOperation op) =>
         {
             op.AddPoint(MakePointOrDie("0.1:-0.4"));
@@ -253,9 +257,11 @@ public class S2BufferOperationTests
                         MutableS2ShapeIndex output,
                         S1Angle buffer_radius, S1Angle max_error)
     {
-        S2BooleanOperation.Options options = new();
-        options.PolygonModel_ = S2BooleanOperation.PolygonModel.CLOSED;
-        options.PolylineModel_ = S2BooleanOperation.PolylineModel.CLOSED;
+        S2BooleanOperation.Options options = new()
+        {
+            PolygonModel_ = S2BooleanOperation.PolygonModel.CLOSED,
+            PolylineModel_ = S2BooleanOperation.PolylineModel.CLOSED
+        };
         if (buffer_radius > max_error)
         {
             // For positive buffer radii, the output should contain the input.
@@ -270,7 +276,7 @@ public class S2BufferOperationTests
 
     // Tests that the minimum distance from the boundary of "output" to the
     // boundary of "input" is at least "min_dist" using exact predicates.
-    private void TestMinimumDistance(MutableS2ShapeIndex input,
+    private static void TestMinimumDistance(MutableS2ShapeIndex input,
                             MutableS2ShapeIndex output,
                             S1ChordAngle min_dist)
     {
@@ -283,14 +289,17 @@ public class S2BufferOperationTests
 
         // We make the distance limit big enough to find all edges whose true
         // distance might be less than "min_dist".
-        S2ClosestEdgeQuery.Options query_options = new();
-        query_options.IncludeInteriors = false;
-        query_options.MaxDistance = (
-            min_dist.PlusError(S2.GetUpdateMinDistanceMaxError(min_dist)));
+        S2ClosestEdgeQuery.Options query_options = new()
+        {
+            IncludeInteriors = false,
+            MaxDistance = min_dist.PlusError(S2.GetUpdateMinDistanceMaxError(min_dist)),
+        };
 
         S2ClosestEdgeQuery in_query = new(input, query_options);
-        S2ClosestEdgeQuery.ShapeIndexTarget out_target = new(output);
-        out_target.IncludeInteriors = (false);
+        S2ClosestEdgeQuery.ShapeIndexTarget out_target = new(output)
+        {
+            IncludeInteriors = false,
+        };
         S2ClosestEdgeQuery out_query = new(output, query_options);
         foreach (var in_result in in_query.FindClosestEdges(out_target))
         {
@@ -313,10 +322,11 @@ public class S2BufferOperationTests
                             MutableS2ShapeIndex output,
                             S1ChordAngle max_dist)
     {
-        S2ClosestEdgeQuery.Options query_options = new();
-        query_options.IncludeInteriors = false;
-        query_options.MaxDistance =
-            max_dist.PlusError(S2.GetUpdateMinDistanceMaxError(max_dist));
+        S2ClosestEdgeQuery.Options query_options = new()
+        {
+            IncludeInteriors = false,
+            MaxDistance = max_dist.PlusError(S2.GetUpdateMinDistanceMaxError(max_dist)),
+        };
 
         S2ClosestEdgeQuery in_query = new(input, query_options);
         foreach (var out_shape in output)
@@ -380,9 +390,11 @@ public class S2BufferOperationTests
         // This is not perfect (e.g., it won't detect cases where an entire boundary
         // loop of B is missing, such as returning a disc in the place of an
         // annulus) but it is sufficient to detect many types of errors.
-        Options options = new();
-        options.BufferRadius = buffer_radius;
-        options.ErrorFraction = error_fraction;
+        Options options = new()
+        {
+            BufferRadius = buffer_radius,
+            ErrorFraction = error_fraction,
+        };
         MutableS2ShapeIndex output = new();
         output.Add(DoBuffer(
 

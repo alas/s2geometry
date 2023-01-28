@@ -564,7 +564,7 @@ public partial class S2Builder
                 }
                 if (loop_type == LoopType.SIMPLE)
                 {
-                    MyDebug.Assert(!path.Any());  // Invariant.
+                    MyDebug.Assert(!path.Any(), "Invariant.");
                 }
                 else
                 {
@@ -583,7 +583,7 @@ public partial class S2Builder
                     degenerate_boundaries == DegenerateBoundaries.KEEP));
             MyDebug.Assert(Options.SiblingPairs_ == SiblingPairs.REQUIRE ||
                    Options.SiblingPairs_ == SiblingPairs.CREATE);
-            MyDebug.Assert(Options.EdgeType_ == EdgeType.DIRECTED);  // Implied by above.
+            MyDebug.Assert(Options.EdgeType_ == EdgeType.DIRECTED, "Implied by above.");
 
             var sibling_map = GetSiblingMap();
             if (!GetLeftTurnMap(sibling_map, out var left_turn_map, out error)) return false;
@@ -778,7 +778,7 @@ public partial class S2Builder
                     }
                     if (loop_type == LoopType.SIMPLE)
                     {
-                        MyDebug.Assert(!path.Any());  // Invariant.
+                        MyDebug.Assert(!path.Any(), "Invariant.");
                     }
                     else
                     {
@@ -1346,7 +1346,7 @@ public partial class S2Builder
                         {
                             // When we have undirected edges and are guaranteed to have siblings,
                             // we cut the number of edges in half (see s2builder.h).
-                            MyDebug.Assert(0 == (n_out & 1));  // Number of edges is always even.
+                            MyDebug.Assert(0 == (n_out & 1), "Number of edges is always even.");
                             AddEdges(merge ? 1 : (n_out / 2), edge, MergeInputIds(out_begin, out_));
                         }
                         else if (merge)
@@ -1724,7 +1724,7 @@ public partial class S2Builder
                             var loop = BuildWalk(v);
                             MyDebug.Assert(v == g_.GetEdge(loop.Last()).EdgeId);
                             polyline.AddRange(loop);
-                            MyDebug.Assert(used_[e]);  // All outgoing edges from "v" are now used.
+                            MyDebug.Assert(used_[e], "All outgoing edges from \"v\" are now used.");
                             break;
                         }
                     }

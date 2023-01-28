@@ -30,7 +30,7 @@ public class S2PointRegionTests
         Encoder encoder = new();
         r.Encode(encoder);
 
-        var decoder = encoder.Decoder();
+        var decoder = encoder.GetDecoder();
         // S2PointRegion decoded_r = new S2PointRegion(new S2Point(1, 0, 0));
         var (success, decoded_r) = S2PointRegion.Decode(decoder);
         Assert.True(success);
@@ -52,7 +52,7 @@ public class S2PointRegionTests
         encoder.PutDouble(0.0);
         encoder.PutDouble(0.0);
 
-        var decoder = encoder.Decoder();
+        var decoder = encoder.GetDecoder();
         // S2PointRegion r = new S2PointRegion(new S2Point(-1, 0, 0));
         var (success, _) = S2PointRegion.Decode(decoder);
         Assert.True(success);
@@ -70,7 +70,7 @@ public class S2PointRegionTests
         encoder.PutDouble(1.0);
         encoder.PutDouble(1.0);
 
-        var decoder = encoder.Decoder();
+        var decoder = encoder.GetDecoder();
         // S2PointRegion r = new(new S2Point(-1, 0, 0));
         var (success, _) = S2PointRegion.Decode(decoder);
         Assert.False(success);

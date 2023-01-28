@@ -17,7 +17,7 @@ public class S2LaxPolygonShapeTests
     {
         Encoder encoder=new();
         original.Encode(encoder, CodingHint.COMPACT);
-        var decoder = encoder.Decoder();
+        var decoder = encoder.GetDecoder();
         var (success, encoded) = EncodedS2LaxPolygonShape.Init(decoder);
         Assert.True(success);
         Assert.Equal(encoded!.NumLoops, original.NumLoops);

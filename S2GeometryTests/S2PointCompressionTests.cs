@@ -186,7 +186,7 @@ public class S2PointCompressionTests
 
         Encoder encoder = new();
         S2PointCompression.S2EncodePointsCompressed(points, 8, encoder);
-        var decoder = encoder.Decoder();
+        var decoder = encoder.GetDecoder();
         var result = new S2Point[2];
         Assert.True(S2PointCompression.S2DecodePointsCompressed(decoder, 8, result, 0));
         Assert.True(result[0] == points[0].XYZ);
@@ -292,7 +292,7 @@ public class S2PointCompressionTests
 
     private void Decode(int level, S2Point[] points)
     {
-        var decoder_ = encoder_.Decoder();
+        var decoder_ = encoder_.GetDecoder();
         Assert.True(S2PointCompression.S2DecodePointsCompressed(decoder_, level, points, 0));
     }
 

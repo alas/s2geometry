@@ -4,9 +4,9 @@ using System.Diagnostics;
 
 internal static class MyDebug
 {
-    internal static void Assert(bool statement)
+    internal static void Assert(bool statement, string? message = null)
     {
-        if (!statement) throw new InvalidDataException();
+        if (!statement) throw new InvalidDataException(message ?? string.Empty);
     }
 
     [Conditional("DEBUG")]

@@ -8,7 +8,7 @@ public class EncodedUintVectorTests
     {
         // Make sure that this class is compact since it is extensively used.
         // 16 for 64-bit, 12 for 32-bit.
-        Assert.True(SizeHelper.SizeOf(typeof(EncodedUintVector_UInt64)) <= 16);
+        Assert.True(typeof(EncodedUIntVector<UInt64>).SizeOf() <= 16);
     }
 
     [Fact]
@@ -56,13 +56,13 @@ public class EncodedUintVectorTests
     {
         for (int bytes_per_value = 8; bytes_per_value <= 8; ++bytes_per_value)
         {
-            EncodedUintVectorTesting.TestLowerBound_64(bytes_per_value, 10);
+            EncodedUIntVectorTesting.TestLowerBound_64(bytes_per_value, 10);
             if (bytes_per_value <= 4)
             {
-                EncodedUintVectorTesting.TestLowerBound_32(bytes_per_value, 500);
+                EncodedUIntVectorTesting.TestLowerBound_32(bytes_per_value, 500);
                 if (bytes_per_value <= 2)
                 {
-                    EncodedUintVectorTesting.TestLowerBound_16(bytes_per_value, 100);
+                    EncodedUIntVectorTesting.TestLowerBound_16(bytes_per_value, 100);
                 }
             }
         }
@@ -74,17 +74,17 @@ public class EncodedUintVectorTests
         var values = new ulong[] { 10, 20, 30, 40 };
 
         Encoder a_encoder = new();
-        var a = EncodedUintVectorTesting.MakeEncodedVector_64(values, a_encoder);
+        var a = EncodedUIntVectorTesting.MakeEncodedVector_64(values, a_encoder);
         Assert.Equal(a.Decode(), values);
 
         Encoder b_encoder = new();
         a.Encode(b_encoder);
-        var decoder = b_encoder.Decoder();
+        var decoder = b_encoder.GetDecoder();
 
-        EncodedUintVector_UInt64 v2 = new();
-        Assert.True(v2.Init(decoder));
+        var (success, v2) = EncodedUIntVector<UInt64>.Init(decoder);
+        Assert.True(success);
 
-        Assert.Equal(v2.Decode(), values);
+        Assert.Equal(v2!.Decode(), values);
     }
 
     private static void TestEncodedUintVector<T>(T[] expected, int expected_bytes)
@@ -92,13 +92,13 @@ public class EncodedUintVectorTests
         switch (expected)
         {
             case ushort[] _ushort:
-                EncodedUintVectorTesting.TestEncodedUintVector_16(_ushort, expected_bytes);
+                EncodedUIntVectorTesting.TestEncodedUIntVector_16(_ushort, expected_bytes);
                 break;
             case uint[] _uint:
-                EncodedUintVectorTesting.TestEncodedUintVector_32(_uint, expected_bytes);
+                EncodedUIntVectorTesting.TestEncodedUIntVector_32(_uint, expected_bytes);
                 break;
             case ulong[] _ulong:
-                EncodedUintVectorTesting.TestEncodedUintVector_64(_ulong, expected_bytes);
+                EncodedUIntVectorTesting.TestEncodedUIntVector_64(_ulong, expected_bytes);
                 break;
             default: throw new NotSupportedException(typeof(T).FullName);
         }

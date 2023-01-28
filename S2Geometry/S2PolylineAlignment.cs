@@ -82,9 +82,9 @@ public static class S2PolylineAlignment
     {
         int a_n = a.NumVertices();
         int b_n = b.NumVertices();
-        MyDebug.Assert(a_n > 0); // A is empty polyline.
-        MyDebug.Assert(b_n > 0); // B is empty polyline.
-        var w = new Window(new (int start, int end)[a_n].Fill((0, b_n)));
+        MyDebug.Assert(a_n > 0, "A is empty polyline.");
+        MyDebug.Assert(b_n > 0, "B is empty polyline.");
+        Window w = new(new (int start, int end)[a_n].Fill((0, b_n)));
         return DynamicTimewarp(a, b, w);
     }
 
@@ -103,8 +103,8 @@ public static class S2PolylineAlignment
 
         int a_n = a.NumVertices();
         int b_n = b.NumVertices();
-        MyDebug.Assert(a_n > 0); // A is empty polyline.
-        MyDebug.Assert(b_n > 0); // B is empty polyline.
+        MyDebug.Assert(a_n > 0, "A is empty polyline.");
+        MyDebug.Assert(b_n > 0, "B is empty polyline.");
         var cost = new double[b_n].Fill(DOUBLE_MAX);
         double left_diag_min_cost = 0;
         for (int row = 0; row < a_n; ++row)
@@ -144,9 +144,9 @@ public static class S2PolylineAlignment
         const double kDensitySwitchover = 0.85;
         int a_n = a.NumVertices();
         int b_n = b.NumVertices();
-        MyDebug.Assert(a_n > 0); // A is empty polyline.
-        MyDebug.Assert(b_n > 0); // B is empty polyline.
-        MyDebug.Assert(radius >= 0); // Radius is negative.
+        MyDebug.Assert(a_n > 0, "A is empty polyline.");
+        MyDebug.Assert(b_n > 0, "B is empty polyline.");
+        MyDebug.Assert(radius >= 0, "Radius is negative.");
 
         // If we've hit the point where doing a full, direct solve is guaranteed to
         // be faster, then terminate the recursion and do that.
@@ -593,23 +593,23 @@ public static class S2PolylineAlignment
         // Construct a Window from a non-empty list of column strides.
         public Window((int start, int end)[] strides)
         {
-            MyDebug.Assert(strides.Any()); // Cannotruct empty window.
-            MyDebug.Assert(strides[0].start == 0); // First element of start_cols is non-zero.
+            MyDebug.Assert(strides.Any(), "Cannotruct empty window.");
+            MyDebug.Assert(strides[0].start == 0, "First element of start_cols is non-zero.");
             strides_ = strides;
             rows_ = strides.Length;
             cols_ = strides.Last().end;
-            MyDebug.Assert(IsValid); // Constructor validity check fail.
+            MyDebug.Assert(IsValid, "Constructor validity check fail.");
         }
 
         // Construct a Window from a non-empty sequence of warp path index pairs.
         public Window(WarpPath warp_path)
         {
-            MyDebug.Assert(warp_path.Any()); // Cannot construct window from empty warp path.
-            MyDebug.Assert(warp_path.First() == (0, 0)); // Must start at (0, 0).
+            MyDebug.Assert(warp_path.Any(), "Cannot construct window from empty warp path.");
+            MyDebug.Assert(warp_path.First() == (0, 0), "Must start at (0, 0).");
             rows_ = warp_path.Last().start + 1;
-            MyDebug.Assert(rows_ > 0); // Must have at least one row.
+            MyDebug.Assert(rows_ > 0, "Must have at least one row.");
             cols_ = warp_path.Last().end + 1;
-            MyDebug.Assert(cols_ > 0); // Must have at least one column.
+            MyDebug.Assert(cols_ > 0, "Must have at least one column.");
             strides_ = new (int start, int end)[rows_];
 
             int prev_row = 0;
@@ -629,7 +629,7 @@ public static class S2PolylineAlignment
             }
             MyDebug.Assert(curr_row == rows_ - 1);
             strides_[rows_ - 1] = (stride_start, stride_stop);
-            MyDebug.Assert(IsValid); // Constructor validity check fail.
+            MyDebug.Assert(IsValid, "Constructor validity check fail.");
         }
 
         // Return the (not-bounds-checked) stride for this row.
@@ -649,8 +649,8 @@ public static class S2PolylineAlignment
         // Used by ApproximateAlignment window expansion step.
         public Window Upsample(int new_rows, int new_cols)
         {
-            MyDebug.Assert(new_rows >= rows_); // Upsampling: New_rows < current_rows
-            MyDebug.Assert(new_cols >= cols_); // Upsampling: New_cols < current_cols
+            MyDebug.Assert(new_rows >= rows_, "Upsampling: New_rows < current_rows");
+            MyDebug.Assert(new_cols >= cols_, "Upsampling: New_cols < current_cols");
             var row_scale = ((double)new_rows) / rows_;
             var col_scale = ((double)new_cols) / cols_;
             var new_strides = new (int start, int end)[new_rows];
@@ -678,7 +678,7 @@ public static class S2PolylineAlignment
             // straightforward to do so. This method generally isn't very expensive so it
             // feels unnecessary to combine them.
 
-            MyDebug.Assert(radius >= 0); // Negative dilation radius.
+            MyDebug.Assert(radius >= 0, "Negative dilation radius.");
             var new_strides = new (int start, int end)[rows_];
             int prev_row, next_row;
             for (int row = 0; row < rows_; ++row)

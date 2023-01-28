@@ -101,7 +101,7 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoder<S2Polyline>
         builder.StartLayer(new S2PolylineLayer(this));
         builder.AddPolyline(polyline);
         S2Error error;
-        MyDebug.Assert(builder.Build(out error)); // "Could not build polyline: " << error;
+        MyDebug.Assert(builder.Build(out error), "Could not build polyline: " + error);
     }
 
     // Return true if the given vertices form a valid polyline.

@@ -31,7 +31,7 @@ public class EncodedStringVectorTests
         Encoder encoder = new();
         StringVectorEncoder.Encode(input, encoder);
         Assert.Equal(expected_bytes, encoder.Length());
-        var decoder = encoder.Decoder();
+        var decoder = encoder.GetDecoder();
         var (success, actual) = EncodedStringVector.Init(decoder);
         Assert.True(success);
         Assert.Equal(actual!.Decode(), input);

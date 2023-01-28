@@ -83,7 +83,7 @@ public static partial class S2ShapeUtil
                 }
             }
             // Check that there is exactly one outer loop in each component.
-            MyDebug.Assert(i + 1 == outer_loops.Count); // Component is not a subdivision
+            MyDebug.Assert(i + 1 == outer_loops.Count, "Component is not a subdivision");
         }
         // Find the loops containing each component.
         var ancestors = new List<List<S2Shape>>().ReserveSpace(components.Count);

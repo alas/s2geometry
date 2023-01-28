@@ -763,7 +763,7 @@ public class S2LoopTests
         l.Depth = 3;
         Encoder encoder = new();
         l.Encode(encoder);
-        var decoder1 = encoder.Decoder();
+        var decoder1 = encoder.GetDecoder();
 
         // Initialize the loop using DecodeWithinScope and check that it is the
         // same as the original loop.
@@ -777,7 +777,7 @@ public class S2LoopTests
         // check that it doesn't deallocate the original memory.
         S2Point[] vertices = { loop1.Vertex(0), loop1.Vertex(2), loop1.Vertex(3) };
         loop1 = new S2Loop(vertices);
-        var decoder2 = encoder.Decoder();
+        var decoder2 = encoder.GetDecoder();
         var (success2, loop2) = S2Loop.Decode(decoder2);
         Assert.True(success2);
         Assert.True(l.BoundaryEquals(loop2!));
@@ -790,10 +790,10 @@ public class S2LoopTests
         l2.Depth = 2;
         Encoder encoder2 = new();
         l2.Encode(encoder2);
-        var decoder3 = encoder2.Decoder();
+        var decoder3 = encoder2.GetDecoder();
         var (success3, loop3) = S2Loop.Decode(decoder3);
         Assert.True(success3);
-        var decoder4 = encoder.Decoder();
+        var decoder4 = encoder.GetDecoder();
         var (success4, loop4) = S2Loop.Decode(decoder4);
         Assert.True(success4);
         Assert.True(l.BoundaryEquals(loop4));
@@ -1030,7 +1030,7 @@ public class S2LoopTests
     // the private DecodeCompressed() method.
     private static void TestDecodeCompressed(Encoder encoder, int level, out S2Loop loop)
     {
-        var decoder = encoder.Decoder();
+        var decoder = encoder.GetDecoder();
         var (success, loop_) = S2Loop.DecodeCompressed(decoder, level);
         Assert.True(success);
         loop = loop_!;
@@ -1294,7 +1294,7 @@ public class S2LoopTests
     {
         Encoder encoder = new();
         loop.Encode(encoder);
-        var decoder = encoder.Decoder();
+        var decoder = encoder.GetDecoder();
         var (success, loop2) = S2Loop.Decode(decoder);
         Assert.True(success);
         CheckIdentical(loop, loop2);

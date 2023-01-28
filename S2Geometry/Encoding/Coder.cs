@@ -80,6 +80,11 @@ public class Encoder : IEquatable<Encoder>
         System.Buffer.BlockCopy(mem, 0, Buffer, Offset, n);
         Offset += n;
     }
+    public void PutN(byte[] mem, int offset, int n)
+    {
+        System.Buffer.BlockCopy(mem, offset, Buffer, Offset, n);
+        Offset += n;
+    }
     public void PutPoints(IEnumerable<S2Point> points)
     {
         foreach (var v in points)
@@ -132,7 +137,7 @@ public class Encoder : IEquatable<Encoder>
     public int Length()
     {
         MyDebug.Assert(Offset >= 0);
-        MyDebug.Assert(Offset <= Limit);  // Catch the buffer overflow.
+        MyDebug.Assert(Offset <= Limit, "Catch the buffer overflow.");
         return Offset;
     }
 
@@ -199,7 +204,7 @@ public class Encoder : IEquatable<Encoder>
 
     public string HexString() => Convert.ToHexString(Buffer, 0, Length());
 
-    public Decoder Decoder(int truncate = 0) => new (Buffer, 0, Length() - truncate);
+    public Decoder GetDecoder(int truncate = 0) => new (Buffer, 0, Length() - truncate);
 
     #region IEquatable
 

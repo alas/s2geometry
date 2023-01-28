@@ -42,10 +42,10 @@ public class S2PointVectorShape : S2Shape, IInitEncoder<S2PointVectorShape>, IEq
     // name is chosen for compatibility with EncodedS2PointVectorShape below.)
     public static (bool, S2PointVectorShape?) Init(Decoder decoder)
     {
-        EncodedS2PointVector points = new();
-        if (!points.Init(decoder)) return (false, null);
+        var (success, points) = EncodedS2PointVector.Init(decoder);
+        if (!success) return (false, null);
 
-        S2PointVectorShape shape = new() { points_ = points.Decode() };
+        S2PointVectorShape shape = new(points!.Decode());
         return (true, shape);
     }
 
@@ -102,14 +102,14 @@ public class EncodedS2PointVectorShape : S2Shape, IInitEncoder<EncodedS2PointVec
 {
     #region Fields, Constants
 
-    private readonly EncodedS2PointVector points_;
+    public EncodedS2PointVector points_ { private get; init; }
 
     #endregion
 
     #region Constructor
 
     // Constructs an uninitialized object; requires Init() to be called.
-    public EncodedS2PointVectorShape() => points_ = new();
+    public EncodedS2PointVectorShape(EncodedS2PointVector points) => points_ = points;
 
     #endregion
 
@@ -120,9 +120,10 @@ public class EncodedS2PointVectorShape : S2Shape, IInitEncoder<EncodedS2PointVec
     // REQUIRES: The Decoder data buffer must outlive this object.
     public static (bool, EncodedS2PointVectorShape?) Init(Decoder decoder)
     {
-        EncodedS2PointVectorShape shape = new();
-        if (!shape.points_.Init(decoder)) return (false, null);
+        var (success, points_) = EncodedS2PointVector.Init(decoder);
+        if (!success) return (false, null);
 
+        EncodedS2PointVectorShape shape = new(points_!);
         return (true, shape);
     }
 

@@ -40,7 +40,7 @@ public class S2LaxLoopShape : S2Shape, IEquatable<S2LaxLoopShape>
     //           [Use S2LaxPolygonShape if you need to represent a full loop.]
     public S2LaxLoopShape(S2Loop loop) 
     {
-        MyDebug.Assert(!loop.IsFull()); // Full loops not supported; use S2LaxPolygonShape
+        MyDebug.Assert(!loop.IsFull(), "Full loops not supported; use S2LaxPolygonShape");
         if (loop.IsEmpty())
         {
             NumVertices = 0;

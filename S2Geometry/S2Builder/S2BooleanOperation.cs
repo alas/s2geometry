@@ -1979,7 +1979,7 @@ public class S2BooleanOperation
             if (region_id == index_crossings_first_region_id_) return true;
             if (index_crossings_first_region_id_ < 0)
             {
-                MyDebug.Assert(region_id == 0);  // For efficiency, not correctness.
+                MyDebug.Assert(region_id == 0, "For efficiency, not correctness.");
                 // TODO(ericv): This would be more efficient if VisitCrossingEdgePairs()
                 // returned the sign (+1 or -1) of the interior crossing, i.e.
                 // "int interior_crossing_sign" rather than "bool is_interior".
@@ -2086,7 +2086,7 @@ public class S2BooleanOperation
                 if (num_edges != b_shape.NumEdges()) return false;
                 if (dimension == 0)
                 {
-                    MyDebug.Assert(num_edges == num_chains);  // All chains are of length 1.
+                    MyDebug.Assert(num_edges == num_chains, "All chains are of length 1.");
                     continue;
                 }
                 for (int c = 0; c < num_chains; ++c)

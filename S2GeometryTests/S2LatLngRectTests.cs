@@ -542,7 +542,7 @@ public class S2LatLngRectTests
         S2LatLngRect r = RectFromDegrees(-20, -80, 10, 20);
         Encoder encoder = new();
         r.Encode(encoder);
-        var decoder = encoder.Decoder();
+        var decoder = encoder.GetDecoder();
         var (success, decoded_rect) = S2LatLngRect.Decode(decoder);
         Assert.True(success);
         Assert.Equal(r, decoded_rect);

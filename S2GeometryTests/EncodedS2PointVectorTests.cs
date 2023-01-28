@@ -419,10 +419,10 @@ public class EncodedS2PointVectorTests
         //auto aligned = make_unique<double[]>(encoder.length() / sizeof(double) + 1);
         //std::memcpy(aligned.get(), encoder.base(), encoder.length());
 
-        var decoder = encoder.Decoder();
-        EncodedS2PointVector actual = new();
-        Assert.True(actual.Init(decoder));
-        Assert.Equal(actual.Decode(), expected);
+        var decoder = encoder.GetDecoder();
+        var (success, actual) = EncodedS2PointVector.Init(decoder);
+        Assert.True(success);
+        Assert.Equal(actual!.Decode(), expected);
         return encoder.Length();
     }
 
@@ -464,16 +464,20 @@ public class EncodedS2PointVectorTests
         // Encode and decode from a vector<S2Point>.
         {
             EncodedS2PointVector.EncodeS2PointVector(pointsArray, hint, a_encoder);
-            var decoder = a_encoder.Decoder();
-            Assert.True(a_vector.Init(decoder));
+            var decoder = a_encoder.GetDecoder();
+            var (success, a_vector_) = EncodedS2PointVector.Init(decoder);
+            Assert.True(success);
+            a_vector = a_vector_!;
         }
         Assert.Equal(pointsList, a_vector.Decode());
 
         // Encode and decode from an EncodedS2PointVector.
         {
             a_vector.Encode(b_encoder);
-            var decoder = b_encoder.Decoder();
-            Assert.True(b_vector.Init(decoder));
+            var decoder = b_encoder.GetDecoder();
+            var (success, b_vector_) = EncodedS2PointVector.Init(decoder);
+            Assert.True(success);
+            b_vector = b_vector_!;
         }
         Assert.Equal(pointsList, b_vector.Decode());
     }

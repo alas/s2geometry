@@ -1,17 +1,17 @@
 ﻿namespace S2Geometry;
 
-internal class EncodedUintVectorTesting
+internal class EncodedUIntVectorTesting
 {
-    // TestEncodedUintVector
-    internal static void TestEncodedUintVector_16(UInt16[] expected, int expected_bytes)
+    // TestEncodedUIntVector
+    internal static void TestEncodedUIntVector_16(UInt16[] expected, int expected_bytes)
     {
         Encoder encoder = new();
-        EncodedUintVector.EncodeUintVector(expected, encoder);
+        EncodedUIntVector<UInt16>.EncodeUIntVector(expected, encoder);
         Assert.Equal(expected_bytes, encoder.Length());
-        var decoder = encoder.Decoder();
-        EncodedUintVector_UInt16 actual = new();
-        Assert.True(actual.Init(decoder));
-        Assert.Equal(actual.Decode(), expected);
+        var decoder = encoder.GetDecoder();
+        var (success, actual) = EncodedUIntVector<UInt16>.Init(decoder);
+        Assert.True(success);
+        Assert.Equal(actual!.Decode(), expected);
     }
 
     // TestLowerBound
@@ -46,25 +46,25 @@ internal class EncodedUintVectorTesting
         return values.ToArray();
     }
 
-    internal static EncodedUintVector_UInt16 MakeEncodedVector_16(UInt16[] values, Encoder encoder)
+    internal static EncodedUIntVector<UInt16> MakeEncodedVector_16(UInt16[] values, Encoder encoder)
     {
-        EncodedUintVector.EncodeUintVector(values, encoder);
-        var decoder = encoder.Decoder();
-        EncodedUintVector_UInt16 actual = new();
-        Assert.True(actual.Init(decoder));
-        return actual;
+        EncodedUIntVector<UInt16>.EncodeUIntVector(values, encoder);
+        var decoder = encoder.GetDecoder();
+        var (success, actual) = EncodedUIntVector<UInt16>.Init(decoder);
+        Assert.True(success);
+        return actual!;
     }
 
-    // TestEncodedUintVector
-    internal static void TestEncodedUintVector_32(UInt32[] expected, int expected_bytes)
+    // TestEncodedUIntVector
+    internal static void TestEncodedUIntVector_32(UInt32[] expected, int expected_bytes)
     {
         Encoder encoder = new();
-        EncodedUintVector.EncodeUintVector(expected, encoder);
+        EncodedUIntVector<UInt32>.EncodeUIntVector(expected, encoder);
         Assert.Equal(expected_bytes, encoder.Length());
-        var decoder = encoder.Decoder();
-        EncodedUintVector_UInt32 actual = new();
-        Assert.True(actual.Init(decoder));
-        Assert.Equal(actual.Decode(), expected);
+        var decoder = encoder.GetDecoder();
+        var (success, actual) = EncodedUIntVector<UInt32>.Init(decoder);
+        Assert.True(success);
+        Assert.Equal(actual!.Decode(), expected);
     }
 
     // TestLowerBound
@@ -99,25 +99,25 @@ internal class EncodedUintVectorTesting
         return values.ToArray();
     }
 
-    internal static EncodedUintVector_UInt32 MakeEncodedVector_32(UInt32[] values, Encoder encoder)
+    internal static EncodedUIntVector<UInt32> MakeEncodedVector_32(UInt32[] values, Encoder encoder)
     {
-        EncodedUintVector.EncodeUintVector(values, encoder);
-        var decoder = encoder.Decoder();
-        EncodedUintVector_UInt32 actual = new();
-        Assert.True(actual.Init(decoder));
-        return actual;
+        EncodedUIntVector<UInt32>.EncodeUIntVector(values, encoder);
+        var decoder = encoder.GetDecoder();
+        var (success, actual) = EncodedUIntVector<UInt32>.Init(decoder);
+        Assert.True(success);
+        return actual!;
     }
 
-    // TestEncodedUintVector
-    internal static void TestEncodedUintVector_64(UInt64[] expected, int expected_bytes)
+    // TestEncodedUIntVector
+    internal static void TestEncodedUIntVector_64(UInt64[] expected, int expected_bytes)
     {
         Encoder encoder = new();
-        EncodedUintVector.EncodeUintVector(expected, encoder);
+        EncodedUIntVector<UInt64>.EncodeUIntVector(expected, encoder);
         Assert.Equal(expected_bytes, encoder.Length());
-        var decoder = encoder.Decoder();
-        EncodedUintVector_UInt64 actual = new();
-        Assert.True(actual.Init(decoder));
-        Assert.Equal(actual.Decode(), expected);
+        var decoder = encoder.GetDecoder();
+        var (success, actual) = EncodedUIntVector<UInt64>.Init(decoder);
+        Assert.True(success);
+        Assert.Equal(actual!.Decode(), expected);
     }
 
     // TestLowerBound
@@ -152,12 +152,12 @@ internal class EncodedUintVectorTesting
         return values.ToArray();
     }
 
-    internal static EncodedUintVector_UInt64 MakeEncodedVector_64(UInt64[] values, Encoder encoder)
+    internal static EncodedUIntVector<UInt64> MakeEncodedVector_64(UInt64[] values, Encoder encoder)
     {
-        EncodedUintVector.EncodeUintVector(values, encoder);
-        var decoder = encoder.Decoder();
-        EncodedUintVector_UInt64 actual = new();
-        Assert.True(actual.Init(decoder));
-        return actual;
+        EncodedUIntVector<UInt64>.EncodeUIntVector(values, encoder);
+        var decoder = encoder.GetDecoder();
+        var (success, actual) = EncodedUIntVector<UInt64>.Init(decoder);
+        Assert.True(success);
+        return actual!;
     }
 }

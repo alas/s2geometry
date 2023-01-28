@@ -259,7 +259,7 @@ public class S2RegionTests
 
         Assert.Equal(golden, encoder.HexString());
 
-        var decoder = encoder.Decoder();
+        var decoder = encoder.GetDecoder();
         var (success, dst) = Region.Decode(decoder);
         Assert.True(success);
         return dst;

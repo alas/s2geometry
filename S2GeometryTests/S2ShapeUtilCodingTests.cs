@@ -15,7 +15,7 @@ public class S2ShapeUtilCodingTests
         var shape = new S2Polygon.Shape(polygon);
         Encoder encoder = new();
         Assert.True(S2ShapeUtilCoding.FastEncodeShape(shape, encoder));
-        var decoder = encoder.Decoder();
+        var decoder = encoder.GetDecoder();
         var shape2 = S2ShapeUtilCoding.FullDecodeShape(S2Shape.TypeTag.S2Polygon, decoder);
         Assert.True(shape.Polygon == ((S2Polygon.Shape)shape2).Polygon);
     }
@@ -29,7 +29,7 @@ public class S2ShapeUtilCodingTests
         Encoder encoder = new();
         Assert.True(S2ShapeUtilCoding.FastEncodeTaggedShapes(index, encoder));
         index.Encode(encoder);
-        var decoder = encoder.Decoder();
+        var decoder = encoder.GetDecoder();
         MutableS2ShapeIndex decoded_index = new();
         Assert.True(decoded_index.Init(decoder, S2ShapeUtilCoding.FullDecodeShapeFactory(decoder)));
         Assert.Equal(index.ToDebugString(), decoded_index.ToDebugString());
@@ -75,19 +75,19 @@ public class S2ShapeUtilCodingTests
         Assert.True(S2ShapeUtilCoding.FastEncodeShape(
             new S2PointVectorShape(ParsePointsOrDie("0:0, 0:1").ToArray()),
             encoder));
-        var decoder = encoder.Decoder();
+        var decoder = encoder.GetDecoder();
         var (success, encoded_shape) = EncodedS2PointVectorShape.Init(decoder);
 
         // Encode the encoded form.
         Encoder reencoder = new();
         Assert.True(S2ShapeUtilCoding.FastEncodeShape(encoded_shape!, reencoder));
-        var encoded_decoder = reencoder.Decoder();
+        var encoded_decoder = reencoder.GetDecoder();
 
         // We can decode the shape in either full or lazy form from the same bytes.
         var full_shape = S2ShapeUtilCoding.FullDecodeShape(S2PointVectorShape.kTypeTag, encoded_decoder);
         Assert.Equal(full_shape!.GetTypeTag(), S2PointVectorShape.kTypeTag);
 
-        encoded_decoder = reencoder.Decoder();
+        encoded_decoder = reencoder.GetDecoder();
         var lazy_shape = S2ShapeUtilCoding.LazyDecodeShape(S2PointVectorShape.kTypeTag, encoded_decoder);
         Assert.Equal(lazy_shape!.GetTypeTag(), S2PointVectorShape.kTypeTag);
     }

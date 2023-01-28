@@ -730,7 +730,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
             var batch = batches[i];
             if (mem_tracker_.IsActive())
             {
-                MyDebug.Assert(mem_tracker_.ClientUsageBytes == SpaceUsed());  // Invariant.
+                MyDebug.Assert(mem_tracker_.ClientUsageBytes == SpaceUsed(), "Invariant.");
             }
             Array6<List<FaceEdge>> all_edges = new (() => new());
 

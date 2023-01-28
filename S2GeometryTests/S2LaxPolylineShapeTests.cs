@@ -85,13 +85,13 @@ public class S2LaxPolylineShapeTests
 
         Encoder encoder=new();
         shape.Encode(encoder, CodingHint.COMPACT);
-        var a_decoder = encoder.Decoder();
+        var a_decoder = encoder.GetDecoder();
         var (a_success, a_shape) = EncodedS2LaxPolylineShape.Init(a_decoder);
         Assert.True(a_success);
 
         Encoder b_encoder=new();
         a_shape!.Encode(b_encoder, CodingHint.COMPACT);
-        var b_decoder = b_encoder.Decoder();
+        var b_decoder = b_encoder.GetDecoder();
         var (b_success, b_shape) = EncodedS2LaxPolylineShape.Init(b_decoder);
         Assert.True(b_success);
         S2ShapeUtil_Testing.ExpectEqual(shape, b_shape!);

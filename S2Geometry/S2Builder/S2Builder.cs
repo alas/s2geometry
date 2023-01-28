@@ -340,7 +340,7 @@ public partial class S2Builder
     // Adds the given edge to the current layer.
     public void AddEdge(S2Point v0, S2Point v1)
     {
-        MyDebug.Assert(layers_.Any()); // Call StartLayer before adding any edges
+        MyDebug.Assert(layers_.Any(), "Call StartLayer before adding any edges");
         if (v0 == v1 && (layer_options_.Last().DegenerateEdges_ ==
                          GraphOptions.DegenerateEdges.DISCARD))
         {
@@ -2540,7 +2540,7 @@ public partial class S2Builder
                         best = id;
                 }
             }
-            MyDebug.Assert(best >= 0);  // Because there is at least one outgoing edge.
+            MyDebug.Assert(best >= 0, "Because there is at least one outgoing edge.");
 
             foreach (var v in edge_sites[best])
             {

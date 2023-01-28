@@ -244,11 +244,11 @@ public class S2WindingOperation
             // s2builderutil::GetSnappedWindingDelta).
             S2Point ref_in = builder.InputEdge(ref_input_edge_id).V0;
             VertexId ref_v = S2BuilderUtil.SnappedWindingDelta.FindFirstVertexId(ref_input_edge_id, g_);
-            MyDebug.Assert(ref_v >= 0);  // No errors are possible.
+            MyDebug.Assert(ref_v >= 0, "No errors are possible.");
             CurrentRefPoint = g_.Vertex(ref_v);
             CurrentRefWinding = ref_winding_in + S2BuilderUtil.SnappedWindingDelta.GetSnappedWindingDelta(
                 ref_in, ref_v, ie => true, builder, g_, out S2Error error);
-            MyDebug.Assert(error.IsOk());  // No errors are possible.
+            MyDebug.Assert(error.IsOk(), "No errors are possible.");
 
             // Winding numbers at other points are computed by counting signed edge
             // crossings.  If we need to do this many times, it is worthwhile to build an
@@ -355,16 +355,13 @@ public class S2WindingOperation
         }
 
         // Layer interface:
-        public override GraphOptions GraphOptions_()
-        {
+        public override GraphOptions GraphOptions_() =>
             // The algorithm below has several steps with different graph requirements,
             // however the first step is to determine how snapping has affected the
             // winding number of the reference point.  This requires keeping all
             // degenerate edges and sibling pairs.  We also keep all duplicate edges
             // since this makes it easier to remove the reference edge.
-            return new GraphOptions(EdgeType.DIRECTED, DegenerateEdges.KEEP,
-                                DuplicateEdges.KEEP, SiblingPairs.KEEP);
-        }
+            new (EdgeType.DIRECTED, DegenerateEdges.KEEP, DuplicateEdges.KEEP, SiblingPairs.KEEP);
 
         public override void Build(Graph g, out S2Error error)
         {
@@ -379,7 +376,7 @@ public class S2WindingOperation
             // this edge removed (since it should not be emitted to the result layer).
             WindingOracle oracle = new(op_.ref_input_edge_id_, op_.ref_winding_in_,
                                  op_.builder_, g);
-            //Assert.True(error.IsOk());  // No errors are possible.
+            //MyDebug.Assert(error.IsOk(), "No errors are possible.");
 
             // Now that we have computed the change in winding number, we create a new
             // graph with the reference edge removed.  Note that S2MemoryTracker errors
@@ -557,9 +554,8 @@ public class S2WindingOperation
             throw new Exception("Shoul not be possible to get here");
         }
 
-        private bool MatchesRule(int winding)
-        {
-            return op_.rule_ switch
+        private bool MatchesRule(int winding) =>
+            op_.rule_ switch
             {
                 WindingRule.POSITIVE => winding > 0,
                 WindingRule.NEGATIVE => winding < 0,
@@ -567,7 +563,6 @@ public class S2WindingOperation
                 WindingRule.ODD => (winding & 1) != 0,
                 _ => throw new Exception("Shoul not be possible to get here"),
             };
-        }
 
         private bool MatchesDegeneracy(int winding, int winding_minus, int winding_plus)
         {

@@ -50,10 +50,10 @@ public class S2LaxPolylineShape : S2Shape, IInitEncoder<S2LaxPolylineShape>
     // name is chosen for compatibility with EncodedS2LaxPolylineShape below.)
     public static (bool, S2LaxPolylineShape?) Init(Decoder decoder)
     {
-        EncodedS2PointVector vertices = new();
-        if (!vertices.Init(decoder)) return (false, null);
+        var (success, vertices) = EncodedS2PointVector.Init(decoder);
+        if (!success) return (false, null);
 
-        var mumVertices = vertices.Count();
+        var mumVertices = vertices!.Count();
         var verticesArr = new S2Point[vertices.Count()];
         for (int i = 0; i < mumVertices; ++i)
         {
@@ -74,14 +74,14 @@ public class S2LaxPolylineShape : S2Shape, IInitEncoder<S2LaxPolylineShape>
     public sealed override int Dimension() => 1;
     public sealed override ReferencePoint GetReferencePoint() => ReferencePoint.FromContained(false);
     public sealed override int NumChains() => Math.Min(1, NumEdges());
-    public sealed override Chain GetChain(int i) => new Chain(0, NumEdges());
+    public sealed override Chain GetChain(int i) => new(0, NumEdges());
     public sealed override Edge ChainEdge(int i, int j)
     {
         MyDebug.Assert(i == 0);
         MyDebug.Assert(j < NumEdges());
         return new Edge(Vertex(j), Vertex(j + 1));
     }
-    public sealed override ChainPosition GetChainPosition(int e) => new ChainPosition(0, e);
+    public sealed override ChainPosition GetChainPosition(int e) => new(0, e);
 
     // Define as enum so we don't have to declare storage.
     // TODO(user, b/210097200): Use static constexpr when C++17 is allowed
@@ -97,20 +97,20 @@ public class S2LaxPolylineShape : S2Shape, IInitEncoder<S2LaxPolylineShape>
 // into a large contiguous buffer that contains other encoded data as well.
 public class EncodedS2LaxPolylineShape : S2Shape, IInitEncoder<EncodedS2LaxPolylineShape>
 {
-    private readonly EncodedS2PointVector vertices_;
+    public EncodedS2PointVector vertices_ { private get; init; }
 
     // Constructs an uninitialized object; requires Init() to be called.
-    public EncodedS2LaxPolylineShape() { vertices_ = new EncodedS2PointVector(); }
+    public EncodedS2LaxPolylineShape(EncodedS2PointVector vertices) { vertices_ = vertices; }
 
     // Initializes an EncodedS2LaxPolylineShape.
     //
     // REQUIRES: The Decoder data buffer must outlive this object.
     public static (bool, EncodedS2LaxPolylineShape?) Init(Decoder decoder)
     {
-        EncodedS2LaxPolylineShape shape = new();
-        if (!shape.vertices_.Init(decoder)) return (false, null);
+        var (success, vertices) = EncodedS2PointVector.Init(decoder);
+        if (!success) return (false, null);
 
-        return (true, shape);
+        return (true, new(vertices!));
     }
 
     // Appends an encoded representation of the S2LaxPolylineShape to "encoder".

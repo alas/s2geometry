@@ -345,7 +345,7 @@ public static class S2Pred
     public static Excluded GetVoronoiSiteExclusion(S2Point a, S2Point b, S2Point x0, S2Point x1, S1ChordAngle r)
     {
         MyDebug.Assert(r < S1ChordAngle.Right);
-        MyDebug.Assert(CompareDistances(x0, a, b) < 0);  // (implies a != b)
+        MyDebug.Assert(CompareDistances(x0, a, b) < 0, "(implies a != b)");
         MyDebug.Assert(CompareEdgeDistance(a, x0, x1, r) <= 0);
         MyDebug.Assert(CompareEdgeDistance(b, x0, x1, r) <= 0);
         // Check that the edge does not consist of antipodal points.  (This catches
@@ -677,7 +677,7 @@ public static class S2Pred
         if (det_sign != 0) return det_sign;
         // The following test is listed in the paper, but it is redundant because
         // the previous tests guarantee that C == (0, 0, 0).
-        MyDebug.Assert(0 == (c[1] * a[2] - c[2] * a[1]).Sgn());  // db[0]
+        MyDebug.Assert(0 == (c[1] * a[2] - c[2] * a[1]).Sgn(), "db[0]");
 
         det_sign = (a[0] * b[1] - a[1] * b[0]).Sgn();     // dc[2]
         if (det_sign != 0) return det_sign;
@@ -874,7 +874,7 @@ public static class S2Pred
 
     private static int TriageCompareSin2Distance(S2Point x, S2Point y, double r2)
     {
-        MyDebug.Assert(r2 < 2.0);  // Only valid for distance limits < 90 degrees.
+        MyDebug.Assert(r2 < 2.0, "Only valid for distance limits < 90 degrees.");
 
         double sin2_xy = GetSin2Distance(x, y, out var sin2_xy_error);
         double sin2_r = r2 * (1 - 0.25 * r2);
@@ -1202,7 +1202,7 @@ public static class S2Pred
         // SymbolicEdgeCircumcenterSign.)
         if (ArePointsLinearlyDependent(x0, x1))
         {
-            MyDebug.Assert(x0.DotProd(x1) > 0);  // Antipodal edges not allowed.
+            MyDebug.Assert(x0.DotProd(x1) > 0, "Antipodal edges not allowed.");
             return 0;
         }
         // The simplest predicate for testing whether the sign is positive is
@@ -1628,8 +1628,8 @@ public static class S2Pred
             int ca = ExactCompareDistance(a, x0, r90);
             int cb = ExactCompareDistance(b, x1, r90);
             if (ca < 0 && cb < 0) return Excluded.NEITHER;
-            MyDebug.Assert(ca != 0 && cb != 0);  // This is guaranteed since d < 0.
-            MyDebug.Assert(ca < 0 || cb < 0);    // At least one site must be kept.
+            MyDebug.Assert(ca != 0 && cb != 0, "This is guaranteed since d < 0.");
+            MyDebug.Assert(ca < 0 || cb < 0, "At least one site must be kept.");
             return (ca > 0) ? Excluded.FIRST : Excluded.SECOND;
         }
 
