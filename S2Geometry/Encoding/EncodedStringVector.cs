@@ -43,7 +43,7 @@ public class StringVectorEncoder
         offsets_.Add((ulong)data_.Length());
         // We don't encode the first element of "offsets_", which is always zero.
         var newarr = offsets_.Skip(1).Take(offsets_.Count - 1).ToArray();
-        EncodedUIntVector2<ulong>.EncodeUIntVector(newarr, encoder);
+        EncodedUIntVector<ulong>.EncodeUIntVector(newarr, encoder);
         encoder.Ensure(data_.Length());
         encoder.PutEncoder(data_);
     }
@@ -79,7 +79,7 @@ public class StringVectorEncoder
 // the data structure is actually used.
 public class EncodedStringVector : IInitEncoder<EncodedStringVector>
 {
-    public EncodedUIntVector2<ulong> offsets_ { private get; init; }
+    public EncodedUIntVector<ulong> offsets_ { private get; init; }
 
     public byte[] data_ { private get; init; }
 
@@ -92,7 +92,7 @@ public class EncodedStringVector : IInitEncoder<EncodedStringVector>
     // REQUIRES: The Decoder data buffer must outlive this object.
     public static (bool, EncodedStringVector?) Init(Decoder decoder)
     {
-        var (success, offsets) = EncodedUIntVector2<ulong>.Init(decoder);
+        var (success, offsets) = EncodedUIntVector<ulong>.Init(decoder);
         if (!success) return (false, null);
 
         var data_ = decoder.Buffer;

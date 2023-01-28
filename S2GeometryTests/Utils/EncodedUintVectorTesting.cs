@@ -6,10 +6,10 @@ internal class EncodedUIntVectorTesting
     internal static void TestEncodedUIntVector_16(UInt16[] expected, int expected_bytes)
     {
         Encoder encoder = new();
-        EncodedUIntVector2<UInt16>.EncodeUIntVector(expected, encoder);
+        EncodedUIntVector<UInt16>.EncodeUIntVector(expected, encoder);
         Assert.Equal(expected_bytes, encoder.Length());
         var decoder = encoder.GetDecoder();
-        var (success, actual) = EncodedUIntVector2<UInt16>.Init(decoder);
+        var (success, actual) = EncodedUIntVector<UInt16>.Init(decoder);
         Assert.True(success);
         Assert.Equal(actual!.Decode(), expected);
     }
@@ -46,11 +46,11 @@ internal class EncodedUIntVectorTesting
         return values.ToArray();
     }
 
-    internal static EncodedUIntVector2<UInt16> MakeEncodedVector_16(UInt16[] values, Encoder encoder)
+    internal static EncodedUIntVector<UInt16> MakeEncodedVector_16(UInt16[] values, Encoder encoder)
     {
-        EncodedUIntVector2<UInt16>.EncodeUIntVector(values, encoder);
+        EncodedUIntVector<UInt16>.EncodeUIntVector(values, encoder);
         var decoder = encoder.GetDecoder();
-        var (success, actual) = EncodedUIntVector2<UInt16>.Init(decoder);
+        var (success, actual) = EncodedUIntVector<UInt16>.Init(decoder);
         Assert.True(success);
         return actual!;
     }
@@ -59,10 +59,10 @@ internal class EncodedUIntVectorTesting
     internal static void TestEncodedUIntVector_32(UInt32[] expected, int expected_bytes)
     {
         Encoder encoder = new();
-        EncodedUIntVector2<UInt32>.EncodeUIntVector(expected, encoder);
+        EncodedUIntVector<UInt32>.EncodeUIntVector(expected, encoder);
         Assert.Equal(expected_bytes, encoder.Length());
         var decoder = encoder.GetDecoder();
-        var (success, actual) = EncodedUIntVector2<UInt32>.Init(decoder);
+        var (success, actual) = EncodedUIntVector<UInt32>.Init(decoder);
         Assert.True(success);
         Assert.Equal(actual!.Decode(), expected);
     }
@@ -99,11 +99,11 @@ internal class EncodedUIntVectorTesting
         return values.ToArray();
     }
 
-    internal static EncodedUIntVector2<UInt32> MakeEncodedVector_32(UInt32[] values, Encoder encoder)
+    internal static EncodedUIntVector<UInt32> MakeEncodedVector_32(UInt32[] values, Encoder encoder)
     {
-        EncodedUIntVector2<UInt32>.EncodeUIntVector(values, encoder);
+        EncodedUIntVector<UInt32>.EncodeUIntVector(values, encoder);
         var decoder = encoder.GetDecoder();
-        var (success, actual) = EncodedUIntVector2<UInt32>.Init(decoder);
+        var (success, actual) = EncodedUIntVector<UInt32>.Init(decoder);
         Assert.True(success);
         return actual!;
     }
@@ -112,10 +112,10 @@ internal class EncodedUIntVectorTesting
     internal static void TestEncodedUIntVector_64(UInt64[] expected, int expected_bytes)
     {
         Encoder encoder = new();
-        EncodedUIntVector2<UInt64>.EncodeUIntVector(expected, encoder);
+        EncodedUIntVector<UInt64>.EncodeUIntVector(expected, encoder);
         Assert.Equal(expected_bytes, encoder.Length());
         var decoder = encoder.GetDecoder();
-        var (success, actual) = EncodedUIntVector2<UInt64>.Init(decoder);
+        var (success, actual) = EncodedUIntVector<UInt64>.Init(decoder);
         Assert.True(success);
         Assert.Equal(actual!.Decode(), expected);
     }
@@ -152,11 +152,11 @@ internal class EncodedUIntVectorTesting
         return values.ToArray();
     }
 
-    internal static EncodedUIntVector2<UInt64> MakeEncodedVector_64(UInt64[] values, Encoder encoder)
+    internal static EncodedUIntVector<UInt64> MakeEncodedVector_64(UInt64[] values, Encoder encoder)
     {
-        EncodedUIntVector2<UInt64>.EncodeUIntVector(values, encoder);
+        EncodedUIntVector<UInt64>.EncodeUIntVector(values, encoder);
         var decoder = encoder.GetDecoder();
-        var (success, actual) = EncodedUIntVector2<UInt64>.Init(decoder);
+        var (success, actual) = EncodedUIntVector<UInt64>.Init(decoder);
         Assert.True(success);
         return actual!;
     }
