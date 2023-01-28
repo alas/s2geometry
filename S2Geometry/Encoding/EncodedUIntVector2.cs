@@ -20,7 +20,7 @@ namespace S2Geometry;
 using System;
 using System.Numerics;
 
-public class EncodedUIntVector<T> where T : IUnsignedNumber<T>, IBinaryInteger<T>, IMinMaxValue<T>, IBitwiseOperators<T, T, T>//, IShiftOperators<T, T, T>
+public class EncodedUIntVector2<T> where T : IUnsignedNumber<T>, IBinaryInteger<T>, IMinMaxValue<T>, IBitwiseOperators<T, T, T>//, IShiftOperators<T, T, T>
 {
     // Returns the size of the original vector.
     public int Count { get; }
@@ -31,7 +31,7 @@ public class EncodedUIntVector<T> where T : IUnsignedNumber<T>, IBinaryInteger<T
 
     private byte Len { get; }
 
-    static EncodedUIntVector()
+    static EncodedUIntVector2()
     {
         MyDebug.Assert(typeof(T) is IUnsignedNumber<T>, "Unsupported signed integer");
         MyDebug.Assert((typeof(T).SizeOf() & 0xe) != 0, "Unsupported integer length");
@@ -42,7 +42,7 @@ public class EncodedUIntVector<T> where T : IUnsignedNumber<T>, IBinaryInteger<T
     /// 
     /// Note(Alas): added the parameters to this constructor, Init does not need to be called
     /// </summary>
-    public EncodedUIntVector(int count, byte[] data, int offset, byte len)
+    public EncodedUIntVector2(int count, byte[] data, int offset, byte len)
     {
         Count = count;
         Data = data;
@@ -91,7 +91,7 @@ public class EncodedUIntVector<T> where T : IUnsignedNumber<T>, IBinaryInteger<T
     ///
     /// REQUIRES: The Decoder data buffer must outlive this object.
     /// </summary>
-    public static (bool success, EncodedUIntVector<T>? vector) Init(Decoder decoder)
+    public static (bool success, EncodedUIntVector2<T>? vector) Init(Decoder decoder)
     {
 
         if (!decoder.TryGetVarUInt64(out var size_len)) return (false, null);

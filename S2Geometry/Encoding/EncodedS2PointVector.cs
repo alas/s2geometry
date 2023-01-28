@@ -344,7 +344,7 @@ public class EncodedS2PointVector
 
         // Next we encode 0-7 bytes of "base".
         int base_shift = BaseShift(level, base_bits);
-        EncodedUIntVector<byte>.EncodeUIntWithLength((byte)(base_ >> base_shift), base_bytes, encoder);
+        EncodedUIntVector2<byte>.EncodeUIntWithLength((byte)(base_ >> base_shift), base_bytes, encoder);
 
         // Now we encode the contents of each block.
         var blocks = new StringVectorEncoder();
@@ -391,7 +391,7 @@ public class EncodedS2PointVector
             MyDebug.Assert((offset == 0) == (offset_bytes == 0));
             if (offset > 0)
             {
-                EncodedUIntVector<ulong>.EncodeUIntWithLength(offset >> offset_shift, offset_bytes, block);
+                EncodedUIntVector2<ulong>.EncodeUIntWithLength(offset >> offset_shift, offset_bytes, block);
             }
 
             // Encode the deltas, and also gather any exceptions present.
@@ -423,7 +423,7 @@ public class EncodedS2PointVector
                     block.RemoveLast(1);
                     delta = (delta << 4) | (uint)(last_byte & 0xf);
                 }
-                EncodedUIntVector<ulong>.EncodeUIntWithLength(delta, delta_bytes, block);
+                EncodedUIntVector2<ulong>.EncodeUIntWithLength(delta, delta_bytes, block);
             }
             // Append any exceptions to the end of the block.
             if (num_exceptions > 0)
@@ -484,7 +484,7 @@ public class EncodedS2PointVector
         level = (byte)(header2 >> 3);
 
         // Decode the base value (if any).
-        if (!EncodedUIntVector<ulong>.DecodeUIntWithLength(base_bytes, decoder, out ulong base_)) return false;
+        if (!EncodedUIntVector2<ulong>.DecodeUIntWithLength(base_bytes, decoder, out ulong base_)) return false;
         this.base_ = base_ << BaseShift(level, base_bytes << 3);
 
         // Initialize the vector of encoded blocks.
@@ -508,14 +508,14 @@ public class EncodedS2PointVector
 
         // Decode the offset for this block.
         int offset_shift = (delta_nibbles - overlap_nibbles) << 2;
-        UInt64 offset = EncodedUIntVector<ulong>.GetUIntWithLength(bytearr, offsetbytearr, offset_bytes) << offset_shift;
+        UInt64 offset = EncodedUIntVector2<ulong>.GetUIntWithLength(bytearr, offsetbytearr, offset_bytes) << offset_shift;
         offsetbytearr += offset_bytes;
 
         // Decode the delta for the requested value.
         int delta_nibble_offset = (i & (kBlockSize - 1)) * delta_nibbles;
         int delta_bytes = (delta_nibbles + 1) >> 1;
         var delta_offset = offsetbytearr + (delta_nibble_offset >> 1);
-        UInt64 delta = EncodedUIntVector<ulong>.GetUIntWithLength(bytearr, delta_offset, delta_bytes);
+        UInt64 delta = EncodedUIntVector2<ulong>.GetUIntWithLength(bytearr, delta_offset, delta_bytes);
         delta >>= (delta_nibble_offset & 1) << 2;
         delta &= BitMask(delta_nibbles << 2);
 

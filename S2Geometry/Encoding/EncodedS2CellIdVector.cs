@@ -133,7 +133,7 @@ public class EncodedS2CellIdVector
         }
         // Encode the "base_len" most-significant bytes of "base".
         UInt64 base_bytes = e_base >> (64 - 8 * Math.Max(1, e_base_len));
-        EncodedUIntVector<ulong>.EncodeUIntWithLength(base_bytes, e_base_len, encoder);
+        EncodedUIntVector2<ulong>.EncodeUIntWithLength(base_bytes, e_base_len, encoder);
 
         // Finally, encode the vector of deltas.
         var deltas = new UInt64[v.Count];
@@ -142,7 +142,7 @@ public class EncodedS2CellIdVector
             var cellid = v[i];
             deltas[i] = (cellid.Id - e_base) >> e_shift;
         }
-        EncodedUIntVector<ulong>.EncodeUIntVector(deltas, encoder);
+        EncodedUIntVector2<ulong>.EncodeUIntVector(deltas, encoder);
     }
 
     // Initializes the EncodedS2CellIdVector.
@@ -165,7 +165,7 @@ public class EncodedS2CellIdVector
 
         // Decode the "base_len" most-significant bytes of "base".
         int base_len = code_plus_len & 7;
-        if (!EncodedUIntVector<ulong>.DecodeUIntWithLength(base_len, decoder, out base_)) return false;
+        if (!EncodedUIntVector2<ulong>.DecodeUIntWithLength(base_len, decoder, out base_)) return false;
         base_ <<= 64 - 8 * Math.Max(1, base_len);
 
         // Invert the encoding of "shift_code" described above.
@@ -178,7 +178,7 @@ public class EncodedS2CellIdVector
         {
             shift_ = (byte)(2 * shift_code);
         }
-        var (success, deltas) = EncodedUIntVector<ulong>.Init(decoder);
+        var (success, deltas) = EncodedUIntVector2<ulong>.Init(decoder);
         if (success) deltas_ = deltas;
         return success;
     }
@@ -218,7 +218,7 @@ public class EncodedS2CellIdVector
     }
 
     // Values are decoded as (base_ + (deltas_[i] << shift_)).
-    private EncodedUIntVector<ulong> deltas_;
+    private EncodedUIntVector2<ulong> deltas_;
     private UInt64 base_;
     private byte shift_;
 }

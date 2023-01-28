@@ -8,7 +8,7 @@ public class EncodedUintVectorTests
     {
         // Make sure that this class is compact since it is extensively used.
         // 16 for 64-bit, 12 for 32-bit.
-        Assert.True(typeof(EncodedUIntVector<UInt64>).SizeOf() <= 16);
+        Assert.True(typeof(EncodedUIntVector2<UInt64>).SizeOf() <= 16);
     }
 
     [Fact]
@@ -81,7 +81,7 @@ public class EncodedUintVectorTests
         a.Encode(b_encoder);
         var decoder = b_encoder.GetDecoder();
 
-        var (success, v2) = EncodedUIntVector<UInt64>.Init(decoder);
+        var (success, v2) = EncodedUIntVector2<UInt64>.Init(decoder);
         Assert.True(success);
 
         Assert.Equal(v2!.Decode(), values);
