@@ -130,10 +130,7 @@ public readonly record struct R2Rect
         // Twiddle bits to return the points in CCW order (lower left, lower right,
         // upper right, upper left).
         var j = (k >> 1) & 1;
-        var l = j ^ (k & 1);
-        var vx = l == 0 ? X.Lo : X.Hi;
-        var vy = j == 0 ? Y.Lo : Y.Hi;
-        return new R2Point(vx, vy);
+        return GetVertex(j ^ (k & 1), j);
     }
 
     /// <summary>
@@ -144,9 +141,7 @@ public readonly record struct R2Rect
     /// </summary>
     public R2Point GetVertex(int i, int j)
     {
-        var vx = i == 0 ? X.Lo : X.Hi;
-        var vy = j == 0 ? Y.Lo : Y.Hi;
-        return new R2Point(vx, vy);
+        return new R2Point(X[i], Y[j]);
     }
 
     /// <summary>

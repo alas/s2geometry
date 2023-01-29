@@ -197,7 +197,7 @@ public readonly record struct S2R2Rect(R2Rect Rect) : IS2Region<S2R2Rect>
         S2Cap cap = S2Cap.FromPoint(ToS2Point(Center()));
         for (int k = 0; k < 4; ++k)
         {
-            cap.AddPoint(ToS2Point(Vertex(k)));
+            cap = cap.AddPoint(ToS2Point(Vertex(k)));
         }
         return cap;
     }

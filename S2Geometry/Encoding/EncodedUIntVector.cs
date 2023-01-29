@@ -33,7 +33,7 @@ public class EncodedUIntVector<T> where T : IUnsignedNumber<T>, IBinaryInteger<T
 
     static EncodedUIntVector()
     {
-        MyDebug.Assert(typeof(T) is IUnsignedNumber<T>, "Unsupported signed integer");
+        MyDebug.Assert(typeof(T).IsAssignableTo(typeof(IUnsignedNumber<T>)), "Unsupported signed integer");
         MyDebug.Assert((typeof(T).SizeOf() & 0xe) != 0, "Unsupported integer length");
     }
 
@@ -120,7 +120,7 @@ public class EncodedUIntVector<T> where T : IUnsignedNumber<T>, IBinaryInteger<T
     /// </summary>
     public static void EncodeUIntWithLength(T value, int length, Encoder encoder)
     {
-        //MyDebug.Assert(value is IUnsignedNumber<T>, "Unsupported signed integer");
+        //MyDebug.Assert(typeof(T).IsAssignableTo(typeof(IUnsignedNumber<T>)), "Unsupported signed integer");
         //MyDebug.Assert((typeof(T).SizeOf() & 0xe) != 0, "Unsupported integer length");
         MyDebug.Assert(length >= 0 && length <= typeof(T).SizeOf());
         MyDebug.Assert(encoder.Avail() >= length);
@@ -161,7 +161,7 @@ public class EncodedUIntVector<T> where T : IUnsignedNumber<T>, IBinaryInteger<T
     public static T GetUIntWithLength(byte[] ptr, int index, int length)
     {
         var size = typeof(T).SizeOf();
-        //MyDebug.Assert(value is IUnsignedNumber<T>, "Unsupported signed integer");
+        //MyDebug.Assert(typeof(T).IsAssignableTo(typeof(IUnsignedNumber<T>)), "Unsupported signed integer");
         //MyDebug.Assert((size & 0xe) != 0, "Unsupported integer length");
         MyDebug.Assert(length >= 0 && length <= size);
 

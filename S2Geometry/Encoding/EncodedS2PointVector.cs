@@ -352,7 +352,7 @@ public class EncodedS2PointVector
 
         // Next we encode 0-7 bytes of "base".
         int base_shift = BaseShift(level, base_bits);
-        EncodedUIntVector<byte>.EncodeUIntWithLength((byte)(base_ >> base_shift), base_bytes, encoder);
+        EncodedUIntVector<uint>.EncodeUIntWithLength((byte)(base_ >> base_shift), base_bytes, encoder);
 
         // Now we encode the contents of each block.
         var blocks = new StringVectorEncoder();
