@@ -15,7 +15,13 @@ namespace S2Geometry;
 
 public class StringVectorEncoder
 {
-    public StringVectorEncoder() => data_ = new Encoder();
+    // A vector consisting of the starting offset of each string in the
+    // encoder's data buffer, plus a final entry pointing just past the end of
+    // the last string.
+    private readonly List<UInt64> offsets_ = new();
+    private readonly Encoder data_ = new();
+
+    public StringVectorEncoder() { }
 
     // Adds a string to the encoded vector.
     public void Add(string str)
@@ -59,12 +65,6 @@ public class StringVectorEncoder
         foreach (var str in v) string_vector.Add(str);
         string_vector.Encode(encoder);
     }
-
-    // A vector consisting of the starting offset of each string in the
-    // encoder's data buffer, plus a final entry pointing just past the end of
-    // the last string.
-    private readonly List<UInt64> offsets_ = new();
-    private readonly Encoder data_;
 }
 
 // This class represents an encoded vector of strings.  Values are decoded
@@ -79,12 +79,9 @@ public class StringVectorEncoder
 // the data structure is actually used.
 public class EncodedStringVector : IInitEncoder<EncodedStringVector>
 {
-    public EncodedUIntVector<ulong> offsets_ { private get; init; }
-
-    public byte[] data_ { private get; init; }
-
-    // Constructs an uninitialized object; requires Init() to be called.
-    public EncodedStringVector(byte[] data) => data_ = data;
+    public required EncodedUIntVector<ulong> Offsets { private get; init; }
+    public required byte[] Data { private get; init; }
+    public required int Offset { private get; init; }
 
     // Initializes the EncodedStringVector.  Returns false on errors, leaving
     // the vector in an unspecified state.
@@ -96,14 +93,20 @@ public class EncodedStringVector : IInitEncoder<EncodedStringVector>
         if (!success) return (false, null);
 
         var data_ = decoder.Buffer;
-        //var offset = decoder.offset;
+        var offset = decoder.Offset;
         if (offsets!.Count > 0)
         {
             var length = (int)offsets[^1];
             if (decoder.Avail() < length) return (false, null);
             decoder.Skip(length);
         }
-        EncodedStringVector shape = new(data_);
+
+        EncodedStringVector shape = new()
+        {
+            Data = data_,
+            Offset = offset,
+            Offsets = offsets,
+        };
 
         return (true, shape);
     }
@@ -113,25 +116,23 @@ public class EncodedStringVector : IInitEncoder<EncodedStringVector>
     {
         //offsets_ = null;
         //data_ = Array.Empty<byte>();
+        //Offset = 0;
     }
 
     // Returns the size of the original vector.
-    public int Size()
-    {
-        return offsets_.Count;
-    }
+    public int Count() => Offsets.Count;
 
     // Returns the string at the given index.
     public string this[int i]
     {
         get
         {
-            var start = (i == 0) ? 0 : (int)offsets_[i - 1];
-            var limit = (int)offsets_[i];
+            var start = (i == 0) ? 0 : (int)Offsets[i - 1];
+            var limit = (int)Offsets[i];
             var countBytes = limit - start;
             var count = countBytes / sizeof(char);
             var buff = new char[count];
-            Buffer.BlockCopy(data_!, start, buff, 0, countBytes);
+            Buffer.BlockCopy(Data!, start, buff, 0, countBytes);
             return new string(buff);
         }
     }
@@ -139,17 +140,17 @@ public class EncodedStringVector : IInitEncoder<EncodedStringVector>
     // Returns a Decoder initialized with the string at the given index.
     public Decoder GetDecoder(int i)
     {
-        var start = (i == 0) ? 0 : (int)offsets_[i - 1];
-        var limit = (int)offsets_[i];
-        return new Decoder(data_, start, limit - start);
+        var start = (i == 0) ? 0 : (int)Offsets[i - 1];
+        var limit = (int)Offsets[i];
+        return new Decoder(Data, start, limit - start);
     }
 
     // Returns a pointer to the start of the string at the given index.  This is
     // faster than operator[] but returns an unbounded string.
     public (byte[] buffer, int offset) GetStart(int i)
     {
-        UInt64 start = (i == 0) ? 0 : offsets_[i - 1];
-        return (data_!, (int)start);
+        UInt64 start = (i == 0) ? 0 : Offsets[i - 1];
+        return (Data!, (int)start);
     }
 
     // Returns the entire vector of original strings.  Requires that the
@@ -157,7 +158,7 @@ public class EncodedStringVector : IInitEncoder<EncodedStringVector>
     // no longer needed.
     public string[] Decode()
     {
-        int n = Size();
+        int n = Count();
         var result = new string[n];
         for (int i = 0; i < n; ++i)
         {
@@ -169,13 +170,13 @@ public class EncodedStringVector : IInitEncoder<EncodedStringVector>
     // The encoding must be identical to StringVectorEncoder.Encode().
     public void Encode(Encoder encoder, CodingHint hint = CodingHint.COMPACT)
     {
-        offsets_.Encode(encoder);
+        Offsets.Encode(encoder);
 
-        if (offsets_.Count > 0)
+        if (Offsets.Count > 0)
         {
-            var length = (int)offsets_[^1];
+            var length = (int)Offsets[^1];
             encoder.Ensure(length);
-            encoder.PutN(data_, length);
+            encoder.PutN(Data, length);
         }
     }
 }

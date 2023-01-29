@@ -13,6 +13,8 @@ namespace S2Geometry;
 
 public class EncodedS2PointVector
 {
+    #region Fields and Constants
+
     // To save space (especially for vectors of length 0, 1, and 2), the encoding
     // format is encoded in the low-order 3 bits of the vector size.  Up to 7
     // encoding formats are supported (only 2 are currently defined).  Additional
@@ -34,13 +36,20 @@ public class EncodedS2PointVector
     // S2Point) rather than as an S2CellId.
     public const UInt64 kException = ~0UL;
 
-    // Constructs an uninitialized object; requires Init() to be called.
-    public EncodedS2PointVector() { }
+    public required Format Format_ { private get; init; }
+    private UInt32 size_;
+    private S2Point[]? points;
+    private EncodedStringVector? blocks;
+    private UInt64 base_;
+    private byte level;
+    private bool have_exceptions;
+
+    #endregion
 
     // Initializes the EncodedS2PointVector.
     //
     // REQUIRES: The Decoder data buffer must outlive this object.
-    public static (bool, EncodedS2PointVector?) Init(Decoder decoder)
+    public static (bool Success, EncodedS2PointVector? Shape) Init(Decoder decoder)
     {
         if (decoder.Avail() < 1) return (false, null);
 
@@ -48,15 +57,14 @@ public class EncodedS2PointVector
         // Init functions will do that.
         var res = new EncodedS2PointVector
         {
-            format_ = (Format)(decoder.Peek8() & kEncodingFormatMask),
+            Format_ = (Format)(decoder.Peek8() & kEncodingFormatMask)
         };
-        var success = res.format_ switch
+        var success = res.Format_ switch
         {
             Format.UNCOMPRESSED => res.InitUncompressedFormat(decoder),
             Format.CELL_IDS => res.InitCellIdsFormat(decoder),
             _ => false,
         };
-        ;
         if (!success) return (false, null);
 
         return (true, res);
@@ -70,7 +78,7 @@ public class EncodedS2PointVector
     {
         get
         {
-            return format_ switch
+            return Format_ switch
             {
                 Format.UNCOMPRESSED => points[i],
                 Format.CELL_IDS => DecodeCellIdsFormat(i),
@@ -93,7 +101,7 @@ public class EncodedS2PointVector
     public void Encode(Encoder encoder)
     {
         // The encoding must be identical to EncodeS2PointVector().
-        switch (format_)
+        switch (Format_)
         {
             case Format.UNCOMPRESSED:
                 EncodeS2PointVectorFast(points, encoder);
@@ -103,7 +111,7 @@ public class EncodedS2PointVector
                 EncodeS2PointVectorCompact(Decode(), encoder);
                 break;
             default:
-                throw new ApplicationException("Unknown Format: " + (int)format_);
+                throw new ApplicationException("Unknown Format: " + (int)Format_);
         }
     }
 
@@ -492,7 +500,7 @@ public class EncodedS2PointVector
         if (!success) return false;
 
         blocks = shape!;
-        size_ = (UInt32)(kBlockSize * (blocks.Size() - 1) + last_block_count);
+        size_ = (UInt32)(kBlockSize * (blocks.Count() - 1) + last_block_count);
         return true;
     }
     private S2Point DecodeCellIdsFormat(int i)
@@ -870,14 +878,6 @@ public class EncodedS2PointVector
         return new BlockCode(delta_bits, offset_bits, overlap_bits);
     }
 
-    private Format format_;
-    private UInt32 size_;
-    private S2Point[]? points;
-    private EncodedStringVector? blocks;
-    private UInt64 base_;
-    private byte level;
-    private bool have_exceptions;
-
     // TODO(ericv): Use atomic_flag to cache the last point decoded in
     // a thread-safe way.  This reduces benchmark times for actual polygon
     // operations (e.g. S2ClosestEdgeQuery) by about 15%.
@@ -891,7 +891,7 @@ public class EncodedS2PointVector
     // TODO(ericv): Once additional formats have been implemented, consider
     // using variant<> instead.  It's unclear whether this would have
     // better or worse performance than the current approach.
-    private enum Format : byte
+    public enum Format : byte
     {
         UNCOMPRESSED = 0,
         CELL_IDS = 1,

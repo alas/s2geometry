@@ -172,7 +172,7 @@ internal static class S2Testing
         internal static double RandDouble()
         {
             int NUM_BITS = 53;
-            return MathUtils.Ldexp(GetBits(NUM_BITS), -NUM_BITS);
+            return MathUtils.Ldexp(GetBits(NUM_BITS) * 1.0, -NUM_BITS);
         }
 
         /// <summary>

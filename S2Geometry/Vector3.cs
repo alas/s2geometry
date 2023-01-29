@@ -2,7 +2,7 @@
 
 using System.Numerics;
 
-[DebuggerDisplay("{S2PointExtensions.ToStringDegrees(this)}")]
+[DebuggerDisplay("{S2PointDebugExtensions.ToStringDegrees(this)}")]
 public readonly record struct Vector3<T>(T X, T Y, T Z) : IComparable<Vector3<T>> where T : INumber<T>, IFloatingPointIeee754<T>
 {
     #region Fields, Constants
@@ -113,8 +113,7 @@ public readonly record struct Vector3<T>(T X, T Y, T Z) : IComparable<Vector3<T>
     /// Euclidean norm. For integer T, correct only if Norm2 does not overflow.
     /// </summary>
     /// <returns></returns>
-    public T Norm() =>
-        T.Sqrt(Norm2());
+    public T Norm() => T.Sqrt(Norm2());
 
     /// <summary>
     /// Normalized vector if the norm is nonzero. Not for integer types.
@@ -171,17 +170,6 @@ public readonly record struct Vector3<T>(T X, T Y, T Z) : IComparable<Vector3<T>
         array[2] = Z;
         return array;
     }
-
-    #endregion
-
-    #region ExactFloat
-
-    /// <summary>
-    /// No ExactFloat support
-    /// </summary>
-    public Vector3<T> ToExact() => this;
-
-    public static Vector3<T> FromExact(Vector3<T> p) => p;
 
     #endregion
 

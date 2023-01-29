@@ -20,34 +20,21 @@ namespace S2Geometry;
 using System;
 using System.Numerics;
 
-public class EncodedUIntVector<T> where T : IUnsignedNumber<T>, IBinaryInteger<T>, IMinMaxValue<T>, IBitwiseOperators<T, T, T>//, IShiftOperators<T, T, T>
+public class EncodedUIntVector<T> where T : IUnsignedNumber<T>, IBinaryInteger<T>, IMinMaxValue<T>, IBitwiseOperators<T, T, T>
 {
     // Returns the size of the original vector.
-    public int Count { get; }
+    public required int Count { get; init; }
 
-    private byte[] Data { get; }
+    public required byte[] Data { private get; init; }
 
-    private int Offset { get; }
+    public required int Offset { private get; init; }
 
-    private byte Len { get; }
+    public required byte Len { private get; init; }
 
     static EncodedUIntVector()
     {
         MyDebug.Assert(typeof(T) is IUnsignedNumber<T>, "Unsupported signed integer");
         MyDebug.Assert((typeof(T).SizeOf() & 0xe) != 0, "Unsupported integer length");
-    }
-
-    /// <summary>
-    /// Constructs an uninitialized object; requires Init() to be called.
-    /// 
-    /// Note(Alas): added the parameters to this constructor, Init does not need to be called
-    /// </summary>
-    public EncodedUIntVector(int count, byte[] data, int offset, byte len)
-    {
-        Count = count;
-        Data = data;
-        Offset = offset;
-        Len = len;
     }
 
     /// <summary>
@@ -91,9 +78,8 @@ public class EncodedUIntVector<T> where T : IUnsignedNumber<T>, IBinaryInteger<T
     ///
     /// REQUIRES: The Decoder data buffer must outlive this object.
     /// </summary>
-    public static (bool success, EncodedUIntVector<T>? vector) Init(Decoder decoder)
+    public static (bool Success, EncodedUIntVector<T>? Shape) Init(Decoder decoder)
     {
-
         if (!decoder.TryGetVarUInt64(out var size_len)) return (false, null);
         var size = typeof(T).SizeOf();
         var count = (int)(size_len / (ulong)size);  // Optimized into bit shift.
@@ -104,7 +90,13 @@ public class EncodedUIntVector<T> where T : IUnsignedNumber<T>, IBinaryInteger<T
         var data = decoder.Buffer;
         var offset = decoder.Offset;
         decoder.Skip(bytes);
-        return (true, new(count, data, offset, len));
+        return (true, new()
+        {
+            Count = count,
+            Data = data,
+            Offset = offset,
+            Len = len,
+        });
     }
 
     // Resets the vector to be empty.

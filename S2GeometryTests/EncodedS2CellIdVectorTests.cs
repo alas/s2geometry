@@ -116,8 +116,8 @@ public class EncodedS2CellIdVectorTests
             1, 0       // Encoded cell ID. Not important.
         };
         Decoder decoder = new(bytes, 0, bytes.Length);
-        EncodedS2CellIdVector cell_ids=new();
-        Assert.True(cell_ids.Init(decoder));
+        var (success, _) = EncodedS2CellIdVector.Init(decoder);
+        Assert.True(success);
     }
 
     [Fact]
@@ -130,8 +130,8 @@ public class EncodedS2CellIdVectorTests
             1, 0       // Encoded cell ID. Not important.
         };
         Decoder decoder = new(bytes, 0, bytes.Length);
-        EncodedS2CellIdVector cell_ids=new();
-        Assert.False(cell_ids.Init(decoder));
+        var (success, _) = EncodedS2CellIdVector.Init(decoder);
+        Assert.False(success);
     }
 
     [Fact]
@@ -243,9 +243,9 @@ public class EncodedS2CellIdVectorTests
     {
         EncodedS2CellIdVector.EncodeS2CellIdVector(input, encoder);
         var decoder = encoder.GetDecoder();
-        EncodedS2CellIdVector cell_ids = new();
-        Assert.True(cell_ids.Init(decoder));
-        return cell_ids;
+        var (success, cell_ids) = EncodedS2CellIdVector.Init(decoder);
+        Assert.True(success);
+        return cell_ids!;
     }
 
     // Encodes the given vector and checks that it has the expected size and

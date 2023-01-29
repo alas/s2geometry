@@ -347,11 +347,11 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
             shapes_.Add(shape);
         }
 
-        EncodedS2CellIdVector cell_ids = new();
-        if (!cell_ids.Init(decoder)) return false;
-
-        var (success, encoded_cells) = EncodedStringVector.Init(decoder);
+        var (success, cell_ids) = EncodedS2CellIdVector.Init(decoder);
         if (!success) return false;
+
+        var (success2, encoded_cells) = EncodedStringVector.Init(decoder);
+        if (!success2) return false;
 
         for (var i = 0; i < cell_ids.Count; ++i)
         {

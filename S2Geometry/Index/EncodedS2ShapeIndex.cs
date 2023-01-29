@@ -166,8 +166,8 @@ public sealed class EncodedS2ShapeIndex : S2ShapeIndex, IDisposable
         // default constructor value to kUndecodedShape().  This saves the effort of
         // initializing all the elements twice.
         var shapeFactory = (ShapeFactory)shape_factory.CustomClone();
-        EncodedS2CellIdVector cellIds = new();
-        if (!cellIds.Init(decoder)) return (false, null);
+        var (success, cellIds) = EncodedS2CellIdVector.Init(decoder);
+        if (!success) return (false, null);
 
         // The cells_ elements are *uninitialized memory*.  Instead we have bit
         // vector (cells_decoded_) to indicate which elements of cells_ are valid.
@@ -189,8 +189,8 @@ public sealed class EncodedS2ShapeIndex : S2ShapeIndex, IDisposable
         //                                NO NO NO
         var cells = new Lazy<S2ShapeIndexCell>[cellIds.Count];
 
-        var (success, shape) = EncodedStringVector.Init(decoder);
-        if (success)
+        var (success2, shape) = EncodedStringVector.Init(decoder);
+        if (success2)
         {
             return (true, new(maxEdgesPerCell, shapeFactory, cellIds, cells, shape!));
         }

@@ -455,10 +455,10 @@ public class EncodedS2PointVectorTests
         pointsList.Add(EncodedValueToPoint(0x84, level));
         pointsArray = pointsList.ToArray();
 
-        EncodedS2PointVector a_vector = new();
+        EncodedS2PointVector a_vector;
         Encoder a_encoder = new();
 
-        EncodedS2PointVector b_vector = new();
+        EncodedS2PointVector b_vector;
         Encoder b_encoder = new();
 
         // Encode and decode from a vector<S2Point>.

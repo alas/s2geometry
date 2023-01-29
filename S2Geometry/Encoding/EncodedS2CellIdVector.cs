@@ -20,8 +20,10 @@ namespace S2Geometry;
 
 public class EncodedS2CellIdVector
 {
-    // Constructs an uninitialized object; requires Init() to be called.
-    public EncodedS2CellIdVector() { }
+    // Values are decoded as (base_ + (deltas_[i] << shift_)).
+    public required EncodedUIntVector<ulong> Deltas { private get; init; }
+    public required UInt64 Base { private get; init; }
+    public required byte Shift { private get; init; }
 
     // Encodes a vector of S2CellIds in a format that can later be decoded as an
     // EncodedS2CellIdVector.  The S2CellIds do not need to be valid.
@@ -148,11 +150,11 @@ public class EncodedS2CellIdVector
     // Initializes the EncodedS2CellIdVector.
     //
     // REQUIRES: The Decoder data buffer must outlive this object.
-    public bool Init(Decoder decoder)
+    public static (bool Success, EncodedS2CellIdVector? Shape) Init(Decoder decoder)
     {
         // All encodings have at least 2 bytes (one for our header and one for the
         // EncodedUintVector header), so this is safe.
-        if (decoder.Avail() < 2) return false;
+        if (decoder.Avail() < 2) return (false, null);
 
         // Invert the encoding of (shift_code, base_len) described above.
         int code_plus_len = decoder.Get8();
@@ -160,34 +162,41 @@ public class EncodedS2CellIdVector
         if (shift_code == 31)
         {
             shift_code = 29 + decoder.Get8();
-            if (shift_code > 56) return false;  // Valid range 0..56
+            if (shift_code > 56) return (false, null);  // Valid range 0..56
         }
 
         // Decode the "base_len" most-significant bytes of "base".
         int base_len = code_plus_len & 7;
-        if (!EncodedUIntVector<ulong>.DecodeUIntWithLength(base_len, decoder, out base_)) return false;
+        if (!EncodedUIntVector<ulong>.DecodeUIntWithLength(base_len, decoder, out UInt64 base_)) return (false, null);
         base_ <<= 64 - 8 * Math.Max(1, base_len);
 
         // Invert the encoding of "shift_code" described above.
+        byte shift;
         if (shift_code >= 29)
         {
-            shift_ = (byte)(2 * (shift_code - 29) + 1);
-            base_ |= 1UL << (shift_ - 1);
+            shift = (byte)(2 * (shift_code - 29) + 1);
+            base_ |= 1UL << (shift - 1);
         }
         else
         {
-            shift_ = (byte)(2 * shift_code);
+            shift = (byte)(2 * shift_code);
         }
         var (success, deltas) = EncodedUIntVector<ulong>.Init(decoder);
-        if (success) deltas_ = deltas;
-        return success;
+        if (!success) return (false, null);
+
+        return (true, new()
+        {
+            Base = base_,
+            Deltas = deltas!,
+            Shift = shift,
+        });
     }
 
     // Returns the size of the original vector.
-    public int Count => deltas_.Count;
+    public int Count => Deltas.Count;
 
     // Returns the element at the given index.
-    public S2CellId this[int i] => new((deltas_[i] << shift_) + base_);
+    public S2CellId this[int i] => new((Deltas[i] << Shift) + Base);
 
     // Returns the index of the first element x such that (x >= target), or
     // size() if no such element exists.
@@ -201,9 +210,9 @@ public class EncodedS2CellIdVector
         // To invert operator[], we essentially compute ((target - base_) >> shift_)
         // except that we also need to round up when shifting.  The first two cases
         // ensure that "target" doesn't wrap around past zero when we do this.
-        if (target.Id <= base_) return 0;
+        if (target.Id <= Base) return 0;
         if (target >= S2CellId.End(S2.kMaxCellLevel)) return Count;
-        return deltas_.LowerBound((target.Id - base_ + (1UL << shift_) - 1) >> shift_);
+        return Deltas.LowerBound((target.Id - Base + (1UL << Shift) - 1) >> Shift);
     }
 
     // Decodes and returns the entire original vector.
@@ -216,9 +225,4 @@ public class EncodedS2CellIdVector
         }
         return result;
     }
-
-    // Values are decoded as (base_ + (deltas_[i] << shift_)).
-    private EncodedUIntVector<ulong> deltas_;
-    private UInt64 base_;
-    private byte shift_;
 }

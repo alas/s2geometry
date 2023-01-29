@@ -86,6 +86,8 @@ public static class MathUtils
     #endregion
 
     public static double Ldexp(double x, int exp) => x * Math.Pow(2, exp);
+    public static decimal Ldexp(decimal x, int exp) => x * MathM.Pow(2, exp);
+    public static ExactFloat Ldexp(ExactFloat x, int exp) => new() { Value = x.Value * MathM.Pow(2, exp) };
 
     // Computes v^i, where i is a non-negative integer.
     // When T is a floating point type, this has the same semantics as pow(), but

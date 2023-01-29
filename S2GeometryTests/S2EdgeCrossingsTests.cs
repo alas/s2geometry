@@ -260,7 +260,7 @@ public class S2EdgeCrossingsTests
             }
         }
         var xx = new S2Point(x);
-        if (xx.Norm2() >= MathUtils.Ldexp(1, -968))
+        if (xx.Norm2() >= MathUtils.Ldexp(1.0, -968))
         {
             return xx.Normalize();
         }
@@ -279,7 +279,7 @@ public class S2EdgeCrossingsTests
         // explicitly trying to push the limits we instead use exact arithmetic to
         // test whether the point is within the error tolerance guaranteed by
         // Normalize().
-        if (Math.Abs(q.ToExact().Norm2() - 1) <= 4 * S2.DoubleEpsilon) return q;
+        if (MathM.Abs(q.ToExact().Norm2().Value - 1M) <= 4M * (decimal)S2.DoubleEpsilon) return q;
         return p;
     }
 

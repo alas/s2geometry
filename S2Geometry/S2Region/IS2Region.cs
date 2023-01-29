@@ -17,7 +17,7 @@ public interface IEncoder
 
 public interface IInitEncoder<T> : IEncoder where T : IInitEncoder<T>
 {
-    public abstract static (bool success, T? shape) Init(Decoder decoder);
+    public abstract static (bool Success, T? Shape) Init(Decoder decoder);
 }
 
 public interface IDecoder<T> : IEncoder where T : IDecoder<T>

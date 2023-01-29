@@ -840,7 +840,7 @@ public class S2PredicatesTests
             S2Pred.Excluded ld_result = S2Pred.TriageVoronoiSiteExclusion_Test(
                 a.ToLD(), b.ToLD(), x0.ToLD(), x1.ToLD(), r.Length2.ToLD());
             S2Pred.Excluded exact_result = S2Pred.ExactVoronoiSiteExclusion_Test(
-                a.ToExact(), b.ToExact(), x0.ToExact(), x1.ToExact(), r.Length2);
+                a.ToExact(), b.ToExact(), x0.ToExact(), x1.ToExact(), (decimal)r.Length2);
             Assert.Equal(exact_result, S2Pred.GetVoronoiSiteExclusion(a, b, x0, x1, r));
 
             Assert.NotEqual(S2Pred.Excluded.UNCERTAIN, exact_result);
@@ -891,7 +891,7 @@ public class S2PredicatesTests
             S2Pred.Excluded ld_result = S2Pred.TriageVoronoiSiteExclusion_Test(
                 a.ToLD(), b.ToLD(), x0.ToLD(), x1.ToLD(), r.Length2.ToLD());
             S2Pred.Excluded exact_result = S2Pred.ExactVoronoiSiteExclusion_Test(
-                a.ToExact(), b.ToExact(), x0.ToExact(), x1.ToExact(), r.Length2);
+                a.ToExact(), b.ToExact(), x0.ToExact(), x1.ToExact(), (decimal)r.Length2);
 
             // Check that the results are correct (if not UNCERTAIN), and also that if
             // dbl_result is not UNCERTAIN then so is ld_result, etc.
@@ -1042,7 +1042,7 @@ public class S2PredicatesTests
     {
         int dbl_sign = triage(x, y, r);
         int ld_sign = triage(x.ToLD(), y.ToLD(), r);
-        int exact_sign = S2Pred.ExactCompareDistance_Test(x.ToExact(), y.ToExact(), r.Length2);
+        int exact_sign = S2Pred.ExactCompareDistance_Test(x.ToExact(), y.ToExact(), (decimal)r.Length2);
         Assert.Equal(exact_sign, S2Pred.CompareDistance(x, y, r));
         if (dbl_sign != 0) Assert.Equal(ld_sign, dbl_sign);
         if (ld_sign != 0) Assert.Equal(exact_sign, ld_sign);
@@ -1061,7 +1061,7 @@ public class S2PredicatesTests
 
         int dbl_sign = triage(x, y, r);
         int ld_sign = triage(x.ToLD(), y.ToLD(), r);
-        int exact_sign = S2Pred.ExactCompareDistance_Test(x.ToExact(), y.ToExact(), r.Length2);
+        int exact_sign = S2Pred.ExactCompareDistance_Test(x.ToExact(), y.ToExact(), (decimal)r.Length2);
 
         // Check that the signs are correct (if non-zero), and also that if dbl_sign
         // is non-zero then so is ld_sign, etc.

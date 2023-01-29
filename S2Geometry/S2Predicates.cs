@@ -132,10 +132,10 @@ public static class S2Pred
         else if (kHasLongDouble)
         {
             // We've already tried double precision, so continue with "double".
-            sign = TriageCompareCosDistances(x, a, b);
+            sign = TriageCompareCosDistances(x.ToLD(), a.ToLD(), b.ToLD());
         }
         if (sign != 0) return sign;
-        sign = ExactCompareDistances(x, a, b);
+        sign = ExactCompareDistances(x.ToExact(), a.ToExact(), b.ToExact());
         if (sign != 0) return sign;
         return SymbolicCompareDistances(x, a, b);
     }
@@ -172,7 +172,7 @@ public static class S2Pred
             sign = TriageCompareCosDistance(x.ToLD(), y.ToLD(), r.Length2.ToLD());
         }
         if (sign != 0) return sign;
-        return ExactCompareDistance(x.ToExact(), y.ToExact(), r.Length2);
+        return ExactCompareDistance(x.ToExact(), y.ToExact(), (decimal)r.Length2);
     }
 
     // Returns -1, 0, or +1 according to whether the distance from the point X to
@@ -268,7 +268,7 @@ public static class S2Pred
             sign = TriageCompareEdgeDirections(a0.ToLD(), a1.ToLD(), b0.ToLD(), b1.ToLD());
             if (sign != 0) return sign;
         }
-        return ExactCompareEdgeDirections(a0, a1, b0, b1);
+        return ExactCompareEdgeDirections(a0.ToExact(), a1.ToExact(), b0.ToExact(), b1.ToExact());
     }
 
     // Returns Sign(X0, X1, Z) where Z is the circumcenter of triangle ABC.
@@ -304,7 +304,7 @@ public static class S2Pred
                 x0.ToLD(), x1.ToLD(), a.ToLD(), b.ToLD(), c.ToLD(), abc_sign);
             if (sign != 0) return sign;
         }
-        sign = ExactEdgeCircumcenterSign(x0, x1, a, b, c, abc_sign);
+        sign = ExactEdgeCircumcenterSign(x0.ToExact(), x1.ToExact(), a.ToExact(), b.ToExact(), c.ToExact(), abc_sign);
         if (sign != 0) return sign;
 
         // Unlike the other methods, SymbolicEdgeCircumcenterSign does not depend
@@ -373,7 +373,7 @@ public static class S2Pred
             if (result != Excluded.UNCERTAIN) return result;
         }
 
-        return ExactVoronoiSiteExclusion(a, b, x0, x1, r.Length2);
+        return ExactVoronoiSiteExclusion(a.ToExact(), b.ToExact(), x0.ToExact(), x1.ToExact(), (decimal)r.Length2);
     }
 
     public enum Excluded
@@ -510,7 +510,9 @@ public static class S2Pred
 
     // Efficiently tests whether an ExactFloat vector is (0, 0, 0).
     public static bool IsZero(S2Point a) =>
-        a[0].Sgn() == 0 && a[1].Sgn() == 0 && a[2].Sgn() == 0;
+        double.Sign(a[0]) == 0 && double.Sign(a[1]) == 0 && double.Sign(a[2]) == 0;
+    public static bool IsZero(Vector3<ExactFloat> a) =>
+        ExactFloat.Sign(a[0]) == 0 && ExactFloat.Sign(a[1]) == 0 && ExactFloat.Sign(a[2]) == 0;
 
     // Compute the determinant in a numerically stable way.  Unlike TriageSign(),
     // this method can usually compute the correct determinant sign even when all
@@ -658,34 +660,34 @@ public static class S2Pred
         // some of the signs are different because the opposite cross product is
         // used (e.g., B x C rather than C x B).
 
-        int det_sign = b_cross_c[2].Sgn();            // da[2]
+        int det_sign = double.Sign(b_cross_c[2]);            // da[2]
         if (det_sign != 0) return det_sign;
-        det_sign = b_cross_c[1].Sgn();                // da[1]
+        det_sign = double.Sign(b_cross_c[1]);                // da[1]
         if (det_sign != 0) return det_sign;
-        det_sign = b_cross_c[0].Sgn();                // da[0]
+        det_sign = double.Sign(b_cross_c[0]);                // da[0]
         if (det_sign != 0) return det_sign;
 
-        det_sign = (c[0] * a[1] - c[1] * a[0]).Sgn();     // db[2]
+        det_sign = double.Sign(c[0] * a[1] - c[1] * a[0]);     // db[2]
         if (det_sign != 0) return det_sign;
-        det_sign = c[0].Sgn();                        // db[2] * da[1]
+        det_sign = double.Sign(c[0]);                        // db[2] * da[1]
         if (det_sign != 0) return det_sign;
-        det_sign = -(c[1].Sgn());                     // db[2] * da[0]
+        det_sign = -(double.Sign(c[1]));                     // db[2] * da[0]
         if (det_sign != 0) return det_sign;
-        det_sign = (c[2] * a[0] - c[0] * a[2]).Sgn();     // db[1]
+        det_sign = double.Sign(c[2] * a[0] - c[0] * a[2]);     // db[1]
         if (det_sign != 0) return det_sign;
-        det_sign = c[2].Sgn();                        // db[1] * da[0]
+        det_sign = double.Sign(c[2]);                        // db[1] * da[0]
         if (det_sign != 0) return det_sign;
         // The following test is listed in the paper, but it is redundant because
         // the previous tests guarantee that C == (0, 0, 0).
-        MyDebug.Assert(0 == (c[1] * a[2] - c[2] * a[1]).Sgn(), "db[0]");
+        MyDebug.Assert(0 == double.Sign(c[1] * a[2] - c[2] * a[1]), "db[0]");
 
-        det_sign = (a[0] * b[1] - a[1] * b[0]).Sgn();     // dc[2]
+        det_sign = double.Sign(a[0] * b[1] - a[1] * b[0]);     // dc[2]
         if (det_sign != 0) return det_sign;
-        det_sign = -(b[0].Sgn());                     // dc[2] * da[1]
+        det_sign = -(double.Sign(b[0]));                     // dc[2] * da[1]
         if (det_sign != 0) return det_sign;
-        det_sign = b[1].Sgn();                        // dc[2] * da[0]
+        det_sign = double.Sign(b[1]);                        // dc[2] * da[0]
         if (det_sign != 0) return det_sign;
-        det_sign = a[0].Sgn();                        // dc[2] * db[1]
+        det_sign = double.Sign(a[0]);                        // dc[2] * db[1]
         if (det_sign != 0) return det_sign;
         return 1;                                     // dc[2] * db[1] * da[0]
     }
@@ -718,7 +720,7 @@ public static class S2Pred
         //Assert.True(det.prec() < det.max_prec());
 
         // If the exact determinant is non-zero, we're done.
-        int det_sign = det.Sgn();
+        int det_sign = double.Sign(det);
         if (det_sign == 0 && perturb)
         {
             // Otherwise, we need to resort to symbolic perturbations to resolve the
@@ -806,7 +808,7 @@ public static class S2Pred
         return (diff > error) ? 1 : (diff < -error) ? -1 : 0;
     }
 
-    private static int ExactCompareDistances(S2Point x, S2Point a, S2Point b)
+    private static int ExactCompareDistances(Vector3<ExactFloat> x, Vector3<ExactFloat> a, Vector3<ExactFloat> b)
     {
         // This code produces the same result as though all points were reprojected
         // to lie exactly on the surface of the unit sphere.  It is based on testing
@@ -816,13 +818,13 @@ public static class S2Pred
         var cos_bx = x.DotProd(b);
         // If the two values have different signs, we need to handle that case now
         // before squaring them below.
-        int a_sign = cos_ax.Sgn(), b_sign = cos_bx.Sgn();
+        int a_sign = ExactFloat.Sign(cos_ax), b_sign = ExactFloat.Sign(cos_bx);
         if (a_sign != b_sign)
         {
             return (a_sign > b_sign) ? -1 : 1;  // If cos(AX) > cos(BX), then AX < BX.
         }
         var cmp = cos_bx * cos_bx * a.Norm2() - cos_ax * cos_ax * b.Norm2();
-        return a_sign * cmp.Sgn();
+        return a_sign * ExactFloat.Sign(cmp);
     }
 
     // Given three points such that AX == BX (exactly), returns -1, 0, or +1
@@ -884,23 +886,25 @@ public static class S2Pred
         return (diff > error) ? 1 : (diff < -error) ? -1 : 0;
     }
 
-    private static int ExactCompareDistance(S2Point x, S2Point y, double r2)
+    private static int ExactCompareDistance(Vector3<ExactFloat> x, Vector3<ExactFloat> y, ExactFloat r2) =>
+        ExactCompareDistance(x, y, r2.Value);
+    private static int ExactCompareDistance(Vector3<ExactFloat> x, Vector3<ExactFloat> y, decimal r2)
     {
         // This code produces the same result as though all points were reprojected
         // to lie exactly on the surface of the unit sphere.  It is based on
         // comparing the cosine of the angle XY (when both points are projected to
         // lie exactly on the sphere) to the given threshold.
-        double cos_xy = x.DotProd(y);
-        double cos_r = 1 - 0.5 * r2;
+        var cos_xy = x.DotProd(y).Value;
+        var cos_r = 1 - 0.5M * r2;
         // If the two values have different signs, we need to handle that case now
         // before squaring them below.
-        int xy_sign = cos_xy.Sgn(), r_sign = cos_r.Sgn();
+        int xy_sign = MathM.Sign(cos_xy), r_sign = MathM.Sign(cos_r);
         if (xy_sign != r_sign)
         {
             return (xy_sign > r_sign) ? -1 : 1;  // If cos(XY) > cos(r), then XY < r.
         }
-        double cmp = cos_r * cos_r * x.Norm2() * y.Norm2() - cos_xy * cos_xy;
-        return xy_sign * cmp.Sgn();
+        var cmp = cos_r * cos_r * x.Norm2().Value * y.Norm2().Value - cos_xy * cos_xy;
+        return xy_sign * MathM.Sign(cmp);
     }
 
     // Helper function that compares the distance XY against the squared chord
@@ -1091,7 +1095,7 @@ public static class S2Pred
         double sin_d = x.DotProd(n);
         double sin2_r = r2 * (1 - 0.25 * r2);
         double cmp = sin_d * sin_d - sin2_r * x.Norm2() * n.Norm2();
-        return cmp.Sgn();
+        return double.Sign(cmp);
     }
 
     private static int ExactCompareEdgeDistance(S2Point x, S2Point a0, S2Point a1, S1ChordAngle r)
@@ -1132,21 +1136,21 @@ public static class S2Pred
         return (cos_ab > cos_ab_error) ? 1 : (cos_ab < -cos_ab_error) ? -1 : 0;
     }
 
-    private static bool ArePointsLinearlyDependent(S2Point x, S2Point y)
+    private static bool ArePointsLinearlyDependent(Vector3<ExactFloat> x, Vector3<ExactFloat> y)
     {
         return IsZero(x.CrossProd(y));
     }
 
-    private static bool ArePointsAntipodal(S2Point x, S2Point y)
+    private static bool ArePointsAntipodal(Vector3<ExactFloat> x, Vector3<ExactFloat> y)
     {
-        return ArePointsLinearlyDependent(x, y) && x.DotProd(y).Sgn() < 0;
+        return ArePointsLinearlyDependent(x, y) && ExactFloat.Sign(x.DotProd(y)) < 0;
     }
 
-    private static int ExactCompareEdgeDirections(S2Point a0, S2Point a1, S2Point b0, S2Point b1)
+    private static int ExactCompareEdgeDirections(Vector3<ExactFloat> a0, Vector3<ExactFloat> a1, Vector3<ExactFloat> b0, Vector3<ExactFloat> b1)
     {
         MyDebug.Assert(!ArePointsAntipodal(a0, a1));
         MyDebug.Assert(!ArePointsAntipodal(b0, b1));
-        return a0.CrossProd(a1).DotProd(b0.CrossProd(b1)).Sgn();
+        return ExactFloat.Sign(a0.CrossProd(a1).DotProd(b0.CrossProd(b1)));
     }
 
     // If triangle ABC has positive sign, returns its circumcenter.  If ABC has
@@ -1196,13 +1200,13 @@ public static class S2Pred
         return (result > result_error) ? 1 : (result < -result_error) ? -1 : 0;
     }
 
-    private static int ExactEdgeCircumcenterSign(S2Point x0, S2Point x1, S2Point a, S2Point b, S2Point c, int abc_sign)
+    private static int ExactEdgeCircumcenterSign(Vector3<ExactFloat> x0, Vector3<ExactFloat> x1, Vector3<ExactFloat> a, Vector3<ExactFloat> b, Vector3<ExactFloat> c, int abc_sign)
     {
         // Return zero if the edge X is degenerate.  (Also see the comments in
         // SymbolicEdgeCircumcenterSign.)
         if (ArePointsLinearlyDependent(x0, x1))
         {
-            MyDebug.Assert(x0.DotProd(x1) > 0, "Antipodal edges not allowed.");
+            MyDebug.Assert(x0.DotProd(x1).Value > 0M, "Antipodal edges not allowed.");
             return 0;
         }
         // The simplest predicate for testing whether the sign is positive is
@@ -1252,28 +1256,28 @@ public static class S2Pred
         //     abc2 = |A|^2 dBC^2
         //     bca2 = |B|^2 dCA^2
         //     cab2 = |C|^2 dAB^2
-        S2Point nx = x0.CrossProd(x1);
-        double dab = nx.DotProd(a.CrossProd(b));
-        double dbc = nx.DotProd(b.CrossProd(c));
-        double dca = nx.DotProd(c.CrossProd(a));
-        double abc2 = a.Norm2() * (dbc * dbc);
-        double bca2 = b.Norm2() * (dca * dca);
-        double cab2 = c.Norm2() * (dab * dab);
+        var nx = x0.CrossProd(x1);
+        var dab = nx.DotProd(a.CrossProd(b));
+        var dbc = nx.DotProd(b.CrossProd(c));
+        var dca = nx.DotProd(c.CrossProd(a));
+        var abc2 = a.Norm2() * (dbc * dbc);
+        var bca2 = b.Norm2() * (dca * dca);
+        var cab2 = c.Norm2() * (dab * dab);
 
         // If the two sides of (3) have different signs (including the case where
         // one side is zero) then we know the result.  Also, if both sides are zero
         // then we know the result.  The following logic encodes this.
-        int lhs3_sgn = dab.Sgn(), rhs3_sgn = -dbc.Sgn();
+        int lhs3_sgn = ExactFloat.Sign(dab), rhs3_sgn = -ExactFloat.Sign(dbc);
         int lhs2_sgn = Math.Max(-1, Math.Min(1, lhs3_sgn - rhs3_sgn));
         if (lhs2_sgn == 0 && lhs3_sgn != 0)
         {
             // Both sides of (3) have the same non-zero sign, so square both sides.
             // If both sides were negative then invert the result.
-            lhs2_sgn = (cab2 - abc2).Sgn() * lhs3_sgn;
+            lhs2_sgn = ExactFloat.Sign(cab2 - abc2) * lhs3_sgn;
         }
         // Now if the two sides of (2) have different signs then we know the result
         // of this entire function.
-        int rhs2_sgn = -dca.Sgn();
+        int rhs2_sgn = -ExactFloat.Sign(dca);
         int result = Math.Max(-1, Math.Min(1, lhs2_sgn - rhs2_sgn));
         if (result == 0 && lhs2_sgn != 0)
         {
@@ -1288,14 +1292,14 @@ public static class S2Pred
             // (4)    2 |A| |C| dAB dBC > |B|^2 dCA^2 - |C|^2 dAB^2 - |A|^2 dBC^2 .
             //
             // Again, if the two sides have different signs then we know the result.
-            int lhs4_sgn = dab.Sgn() * dbc.Sgn();
-            double rhs4 = bca2 - cab2 - abc2;
-            result = Math.Max(-1, Math.Min(1, lhs4_sgn - rhs4.Sgn()));
+            int lhs4_sgn = ExactFloat.Sign(dab) * ExactFloat.Sign(dbc);
+            var rhs4 = bca2 - cab2 - abc2;
+            result = Math.Max(-1, Math.Min(1, lhs4_sgn - ExactFloat.Sign(rhs4)));
             if (result == 0 && lhs4_sgn != 0)
             {
                 // Both sides of (4) have the same non-zero sign, so square both sides.
                 // If both sides were negative then invert the result.
-                result = (4 * abc2 * cab2 - rhs4 * rhs4).Sgn() * lhs4_sgn;
+                result = MathM.Sign(4 * abc2.Value * cab2.Value - rhs4.Value * rhs4.Value) * lhs4_sgn;
             }
             // Correct the sign if both sides of (2) were negative.
             result *= lhs2_sgn;
@@ -1589,7 +1593,9 @@ public static class S2Pred
         return (lhs3 > 0) ? Excluded.FIRST : Excluded.SECOND;
     }
 
-    private static Excluded ExactVoronoiSiteExclusion(S2Point a, S2Point b, S2Point x0, S2Point x1, double r2)
+    private static Excluded ExactVoronoiSiteExclusion(Vector3<ExactFloat> a, Vector3<ExactFloat> b, Vector3<ExactFloat> x0, Vector3<ExactFloat> x1, ExactFloat r2) =>
+        ExactVoronoiSiteExclusion(a, b, x0, x1, r2.Value);
+    private static Excluded ExactVoronoiSiteExclusion(Vector3<ExactFloat> a, Vector3<ExactFloat> b, Vector3<ExactFloat> x0, Vector3<ExactFloat> x1, decimal r2)
     {
         MyDebug.Assert(!ArePointsAntipodal(x0, x1));
 
@@ -1618,15 +1624,15 @@ public static class S2Pred
         // Before squaring we need to check the sign of each side.  If the RHS of
         // (2) is negative (corresponding to sin(d) < 0), then we need to apply the
         // logic in TriageVoronoiSiteExclusion.
-        S2Point n = x0.CrossProd(x1);
+        var n = x0.CrossProd(x1);
         var rhs2 = a.CrossProd(b).DotProd(n);
-        int rhs2_sgn = rhs2.Sgn();
+        int rhs2_sgn = ExactFloat.Sign(rhs2);
         if (rhs2_sgn < 0)
         {
             // This is the d < 0 case.  See comments in TriageVoronoiSiteExclusion.
             var r90 = S1ChordAngle.Right.Length2;
-            int ca = ExactCompareDistance(a, x0, r90);
-            int cb = ExactCompareDistance(b, x1, r90);
+            int ca = ExactCompareDistance(a, x0, (decimal)r90);
+            int cb = ExactCompareDistance(b, x1, (decimal)r90);
             if (ca < 0 && cb < 0) return Excluded.NEITHER;
             MyDebug.Assert(ca != 0 && cb != 0, "This is guaranteed since d < 0.");
             MyDebug.Assert(ca < 0 || cb < 0, "At least one site must be kept.");
@@ -1635,11 +1641,11 @@ public static class S2Pred
 
         // We also check that cos(d) >= 0.  Given what else we need to compute, it
         // is cheaper use the identity (aXn).(bXn) = (a.b) |n|^2 - (a.n)(b.n) .
-        double n2 = n.Norm2();
-        double aDn = a.DotProd(n);
-        double bDn = b.DotProd(n);
-        double cos_d = a.DotProd(b) * n2 - aDn * bDn;
-        if (cos_d.Sgn() < 0) return Excluded.NEITHER;
+        var n2 = n.Norm2();
+        var aDn = a.DotProd(n);
+        var bDn = b.DotProd(n);
+        var cos_d = a.DotProd(b) * n2 - aDn * bDn;
+        if (ExactFloat.Sign(cos_d) < 0) return Excluded.NEITHER;
 
         // Otherwise we continue evaluating the LHS of (2), defining
         //    sa = |b| sqrt(sin^2(r) |a|^2 |n|^2 - |a.n|^2)
@@ -1647,12 +1653,12 @@ public static class S2Pred
         // The sign of the LHS of (2) (before taking the absolute value) determines
         // which coverage interval is larger and therefore which site is potentially
         // being excluded.
-        double a2 = a.Norm2();
-        double b2 = b.Norm2();
-        double n2sin2_r = r2 * (1 - 0.25 * r2) * n2;
-        double sa2 = b2 * (n2sin2_r * a2 - aDn * aDn);
-        double sb2 = a2 * (n2sin2_r * b2 - bDn * bDn);
-        int lhs2_sgn = (sb2 - sa2).Sgn();
+        var a2 = a.Norm2();
+        var b2 = b.Norm2();
+        var n2sin2_r = r2 * (1 - 0.25M * r2) * n2.Value;
+        var sa2 = b2.Value * (n2sin2_r * a2.Value - aDn.Value * aDn.Value);
+        var sb2 = a2.Value * (n2sin2_r * b2.Value - bDn.Value * bDn.Value);
+        int lhs2_sgn = MathM.Sign(sb2 - sa2);
 
         if (lhs2_sgn == 0)
         {
@@ -1673,17 +1679,17 @@ public static class S2Pred
         //
         // The RHS of (3) is always non-negative, but we still need to check the
         // sign of the LHS.
-        double cos_r = 1 - 0.5 * r2;
-        double cos2_r = cos_r * cos_r;
-        double lhs3 = cos2_r * (sa2 + sb2) - rhs2 * rhs2;
-        if (lhs3.Sgn() < 0) return Excluded.NEITHER;
+        var cos_r = 1 - 0.5M * r2;
+        var cos2_r = cos_r * cos_r;
+        var lhs3 = cos2_r * (sa2 + sb2) - (rhs2 * rhs2).Value;
+        if (decimal.Sign(lhs3) < 0) return Excluded.NEITHER;
 
         // Otherwise we square both sides of (3) to obtain:
         //
         // (4)  LHS(3)^2  >  4 cos^4(r) sa^2 sb^2
-        double lhs4 = lhs3 * lhs3;
-        double rhs4 = 4 * cos2_r * cos2_r * sa2 * sb2;
-        int result = (lhs4 - rhs4).Sgn();
+        var lhs4 = lhs3 * lhs3;
+        var rhs4 = 4 * cos2_r * cos2_r * sa2 * sb2;
+        int result = decimal.Sign(lhs4 - rhs4);
         if (result < 0) return Excluded.NEITHER;
         if (result == 0)
         {
@@ -1725,7 +1731,7 @@ public static class S2Pred
     public static int TriageCompareSin2Distances_Test(S2Point x, S2Point a, S2Point b) =>
         TriageCompareSin2Distances(x, a, b);
 
-    public static int ExactCompareDistances_Test(S2Point x, S2Point a, S2Point b) =>
+    public static int ExactCompareDistances_Test(Vector3<ExactFloat> x, Vector3<ExactFloat> a, Vector3<ExactFloat> b) =>
         ExactCompareDistances(x, a, b);
 
     public static int SymbolicCompareDistances_Test(S2Point x, S2Point a, S2Point b) =>
@@ -1737,7 +1743,9 @@ public static class S2Pred
     public static int TriageCompareCosDistance_Test(S2Point x, S2Point y, double r2) =>
         TriageCompareCosDistance(x, y, r2);
 
-    public static int ExactCompareDistance_Test(S2Point x, S2Point y, double/*ExactFloat*/ r2) =>
+    public static int ExactCompareDistance_Test(Vector3<ExactFloat> x, Vector3<ExactFloat> y, ExactFloat r2) =>
+        ExactCompareDistance_Test(x, y, r2.Value);
+    public static int ExactCompareDistance_Test(Vector3<ExactFloat> x, Vector3<ExactFloat> y, decimal r2) =>
         ExactCompareDistance(x, y, r2);
 
     public static int TriageCompareEdgeDistance_Test(S2Point x, S2Point a0, S2Point a1, double r2) =>
@@ -1749,13 +1757,13 @@ public static class S2Pred
     public static int TriageCompareEdgeDirections_Test(S2Point a0, S2Point a1, S2Point b0, S2Point b1) =>
         TriageCompareEdgeDirections(a0, a1, b0, b1);
 
-    public static int ExactCompareEdgeDirections_Test(S2Point a0, S2Point a1, S2Point b0, S2Point b1) =>
+    public static int ExactCompareEdgeDirections_Test(Vector3<ExactFloat> a0, Vector3<ExactFloat> a1, Vector3<ExactFloat> b0, Vector3<ExactFloat> b1) =>
         ExactCompareEdgeDirections(a0, a1, b0, b1);
 
     public static int TriageEdgeCircumcenterSign_Test(S2Point x0, S2Point x1, S2Point a, S2Point b, S2Point c, int abc_sign) =>
         TriageEdgeCircumcenterSign(x0, x1, a, b, c, abc_sign);
 
-    public static int ExactEdgeCircumcenterSign_Test(S2Point x0, S2Point x1, S2Point a, S2Point b, S2Point c, int abc_sign) =>
+    public static int ExactEdgeCircumcenterSign_Test(Vector3<ExactFloat> x0, Vector3<ExactFloat> x1, Vector3<ExactFloat> a, Vector3<ExactFloat> b, Vector3<ExactFloat> c, int abc_sign) =>
         ExactEdgeCircumcenterSign(x0, x1, a, b, c, abc_sign);
 
     public static int SymbolicEdgeCircumcenterSign_Test(S2Point x0, S2Point x1, S2Point a_arg, S2Point b_arg, S2Point c_arg) =>
@@ -1764,7 +1772,9 @@ public static class S2Pred
     public static Excluded TriageVoronoiSiteExclusion_Test(S2Point a, S2Point b, S2Point x0, S2Point x1, double r2) =>
         TriageVoronoiSiteExclusion(a, b, x0, x1, r2);
 
-    public static Excluded ExactVoronoiSiteExclusion_Test(S2Point a, S2Point b, S2Point x0, S2Point x1, double/*ExactFloat*/ r2) =>
+    public static Excluded ExactVoronoiSiteExclusion_Test(Vector3<ExactFloat> a, Vector3<ExactFloat> b, Vector3<ExactFloat> x0, Vector3<ExactFloat> x1, ExactFloat r2) =>
+        ExactVoronoiSiteExclusion_Test(a, b, x0, x1, r2.Value);
+    public static Excluded ExactVoronoiSiteExclusion_Test(Vector3<ExactFloat> a, Vector3<ExactFloat> b, Vector3<ExactFloat> x0, Vector3<ExactFloat> x1, decimal r2) =>
         ExactVoronoiSiteExclusion(a, b, x0, x1, r2);
 
 #endif

@@ -388,7 +388,7 @@ public static partial class S2
         public static S2Point ExactCrossProd(S2Point a, S2Point b)
         {
             MyDebug.Assert(a != b);
-            S2Point result_xf = a.ToExact().CrossProd(b.ToExact());
+            var result_xf = a.ToExact().CrossProd(b.ToExact());
             if (!S2Pred.IsZero(result_xf))
             {
                 return NormalizableFromExact(result_xf);
@@ -681,7 +681,7 @@ public static partial class S2
         //
         // The fastest way to ensure this is to test whether the largest component of
         // the result has a magnitude of at least 2**-242.
-        return Math.Max(Math.Abs(p[0]), Math.Max(Math.Abs(p[1]), Math.Abs(p[2]))) >= MathUtils.Ldexp(1, -242);
+        return Math.Max(Math.Abs(p[0]), Math.Max(Math.Abs(p[1]), Math.Abs(p[2]))) >= MathUtils.Ldexp(1.0, -242);
     }
 
     // Scales a 3-vector as necessary to ensure that the result can be normalized
@@ -704,7 +704,7 @@ public static partial class S2
             double p_max = Math.Max(Math.Abs(p[0]), Math.Max(Math.Abs(p[1]), Math.Abs(p[2])));
 
             // The expression below avoids signed overflow for any value of ilogb().
-            return MathUtils.Ldexp(2, -1 - Math.ILogB(p_max)) * p;
+            return MathUtils.Ldexp(2.0, -1 - Math.ILogB(p_max)) * p;
         }
         return p;
     }
@@ -714,7 +714,7 @@ public static partial class S2
     // of precision due to floating-point underflow.  (This method doesn't actually
     // call Normalize() since that would create additional error in situations
     // where normalization is not necessary.)
-    public static S2Point NormalizableFromExact(S2Point xf)
+    public static S2Point NormalizableFromExact(Vector3<ExactFloat> xf)
     {
         S2Point x=new(xf[0].ToDouble(), xf[1].ToDouble(), xf[2].ToDouble());
         if (IsNormalizable(x))
@@ -993,7 +993,7 @@ public static partial class S2
         }
     }
 
-    private static S2Point ToS2Point(S2Point xf)
+    private static S2Point ToS2Point(Vector3<ExactFloat> xf)
     {
         return NormalizableFromExact(xf).Normalize();
     }
