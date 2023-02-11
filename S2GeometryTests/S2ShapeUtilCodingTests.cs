@@ -27,11 +27,11 @@ public class S2ShapeUtilCodingTests
         var index = MakeIndexOrDie(
             "0:0 | 0:1 # 1:1, 1:2, 1:3 # 2:2; 2:3, 2:4, 3:3");
         Encoder encoder = new();
-        Assert.True(S2ShapeUtilCoding.FastEncodeTaggedShapes(index, encoder));
+        Assert.True(FastEncodeTaggedShapes(index, encoder));
         index.Encode(encoder);
         var decoder = encoder.GetDecoder();
         MutableS2ShapeIndex decoded_index = new();
-        Assert.True(decoded_index.Init(decoder, S2ShapeUtilCoding.FullDecodeShapeFactory(decoder)));
+        Assert.True(decoded_index.Init(decoder, FullDecodeShapeFactory(decoder)));
         Assert.Equal(index.ToDebugString(), decoded_index.ToDebugString());
     }
 
@@ -61,7 +61,7 @@ public class S2ShapeUtilCodingTests
             "04020400020113082106110A4113000111030101");
         Decoder decoder=new(bytes, 0, bytes.Length);
         MutableS2ShapeIndex decoded_index=new();
-        Assert.True(decoded_index.Init(decoder, S2ShapeUtilCoding.FullDecodeShapeFactory(decoder)));
+        Assert.True(decoded_index.Init(decoder, FullDecodeShapeFactory(decoder)));
         Assert.Equal(S2TextFormat.ToDebugString(index),
             S2TextFormat.ToDebugString(decoded_index));
     }

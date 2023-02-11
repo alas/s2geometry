@@ -249,17 +249,19 @@ public static class S2ShapeUtilCoding
     // not be called.)  Additional requests for the same shape return null.
     public class VectorShapeFactory : S2ShapeIndex.ShapeFactory
     {
-        public VectorShapeFactory(List<S2Shape> shapes)
+        public VectorShapeFactory(List<S2Shape?> shapes)
         {
             shared_shapes_ = shapes;
         }
 
         public override int Count => shared_shapes_.Count;
-        public override S2Shape this[int shape_id]
+        public override S2Shape? this[int shape_id]
         {
             get
             {
-                return shared_shapes_[shape_id];
+                var res = shared_shapes_[shape_id];
+                shared_shapes_[shape_id] = null;
+                return res;
             }
         }
 
@@ -267,13 +269,13 @@ public static class S2ShapeUtilCoding
 
         // Since this class is copyable, we need to access the shape vector through
         // a shared pointer.
-        private readonly List<S2Shape> shared_shapes_;
+        private readonly List<S2Shape?> shared_shapes_;
     }
 
     // A ShapeFactory that returns the single given S2Shape.  Useful for testing.
     public static VectorShapeFactory SingletonShapeFactory(S2Shape shape)
     {
-        return new VectorShapeFactory(new List<S2Shape> { shape });
+        return new VectorShapeFactory(new List<S2Shape?> { shape });
     }
 
     // A ShapeFactory that wraps the shapes from the given index.  Used for testing.
