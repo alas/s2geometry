@@ -287,7 +287,7 @@ public sealed class EncodedS2ShapeIndex : S2ShapeIndex, IDisposable
 
     public override S2CellId? GetCellId(int index) => CellIds[index];
 
-    public override S2ShapeIndexIdCell? GetIndexCell(int index)
+    public override S2ShapeIndexCell? GetCell(int index)
     {
         // memory_order_release ensures that no reads or writes in the current
         // thread can be reordered after this store, and all writes in the current
@@ -310,7 +310,7 @@ public sealed class EncodedS2ShapeIndex : S2ShapeIndex, IDisposable
         if (Cells[index].IsValueCreated)
         {
             var cell2 = Cells[index].Value;
-            if (cell2 is not null) return new(GetCellId(index)!.Value, cell2);
+            if (cell2 is not null) return cell2;
         }
 
         // Decode the cell before acquiring the spinlock in order to minimize the
@@ -326,7 +326,7 @@ public sealed class EncodedS2ShapeIndex : S2ShapeIndex, IDisposable
         if (Cells[index].IsValueCreated)
         {
             var cell2 = Cells[index].Value;
-            if (cell2 is not null) return new(GetCellId(index)!.Value, cell2);
+            if (cell2 is not null) return cell2;
         }
 
         // Update the cell, setting cells_[i] before cell_decoded(i).
@@ -335,7 +335,7 @@ public sealed class EncodedS2ShapeIndex : S2ShapeIndex, IDisposable
         {
             CellCache.Add(index);
         }
-        return new(GetCellId(index)!.Value, cell);
+        return cell;
     }
 
     private int MaxCellCacheSize()
@@ -352,36 +352,75 @@ public sealed class EncodedS2ShapeIndex : S2ShapeIndex, IDisposable
         return CellIds.Count >> 11;
     }
 
-    public override IReversableEnumerator<S2ShapeIndexIdCell> GetNewEnumerator() =>
-        new EncodedS2ShapeIndexEnumerator(this);
+    public override EnumeratorBase<S2ShapeIndexCell> GetNewEnumerator(InitialPosition pos) =>
+        new Enumerator(this, pos);
 
-    public override IEnumerable<S2ShapeIndexIdCell> GetNewEnumerable()
-    {
-        var enumerator = GetNewEnumerator();
-        while (enumerator.MoveNext())
-            yield return enumerator.Current;
-    }
-
-    public override int GetEnumerableCount() => CellIds.Count;
-
-    private class EncodedS2ShapeIndexEnumerator : IReversableEnumerator<S2ShapeIndexIdCell>
+    private new sealed class Enumerator : EnumeratorBase<S2ShapeIndexCell>, IEnumerator<S2ShapeIndexCell>
     {
         private readonly EncodedS2ShapeIndex _index;
-        private readonly EncodedS2CellIdVector _cellIds;
+        private readonly Func<int> NumCells;
         private int position;
 
-        public EncodedS2ShapeIndexEnumerator(EncodedS2ShapeIndex index)
-        { _index = index; _cellIds = index.CellIds; position = -1; }
+        public Enumerator(EncodedS2ShapeIndex index, InitialPosition pos)
+        {
+            _index = index;
+            NumCells = () => index.CellIds.Count; 
+            position = pos == InitialPosition.BEGIN ? -1 : NumCells();
+            Refresh();
+        }
 
-        public S2ShapeIndexIdCell Current => _index.GetIndexCell(position)!.Value;
+        public override S2ShapeIndexCell Current => Cell!;
 
         object IEnumerator.Current => Current;
 
-        public void Dispose() { }
-        public bool MoveNext() => ++position >= 0 && position < _cellIds.Count;
-        public bool MovePrevious() => --position >= 0 && position < _cellIds.Count;
-        public void Reset() => position = -1;
-        public bool Done() => position >= _cellIds.Count;
-        public void SetPosition(int pos) => position = pos;
+        public override void Finish()
+        {
+            position = NumCells();
+            Refresh();
+        }
+
+        public override void Dispose() { }
+
+        public override bool MoveNext()
+        {
+            MyDebug.Assert(!Done());
+            ++position;
+            Refresh();
+            return !Done();
+        }
+        public override bool MovePrevious()
+        {
+            if (position == 0) return false;
+            --position;
+            Refresh();
+            return true;
+        }
+        public override void Reset() => position = -1;
+        public override bool Done() => position >= NumCells();
+        public override void SetPosition(int pos) => position = pos;
+
+        public override bool Locate(S2Point target) => LocateImpl(this, target);
+        public override S2CellRelation Locate(S2CellId target) => LocateImpl(this, target);
+        private void Refresh()
+        {
+            if (position == NumCells())
+            {
+                SetFinished();
+            }
+            else
+            {
+                // It's faster to initialize the cell to nullptr even if it has already
+                // been decoded, since algorithms frequently don't need it (i.e., based on
+                // the S2CellId they might not need to look at the cell contents).
+                SetState(_index.CellIds[position], null);
+            }
+        }
+
+        public override void Seek(S2CellId target)
+        {
+            position = _index.CellIds.LowerBound(target);
+            Refresh();
+        }
+        protected override S2ShapeIndexCell? GetCell() => _index.GetCell(position);
     }
 }

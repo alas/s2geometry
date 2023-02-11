@@ -64,7 +64,7 @@ public class S2PaddedCell
             middle_ = new R2Rect(new R1Interval(-padding, padding),
                                  new R1Interval(-padding, padding));
             ij_lo_[0] = ij_lo_[1] = 0;
-            orientation_ = (int)(Id.Face() & 1);
+            orientation_ = Id.Face() & 1;
             Level = 0;
         }
         else
@@ -174,7 +174,7 @@ public class S2PaddedCell
         var level_msb = ((ij_xor[0] | ij_xor[1]) << 1) + 1;
         var level = S2.kMaxCellLevel - BitsUtils.FindMSBSetNonZero((uint)level_msb);
         if (level <= Level) return Id;
-        return S2CellId.FromFaceIJ((int)Id.Face(), ij_min[0], ij_min[1]).Parent(level);
+        return S2CellId.FromFaceIJ(Id.Face(), ij_min[0], ij_min[1]).Parent(level);
     }
 
     // Return the center of this cell.
@@ -183,7 +183,7 @@ public class S2PaddedCell
         var ij_size = S2CellId.SizeIJ(Level);
         var si = (uint)(2 * ij_lo_[0] + ij_size);
         var ti = (uint)(2 * ij_lo_[1] + ij_size);
-        return S2.FaceSiTitoXYZ((int)Id.Face(), si, ti).Normalize();
+        return S2.FaceSiTitoXYZ(Id.Face(), si, ti).Normalize();
     }
 
     // Return the vertex where the S2 space-filling curve enters this cell.
@@ -199,7 +199,7 @@ public class S2PaddedCell
             i = (uint)(i + ij_size);
             j = (uint)(j + ij_size);
         }
-        return S2.FaceSiTitoXYZ((int)Id.Face(), 2 * i, 2 * j).Normalize();
+        return S2.FaceSiTitoXYZ(Id.Face(), 2 * i, 2 * j).Normalize();
     }
 
     // Return the vertex where the S2 space-filling curve exits this cell.
@@ -218,6 +218,6 @@ public class S2PaddedCell
         {
             j = (uint)(j + ij_size);
         }
-        return S2.FaceSiTitoXYZ((int)Id.Face(), 2 * i, 2 * j).Normalize();
+        return S2.FaceSiTitoXYZ(Id.Face(), 2 * i, 2 * j).Normalize();
     }
 }

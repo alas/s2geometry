@@ -118,8 +118,10 @@
 namespace S2Geometry;
 
 using System.Collections;
+using System.Runtime.CompilerServices;
+using static S2Geometry.S2ShapeIndex;
 
-public abstract class S2ShapeIndex
+public abstract class S2ShapeIndex : IEnumerable<S2Shape>
 {
     // Returns the number of distinct shape ids in the index.  This is the same
     // as the number of shapes provided that no shapes have ever been removed.
@@ -140,87 +142,12 @@ public abstract class S2ShapeIndex
     // Like all non-methods, this method is not thread-safe.
     public abstract void Minimize();
 
-    // The possible relationships between a "target" cell and the cells of the
-    // S2ShapeIndex.  If the target is an index cell or is contained by an index
-    // cell, it is "INDEXED".  If the target is subdivided into one or more
-    // index cells, it is "SUBDIVIDED".  Otherwise it is "DISJOINT".
-    public enum CellRelation
-    {
-        INDEXED,       // Target is contained by an index cell
-        SUBDIVIDED,    // Target is subdivided into one or more index cells
-        DISJOINT       // Target does not intersect any index cells
-    };
-
     // When passed to an Iterator constructor, specifies whether the iterator
     // should be positioned at the beginning of the index (BEGIN), the end of
     // the index (END), or arbitrarily (UNPOSITIONED).  By default iterators are
     // unpositioned, since this avoids an extra seek in this situation where one
     // of the seek methods (such as Locate) is immediately called.
     public enum InitialPosition { BEGIN, END, UNPOSITIONED };
-
-    // A random access iterator that provides low-level access to the cells of
-    // the index.  Cells are sorted in increasing order of S2CellId.
-    public class Enumerator : IReversableEnumerator<S2ShapeIndexIdCell>
-    {
-        private readonly IReversableEnumerator<S2ShapeIndexIdCell> _it;
-
-        // Constructs an iterator positioned as specified.  By default iterators
-        // are unpositioned, since this avoids an extra seek in this situation
-        // where one of the seek methods (such as Locate) is immediately called.
-        //
-        // If you want to position the iterator at the beginning, e.g. in order to
-        // loop through the entire index, do this instead:
-        //
-        //   for (S2ShapeIndex.Iterator it(out index, S2ShapeIndex.InitialPosition.BEGIN);
-        //        !it.done(); it.Next()) { ... }
-        public Enumerator(S2ShapeIndex index)
-        {
-            _it = index.GetNewEnumerator();
-        }
-
-        // Returns the S2CellId of the current index cell.  If done() is true,
-        // returns a value larger than any valid S2CellId (S2CellId.Sentinel()).
-        public S2CellId Id => _it.Current.Item1;
-
-        // Returns a reference to the contents of the current index cell.
-        // REQUIRES: !done()
-        public S2ShapeIndexCell Cell => _it.Current.Item2;
-
-        public S2ShapeIndexIdCell Current => _it.Current;
-
-        object IEnumerator.Current => Current;
-
-        // Positions the iterator at the next index cell.
-        // REQUIRES: !done()
-        public bool MoveNext() => _it.MoveNext();
-
-        // If the iterator is already positioned at the beginning, returns false.
-        // Otherwise positions the iterator at the previous entry and returns true.
-        public bool MovePrevious() => _it.MovePrevious();
-        public void Reset() => _it.Reset();
-        public bool Done() => _it.Done();
-        public void SetPosition(int position) => _it.SetPosition(position);
-        public void Dispose() { GC.SuppressFinalize(this); }
-    }
-
-    public class ReversableEnumerator<T> : IReversableEnumerator<T>
-    {
-        private readonly IList<T> _arr;
-        private int position;
-        public ReversableEnumerator(IList<T> arr)
-        { _arr = arr; position = -1; }
-
-        public T Current => _arr[position];
-
-        object IEnumerator.Current => Current;
-
-        public void Dispose() { GC.SuppressFinalize(this); }
-        public bool MoveNext() => ++position >= 0 && position < _arr.Count;
-        public bool MovePrevious() => --position >= 0 && position < _arr.Count;
-        public void Reset() => position = -1;
-        public void SetPosition(int pos) => position = pos;
-        public bool Done() => position >= _arr.Count;
-    }
 
     // ShapeFactory is an interface for decoding vectors of S2Shapes.  It allows
     // random access to the shapes in order to support lazy decoding.  See
@@ -247,16 +174,16 @@ public abstract class S2ShapeIndex
         }
     }
 
-    public abstract IReversableEnumerator<S2ShapeIndexIdCell> GetNewEnumerator();
-    public abstract IEnumerable<S2ShapeIndexIdCell> GetNewEnumerable();
-    public abstract int GetEnumerableCount();
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+    public abstract EnumeratorBase<S2ShapeIndexCell> GetNewEnumerator(InitialPosition pos);
 
     // Let T be the target S2CellId.  If T is contained by some index cell I
     // (including equality), this method positions the iterator at I and
     // returns INDEXED.  Otherwise if T contains one or more (smaller) index
     // cells, it positions the iterator at the first such cell I and returns
     // SUBDIVIDED.  Otherwise it returns DISJOINT.
-    public (CellRelation cellRelation, int pos) LocateCell(S2CellId target)
+    public (S2CellRelation cellRelation, int pos) LocateCell(S2CellId target)
     {
         // Let T be the target, let I = cell_map_.GetLowerBound(T.RangeMin), and
         // let I' be the predecessor of I.  If T contains any index cells, then T
@@ -268,17 +195,17 @@ public abstract class S2ShapeIndex
         var id = GetCellId(pos);
         if (id is not null)
         {
-            if (id >= target && id.Value.RangeMin() <= target) return (CellRelation.INDEXED, pos);
-            if (id <= target.RangeMax()) return (CellRelation.SUBDIVIDED, pos);
+            if (id >= target && id.Value.RangeMin() <= target) return (S2CellRelation.INDEXED, pos);
+            if (id <= target.RangeMax()) return (S2CellRelation.SUBDIVIDED, pos);
         }
         if (--pos >= 0)
         {
             id = GetCellId(pos);
 
             if (id is not null && id.Value.RangeMax() >= target)
-                return (CellRelation.INDEXED, pos);
+                return (S2CellRelation.INDEXED, pos);
         }
-        return (CellRelation.DISJOINT, 0);
+        return (S2CellRelation.DISJOINT, 0);
     }
 
     // The default implementation of SearchPointPos(S2Point).
@@ -305,7 +232,165 @@ public abstract class S2ShapeIndex
     public abstract (int pos, bool found) SeekCell(S2CellId target);
 
     public abstract S2CellId? GetCellId(int pos);
-    public abstract S2ShapeIndexIdCell? GetIndexCell(int pos);
+    public abstract S2ShapeIndexCell? GetCell(int pos);
+
+    // A random access iterator that provides low-level access to the cells of
+    // the index.  Cells are sorted in increasing order of S2CellId.
+    public sealed class Enumerator : S2CellEnumerator<S2ShapeIndexCell>, IEnumerator<S2ShapeIndexCell>
+    {
+        private readonly EnumeratorBase<S2ShapeIndexCell> Enumerator_;
+
+        // Constructs an iterator positioned as specified.  By default iterators
+        // are unpositioned, since this avoids an extra seek in this situation
+        // where one of the seek methods (such as Locate) is immediately called.
+        //
+        // If you want to position the iterator at the beginning, e.g. in order to
+        // loop through the entire index, do this instead:
+        //
+        //   for (S2ShapeIndex.Iterator it(out index, S2ShapeIndex.InitialPosition.BEGIN);
+        //        !it.done(); it.Next()) { ... }
+        public Enumerator(S2ShapeIndex index, InitialPosition pos = InitialPosition.UNPOSITIONED) =>
+            Enumerator_ = index.GetNewEnumerator(pos);
+
+        // Returns the S2CellId of the current index cell.  If done() is true,
+        // returns a value larger than any valid S2CellId (S2CellId.Sentinel()).
+        public override S2CellId Id => Enumerator_.Id;
+
+        // Returns a reference to the contents of the current index cell.
+        // REQUIRES: !done()
+        public S2ShapeIndexCell Cell => Enumerator_.Cell!;
+
+        public override S2ShapeIndexCell Current => Enumerator_.Current;
+
+        object IEnumerator.Current => Current!;
+
+        // Positions the iterator at the next index cell.
+        // REQUIRES: !done()
+        public override bool MoveNext() => Enumerator_.MoveNext();
+
+        // If the iterator is already positioned at the beginning, returns false.
+        // Otherwise positions the iterator at the previous entry and returns true.
+        public override bool MovePrevious() => Enumerator_.MovePrevious();
+        public override void Reset() => Enumerator_.Reset();
+        public override bool Done() => Enumerator_.Done();
+
+        // Positions the iterator past the last index cell.
+        public override void Finish() => Enumerator_.Finish();
+        public override void SetPosition(int position) => Enumerator_.SetPosition(position);
+        public override void Dispose() { GC.SuppressFinalize(this); }
+
+        // Positions the iterator at the first cell with id() >= target, or at the
+        // end of the index if no such cell exists.
+        public override void Seek(S2CellId target) => Enumerator_.Seek(target);
+
+        // Positions the iterator at the cell containing target and returns true. If
+        // no such cell exists, return false and leave the iterator in an undefined
+        // (but valid) state.
+        public override bool Locate(S2Point target) => LocateImpl(this, target);
+
+        // Let T be the target S2CellId.  If T is contained by some index cell I
+        // (including equality), this method positions the iterator at I and
+        // returns INDEXED.  Otherwise if T contains one or more (smaller) index
+        // cells, it positions the iterator at the first such cell I and returns
+        // SUBDIVIDED.  Otherwise it returns DISJOINT and leaves the iterator
+        // positioned arbitrarily.
+        public override S2CellRelation Locate(S2CellId target) => LocateImpl(this, target);
+    }
+
+    // Each subtype of S2ShapeIndex should define an Iterator type derived
+    // from the following base class.
+    public abstract class EnumeratorBase<T> : S2CellEnumerator<T>
+    {
+        // Returns the S2CellId of the current index cell.  If done() is true,
+        // returns a value larger than any valid S2CellId (S2CellId::Sentinel()).
+        public override S2CellId Id { get => _Id; }
+        private S2CellId _Id;
+
+        // Returns the center point of the cell.
+        // REQUIRES: !done()
+        public S2Point Center
+        {
+            get
+            {
+                MyDebug.Assert(!Done());
+                return _Id.ToPoint();
+            }
+        }
+
+        // Returns a reference to the contents of the current index cell.
+        // REQUIRES: !done()
+        public virtual S2ShapeIndexCell? Cell
+        {
+            get
+            {
+                // Like other const methods, this method is thread-safe provided that it
+                // does not overlap with calls to non-const methods.
+                MyDebug.Assert(!Done());
+                S2ShapeIndexCell? cell;
+                lock (this)
+                {
+                    cell = _Cell;
+                }
+                if (cell is null)
+                {
+                    cell = GetCell();
+                    Cell = cell;
+                }
+                return cell;
+            }
+            private set
+            {
+                lock (this)
+                {
+                    _Cell = value;
+                }
+            }
+        }
+        protected S2ShapeIndexCell? _Cell { get; private set; }
+
+        protected EnumeratorBase() { _Id = S2CellId.Sentinel; _Cell = null; }
+
+        // Returns true if the iterator is positioned past the last index cell.
+        public override bool Done() => _Id == S2CellId.Sentinel;
+
+        // Sets the iterator state.  "cell" typically points to the cell contents,
+        // but may also be given as "nullptr" in order to implement decoding on
+        // demand.  In that situation, the first that the client attempts to
+        // access the cell contents, the GetCell() method is called and "cell_" is
+        // updated in a thread-safe way.
+        protected void SetState(S2CellId id, S2ShapeIndexCell? cell)
+        {
+            _Id = id;
+            Cell = cell;
+        }
+
+        // Sets the iterator state so that done() is true.
+        public void SetFinished()
+        {
+            SetState(S2CellId.Sentinel, null);
+        }
+
+        // This method is called to decode the contents of the current cell, if
+        // set_state() was previously called with a nullptr "cell" argument.  This
+        // allows decoding on demand for subtypes that keep the cell contents in
+        // an encoded state.  It does not need to be implemented at all if
+        // set_state() is always called with (cell != nullptr).
+        //
+        // REQUIRES: This method is thread-safe.
+        // REQUIRES: Multiple calls to this method return the same value.
+        protected abstract S2ShapeIndexCell? GetCell();
+    }
+}
+
+public static class EnumeratorBaseExtensions
+{
+    public static IEnumerable GetEnumerator<T>(this EnumeratorBase<T> me)
+    {
+        while (me.MoveNext())
+        {
+            yield return me.Current;
+        }
+    }
 }
 
 // S2ShapeIndexCell stores the index contents for a particular S2CellId.
@@ -315,7 +400,7 @@ public class S2ShapeIndexCell
     public S2ShapeIndexCell() { }
 
     // Returns the number of clipped shapes in this cell.
-    public int NumClipped() { return shapes_.Count; }
+    public int NumClipped() => shapes_.Count;
 
     // Returns the clipped shape at the given index.  Shapes are kept sorted in
     // increasing order of shape id.
@@ -325,10 +410,7 @@ public class S2ShapeIndexCell
 
     // Returns a pointer to the clipped shape corresponding to the given shape,
     // or null if the shape does not intersect this cell.
-    public S2ClippedShape FindClipped(S2Shape shape)
-    {
-        return FindClipped(shape.Id);
-    }
+    public S2ClippedShape? FindClipped(S2Shape shape) => FindClipped(shape.Id);
     public S2ClippedShape? FindClipped(int shape_id)
     {
         // Linear search is fine because the number of shapes per cell is typically
@@ -388,7 +470,7 @@ public class S2ShapeIndexCell
             int n = clipped.NumEdges;
             encoder.Ensure(Encoder.kVarintMax64 + n * Encoder.kVarintMax32);
             var ccc = clipped.ContainsCenter ? 2 : 0;
-            if (n >= 2 && n <= 17 && clipped.Edge(n - 1) - clipped.Edge(0) == n - 1)
+            if (n >= 2 && n <= 17 && clipped.Edges[n - 1] - clipped.Edges[0] == n - 1)
             {
                 // The cell contains a contiguous range of edges (*most common case*).
                 // If the starting edge id is small then we can encode the cell in one
@@ -399,7 +481,7 @@ public class S2ShapeIndexCell
                 //           bit 1: contains_center
                 //           bits 2-5: (num_edges - 2)
                 //           bits 6+: edge_id
-                encoder.PutVarInt64(clipped.Edge(0) << 6 | (n - 2) << 2 | ccc | 0);
+                encoder.PutVarInt64(clipped.Edges[0] << 6 | (n - 2) << 2 | ccc | 0);
             }
             else if (n == 1)
             {
@@ -409,7 +491,7 @@ public class S2ShapeIndexCell
                 // Encoding: bits 0-1: 1
                 //           bit 2: contains_center
                 //           bits 3+: edge_id
-                encoder.PutVarInt64(clipped.Edge(0) << 3 | ccc | 1);
+                encoder.PutVarInt64(clipped.Edges[0] << 3 | ccc | 1);
             }
             else
             {
@@ -446,7 +528,7 @@ public class S2ShapeIndexCell
                 int n = clipped.NumEdges;
                 encoder.Ensure((n + 2) * Encoder.kVarintMax32);
                 var ccc = clipped.ContainsCenter ? 2 : 0;
-                if (n >= 1 && n <= 16 && clipped.Edge(n - 1) - clipped.Edge(0) == n - 1)
+                if (n >= 1 && n <= 16 && clipped.Edges[n - 1] - clipped.Edges[0] == n - 1)
                 {
                     // The clipped shape has a contiguous range of up to 16 edges.  This
                     // encoding uses a 1-bit tag because it is by far the most common.
@@ -456,7 +538,7 @@ public class S2ShapeIndexCell
                     //           bits 2+: edge_id
                     // Next value: bits 0-3: (num_edges - 1)
                     //             bits 4+: shape_delta
-                    encoder.PutVarInt32(clipped.Edge(0) << 2 | ccc | 0);
+                    encoder.PutVarInt32(clipped.Edges[0] << 2 | ccc | 0);
                     encoder.PutVarInt32(shape_delta << 4 | (n - 1));
                 }
                 else if (n == 0)
@@ -499,36 +581,35 @@ public class S2ShapeIndexCell
         if (num_shape_ids == 1)
         {
             // Entire S2ShapeIndex contains only one shape.
-            var clippedTmp = new S2ClippedShape();
-            shapes_.Add(clippedTmp);
             if (!decoder.TryGetVarUInt64(out var header)) return false;
             if ((header & 1) == 0)
             {
                 // The cell contains a contiguous range of edges.
                 int num_edges = (int)(((header >> 2) & 15) + 2);
-                clippedTmp.Init(0 /*shape_id*/, num_edges);
-                clippedTmp.ContainsCenter = ((header & 2) != 0);
+                S2ClippedShape clippedTmp = new(0 /*shape_id*/, num_edges, (header & 2) != 0);
                 for (int i = 0, edge_id = (int)(header >> 6); i < num_edges; ++i)
                 {
-                    clippedTmp.SetEdge(i, edge_id + i);
+                    clippedTmp.Edges[i] = edge_id + i;
                 }
+                shapes_.Add(clippedTmp);
                 return true;
             }
             if ((header & 2) == 0)
             {
                 // The cell contains a single edge.
-                clippedTmp.Init(0 /*shape_id*/, 1 /*num_edges*/);
-                clippedTmp.ContainsCenter = ((header & 4) != 0);
-                clippedTmp.SetEdge(0, (int)(header >> 3));
+                S2ClippedShape clippedTmp = new(0 /*shape_id*/, 1 /*num_edges*/, (header & 4) != 0);
+                clippedTmp.Edges[0] = (int)(header >> 3);
+                shapes_.Add(clippedTmp);
                 return true;
             }
             else
             {
                 // The cell contains some other combination of edges.
                 int num_edges = (int)(header >> 3);
-                clippedTmp.Init(0 /*shape_id*/, num_edges);
-                clippedTmp.ContainsCenter = ((header & 4) != 0);
-                return DecodeEdges(num_edges, clippedTmp, decoder);
+                S2ClippedShape clippedTmp = new(0 /*shape_id*/, num_edges, (header & 4) != 0);
+                var res = DecodeEdges(num_edges, clippedTmp, decoder);
+                shapes_.Add(clippedTmp);
+                return res;
             }
         }
         // S2ShapeIndex contains more than one shape.
@@ -543,8 +624,6 @@ public class S2ShapeIndexCell
         int shape_id = 0;
         for (int j = 0; j < num_clipped; ++j, ++shape_id)
         {
-            var clipped = new S2ClippedShape();
-            shapes_.Add(clipped);
             if (j > 0 && !decoder.TryGetVarUInt32(out header32)) return false;
             if ((header32 & 1) == 0)
             {
@@ -552,19 +631,19 @@ public class S2ShapeIndexCell
                 if (!decoder.TryGetVarUInt32(out var shape_id_count)) return false;
                 shape_id += (int)(shape_id_count >> 4);
                 int num_edges = (int)((shape_id_count & 15) + 1);
-                clipped.Init(shape_id, num_edges);
-                clipped.ContainsCenter = ((header32 & 2) != 0);
+                S2ClippedShape clipped = new(shape_id, num_edges, (header32 & 2) != 0);
                 for (int i = 0, edge_id = (int)(header32 >> 2); i < num_edges; ++i)
                 {
-                    clipped.SetEdge(i, edge_id + i);
+                    clipped.Edges[i] = edge_id + i;
                 }
+                shapes_.Add(clipped);
             }
             else if ((header32 & 7) == 7)
             {
                 // The clipped shape has no edges.
                 shape_id += (int)(header32 >> 4);
-                clipped.Init(shape_id, 0);
-                clipped.ContainsCenter = ((header32 & 8) != 0);
+                S2ClippedShape clipped = new(shape_id, 0, (header32 & 8) != 0);
+                shapes_.Add(clipped);
             }
             else
             {
@@ -573,9 +652,9 @@ public class S2ShapeIndexCell
                 if (!decoder.TryGetVarUInt32(out var shape_delta)) return false;
                 shape_id += (int)shape_delta;
                 int num_edges = (int)((header32 >> 3) + 1);
-                clipped.Init(shape_id, num_edges);
-                clipped.ContainsCenter = ((header32 & 4) != 0);
+                S2ClippedShape clipped = new(shape_id, num_edges, (header32 & 4) != 0);
                 if (!DecodeEdges(num_edges, clipped, decoder)) return false;
+                shapes_.Add(clipped);
             }
         }
         return true;
@@ -598,7 +677,7 @@ public class S2ShapeIndexCell
         int num_edges = clipped.NumEdges;
         for (int i = 0; i < num_edges; ++i)
         {
-            int edge_id = clipped.Edge(i);
+            int edge_id = clipped.Edges[i];
             MyDebug.Assert(edge_id >= edge_id_base);
             int delta = edge_id - edge_id_base;
             if (i + 1 == num_edges)
@@ -610,7 +689,7 @@ public class S2ShapeIndexCell
             {
                 // Count the edges in this contiguous range.
                 int count = 1;
-                for (; i + 1 < num_edges && clipped.Edge(i + 1) == edge_id + count; ++i)
+                for (; i + 1 < num_edges && clipped.Edges[i + 1] == edge_id + count; ++i)
                 {
                     ++count;
                 }
@@ -639,7 +718,7 @@ public class S2ShapeIndexCell
             if (i + 1 == num_edges)
             {
                 // The last edge is encoded without an edge count.
-                clipped.SetEdge(i++, edge_id + (int)delta);
+                clipped.Edges[i++] = edge_id + (int)delta;
             }
             else
             {
@@ -654,7 +733,7 @@ public class S2ShapeIndexCell
                 edge_id += (int)delta;
                 for (; count > 0; --count, ++i, ++edge_id)
                 {
-                    clipped.SetEdge(i, edge_id);
+                    clipped.Edges[i] = edge_id;
                 }
             }
         }
@@ -688,45 +767,49 @@ public class S2ShapeIndexCell
 // original shape.
 public class S2ClippedShape
 {
-    public S2ClippedShape() { }
-    public S2ClippedShape(Int32 shape_id, Int32 num_edges) => Init(shape_id, num_edges);
-
-    // Initialize an S2ClippedShape to hold the given number of edges.
-    public void Init(Int32 shape_id, Int32 num_edges)
-    {
-        ShapeId = shape_id;
-        NumEdges = num_edges;
-        ContainsCenter = false;
-        edges_ = new Int32[num_edges];
-    }
-
+    #region Fields and Properties
+    
     // The shape id of the clipped shape.
-    public int ShapeId { get; private set; }
+    public int ShapeId { get; }
 
     // Returns true if the center of the S2CellId is inside the shape.  Returns
     // false for shapes that do not have an interior.
     //
     // Set "contains_center_" to indicate whether this clipped shape contains the
     // center of the cell to which it belongs.
-    public bool ContainsCenter { get; set; } = true;
+    public bool ContainsCenter { get; set; }
 
     // The number of edges that intersect the S2CellId.
-    public int NumEdges { get; private set; } = 31;
+    public int NumEdges { get; }
 
+    // If there are more than two edges, this field holds a pointer.
+    // Otherwise it holds an array of edge ids.
+    //
     // Returns the edge id of the given edge in this clipped shape.  Edges are
     // sorted in increasing order of edge id.
     //
     // REQUIRES: 0 <= i < num_edges()
-    public int Edge(int i)
-    {
-        return edges_[i];
-    }
+    //
     // Set the i-th edge of this clipped shape to be the given edge of the
     // original shape.
-    public void SetEdge(int i, int edge)
+    //
+    // Owned by the containing S2ShapeIndexCell.
+    public Int32[] Edges { get; } 
+
+    #endregion
+
+    #region Constructor
+
+    // Initialize an S2ClippedShape to hold the given number of edges.
+    public S2ClippedShape(Int32 shape_id, Int32 num_edges, bool containsCenter = false)
     {
-        edges_[i] = edge;
+        ShapeId = shape_id;
+        NumEdges = num_edges;
+        ContainsCenter = containsCenter;
+        Edges = new Int32[num_edges];
     }
+
+    #endregion
 
     // Returns true if the clipped shape contains the given edge id.
     public bool ContainsEdge(int id)
@@ -735,12 +818,8 @@ public class S2ClippedShape
         // very small (less than 10).
         for (int e = 0; e < NumEdges; ++e)
         {
-            if (Edge(e) == id) return true;
+            if (Edges[e] == id) return true;
         }
         return false;
     }
-
-    // If there are more than two edges, this field holds a pointer.
-    // Otherwise it holds an array of edge ids.
-    private Int32[] edges_;  // Owned by the containing S2ShapeIndexCell.
 }

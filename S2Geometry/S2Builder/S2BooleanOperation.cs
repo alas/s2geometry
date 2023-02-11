@@ -2328,15 +2328,12 @@ public class S2BooleanOperation
         private static byte GetFaceMask(S2ShapeIndex index)
         {
             byte mask = 0;
-            var pos = 0;
-            var count = index.GetEnumerableCount();
-            while (pos < count)
+            S2ShapeIndex.Enumerator it = new(index, S2ShapeIndex.InitialPosition.BEGIN);
+            while (!it.Done())
             {
-                var cellId = index.GetCellId(pos)!.Value;
-                int face = (int)cellId.Face();
+                var face = it.Id.Face();
                 mask |= (byte)(1 << face);
-                var (pos2, _) = index.SeekCell(S2CellId.FromFace(face + 1).RangeMin());
-                pos = pos2;
+                it.Seek(S2CellId.FromFace(face + 1).RangeMin());
             }
             return mask;
         }

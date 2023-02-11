@@ -210,10 +210,10 @@ public class S2ShapeIndexRegionTests
             iter_.SetPosition(pos);
             switch (cellRelation)
             {
-                case S2ShapeIndex.CellRelation.DISJOINT:
+                case S2CellRelation.DISJOINT:
                     return;
 
-                case S2ShapeIndex.CellRelation.SUBDIVIDED:
+                case S2CellRelation.SUBDIVIDED:
                     {
                         S2Cell[] children = new S2Cell[4];
                         Assert.True(target.Subdivide(children));
@@ -223,7 +223,7 @@ public class S2ShapeIndexRegionTests
                         return;
                     }
 
-                case S2ShapeIndex.CellRelation.INDEXED:
+                case S2CellRelation.INDEXED:
                     {
                         // We check a few random descendant cells by continuing randomly down
                         // one branch of the tree for a few levels.

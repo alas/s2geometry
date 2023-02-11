@@ -257,7 +257,7 @@ public readonly record struct S2CellId(UInt64 Id) : IComparable<S2CellId>, IDeco
     public bool IsValid() => Face() < kNumFaces && (LowestOnBit() & 0x1555555555555555UL) != 0;
 
     // Which cube face this cell belongs to, in the range 0..5.
-    public ulong Face() => Id >> kPosBits;
+    public int Face() => (int)(Id >> kPosBits);
 
     // The position of the cell center along the Hilbert curve over this face,
     // in the range 0..(2**kPosBits-1).
@@ -863,7 +863,7 @@ public readonly record struct S2CellId(UInt64 Id) : IComparable<S2CellId>, IDeco
         MaybeInit();
 
         int i = 0, j = 0;
-        var face = (int)Face();
+        var face = Face();
         int bits = face & S2.kSwapMask;
 
         // Each iteration maps 8 bits of the Hilbert curve position into

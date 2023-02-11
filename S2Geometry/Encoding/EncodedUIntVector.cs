@@ -125,11 +125,11 @@ public class EncodedUIntVector<T> where T : IUnsignedNumber<T>, IBinaryInteger<T
         MyDebug.Assert(length >= 0 && length <= typeof(T).SizeOf());
         MyDebug.Assert(encoder.Avail() >= length);
 
-        var bytes = new byte[length];
-        value.WriteLittleEndian(bytes, 0);
-        foreach (var b in bytes)
+        var bytes = new byte[typeof(T).SizeOf()];
+        value.WriteLittleEndian(bytes);
+        for (int i = 0; i < length; i++)
         {
-            encoder.Put8(b);
+            encoder.Put8(bytes[i]);
         }
     }
 

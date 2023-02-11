@@ -25,12 +25,12 @@ public class S2CellIdTests
     [Fact]
     internal void Test_S2CellId_FaceDefinitions()
     {
-        Assert.Equal(0UL, GetCellId(0, 0).Face());
-        Assert.Equal(1UL, GetCellId(0, 90).Face());
-        Assert.Equal(2UL, GetCellId(90, 0).Face());
-        Assert.Equal(3UL, GetCellId(0, 180).Face());
-        Assert.Equal(4UL, GetCellId(0, -90).Face());
-        Assert.Equal(5UL, GetCellId(-90, 0).Face());
+        Assert.Equal(0, GetCellId(0, 0).Face());
+        Assert.Equal(1, GetCellId(0, 90).Face());
+        Assert.Equal(2, GetCellId(90, 0).Face());
+        Assert.Equal(3, GetCellId(0, 180).Face());
+        Assert.Equal(4, GetCellId(0, -90).Face());
+        Assert.Equal(5, GetCellId(-90, 0).Face());
     }
 
     [Fact]
@@ -47,7 +47,7 @@ public class S2CellIdTests
     {
         S2CellId id = S2CellId.FromFacePosLevel(3, 0x12345678, S2.kMaxCellLevel - 4);
         Assert.True(id.IsValid());
-        Assert.Equal(3UL, id.Face());
+        Assert.Equal(3, id.Face());
         Assert.Equal(0x12345700UL, id.Pos());
         Assert.Equal(S2.kMaxCellLevel - 4, id.Level());
         Assert.False(id.IsLeaf());
@@ -421,7 +421,7 @@ public class S2CellIdTests
         for (int i = 0; i < 4; ++i)
         {
             Assert.True(face_nbrs[i].IsFace());
-            Assert.Equal(out_faces[i], (int)face_nbrs[i].Face());
+            Assert.Equal(out_faces[i], face_nbrs[i].Face());
         }
 
         // Check the edge neighbors of the corner cells at all levels.  This case is
@@ -597,7 +597,7 @@ public class S2CellIdTests
         cells.Add(parent);
         if (parent.Level() == kMaxExpandLevel) return;
         int face = parent.ToFaceIJOrientation(out _, out _, out var orientation, true);
-        Assert.Equal((int)parent.Face(), face);
+        Assert.Equal(parent.Face(), face);
 
         var child = parent.ChildBegin();
         for (int pos = 0; child != parent.ChildEnd(); child = child.Next(), ++pos)

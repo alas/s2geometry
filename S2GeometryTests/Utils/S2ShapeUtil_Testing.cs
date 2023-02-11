@@ -52,15 +52,15 @@ internal class S2ShapeUtil_Testing
         }
 
         // Check that both indexes have identical cell contents.
-        var a_it = a.GetNewEnumerator();
-        var b_it = b.GetNewEnumerator();
+        var a_it = a.GetNewEnumerator(S2ShapeIndex.InitialPosition.BEGIN);
+        var b_it = b.GetNewEnumerator(S2ShapeIndex.InitialPosition.BEGIN);
         var aHasNext = a_it.MoveNext();
         var bHasNext = b_it.MoveNext();
         while (aHasNext && bHasNext)
         {
-            Assert.True(a_it.Current.Item1 == b_it.Current.Item1);
-            var a_cell = a_it.Current.Item2;
-            var b_cell = b_it.Current.Item2;
+            Assert.True(a_it.Id == b_it.Id);
+            var a_cell = a_it.Current;
+            var b_cell = b_it.Current;
             Assert.True(a_cell.NumClipped() == b_cell.NumClipped());
             for (var i = 0; i < a_cell.NumClipped(); ++i)
             {
@@ -71,7 +71,7 @@ internal class S2ShapeUtil_Testing
                 Assert.True(a_clipped.NumEdges == b_clipped.NumEdges);
                 for (int j = 0; j < a_clipped.NumEdges; ++j)
                 {
-                    Assert.True(a_clipped.Edge(j) == b_clipped.Edge(j));
+                    Assert.True(a_clipped.Edges[j] == b_clipped.Edges[j]);
                 }
             }
             aHasNext = a_it.MoveNext();
@@ -85,24 +85,24 @@ internal class S2ShapeUtil_Testing
         b_it.Reset();
         a_it.MoveNext();
         b_it.MoveNext();
-        Assert.True(a_it.Current.Item1 == b_it.Current.Item1);
+        Assert.True(a_it.Id == b_it.Id);
         aHasNext = a_it.MoveNext();
         bHasNext = b_it.MoveNext();
         if (aHasNext)
         {
-            Assert.True(a_it.Current.Item1 == b_it.Current.Item1);
+            Assert.True(a_it.Id == b_it.Id);
             Assert.True(aHasNext == bHasNext);
-            // Assert.True(a_it.MovePrevious());
-            // Assert.True(b_it.MovePrevious());
-            Assert.True(a_it.Current.Item1 == b_it.Current.Item1);
+            Assert.True(a_it.MovePrevious());
+            Assert.True(b_it.MovePrevious());
+            Assert.True(a_it.Id == b_it.Id);
         }
-        // Assert.False(a_it.MovePrevious());
-        // Assert.False(b_it.MovePrevious());
-        // a_it.Finish();
-        // b_it.Finish();
-        // Assert.True(a_it.id() == b_it.id());
-        // a_it.Seek(a_it.id().Next);
-        // b_it.Seek(b_it.id().Next);
-        // Assert.True(a_it.id() == b_it.id());
+        Assert.False(a_it.MovePrevious());
+        Assert.False(b_it.MovePrevious());
+        a_it.Finish();
+        b_it.Finish();
+        Assert.True(a_it.Id == b_it.Id);
+        a_it.Seek(a_it.Id.Next());
+        b_it.Seek(b_it.Id.Next());
+        Assert.True(a_it.Id == b_it.Id);
     }
 }

@@ -90,9 +90,10 @@ public class MutableS2ShapeIndexTests
         TestEncodeDecode(index_);
         // Since all edges span the diagonal of a face, no subdivision should
         // have occurred (with the default index options).
-        foreach (var it in index_.GetNewEnumerable())
+        for (var it = new MutableS2ShapeIndex.Enumerator(index_, S2ShapeIndex.InitialPosition.BEGIN);
+            !it.Done(); it.MoveNext())
         {
-            Assert.Equal(0, it.Item1.Level());
+            Assert.Equal(0, it.Id.Level());
         }
     }
 
@@ -109,12 +110,12 @@ public class MutableS2ShapeIndexTests
         TestEncodeDecode(index_);
         // Check that exactly 3 index cells contain the degenerate edge.
         int count = 0;
-        foreach (var it in index_.GetNewEnumerable())
+        for (MutableS2ShapeIndex.Enumerator it = new(index_, S2ShapeIndex.InitialPosition.BEGIN);
+            !it.Done(); it.MoveNext(), ++count)
         {
-            ++count;
-            Assert.True(it.Item1.IsLeaf());
-            Assert.Equal(1, it.Item2.NumClipped());
-            Assert.Equal(1, it.Item2.Clipped(0).NumEdges);
+            Assert.True(it.Id.IsLeaf());
+            Assert.Equal(1, it.Cell.NumClipped());
+            Assert.Equal(1, it.Cell.Clipped(0).NumEdges);
         }
         Assert.Equal(3, count);
     }
@@ -137,9 +138,9 @@ public class MutableS2ShapeIndexTests
         QuadraticValidate(index_);
         TestEncodeDecode(index_);
         // Check that there is exactly one index cell and that it is a leaf cell.
-        var it = index_.GetNewEnumerator();
+        MutableS2ShapeIndex.Enumerator it = new(index_, S2ShapeIndex.InitialPosition.BEGIN);
         Assert.True(it.MoveNext());
-        Assert.True(it.Current.Item1.IsLeaf());
+        Assert.True(it.Id.IsLeaf());
         Assert.False(it.MoveNext());
     }
 
@@ -227,9 +228,11 @@ public class MutableS2ShapeIndexTests
                 {
                     int i = S2Testing.Random.Uniform(released.Count);
                     var shape = released[i];
-                    index_.Add(released[i]);  // Changes shape.Current.Item1.
+                    index_.Add(released[i]);  // Changes shape->id().
                     released.RemoveAt(i);
                     added.Add(shape.Id);
+                    //S2_VLOG(1) << "  Added shape " << shape->id()
+                            //<< " (" << shape << ")";
                 }
             }
             QuadraticValidate(index_);
@@ -273,7 +276,7 @@ public class MutableS2ShapeIndexTests
         S2Loop loop = new(new S2Cell(S2CellId.Begin(S2.kMaxCellLevel)));
         index.Add(new S2Loop.Shape(loop));
         // No geometry intersects face 1, so there should be no index cells there.
-        Assert.Equal(S2ShapeIndex.CellRelation.DISJOINT, index.LocateCell(S2CellId.FromFace(1)).cellRelation);
+        Assert.Equal(S2CellRelation.DISJOINT, index.LocateCell(S2CellId.FromFace(1)).cellRelation);
     }
 
     [Fact]
@@ -356,9 +359,10 @@ public class MutableS2ShapeIndexTests
 
         // Count the number of index cells at each level.
         var counts = new int[S2.kMaxCellLevel + 1];
-        foreach (var it in index_.GetNewEnumerable())
+        for (MutableS2ShapeIndex.Enumerator it = new(index_, S2ShapeIndex.InitialPosition.BEGIN);
+             !it.Done(); it.MoveNext())
         {
-            ++counts[it.Item1.Level()];
+            ++counts[it.Id.Level()];
         }
         int sum = 0;
         for (int i = 0; i < counts.Length; ++i)
@@ -559,7 +563,7 @@ public class MutableS2ShapeIndexTests
 
         // "min_cellid" is the first S2CellId that has not been validated yet.
         var min_cellid = S2CellId.Begin(S2.kMaxCellLevel);
-        var it = index.GetNewEnumerator();
+        var it = index.GetNewEnumerator(S2ShapeIndex.InitialPosition.BEGIN);
         var done = it.MoveNext();
         for (;;)
         {
@@ -568,7 +572,7 @@ public class MutableS2ShapeIndexTests
             S2CellUnion skipped = new();
             if (!done)
             {
-                S2CellId cellid = it.Current.Item1;
+                S2CellId cellid = it.Id;
                 Assert.True(cellid >= min_cellid);
                 skipped.InitFromBeginEnd(min_cellid, cellid.RangeMin());
                 min_cellid = cellid.RangeMax().Next();
@@ -587,7 +591,7 @@ public class MutableS2ShapeIndexTests
             {
                 S2Shape? shape = index.Shape(id);
                 S2ClippedShape? clipped = null;
-                if (!done) clipped = it.Current.Item2.FindClipped(id);
+                if (!done) clipped = it.Current.FindClipped(id);
 
                 // First check that contains_center() is set correctly.
                 foreach (var skipped_id in skipped)
@@ -597,8 +601,8 @@ public class MutableS2ShapeIndexTests
                 if (!done)
                 {
                     bool contains_center = clipped is not null && clipped.ContainsCenter;
-                    ValidateInterior(shape, it.Current.Item1, contains_center);
-                    S2PaddedCell pcell = new(it.Current.Item1, kCellPadding);
+                    ValidateInterior(shape, it.Id, contains_center);
+                    S2PaddedCell pcell = new(it.Id, kCellPadding);
                     if (shape is not null)
                     {
                         num_containing_shapes +=
@@ -622,12 +626,12 @@ public class MutableS2ShapeIndexTests
                     if (!done)
                     {
                         bool has_edge = clipped is not null && clipped.ContainsEdge(e);
-                        ValidateEdge(edge.V0, edge.V1, it.Current.Item1, has_edge);
+                        ValidateEdge(edge.V0, edge.V1, it.Id, has_edge);
                         int max_level = GetEdgeMaxLevel(edge);
                         if (has_edge)
                         {
                             ++num_edges;
-                            if (it.Current.Item1.Level() < max_level) ++num_short_edges;
+                            if (it.Id.Level() < max_level) ++num_short_edges;
                         }
                     }
                 }
@@ -659,7 +663,7 @@ public class MutableS2ShapeIndexTests
         var padding = kCellPadding;
         padding += (index_has_edge ? 1 : -1) * S2EdgeClipping.kIntersectsRectErrorUVDist;
         var bound = id.BoundUV().Expanded(padding);
-        Assert.Equal(S2EdgeClipping.ClipToPaddedFace(a, b, (int)id.Face(), padding, out var a_uv, out var b_uv)
+        Assert.Equal(S2EdgeClipping.ClipToPaddedFace(a, b, id.Face(), padding, out var a_uv, out var b_uv)
                   && S2EdgeClipping.IntersectsRect(a_uv, b_uv, bound),
                   index_has_edge);
     }
@@ -720,63 +724,56 @@ public class MutableS2ShapeIndexTests
 
     private static void TestEnumeratorMethods(MutableS2ShapeIndex index)
     {
-        S2ShapeIndex.Enumerator it = new(index);
+        MutableS2ShapeIndex.Enumerator it = new(index, S2ShapeIndex.InitialPosition.BEGIN);
         Assert.False(it.MovePrevious());
-        it.Reset();
+        it.Finish();
+        Assert.True(it.Done());
         List<S2CellId> ids = new();
-        S2ShapeIndex.Enumerator it2 = new(index);
+        MutableS2ShapeIndex.Enumerator it2 = new(index);
         S2CellId min_cellid = S2CellId.Begin(S2.kMaxCellLevel);
-        while (it.MoveNext())
+        for (it.Reset(); !it.Done(); it.MoveNext())
         {
-            var cellid = it.Current.Item1;
+            var cellid = it.Id;
             var skipped = S2CellUnion.FromBeginEnd(min_cellid, cellid.RangeMin());
             foreach (var skipped_id in skipped)
             {
-                Assert.False(index.LocatePoint(skipped_id.ToPoint()).found);
-                Assert.Equal(S2ShapeIndex.CellRelation.DISJOINT, index.LocateCell(skipped_id).cellRelation);
+                Assert.False(it2.Locate(skipped_id.ToPoint()));
+                Assert.Equal(S2CellRelation.DISJOINT, it2.Locate(skipped_id));
                 it2.Reset();
-                it2.SetPosition(index.SeekCell(skipped_id).pos);
-                Assert.Equal(cellid, it2.Current.Item1);
+                it2.Seek(skipped_id);
+                Assert.Equal(cellid, it2.Id);
             }
             if (ids.Any())
             {
                 it2 = it;
                 Assert.True(it2.MovePrevious());
-                Assert.Equal(ids.Last(), it2.Current.Item1);
+                Assert.Equal(ids.Last(), it2.Id);
                 it2.MoveNext();
-                Assert.Equal(cellid, it2.Current.Item1);
-                it2.SetPosition(index.SeekCell(ids.Last()).pos);
-                Assert.Equal(ids.Last(), it2.Current.Item1);
+                Assert.Equal(cellid, it2.Id);
+                it2.Seek(ids.Last());
+                Assert.Equal(ids.Last(), it2.Id);
             }
             it2.Reset();
-            Assert.Equal(cellid.ToPoint(), it.Current.Item1.ToPoint());
-            var (pos, found) = index.LocatePoint(it.Current.Item1.ToPoint());
-            Assert.True(found);
-            it2.SetPosition(pos);
-            Assert.Equal(cellid, it2.Current.Item1);
+            Assert.Equal(cellid.ToPoint(), it.Center);
+            Assert.True(it2.Locate(it.Center));
+            Assert.Equal(cellid, it2.Id);
             it2.Reset();
-            var (rel2, pos2) = index.LocateCell(cellid);
-            Assert.Equal(S2ShapeIndex.CellRelation.INDEXED, rel2);
-            it2.SetPosition(pos2);
-            Assert.Equal(cellid, it2.Current.Item1);
+            Assert.Equal(S2CellRelation.INDEXED, it2.Locate(cellid));
+            Assert.Equal(cellid, it2.Id);
             if (!cellid.IsFace())
             {
                 it2.Reset();
-                var (rel3, pos3) = index.LocateCell(cellid.Parent());
-                Assert.Equal(S2ShapeIndex.CellRelation.SUBDIVIDED, rel3);
-                it2.SetPosition(pos3);
-                Assert.True(it2.Current.Item1 >= cellid);
-                Assert.True(it2.Current.Item1 >= cellid.Parent().RangeMin());
+                Assert.Equal(S2CellRelation.SUBDIVIDED, it2.Locate(cellid.Parent()));
+                Assert.True(it2.Id <= cellid);
+                Assert.True(it2.Id >= cellid.Parent().RangeMin());
             }
             if (!cellid.IsLeaf())
             {
                 for (int i = 0; i < 4; ++i)
                 {
                     it2.Reset();
-                    var (rel3, pos3) = index.LocateCell(cellid.Child(i));
-                    Assert.Equal(S2ShapeIndex.CellRelation.INDEXED, rel3);
-                    it2.SetPosition(pos3);
-                    Assert.Equal(cellid, it2.Current.Item1);
+                    Assert.Equal(S2CellRelation.INDEXED, it2.Locate(cellid.Child(i)));
+                    Assert.Equal(cellid, it2.Id);
                 }
             }
             ids.Add(cellid);

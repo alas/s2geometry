@@ -1,5 +1,6 @@
 namespace S2Geometry;
 
+using static S2Geometry.S2ShapeIndex;
 using Options = S2ContainsPointQueryOptions;
 
 public static class S2ContainsPointQueryFactory
@@ -31,6 +32,8 @@ public static class S2ContainsPointQueryFactory
 // rather than constructing a new one each time.
 public class S2ContainsPointQuery<TIndex> where TIndex : S2ShapeIndex
 {
+    public EnumeratorBase<S2ShapeIndexCell> Iterator { get; }
+
     // Rather than calling this constructor, which requires specifying the
     // IndexType template argument explicitly, the preferred idiom is to call
     // MakeS2ContainsPointQuery() instead.  For example:
@@ -40,6 +43,7 @@ public class S2ContainsPointQuery<TIndex> where TIndex : S2ShapeIndex
     {
         Index = index;
         Options_ = options ?? new Options();
+        Iterator = index.GetNewEnumerator(InitialPosition.UNPOSITIONED);
     }
 
     // Convenience constructor that accepts the S2VertexModel directly.
@@ -56,12 +60,12 @@ public class S2ContainsPointQuery<TIndex> where TIndex : S2ShapeIndex
         var (pos, found) = Index.LocatePoint(p);
         if (!found) return false;
 
-        var icell = Index.GetIndexCell(pos);
-        var cell = icell.Value.Item2;
+        var icell = Index.GetCellId(pos)!.Value;
+        var cell = Index.GetCell(pos)!;
         int num_clipped = cell.NumClipped();
         for (int s = 0; s < num_clipped; ++s)
         {
-            if (ShapeContains(icell.Value.Item1, cell.Clipped(s), p)) return true;
+            if (ShapeContains(icell, cell.Clipped(s), p)) return true;
         }
         return false;
     }
@@ -75,11 +79,11 @@ public class S2ContainsPointQuery<TIndex> where TIndex : S2ShapeIndex
         var (pos, found) = Index.LocatePoint(p);
         if (!found) return false;
 
-        var icell = Index.GetIndexCell(pos);
-        var cell = icell.Value.Item2;
+        var icell = Index.GetCellId(pos)!.Value;
+        var cell = Index.GetCell(pos)!;
         var clipped = cell.FindClipped(shape.Id);
         if (clipped is null) return false;
-        return ShapeContains(icell.Value.Item1, clipped, p);
+        return ShapeContains(icell, clipped, p);
     }
 
     // Visits all shapes in the given index() that contain the given point "p",
@@ -103,14 +107,14 @@ public class S2ContainsPointQuery<TIndex> where TIndex : S2ShapeIndex
         var (pos, found) = Index.LocatePoint(p);
         if (!found) return true;
 
-        var icell = Index.GetIndexCell(pos);
-        var cell = icell.Value.Item2;
+        var icell = Index.GetCellId(pos)!.Value;
+        var cell = Index.GetCell(pos)!;
         int num_clipped = cell.NumClipped();
         for (int s = 0; s < num_clipped; ++s)
         {
             var clipped = cell.Clipped(s);
-            if (ShapeContains(icell.Value.Item1, clipped, p) &&
-                !visitor(Index.Shape(clipped.ShapeId)))
+            if (ShapeContains(icell, clipped, p) &&
+                !visitor(Index.Shape(clipped.ShapeId)!))
             {
                 return false;
             }
@@ -144,8 +148,8 @@ public class S2ContainsPointQuery<TIndex> where TIndex : S2ShapeIndex
         var (pos, found) = Index.LocatePoint(p);
         if (!found) return true;
 
-        var icell = Index.GetIndexCell(pos);
-        var cell = icell.Value.Item2;
+        var icell = Index.GetCellId(pos)!.Value;
+        var cell = Index.GetCell(pos)!;
         int num_clipped = cell.NumClipped();
         for (int s = 0; s < num_clipped; ++s)
         {
@@ -155,8 +159,8 @@ public class S2ContainsPointQuery<TIndex> where TIndex : S2ShapeIndex
             var shape = Index.Shape(clipped.ShapeId);
             for (int i = 0; i < num_edges; ++i)
             {
-                int edge_id = clipped.Edge(i);
-                var edge = shape.GetEdge(edge_id);
+                int edge_id = clipped.Edges[i];
+                var edge = shape!.GetEdge(edge_id);
                 if ((edge.V0 == p || edge.V1 == p) &&
                     !visitor(new(shape.Id, edge_id, edge)))
                 {
@@ -189,7 +193,7 @@ public class S2ContainsPointQuery<TIndex> where TIndex : S2ShapeIndex
                 // Otherwise, the point is contained if and only if it matches a vertex.
                 for (int i = 0; i < num_edges; ++i)
                 {
-                    var edge = shape.GetEdge(clipped.Edge(i));
+                    var edge = shape.GetEdge(clipped.Edges[i]);
                     if (edge.V0 == p || edge.V1 == p) return true;
                 }
                 return false;
@@ -199,7 +203,7 @@ public class S2ContainsPointQuery<TIndex> where TIndex : S2ShapeIndex
             var crosser = new S2CopyingEdgeCrosser(cellId.ToPoint(), p);
             for (int i = 0; i < num_edges; ++i)
             {
-                var edge = shape.GetEdge(clipped.Edge(i));
+                var edge = shape.GetEdge(clipped.Edges[i]);
                 int sign = crosser.CrossingSign(edge.V0, edge.V1);
                 if (sign < 0) continue;
                 if (sign == 0)

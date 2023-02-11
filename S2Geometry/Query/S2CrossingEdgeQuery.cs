@@ -191,7 +191,7 @@ public class S2CrossingEdgeQuery
                 var clipped = cell.Clipped(s);
                 for (int j = 0; j < clipped.NumEdges; ++j)
                 {
-                    if (!visitor(new(clipped.ShapeId, clipped.Edge(j))))
+                    if (!visitor(new(clipped.ShapeId, clipped.Edges[j])))
                     {
                         return false;
                     }
@@ -218,7 +218,7 @@ public class S2CrossingEdgeQuery
             if (clipped is null) return true;
             for (int j = 0; j < clipped.NumEdges; ++j)
             {
-                if (!visitor(new(shape.Id, clipped.Edge(j)))) return false;
+                if (!visitor(new(shape.Id, clipped.Edges[j]))) return false;
             }
             return true;
         });
@@ -263,14 +263,15 @@ public class S2CrossingEdgeQuery
             //  3. edge_root does not intersect any index cells.  In this case there
             //     is nothing to do.
             var (relation, pos) = Index.LocateCell(edge_root);
-            if (relation == S2ShapeIndex.CellRelation.INDEXED)
+            if (relation == S2CellRelation.INDEXED)
             {
-                var icell = Index.GetIndexCell(pos);
+                var idcell = Index.GetCellId(pos);
+                var indexcell = Index.GetCell(pos);
                 // edge_root is an index cell or is contained by an index cell (case 1).
-                MyDebug.Assert(icell.Value.Item1.Contains(edge_root));
-                if (!visitor(icell.Value.Item2)) return false;
+                MyDebug.Assert(idcell!.Value.Contains(edge_root));
+                if (!visitor(indexcell!)) return false;
             }
-            else if (relation == S2ShapeIndex.CellRelation.SUBDIVIDED)
+            else if (relation == S2CellRelation.SUBDIVIDED)
             {
                 // edge_root is subdivided into one or more index cells (case 2).  We
                 // find the cells intersected by a0a1 using recursive subdivision.
@@ -298,7 +299,7 @@ public class S2CrossingEdgeQuery
         visitor_ = visitor;
         // We use padding when clipping to ensure that the result is non-empty
         // whenever the edge (a0, a1) intersects the given root cell.
-        if (S2EdgeClipping.ClipToPaddedFace(a0, a1, (int)root.Id.Face(),
+        if (S2EdgeClipping.ClipToPaddedFace(a0, a1, root.Id.Face(),
             S2EdgeClipping.kFaceClipErrorUVCoord, out a0_, out a1_))
         {
             R2Rect edge_bound = R2Rect.FromPointPair(a0_, a1_);
@@ -338,20 +339,22 @@ public class S2CrossingEdgeQuery
         MyDebug.Assert(pcell.Padding == 0);
 
         var (pos, found) = Index.SeekCell(pcell.Id.RangeMin());
-        KeyData<S2CellId, S2ShapeIndexCell>? icell = null;
+        S2CellId? idcell = null;
+        S2ShapeIndexCell? indexcell = null;
         if (found)
         {
-            icell = Index.GetIndexCell(pos);
+            idcell = Index.GetCellId(pos);
+            indexcell = Index.GetCell(pos)!;
         }
 
-        if (!found || !icell.HasValue || icell.Value.Item1 > pcell.Id.RangeMax())
+        if (!found || !idcell.HasValue || idcell > pcell.Id.RangeMax())
         {
             // The index does not contain "pcell" or any of its descendants.
             return true;
         }
-        if (icell.Value.Item1 == pcell.Id)
+        if (idcell == pcell.Id)
         {
-            return visitor_(icell.Value.Item2);
+            return visitor_(indexcell!);
         }
 
         // Otherwise, split the edge among the four children of "pcell".
@@ -467,6 +470,7 @@ public class S2CrossingEdgeQuery
     //////////// Temporary storage used while processing a query ///////////
 
     private R2Point a0_, a1_;
+    private S2ShapeIndex.Enumerator Enumerator;
     private CellVisitor visitor_;
 
     // Avoids repeated allocation when methods are called many times.

@@ -1,5 +1,7 @@
 namespace S2Geometry;
 
+using static S2Geometry.S2Loop;
+
 public static partial class S2ShapeUtil
 {
     public static class EdgePairs
@@ -20,7 +22,7 @@ public static partial class S2ShapeUtil
                 var num_edges = clipped.NumEdges;
                 for (int i = 0; i < num_edges; i++)
                 {
-                    shape_edges.Add(new ShapeEdge(shape, clipped.Edge(i)));
+                    shape_edges.Add(new ShapeEdge(shape, clipped.Edges[i]));
                 }
             }
         }
@@ -114,13 +116,11 @@ public static partial class S2ShapeUtil
         {
             // TODO(ericv): Use brute force if the total number of edges is small enough
             // (using a larger threshold if the S2ShapeIndex is not constructed yet).
-            var count = index.GetEnumerableCount();
-            for (var pos = 0; pos < count; pos++)
+            for (S2ShapeIndex.Enumerator it = new(index, S2ShapeIndex.InitialPosition.BEGIN);
+                 !it.Done(); it.MoveNext())
             {
                 var shape_edges = new ShapeEdgeVector();
-                var icell = index.GetIndexCell(pos);
-                var indexCell = icell.Value.Item2;
-                GetShapeEdges(index, indexCell, shape_edges);
+                GetShapeEdges(index, it.Cell, shape_edges);
                 if (!VisitCrossings(shape_edges, type, need_adjacent, visitor))
                 {
                     return false;
@@ -156,10 +156,10 @@ public static partial class S2ShapeUtil
 
             // TODO(ericv): Use brute force if the total number of edges is small enough
             // (using a larger threshold if the S2ShapeIndex is not constructed yet).
-            var ai = new RangeEnumerator(a_index); ai.MoveNext();
-            var bi = new RangeEnumerator(b_index); bi.MoveNext();
-            var ab = new IndexCrosser(a_index, b_index, type, visitor, false);  // Tests A against B
-            var ba = new IndexCrosser(b_index, a_index, type, visitor, true);   // Tests B against A
+            var ai = S2CellRangeEnumeratorFactory.Make(a_index);
+            var bi = S2CellRangeEnumeratorFactory.Make(b_index);
+            IndexCrosser ab = new(a_index, b_index, type, visitor, false);  // Tests A against B
+            IndexCrosser ba = new(b_index, a_index, type, visitor, true);   // Tests B against A
             while (!ai.Done() || !bi.Done())
             {
                 if (ai.RangeMax < bi.RangeMin)
@@ -189,9 +189,9 @@ public static partial class S2ShapeUtil
                     else
                     {
                         // The A and B cells are the same.
-                        if (ai.Cell.NumEdges() > 0 && bi.Cell.NumEdges() > 0)
+                        if (ai.Enumerator.Current.NumEdges() > 0 && bi.Enumerator.Current.NumEdges() > 0)
                         {
-                            if (!ab.VisitCellCellCrossings(ai.Cell, bi.Cell)) return false;
+                            if (!ab.VisitCellCellCrossings(ai.Enumerator.Current, bi.Enumerator.Current)) return false;
                         }
                         ai.MoveNext();
                         bi.MoveNext();
@@ -230,10 +230,10 @@ public static partial class S2ShapeUtil
             /// Terminates early and returns false if visitor_ returns false.
             /// Advances both iterators past ai.id().
             /// </summary>
-            public bool VisitCrossings(RangeEnumerator ai, RangeEnumerator bi)
+            public bool VisitCrossings(S2CellRangeEnumerator<S2ShapeIndexCell> ai, S2CellRangeEnumerator<S2ShapeIndexCell> bi)
             {
                 MyDebug.Assert(ai.Id.Contains(bi.Id));
-                if (ai.Cell.NumEdges() == 0)
+                if (ai.Enumerator.Current.NumEdges() == 0)
                 {
                     // Skip over the cells of B using binary search.
                     bi.SeekBeyond(ai);
@@ -249,25 +249,25 @@ public static partial class S2ShapeUtil
                     b_cells_.Clear();
                     do
                     {
-                        int cell_edges = bi.Cell.NumEdges();
+                        int cell_edges = bi.Enumerator.Current.NumEdges();
                         if (cell_edges > 0)
                         {
                             b_edges += cell_edges;
                             if (b_edges >= kEdgeQueryMinEdges)
                             {
                                 // There are too many edges, so use an S2CrossingEdgeQuery.
-                                if (!VisitSubcellCrossings(ai.Cell, ai.Id)) return false;
+                                if (!VisitSubcellCrossings(ai.Enumerator.Current, ai.Id)) return false;
                                 bi.SeekBeyond(ai);
                                 return true;
                             }
-                            b_cells_.Add(bi.Cell);
+                            b_cells_.Add(bi.Enumerator.Current);
                         }
                         bi.MoveNext();
                     } while (bi.Id <= ai.RangeMax);
                     if (b_cells_.Any())
                     {
                         // Test all the edge crossings directly.
-                        GetShapeEdges(a_index_, ai.Cell, a_shape_edges_);
+                        GetShapeEdges(a_index_, ai.Enumerator.Current, a_shape_edges_);
                         GetShapeEdges(b_index_, b_cells_, b_shape_edges_);
                         if (!VisitEdgesEdgesCrossings(a_shape_edges_, b_shape_edges_))
                         {

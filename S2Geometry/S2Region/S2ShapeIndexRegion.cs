@@ -1,3 +1,6 @@
+using System.Collections;
+using static S2Geometry.S2ShapeIndex;
+
 namespace S2Geometry;
 
 public static partial class S2ShapeIndexX
@@ -46,6 +49,12 @@ public sealed class S2ShapeIndexRegion<TIndex> : IS2Region<S2ShapeIndexRegion<TI
 
     // This class is not thread-safe!
     private readonly S2ContainsPointQuery<TIndex> contains_query_;
+
+    // Optimization: rather than declaring our own iterator, instead we reuse
+    // the iterator declared by S2ContainsPointQuery.  (This improves benchmark
+    // times significantly for classes that create a new S2ShapeIndexRegion
+    // object on every call to Contains/MayIntersect(S2Cell).
+    private EnumeratorBase<S2ShapeIndexCell> iter_ => contains_query_.Iterator;
 
     #endregion
 
@@ -96,9 +105,9 @@ public sealed class S2ShapeIndexRegion<TIndex> : IS2Region<S2ShapeIndexRegion<TI
     bool Contains(S2CellId id, const S2ClippedShape& clipped,
                 const S2Point& p) const;*/
     // REQUIRES: iter_.id() contains "p".
-    private bool Contains(S2CellId id, S2ClippedShape clipped, S2Point p)
+    private bool Contains(S2ClippedShape clipped, S2Point p)
     {
-        return contains_query_.ShapeContains(id, clipped, p);
+        return contains_query_.ShapeContains(iter_.Id, clipped, p);
     }
 
     // Returns true if any edge of the indexed shape "clipped" intersects the
@@ -113,7 +122,7 @@ public sealed class S2ShapeIndexRegion<TIndex> : IS2Region<S2ShapeIndexRegion<TI
         int num_edges = clipped.NumEdges;
         for (int i = 0; i < num_edges; ++i)
         {
-            var edge = shape!.GetEdge(clipped.Edge(i));
+            var edge = shape!.GetEdge(clipped.Edges[i]);
             if (S2EdgeClipping.ClipToPaddedFace(edge.V0, edge.V1, face, kMaxError, out var p0, out var p1) &&
                 S2EdgeClipping.IntersectsRect(p0, p1, bound))
             {
@@ -182,39 +191,36 @@ public sealed class S2ShapeIndexRegion<TIndex> : IS2Region<S2ShapeIndexRegion<TI
         cell_ids = new List<S2CellId>().ReserveSpace(6);
 
         // Find the last S2CellId in the index.
-        var count = Index().GetEnumerableCount();
-        if (count < 1) return;  // Empty index.
+        iter_.Finish();
+        if (!iter_.MovePrevious()) return;  // Empty index.
 
-        var pos = count - 1;
-        var last_index_id = Index().GetCellId(pos)!.Value;
-        pos = 0;
-        var cellId = Index().GetCellId(pos)!.Value;
-        if (cellId != last_index_id)
+        var last_index_id = iter_.Id;
+        iter_.Reset();
+        if (iter_.Id != last_index_id)
         {
             // The index has at least two cells.  Choose an S2CellId level such that
             // the entire index can be spanned with at most 6 cells (if the index
             // spans multiple faces) or 4 cells (it the index spans a single face).
-            int level = cellId.CommonAncestorLevel(last_index_id) + 1;
+            int level = iter_.Id.CommonAncestorLevel(last_index_id) + 1;
 
             // For each cell C at the chosen level, we compute the smallest S2Cell
             // that covers the S2ShapeIndex cells within C.
             var last_id = last_index_id.Parent(level);
-            for (var id = cellId.Parent(level); id != last_id; id = id.Next())
+            for (var id = iter_.Id.Parent(level); id != last_id; id = id.Next())
             {
                 // If the cell C does not contain any index cells, then skip it.
-                if (id.RangeMax() < cellId) continue;
+                if (id.RangeMax() < iter_.Id) continue;
 
                 // Find the range of index cells contained by C and then shrink C so
                 // that it just covers those cells.
-                var first = cellId;
-                var (pos2, _) = Index().SeekCell(id.RangeMax().Next());
-                pos2--;
-                cellId = Index().GetCellId(pos2)!.Value;
-                CoverRange(first, cellId, cell_ids);
-                cellId = Index().GetCellId(pos2 + 1)!.Value;
+                var first = iter_.Id;
+                iter_.Seek(id.RangeMax().Next());
+                iter_.MovePrevious();
+                CoverRange(first, iter_.Id, cell_ids);
+                iter_.MoveNext();
             }
         }
-        CoverRange(cellId, last_index_id, cell_ids);
+        CoverRange(iter_.Id, last_index_id, cell_ids);
     }
 
     // Returns true if "target" is contained by any single shape.  If the cell
@@ -230,28 +236,28 @@ public sealed class S2ShapeIndexRegion<TIndex> : IS2Region<S2ShapeIndexRegion<TI
         // If the relation is DISJOINT, then "target" is not contained.  Similarly if
         // the relation is SUBDIVIDED then "target" is not contained, since index
         // cells are subdivided only if they (nearly) intersect too many edges.
-        if (relation != S2ShapeIndex.CellRelation.INDEXED) return false;
+        if (relation != S2CellRelation.INDEXED) return false;
 
         // Otherwise, the iterator points to an index cell containing "target".
         // If any shape contains the target cell, we return true.
-        var icell = Index().GetIndexCell(pos);
-        MyDebug.Assert(icell.Value.Item1.Contains(target.Id));
-        var cell = icell.Value.Item2;
+        var icell = Index().GetCellId(pos)!.Value;
+        MyDebug.Assert(icell.Contains(target.Id));
+        var cell = Index().GetCell(pos)!;
         for (int s = 0; s < cell.NumClipped(); ++s)
         {
             var clipped = cell.Clipped(s);
             // The shape contains the target cell iff the shape contains the cell
             // center and none of its edges intersects the (padded) cell interior.
-            if (icell.Value.Item1 == target.Id)
+            if (icell == target.Id)
             {
                 if (clipped.NumEdges == 0 && clipped.ContainsCenter) return true;
             }
             else
             {
                 // It is faster to call AnyEdgeIntersects() before Contains().
-                if (Index().Shape(clipped.ShapeId).Dimension() == 2 &&
+                if (Index().Shape(clipped.ShapeId)!.Dimension() == 2 &&
                     !AnyEdgeIntersects(clipped, target) &&
-                    Contains(icell.Value.Item1, clipped, target.Center()))
+                    Contains(clipped, target.Center()))
                 {
                     return true;
                 }
@@ -270,28 +276,28 @@ public sealed class S2ShapeIndexRegion<TIndex> : IS2Region<S2ShapeIndexRegion<TI
         var (relation, pos) = Index().LocateCell(target.Id);
 
         // If "target" does not overlap any index cell, there is no intersection.
-        if (relation == S2ShapeIndex.CellRelation.DISJOINT) return false;
+        if (relation == S2CellRelation.DISJOINT) return false;
 
         // If "target" is subdivided into one or more index cells, then there is an
         // intersection to within the S2ShapeIndex error bound.
-        if (relation == S2ShapeIndex.CellRelation.SUBDIVIDED) return true;
+        if (relation == S2CellRelation.SUBDIVIDED) return true;
 
         // Otherwise, the iterator points to an index cell containing "target".
         //
         // If "target" is an index cell itself, there is an intersection because index
         // cells are created only if they have at least one edge or they are
         // entirely contained by the loop.
-        var icell = Index().GetIndexCell(pos);
-        MyDebug.Assert(icell.Value.Item1.Contains(target.Id));
-        if (icell.Value.Item1 == target.Id) return true;
+        var icell = Index().GetCellId(pos)!.Value;
+        MyDebug.Assert(icell.Contains(target.Id));
+        if (icell == target.Id) return true;
 
         // Test whether any shape intersects the target cell or contains its center.
-        var cell = icell.Value.Item2;
+        var cell = Index().GetCell(pos)!;
         for (int s = 0; s < cell.NumClipped(); ++s)
         {
             var clipped = cell.Clipped(s);
             if (AnyEdgeIntersects(clipped, target)) return true;
-            if (Contains(icell.Value.Item1, clipped, target.Center()))
+            if (Contains(clipped, target.Center()))
             {
                 return true;
             }
@@ -323,10 +329,10 @@ public sealed class S2ShapeIndexRegion<TIndex> : IS2Region<S2ShapeIndexRegion<TI
         iter_.SetPosition(pos);
         switch (cellRelation)
         {
-            case S2ShapeIndex.CellRelation.DISJOINT:
+            case S2CellRelation.DISJOINT:
                 return true;
 
-            case S2ShapeIndex.CellRelation.SUBDIVIDED:
+            case S2CellRelation.SUBDIVIDED:
                 {
                     // A shape contains the target cell iff it appears in at least one cell,
                     // it contains the center of all cells, and it has no edges in any cell.
@@ -353,7 +359,7 @@ public sealed class S2ShapeIndexRegion<TIndex> : IS2Region<S2ShapeIndexRegion<TI
                     return true;
                 }
 
-            case S2ShapeIndex.CellRelation.INDEXED:
+            case S2CellRelation.INDEXED:
                 {
                     var cell = iter_.Cell;
                     for (int s = 0; s < cell.NumClipped(); ++s)
@@ -370,7 +376,7 @@ public sealed class S2ShapeIndexRegion<TIndex> : IS2Region<S2ShapeIndexRegion<TI
                         {
                             if (!AnyEdgeIntersects(clipped, target))
                             {
-                                if (!Contains(iter_.Id, clipped, target.Center()))
+                                if (!Contains(clipped, target.Center()))
                                 {
                                     continue;  // Disjoint.
                                 }
@@ -392,14 +398,12 @@ public sealed class S2ShapeIndexRegion<TIndex> : IS2Region<S2ShapeIndexRegion<TI
     // this method (if you need more flexibility, see S2BooleanOperation).
     public bool Contains(S2Point p)
     {
-        var (pos, found) = Index().LocatePoint(p);
-        if (found)
+        if (iter_.Locate(p))
         {
-            var icell = Index().GetIndexCell(pos);
-            var cell = icell.Value.Item2;
+            var cell = iter_.Cell;
             for (int s = 0; s < cell.NumClipped(); ++s)
             {
-                if (Contains(icell.Value.Item1, cell.Clipped(s), p))
+                if (Contains(cell.Clipped(s), p))
                 {
                     return true;
                 }

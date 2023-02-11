@@ -168,9 +168,10 @@ public class EncodedS2CellIdVectorTests
         index.Add(new S2Loop.Shape(
             fractal.MakeLoop(S2.GetFrame(center), S1Angle.FromDegrees(1))));
         List<S2CellId> ids = new();
-        foreach (var shape in index.GetNewEnumerable())
+        for (MutableS2ShapeIndex.Enumerator it = new(index, S2ShapeIndex.InitialPosition.BEGIN);
+            !it.Done(); it.MoveNext())
         {
-            ids.Add(shape.Item1);
+            ids.Add(it.Id);
         }
         Assert.Equal(966, ids.Count);
         TestEncodedS2CellIdVector(ids, 2902);

@@ -1,6 +1,6 @@
 namespace S2Geometry;
 
-using static S2ShapeUtil;
+using static S2Geometry.S2Loop;
 
 public class S2ShapeUtilRangeEnumeratorTests
 {
@@ -10,11 +10,11 @@ public class S2ShapeUtilRangeEnumeratorTests
         // Create an index with one point each on S2CellId faces 0, 1, and 2.
         var index = MakeIndexOrDie("0:0 | 0:90 | 90:0 # #");
         RangeEnumerator it = new(index); it.MoveNext();
-        Assert.Equal(0UL, it.Id.Face());
+        Assert.Equal(0, it.Id.Face());
         it.MoveNext();
-        Assert.Equal(1UL, it.Id.Face());
+        Assert.Equal(1, it.Id.Face());
         it.MoveNext();
-        Assert.Equal(2UL, it.Id.Face());
+        Assert.Equal(2, it.Id.Face());
         it.MoveNext();
         Assert.Equal(S2CellId.Sentinel, it.Id);
         Assert.True(it.Done());

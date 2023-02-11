@@ -304,10 +304,11 @@ internal static class S2Testing
         var sb = new StringBuilder();
         sb.AppendLine("S2ShapeIndex: " + index);
         sb.AppendLine("  " + index.ToDebugString());
-        foreach (var it in index.GetNewEnumerable())
+        for (S2ShapeIndex.Enumerator it = new(index, S2ShapeIndex.InitialPosition.BEGIN);
+           !it.Done(); it.MoveNext())
         {
-            sb.AppendLine("  id: " + it.Item1);
-            var cell = it.Item2;
+            sb.AppendLine("  id: " + it.Id);
+            var cell = it.Cell;
             for (var s = 0; s < cell.NumClipped(); ++s)
             {
                 var clipped = cell.Clipped(s);
@@ -315,7 +316,7 @@ internal static class S2Testing
                 for (var e = 0; e < clipped.NumEdges; ++e)
                 {
                     if (e > 0) sb.Append(", ");
-                    sb.Append(clipped.Edge(e));
+                    sb.Append(clipped.Edges[e]);
                 }
                 sb.AppendLine();
             }

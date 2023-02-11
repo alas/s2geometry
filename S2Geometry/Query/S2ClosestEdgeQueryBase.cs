@@ -35,6 +35,8 @@
 // s2distance_target.h.  For example this can be used to measure maximum
 // distances, to get more accuracy, or to measure non-spheroidal distances.
 
+using System;
+
 namespace S2Geometry;
 
 public class S2ClosestEdgeQueryBase<Distance> where Distance : IEquatable<Distance>, IComparable<Distance>, IDistance<Distance>
@@ -42,6 +44,8 @@ public class S2ClosestEdgeQueryBase<Distance> where Distance : IEquatable<Distan
     // Returns a reference to the underlying S2ShapeIndex.
     public S2ShapeIndex Index { get; private set; }
     public Options Options_ { get; private set; }
+
+    private S2ShapeIndex.Enumerator iter_;
 
     private S2DistanceTarget<Distance> target_;
 
@@ -337,27 +341,23 @@ public class S2ClosestEdgeQueryBase<Distance> where Distance : IEquatable<Distan
             // this in two seek operations rather than four by seeking to the key
             // between children 0 and 1 and to the key between children 2 and 3.
             S2CellId id = entry.Id;
-            var (pos, _) = Index.SeekCell(id.Child(1).RangeMin());
-            var cm1 = Index.GetIndexCell(pos);
-            if (cm1 is not null && cm1.Value.Item1 <= id.Child(1).RangeMax())
+            iter_.Seek(id.Child(1).RangeMin());
+            if (!iter_.Done() && iter_.Id <= id.Child(1).RangeMax())
             {
-                ProcessOrEnqueue(id.Child(1), cm1.Value);
+                ProcessOrEnqueue(id.Child(1));
             }
-            var cm2 = Index.GetIndexCell(pos - 1);
-            if (cm2 is not null && cm2.Value.Item1 >= id.RangeMin())
+            if (iter_.MovePrevious() && iter_.Id >= id.RangeMin())
             {
-                ProcessOrEnqueue(id.Child(0), cm2.Value);
+                ProcessOrEnqueue(id.Child(0));
             }
-            var (pos2, _) = Index.SeekCell(id.Child(3).RangeMin());
-            var cm3 = Index.GetIndexCell(pos2);
-            if (cm3 is not null && cm3.Value.Item1 <= id.RangeMax())
+            iter_.Seek(id.Child(3).RangeMin());
+            if (!iter_.Done() && iter_.Id <= id.RangeMax())
             {
-                ProcessOrEnqueue(id.Child(3), cm3.Value);
+                ProcessOrEnqueue(id.Child(3));
             }
-            var cm4 = Index.GetIndexCell(pos - 1);
-            if (cm4 is not null && cm4.Value.Item1 >= id.Child(2).RangeMin())
+            if (iter_.MovePrevious() && iter_.Id >= id.Child(2).RangeMin())
             {
-                ProcessOrEnqueue(id.Child(2), cm4.Value);
+                ProcessOrEnqueue(id.Child(2));
             }
         }
     }
@@ -365,6 +365,12 @@ public class S2ClosestEdgeQueryBase<Distance> where Distance : IEquatable<Distan
     private void InitQueue()
     {
         MyDebug.Assert(!queue_.Any());
+        if (!index_covering_.Any())
+        {
+            // We delay iterator initialization until now to make queries on very
+            // small indexes a bit faster (i.e., where brute force is used).
+            iter_ = new(Index, S2ShapeIndex.InitialPosition.UNPOSITIONED);
+        }
 
         // Optimization: if the user is searching for just the closest edge, and the
         // center of the target's bounding cap happens to intersect an index cell,
@@ -379,16 +385,11 @@ public class S2ClosestEdgeQueryBase<Distance> where Distance : IEquatable<Distan
         // provided that those cells are closer than distance_limit_.
         S2Cap cap = target_.GetCapBound();
         if (cap.IsEmpty()) return;  // Empty target.
-        if (Options_.MaxResults == 1)
+        if (Options_.MaxResults == 1 && iter_.Locate(cap.Center))
         {
-            var (pos, found) = Index.LocatePoint(cap.Center);
-            if (found)
-            {
-                var tc = Index.GetIndexCell(pos).Value;
-                ProcessEdges(new QueueEntry(Distance.Zero, tc.Item1, tc.Item2));
-                // Skip the rest of the algorithm if we found an intersecting edge.
-                if (Equals(distance_limit_, Distance.Zero)) return;
-            }
+            ProcessEdges(new QueueEntry(Distance.Zero, iter_.Id, iter_.Cell));
+            // Skip the rest of the algorithm if we found an intersecting edge.
+            if (Equals(distance_limit_, Distance.Zero)) return;
         }
         if (!index_covering_.Any()) InitCovering();
         if (Equals(distance_limit_, Distance.Infinity))
@@ -396,7 +397,7 @@ public class S2ClosestEdgeQueryBase<Distance> where Distance : IEquatable<Distan
             // Start with the precomputed index covering.
             for (int i = 0; i < index_covering_.Count; ++i)
             {
-                ProcessOrEnqueue2(index_covering_[i], index_cells_[i]);
+                ProcessOrEnqueue(index_covering_[i], index_cells_[i]);
             }
         }
         else
@@ -423,30 +424,27 @@ public class S2ClosestEdgeQueryBase<Distance> where Distance : IEquatable<Distan
                 {
                     // This initial cell is one of the top-level cells.  Use the
                     // precomputed S2ShapeIndexCell pointer to avoid an index seek.
-                    ProcessOrEnqueue2(id_j, index_cells_[j]);
+                    ProcessOrEnqueue(id_j, index_cells_[j]);
                     ++i; ++j;
                 }
                 else
                 {
                     // This initial cell is a proper descendant of a top-level cell.
                     // Check how it is related to the cells of the S2ShapeIndex.
-                    var (r, pos) = Index.LocateCell(id_i);
-                    if (r == S2ShapeIndex.CellRelation.INDEXED)
+                    var r = iter_.Locate(id_i);
+                    if (r == S2CellRelation.INDEXED)
                     {
                         // This cell is a descendant of an index cell.  Enqueue it and skip
                         // any other initial cells that are also descendants of this cell.
-                        var indexCell = Index.GetIndexCell(pos).Value;
-                        var id = indexCell.Item1;
-                        var cell = indexCell.Item2;
-                        ProcessOrEnqueue2(id, cell);
-                        S2CellId last_id = id.RangeMax();
+                        ProcessOrEnqueue(iter_.Id, iter_.Cell);
+                        S2CellId last_id = iter_.Id.RangeMax();
                         while (++i < initial_cells_.Count && initial_cells_[i] <= last_id)
                             continue;
                     }
                     else
                     {
                         // Enqueue the cell only if it contains at least one index cell.
-                        if (r == S2ShapeIndex.CellRelation.SUBDIVIDED) ProcessOrEnqueue2(id_i, null);
+                        if (r == S2CellRelation.SUBDIVIDED) ProcessOrEnqueue(id_i, null);
                         ++i;
                     }
                 }
@@ -478,57 +476,52 @@ public class S2ClosestEdgeQueryBase<Distance> where Distance : IEquatable<Distan
 
         // TODO(ericv): Use a single iterator (iter_) below and save position
         // information using (S2CellId, S2ShapeIndexCell) type.
-        var nextPos = 0;
-        var next = Index.GetCellId(nextPos).Value;
-        var lastPos = Index.GetEnumerableCount() - 1;
-        var last = Index.GetCellId(lastPos)!.Value;
-        if (next != last)
+        S2ShapeIndex.Enumerator next= new(Index, S2ShapeIndex.InitialPosition.BEGIN);
+        S2ShapeIndex.Enumerator last= new(Index, S2ShapeIndex.InitialPosition.END);
+        last.MovePrevious();
+        if (next.Id != last.Id)
         {
             // The index has at least two cells.  Choose a level such that the entire
             // index can be spanned with at most 6 cells (if the index spans multiple
             // faces) or 4 cells (it the index spans a single face).
-            int level = next.CommonAncestorLevel(last) + 1;
+            int level = next.Id.CommonAncestorLevel(last.Id) + 1;
 
             // Visit each potential top-level cell except the last (handled below).
-            var last_id = last.Parent(level);
-            for (var id = next.Parent(level); id != last_id; id = id.Next())
+            var last_id = last.Id.Parent(level);
+            for (var id = next.Id.Parent(level); id != last_id; id = id.Next())
             {
                 // Skip any top-level cells that don't contain any index cells.
-                if (id.RangeMax() < next) continue;
+                if (id.RangeMax() < next.Id) continue;
 
                 // Find the range of index cells contained by this top-level cell and
                 // then shrink the cell if necessary so that it just covers them.
-                var cell_firstPos = nextPos;
                 var cell_first = next;
-                var (pos, _) = Index.SeekCell(id.RangeMax().Next());
-                nextPos = pos;
-                next = Index.GetCellId(nextPos)!.Value;
-                var cell_lastPos = nextPos - 1;
-                var cell_last = Index.GetCellId(cell_lastPos)!.Value;
-                AddInitialRange(cell_firstPos, cell_first, cell_last);
+                next.Seek(id.RangeMax().Next());
+                var cell_last = next;
+                AddInitialRange(cell_first, cell_last);
             }
         }
-        AddInitialRange(nextPos, next, last);
+        AddInitialRange(next, last);
     }
 
     // Add an entry to index_covering_ and index_cells_ that covers the given
     // inclusive range of cells.
     //
     // REQUIRES: "first" and "last" have a common ancestor.
-    private void AddInitialRange(int firstPos, S2CellId first, S2CellId last)
+    private void AddInitialRange(S2ShapeIndex.Enumerator first, S2ShapeIndex.Enumerator last)
     {
-        if (first == last)
+        if (first.Id == last.Id)
         {
             // The range consists of a single index cell.
-            index_covering_.Add(first);
-            index_cells_.Add(Index.GetIndexCell(firstPos).Value.Item2);
+            index_covering_.Add(first.Id);
+            index_cells_.Add(first.Cell);
         }
         else
         {
             // Add the lowest common ancestor of the given range.
-            int level = first.CommonAncestorLevel(last);
+            int level = first.Id.CommonAncestorLevel(last.Id);
             MyDebug.Assert(level >= 0);
-            index_covering_.Add(first.Parent(level));
+            index_covering_.Add(first.Id.Parent(level));
             index_cells_.Add(null);
         }
     }
@@ -587,7 +580,7 @@ public class S2ClosestEdgeQueryBase<Distance> where Distance : IEquatable<Distan
             var shape = Index.Shape(clipped.ShapeId);
             for (int j = 0; j < clipped.NumEdges; ++j)
             {
-                MaybeAddResult(shape, clipped.Edge(j));
+                MaybeAddResult(shape, clipped.Edges[j]);
             }
         }
     }
@@ -595,16 +588,16 @@ public class S2ClosestEdgeQueryBase<Distance> where Distance : IEquatable<Distan
     // Enqueue the given cell id.
     // REQUIRES: iter_ is positioned at a cell contained by "id".
 
-    private void ProcessOrEnqueue(S2CellId id, S2ShapeIndexIdCell cm)
+    private void ProcessOrEnqueue(S2CellId id)
     {
-        MyDebug.Assert(id.Contains(cm.Item1));
-        if (cm.Item1 == id)
+        MyDebug.Assert(id.Contains(iter_.Id));
+        if (iter_.Id == id)
         {
-            ProcessOrEnqueue2(id, cm.Item2);
+            ProcessOrEnqueue(id, iter_.Cell);
         }
         else
         {
-            ProcessOrEnqueue2(id, null);
+            ProcessOrEnqueue(id, null);
         }
     }
 
@@ -612,7 +605,7 @@ public class S2ClosestEdgeQueryBase<Distance> where Distance : IEquatable<Distan
     // S2ShapeIndexCell, or null if "id" is not an index cell.
     //
     // This version is called directly only by InitQueue().
-    private void ProcessOrEnqueue2(S2CellId id, S2ShapeIndexCell? index_cell)
+    private void ProcessOrEnqueue(S2CellId id, S2ShapeIndexCell? index_cell)
     {
         if (index_cell is not null)
         {

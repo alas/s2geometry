@@ -77,11 +77,14 @@
 
 namespace S2Geometry;
 
+using System;
 using System.Runtime.InteropServices;
 using ShapeEdgeId = S2ShapeUtil.ShapeEdgeId;
 
 public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
 {
+    #region Fields and Properties
+
     // The default maximum number of edges per cell (not counting 'long' edges).
     // If a cell has more than this many edges, and it is not a leaf cell, then it
     // is subdivided.  This flag can be overridden via MutableS2ShapeIndex.Options.
@@ -200,33 +203,87 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
     // to decode it.
     public const byte kCurrentEncodingVersionNumber = 0;
 
-    // Options that affect construction of the MutableS2ShapeIndex.
-    public class Options
-    {
-        public Options()
-        {
-            MaxEdgesPerCell = s2shape_index_default_max_edges_per_cell;
-        }
+    // The following memory estimates are based on heap profiling.
 
-        // The maximum number of edges per cell.  If a cell has more than this
-        // many edges that are not considered "long" relative to the cell size,
-        // then it is subdivided.  (Whether an edge is considered "long" is
-        // controlled by --s2shape_index_cell_into_long_edge_ratio flag.)
-        //
-        // Values between 10 and 50 represent a reasonable balance between memory
-        // usage, construction time, and query time.  Small values make queries
-        // faster, while large values make construction faster and use less memory.
-        // Values higher than 50 do not save significant additional memory, and
-        // query times can increase substantially, especially for algorithms that
-        // visit all pairs of potentially intersecting edges (such as polygon
-        // validation), since this is quadratic in the number of edges per cell.
-        //
-        // Note that the *average* number of edges per cell is generally slightly
-        // less than half of the maximum value defined here.
-        //
-        // Defaults to value given by --s2shape_index_default_max_edges_per_cell.
-        public int MaxEdgesPerCell { get; set; }
-    }
+    // The batch sizes during a given update gradually decrease as the space
+    // occupied by the index itself grows.  In order to do this, we need a
+    // conserative lower bound on how much the index grows per edge.
+    //
+    // The final size of a MutableS2ShapeIndex depends mainly on how finely the
+    // index is subdivided, as controlled by Options.max_edges_per_cell() and
+    // --s2shape_index_default_max_edges_per_cell. For realistic values of
+    // max_edges_per_cell() and shapes with moderate numbers of edges, it is
+    // difficult to get much below 8 bytes per edge.  (The minimum possible size
+    // is 4 bytes per edge (to store a 32-bit edge id in an S2ClippedShape) plus
+    // 24 bytes per shape (for the S2ClippedShape itself plus a pointer in the
+    // shapes_ vector.)  Note that this value is a lower bound; a typical final
+    // index size is closer to 24 bytes per edge.
+    private const int kFinalBytesPerEdge = 8;
+
+    // The temporary memory consists mainly of the FaceEdge and ClippedEdge
+    // structures plus a ClippedEdge pointer for every level of recursive
+    // subdivision.  For very large indexes this can be 200 bytes per edge.
+    // subdivision.  This can be more than 220 bytes per edge even for typical
+    // geometry.  (The pathological worst case is higher, but we don't use this to
+    // determine the batch sizes.)
+    private const int kTmpBytesPerEdge = 226;
+
+    // We arbitrarily limit the number of batches as a safety measure.  With the
+    // current default memory budget of 100 MB, this limit is not reached even
+    // when building an index of 350 million edges.
+    private const int kMaxBatches = 100;
+
+    // The options supplied for this index.
+    public Options Options_ { get; set; }
+
+    // The shapes in the index, accessed by their shape id.  Removed shapes are
+    // replaced by null pointers.
+    private readonly List<S2Shape?> shapes_ = new();
+
+    // A map from S2CellId to the set of clipped shapes that intersect that
+    // cell.  The cell ids cover a set of non-overlapping regions on the
+    // sphere.  Note that this field is updated lazily (see below).  Const
+    // methods *must* call MaybeApplyUpdates() before accessing this field.
+    // (The easiest way to achieve this is simply to use an Iterator.)
+    private readonly List<S2ShapeIndexIdCell> cell_map_ = new(); // gtl.btree_map
+
+    // The id of the first shape that has been queued for addition but not
+    // processed yet.
+    private int pending_additions_begin_ = 0;
+
+    // Reads and writes to this field are guarded by "lock_".
+    private IndexStatus index_status_ = IndexStatus.FRESH;
+
+    // The set of shapes that have been queued for removal but not processed
+    // yet.  Note that we need to copy the edge data since the caller is free to
+    // destroy the shape once Release() has been called.  This field is present
+    // only when there are removed shapes to process (to save memory).
+    private List<RemovedShape>? pending_removals_;
+
+    // Additions and removals are queued and processed on the first subsequent
+    // query.  There are several reasons to do this:
+    //
+    //  - It is significantly more efficient to process updates in batches.
+    //  - Often the index will never be queried, in which case we can save both
+    //    the time and memory required to build it.  Examples:
+    //     + S2Loops that are created simply to pass to an S2Polygon.  (We don't
+    //       need the S2Loop index, because S2Polygon builds its own index.)
+    //     + Applications that load a database of geometry and then query only
+    //       a small fraction of it.
+    //     + Applications that only read and write geometry (Decode/Encode).
+    //
+    // The main drawback is that we need to go to some extra work to ensure that
+    // "const" methods are still thread-safe.  Note that the goal is *not* to
+    // make this class thread-safe in general, but simply to hide the fact that
+    // we defer some of the indexing work until query time.
+    private int _channelPendingOperations = 0;
+    private readonly object _channelLock = new();
+
+    private readonly S2MemoryTracker.Client mem_tracker_ = new();
+
+    #endregion
+
+    #region Constructor
 
     // Create a MutableS2ShapeIndex with the given options.
     // Option values may be changed by calling Init().
@@ -236,7 +293,9 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         Init();
     }
 
-    public void Dispose() { Clear(); }
+    #endregion
+
+    public void Dispose() => Clear();
 
     // Initialize a MutableS2ShapeIndex with the given options.  This method may
     // only be called when the index is empty (i.e. newly created or Clear() has
@@ -246,9 +305,6 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         MyDebug.Assert(!shapes_.Any());
         // Memory tracking is not affected by this method.
     }
-
-    // The options supplied for this index.
-    public Options Options_ { get; set; }
 
     // The number of distinct shape ids that have been assigned.  This equals
     // the number of shapes in the index provided that no shapes have ever been
@@ -312,10 +368,11 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         List<S2CellId> cell_ids = new(cell_map_.Count);
         StringVectorEncoder encoded_cells = new();
 
-        foreach (var it in GetNewEnumerable())
+        for (var it = new Enumerator(this, S2ShapeIndex.InitialPosition.BEGIN);
+            !it.Done(); it.MoveNext())
         {
-            cell_ids.Add(it.Item1);
-            it.Item2.Encode(NumShapeIds(), encoded_cells.AddViaEncoder());
+            cell_ids.Add(it.Id);
+            it.Cell.Encode(NumShapeIds(), encoded_cells.AddViaEncoder());
         }
         EncodedS2CellIdVector.EncodeS2CellIdVector(cell_ids, encoder);
         encoded_cells.Encode(encoder);
@@ -353,7 +410,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         var (success2, encoded_cells) = EncodedStringVector.Init(decoder);
         if (!success2) return false;
 
-        for (var i = 0; i < cell_ids.Count; ++i)
+        for (var i = 0; i < cell_ids!.Count; ++i)
         {
             var id = cell_ids[i];
             S2ShapeIndexCell cell = new();
@@ -367,24 +424,11 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
 
     #region IEnumerator
 
-    public override IReversableEnumerator<S2ShapeIndexIdCell> GetNewEnumerator()
+    public override EnumeratorBase<S2ShapeIndexCell> GetNewEnumerator(InitialPosition pos)
     {
         MaybeApplyUpdates();
 
-        return new ReversableEnumerator<S2ShapeIndexIdCell>(cell_map_);
-    }
-
-    public override IEnumerable<S2ShapeIndexIdCell> GetNewEnumerable()
-    {
-        MaybeApplyUpdates();
-
-        return cell_map_;
-    }
-    public override int GetEnumerableCount()
-    {
-        MaybeApplyUpdates();
-
-        return cell_map_.Count;
+        return new Enumerator(this, pos);
     }
 
     public override (int pos, bool found) SeekCell(S2CellId target)
@@ -408,11 +452,11 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
 
         return cell_map_[pos].Item1;
     }
-    public override S2ShapeIndexIdCell? GetIndexCell(int pos)
+    public override S2ShapeIndexCell? GetCell(int pos)
     {
         if (pos >= cell_map_.Count || pos < 0) return null;
 
-        return cell_map_[pos];
+        return cell_map_[pos].Item2;
     }
 
     #endregion
@@ -473,7 +517,6 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
             if (mem_tracker_.IsActive()) mem_tracker_.Tally(SpaceUsed());
         }
     }
-    private readonly S2MemoryTracker.Client mem_tracker_ = new();
 
     // Called to set the index status when the index needs to be rebuilt.
     private void MarkIndexStale()
@@ -568,10 +611,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
 
     // Resets the index to its original state and deletes all shapes.  Any
     // options specified via Init() are preserved.
-    public void Clear()
-    {
-        ReleaseAll();
-    }
+    public void Clear() => ReleaseAll();
 
     // Returns the number of bytes currently occupied by the index (including any
     // unused space at the end of vectors, etc). It has the same thread safety
@@ -583,9 +623,10 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         // cell_map_ itself is already included in sizeof(*this).
         size += cell_map_.Count - SizeHelper.SizeOf(cell_map_);
         size += cell_map_.Count * SizeHelper.SizeOf(typeof(S2ShapeIndexCell));
-        foreach (var it in GetNewEnumerable())
+        MutableS2ShapeIndex.Enumerator it_;
+        for (it_ = new(this, InitialPosition.BEGIN); !it_.Done(); it_.MoveNext())
         {
-            var cell = it.Item2;
+            var cell = it_.Cell;
             size += cell.NumClipped() * SizeHelper.SizeOf(typeof(S2ClippedShape));
             for (var s = 0; s < cell.NumClipped(); ++s)
             {
@@ -628,10 +669,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
     //    specified S2MemoryTracker limit (see the constructor for details).
     //
     // Note that this method is thread-safe.
-    public void ForceBuild()
-    {
-        MaybeApplyUpdates();
-    }
+    public void ForceBuild() => MaybeApplyUpdates();
 
     // Returns true if there are no pending updates that need to be applied.
     // This can be useful to avoid building the index unnecessarily, or for
@@ -663,18 +701,13 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
             ResetChannelInternal();
         }
     }
-    public void ResetChannelInternal()
-    {
-        _channelPendingOperations = 0;
-    }
+    public void ResetChannelInternal() => _channelPendingOperations = 0;
 
     // Given that the given shape is being updated, return true if it is being
     // removed (as opposed to being added).
-    private bool IsShapeBeingRemoved(int shape_id)
-    {
+    private bool IsShapeBeingRemoved(int shape_id) =>
         // All shape ids being removed are less than all shape ids being added.
-        return shape_id < pending_additions_begin_;
-    }
+        shape_id < pending_additions_begin_;
 
     // Ensure that any pending updates have been applied.  This method must be
     // called before accessing the cell_map_ field, even if the index_status_
@@ -715,7 +748,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
             }
         }
     }
-    private Task Awaiter;
+    private Task? Awaiter;
 
     // This method updates the index by applying all pending additions and
     // removals.  It does *not* update index_status_ (see ApplyUpdatesThreadSafe).
@@ -794,7 +827,6 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
                     return;
                 }
             }
-
         }
         ResetChannelInternal();
     }
@@ -834,36 +866,6 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         }
         return batch_gen.Finish();
     }
-
-    // The following memory estimates are based on heap profiling.
-
-    // The batch sizes during a given update gradually decrease as the space
-    // occupied by the index itself grows.  In order to do this, we need a
-    // conserative lower bound on how much the index grows per edge.
-    //
-    // The final size of a MutableS2ShapeIndex depends mainly on how finely the
-    // index is subdivided, as controlled by Options.max_edges_per_cell() and
-    // --s2shape_index_default_max_edges_per_cell. For realistic values of
-    // max_edges_per_cell() and shapes with moderate numbers of edges, it is
-    // difficult to get much below 8 bytes per edge.  (The minimum possible size
-    // is 4 bytes per edge (to store a 32-bit edge id in an S2ClippedShape) plus
-    // 24 bytes per shape (for the S2ClippedShape itself plus a pointer in the
-    // shapes_ vector.)  Note that this value is a lower bound; a typical final
-    // index size is closer to 24 bytes per edge.
-    const int kFinalBytesPerEdge = 8;
-
-    // The temporary memory consists mainly of the FaceEdge and ClippedEdge
-    // structures plus a ClippedEdge pointer for every level of recursive
-    // subdivision.  For very large indexes this can be 200 bytes per edge.
-    // subdivision.  This can be more than 220 bytes per edge even for typical
-    // geometry.  (The pathological worst case is higher, but we don't use this to
-    // determine the batch sizes.)
-    const int kTmpBytesPerEdge = 226;
-
-    // We arbitrarily limit the number of batches as a safety measure.  With the
-    // current default memory budget of 100 MB, this limit is not reached even
-    // when building an index of 350 million edges.
-    const int kMaxBatches = 100;
 
     // Reserve an appropriate amount of space for the top-level face edges in the
     // current batch.  This data structure uses about half of the temporary memory
@@ -1091,10 +1093,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
                     foreach (var cellid_u in S2CellUnion.FromBeginEnd(begin, fill_end))
                     {
                         S2ShapeIndexCell icell = new();
-                        S2ClippedShape clipped = new(shape_id, 0)
-                        {
-                            ContainsCenter = true,
-                        };
+                        S2ClippedShape clipped = new(shape_id, 0, true);
                         icell.AddShape(clipped);
                         index_it = cell_map_.AddSorted(new(cellid_u, icell));
                         ++index_it;
@@ -1122,7 +1121,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
                 MyDebug.Assert(num_edges > 0);
                 for (int i = 0; i < num_edges; ++i)
                 {
-                    tmp_edges.Add(shape.GetEdge(clipped.Edge(i)));
+                    tmp_edges.Add(shape.GetEdge(clipped.Edges[i]));
                 }
                 foreach (var edge in tmp_edges)
                 {
@@ -1146,10 +1145,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
             {
                 // The partial shape contains the center of an existing index cell that
                 // does not intersect any of its edges.
-                S2ClippedShape clipped = new(shape_id, 0)
-                {
-                    ContainsCenter = true,
-                };
+                S2ClippedShape clipped = new(shape_id, 0, true);
                 cell.AddShape(clipped);
             }
             begin = cellid.RangeMax().Next();
@@ -1256,7 +1252,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
             // to combine the new edges with those cells.  Use InitStale() to avoid
             // applying updates recursively.
             var (r, pos) = LocateCell(shrunk_id);
-            if (r == CellRelation.INDEXED) { shrunk_id = GetCellId(pos)!.Value; }
+            if (r == S2CellRelation.INDEXED) { shrunk_id = GetCellId(pos)!.Value; }
         }
         return shrunk_id;
     }
@@ -1340,22 +1336,23 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
             // encounter such a cell, we need to combine the edges being updated with
             // the existing cell contents by "absorbing" the cell.  We use InitStale()
             // to avoid applying updates recursively.
-            var (r, pos) = LocateCell(pcell.Id);
-            if (r == CellRelation.DISJOINT)
+            Enumerator iter = new(this);
+            var r = iter.Locate(pcell.Id);
+            if (r == S2CellRelation.DISJOINT)
             {
                 disjoint_from_index = true;
             }
-            else if (r == CellRelation.INDEXED)
+            else if (r == S2CellRelation.INDEXED)
             {
                 // Absorb the index cell by transferring its contents to "edges" and
                 // deleting it.  We also start tracking the interior of any new shapes.
-                AbsorbIndexCell(pcell, GetIndexCell(pos).Value, edges, tracker, alloc);
+                AbsorbIndexCell(pcell, iter, edges, tracker, alloc);
                 index_cell_absorbed = true;
                 disjoint_from_index = true;
             }
             else
             {
-                MyDebug.Assert(CellRelation.SUBDIVIDED == r);
+                MyDebug.Assert(S2CellRelation.SUBDIVIDED == r);
             }
         }
 
@@ -1455,9 +1452,9 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
     // saves the InteriorTracker state by calling SaveAndClearStateBefore().  It
     // is the caller's responsibility to restore this state by calling
     // RestoreStateBefore() when processing of this cell is finished.
-    private void AbsorbIndexCell(S2PaddedCell pcell, S2ShapeIndexIdCell item, List<ClippedEdge> edges, InteriorTracker tracker, EdgeAllocator alloc)
+    private void AbsorbIndexCell(S2PaddedCell pcell, Enumerator iter, List<ClippedEdge> edges, InteriorTracker tracker, EdgeAllocator alloc)
     {
-        MyDebug.Assert(pcell.Id == item.Item1);
+        MyDebug.Assert(pcell.Id == iter.Id);
 
         // When we absorb a cell, we erase all the edges that are being removed.
         // However when we are finished with this cell, we want to restore the state
@@ -1507,7 +1504,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         var face_edges = alloc.FaceEdges;
         face_edges.Clear();
         bool tracker_moved = false;
-        var cell = item.Item2;
+        var cell = iter.Cell;
         for (var s = 0; s < cell.NumClipped(); ++s)
         {
             var clipped = cell.Clipped(s);
@@ -1540,12 +1537,12 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
 
             for (int i = 0; i < num_edges; ++i)
             {
-                int e = clipped.Edge(i);
+                int e = clipped.Edges[i];
                 var edge_edge_id = e;
                 var edge_edge = shape.GetEdge(e);
                 var edge_max_level = GetEdgeMaxLevel(edge_edge);
                 if (edge_has_interior) tracker.TestEdge(shape_id, edge_edge);
-                var face = (int)pcell.Id.Face();
+                var face = pcell.Id.Face();
                 if (!S2EdgeClipping.ClipToPaddedFace(edge_edge.V0, edge_edge.V1, face, kCellPadding, out R2Point a, out R2Point b))
                 {
                     throw new ApplicationException("Invariant failure in MutableS2ShapeIndex");
@@ -1799,8 +1796,6 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         var cnextHasNext = cnext.MoveNext();
         for (int i = 0; i < num_shapes; ++i)
         {
-            S2ClippedShape clipped = new();
-            cell.AddShape(clipped);
             int eshape_id = NumShapeIds(), cshape_id = eshape_id;  // Sentinels
             if (enext != edges.Count)
             {
@@ -1814,9 +1809,9 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
             if (cshape_id < eshape_id)
             {
                 // The entire cell is in the shape interior.
-                clipped.Init(cshape_id, 0);
-                clipped.ContainsCenter = (true);
+                S2ClippedShape clipped = new(cshape_id, 0, true);
                 cnextHasNext = cnext.MoveNext();
+                cell.AddShape(clipped);
             }
             else
             {
@@ -1826,16 +1821,17 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
                 {
                     ++enext;
                 }
-                clipped.Init(eshape_id, enext - ebegin);
+                S2ClippedShape clipped = new(eshape_id, enext - ebegin);
                 for (int e = ebegin; e < enext; ++e)
                 {
-                    clipped.SetEdge(e - ebegin, edges[e].FaceEdge.EdgeId);
+                    clipped.Edges[e - ebegin] = edges[e].FaceEdge.EdgeId;
                 }
                 if (cshape_id == eshape_id)
                 {
-                    clipped.ContainsCenter = (true);
+                    clipped.ContainsCenter = true;
                     cnextHasNext = cnext.MoveNext();
                 }
+                cell.AddShape(clipped);
             }
         }
         // UpdateEdges() visits cells in increasing order of S2CellId, so during
@@ -1940,55 +1936,40 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         return UpdateBound(edge, u_end, u, v_end, v, alloc);
     }
 
-    // The shapes in the index, accessed by their shape id.  Removed shapes are
-    // replaced by null pointers.
-    private readonly List<S2Shape?> shapes_ = new();
-
-    // A map from S2CellId to the set of clipped shapes that intersect that
-    // cell.  The cell ids cover a set of non-overlapping regions on the
-    // sphere.  Note that this field is updated lazily (see below).  Const
-    // methods *must* call MaybeApplyUpdates() before accessing this field.
-    // (The easiest way to achieve this is simply to use an Iterator.)
-    private readonly List<S2ShapeIndexIdCell> cell_map_ = new(); // gtl.btree_map
-
-    // The id of the first shape that has been queued for addition but not
-    // processed yet.
-    private int pending_additions_begin_ = 0;
-
     private enum IndexStatus
     {
         STALE,     // There are pending updates.
         UPDATING,  // Updates are currently being applied.
         FRESH,     // There are no pending updates.
     }
-    
-    // Reads and writes to this field are guarded by "lock_".
-    private IndexStatus index_status_ = IndexStatus.FRESH;
 
-    // The set of shapes that have been queued for removal but not processed
-    // yet.  Note that we need to copy the edge data since the caller is free to
-    // destroy the shape once Release() has been called.  This field is present
-    // only when there are removed shapes to process (to save memory).
-    private List<RemovedShape>? pending_removals_;
+    // Options that affect construction of the MutableS2ShapeIndex.
+    public class Options
+    {
+        public Options()
+        {
+            MaxEdgesPerCell = s2shape_index_default_max_edges_per_cell;
+        }
 
-    // Additions and removals are queued and processed on the first subsequent
-    // query.  There are several reasons to do this:
-    //
-    //  - It is significantly more efficient to process updates in batches.
-    //  - Often the index will never be queried, in which case we can save both
-    //    the time and memory required to build it.  Examples:
-    //     + S2Loops that are created simply to pass to an S2Polygon.  (We don't
-    //       need the S2Loop index, because S2Polygon builds its own index.)
-    //     + Applications that load a database of geometry and then query only
-    //       a small fraction of it.
-    //     + Applications that only read and write geometry (Decode/Encode).
-    //
-    // The main drawback is that we need to go to some extra work to ensure that
-    // "const" methods are still thread-safe.  Note that the goal is *not* to
-    // make this class thread-safe in general, but simply to hide the fact that
-    // we defer some of the indexing work until query time.
-    private int _channelPendingOperations = 0;
-    private readonly object _channelLock = new();
+        // The maximum number of edges per cell.  If a cell has more than this
+        // many edges that are not considered "long" relative to the cell size,
+        // then it is subdivided.  (Whether an edge is considered "long" is
+        // controlled by --s2shape_index_cell_into_long_edge_ratio flag.)
+        //
+        // Values between 10 and 50 represent a reasonable balance between memory
+        // usage, construction time, and query time.  Small values make queries
+        // faster, while large values make construction faster and use less memory.
+        // Values higher than 50 do not save significant additional memory, and
+        // query times can increase substantially, especially for algorithms that
+        // visit all pairs of potentially intersecting edges (such as polygon
+        // validation), since this is quadratic in the number of edges per cell.
+        //
+        // Note that the *average* number of edges per cell is generally slightly
+        // less than half of the maximum value defined here.
+        //
+        // Defaults to value given by --s2shape_index_default_max_edges_per_cell.
+        public int MaxEdgesPerCell { get; set; }
+    }
 
     /// <summary>
     /// The representation of an edge that has been queued for removal.
@@ -2487,5 +2468,124 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         private int shape_id_end_;         // One beyond the last shape to be added.
         private int batch_size_ = 0;       // The number of edges in the current batch.
         private readonly List<BatchDescriptor> batches_ = new();  // The completed batches so far.
+    }
+
+    public new sealed class Enumerator : EnumeratorBase<S2ShapeIndexCell>
+    {
+        private MutableS2ShapeIndex index_ { get; }
+        private int iter_;
+        private readonly int end_;
+
+        // Constructs an iterator positioned as specified.  By default iterators
+        // are unpositioned, since this avoids an extra seek in this situation
+        // where one of the seek methods (such as Locate) is immediately called.
+        //
+        // If you want to position the iterator at the beginning, e.g. in order to
+        // loop through the entire index, do this instead:
+        //
+        //   for (MutableS2ShapeIndex::Iterator it(&index, S2ShapeIndex::BEGIN);
+        //        !it.done(); it.Next()) { ... }
+        //
+        // Initializes an iterator for the given MutableS2ShapeIndex.  This method
+        // may also be called in order to restore an iterator to a valid state
+        // after the underlying index has been updated (although it is usually
+        // easier just to declare a new iterator whenever required, since iterator
+        // construction is cheap).
+        //
+        // Initialize an iterator for the given MutableS2ShapeIndex without
+        // applying any pending updates.  This can be used to observe the actual
+        // current state of the index without modifying it in any way.
+        public Enumerator(MutableS2ShapeIndex index, InitialPosition pos = InitialPosition.UNPOSITIONED)
+        {
+            index.MaybeApplyUpdates();
+            index_ = index;
+            end_ = index_.cell_map_.Count;
+            if (pos == InitialPosition.BEGIN)
+            {
+                iter_ = 0;
+            }
+            else
+            {
+                iter_ = end_;
+            }
+            Refresh();
+        }
+
+        // Inherited non-virtual methods:
+        //   S2CellId id() const;
+        //   bool done() const;
+        //   S2Point center() const;
+        public override S2ShapeIndexCell Cell =>
+            // Since MutableS2ShapeIndex always sets the "cell_" field, we can skip the
+            // logic in the base class that conditionally calls GetCell().
+            _Cell;
+
+        #region S2CellIterator API
+
+        /// <summary>
+        /// Begin
+        /// </summary>
+        public override void Reset()
+        {
+            // Make sure that the index has not been modified since Init() was called.
+            MyDebug.Assert(index_.IsFresh());
+            iter_ = 0;
+            Refresh();
+        }
+
+        public override void Finish()
+        {
+            iter_ = end_;
+            Refresh();
+        }
+
+        public override bool MoveNext()
+        {
+            MyDebug.Assert(!Done());
+            ++iter_;
+            Refresh();
+            return !Done();
+        }
+        public override bool MovePrevious()
+        {
+            if (iter_ == 0) return false;
+            --iter_;
+            Refresh();
+            return true;
+        }
+        public override void Seek(S2CellId target)
+        {
+            iter_ = index_.cell_map_.GetLowerBound(new(target, default));
+            Refresh();
+        }
+
+        public override bool Locate(S2Point target) => LocateImpl(this, target);
+
+        public override S2CellRelation Locate(S2CellId target) => LocateImpl(this, target);
+
+        public override void SetPosition(int position)
+        {
+            iter_ = position;
+            Refresh();
+        }
+
+        public override void Dispose() { }
+
+        #endregion
+
+        protected override S2ShapeIndexCell GetCell() => throw new NotImplementedException();
+
+        // Updates the IteratorBase fields.
+        private void Refresh()
+        {
+            if (iter_ == end_)
+            {
+                SetFinished();
+            }
+            else
+            {
+                SetState(index_.GetCellId(iter_)!.Value, index_.GetCell(iter_));
+            }
+        }
     }
 }

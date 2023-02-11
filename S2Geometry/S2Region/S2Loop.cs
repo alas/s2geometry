@@ -29,8 +29,8 @@
 
 namespace S2Geometry;
 
+using System;
 using System.Runtime.InteropServices;
-using RangeEnumerator = S2ShapeUtil.RangeEnumerator;
 
 public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDecoder<S2Loop>
 {
@@ -1140,21 +1140,21 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
 
     // Given an iterator that is already positioned at the S2ShapeIndexCell
     // containing "p", returns Contains(p).
-    private bool Contains(S2ShapeIndexIdCell icell, S2Point p)
+    private bool Contains(MutableS2ShapeIndex.Enumerator it, S2Point p)
     {
         // Test containment by drawing a line segment from the cell center to the
         // given point and counting edge crossings.
-        S2ClippedShape a_clipped = icell.Item2!.Clipped(0);
+        S2ClippedShape a_clipped = it.Cell.Clipped(0);
         bool inside = a_clipped.ContainsCenter;
         int a_num_edges = a_clipped.NumEdges;
         if (a_num_edges > 0)
         {
-            S2Point center = icell.Item1.ToPoint();
+            S2Point center = it.Center;
             var crosser = new S2EdgeCrosser(center, p);
             int ai_prev = -2;
             for (int i = 0; i < a_num_edges; ++i)
             {
-                int ai = a_clipped.Edge(i);
+                int ai = a_clipped.Edges[i];
                 if (ai != ai_prev + 1) crosser.RestartAt(Vertex(ai));
                 ai_prev = ai;
                 inside ^= crosser.EdgeOrVertexCrossing(Vertex(ai + 1));
@@ -1169,24 +1169,24 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
     //
     // REQUIRES: it.id().contains(target.id())
     // [This condition is true whenever it.Locate(target) returns INDEXED.]
-    private bool BoundaryApproxIntersects(S2ShapeIndexIdCell icell, S2Cell target)
+    private bool BoundaryApproxIntersects(MutableS2ShapeIndex.Enumerator it, S2Cell target)
     {
-        MyDebug.Assert(icell.Item1.Contains(target.Id));
-        S2ClippedShape a_clipped = icell.Item2!.Clipped(0);
+        MyDebug.Assert(it.Id.Contains(target.Id));
+        S2ClippedShape a_clipped = it.Cell.Clipped(0);
         int a_num_edges = a_clipped.NumEdges;
 
         // If there are no edges, there is no intersection.
         if (a_num_edges == 0) return false;
 
         // We can save some work if "target" is the index cell itself.
-        if (icell.Item1 == target.Id) return true;
+        if (it.Id == target.Id) return true;
 
         // Otherwise check whether any of the edges intersect "target".
         var kMaxError = S2EdgeClipping.kFaceClipErrorUVCoord + S2EdgeClipping.kIntersectsRectErrorUVDist;
         R2Rect bound = target.BoundUV.Expanded(kMaxError);
         for (int i = 0; i < a_num_edges; ++i)
         {
-            int ai = a_clipped.Edge(i);
+            int ai = a_clipped.Edges[i];
             var clip = S2EdgeClipping.ClipToPaddedFace(Vertex(ai), Vertex(ai + 1), target.Face, kMaxError, out R2Point v0, out R2Point v1);
             if (clip && S2EdgeClipping.IntersectsRect(v0, v1, bound))
             {
@@ -1218,15 +1218,13 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
             }
             return -1;
         }
-        var (pos, found) = _index.LocatePoint(p);
-        if (!found) return -1;
+        MutableS2ShapeIndex.Enumerator it = new(_index);
+        if (!it.Locate(p)) return -1;
 
-        var icell = _index.GetIndexCell(pos);
-        var cell = icell!.Value.Item2;
-        S2ClippedShape a_clipped = cell!.Clipped(0);
+        S2ClippedShape a_clipped = it.Cell.Clipped(0);
         for (int i = a_clipped.NumEdges - 1; i >= 0; --i)
         {
-            int ai = a_clipped.Edge(i);
+            int ai = a_clipped.Edges[i];
             // Return value must be in the range [1..N].
             if (Vertex(ai) == p) return (ai == 0) ? NumVertices : ai;
             if (Vertex(ai + 1) == p) return ai + 1;
@@ -1396,9 +1394,10 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
     {
         return _bound;
     }
-    public bool Contains(S2Cell cell)
+    public bool Contains(S2Cell target)
     {
-        var (relation, pos) = _index.LocateCell(cell.Id);
+        MutableS2ShapeIndex.Enumerator it = new(_index);
+        S2CellRelation relation = it.Locate(target.Id);
 
         // If "target" is disjoint from all index cells, it is not contained.
         // Similarly, if "target" is subdivided into one or more index cells then it
@@ -1406,40 +1405,36 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
         // intersect a sufficient number of edges.  (But note that if "target" itself
         // is an index cell then it may be contained, since it could be a cell with
         // no edges in the loop interior.)
-        if (relation != S2ShapeIndex.CellRelation.INDEXED) return false;
-
-        var ic = _index.GetIndexCell(pos);
+        if (relation != S2CellRelation.INDEXED) return false;
 
         // Otherwise check if any edges intersect "target".
-        if (BoundaryApproxIntersects(ic!.Value, cell)) return false;
+        if (BoundaryApproxIntersects(it, target)) return false;
 
         // Otherwise check if the loop contains the center of "target".
-        return Contains(ic.Value, cell.Center());
+        return Contains(it, target.Center());
     }
-    public bool MayIntersect(S2Cell cell)
+    public bool MayIntersect(S2Cell target)
     {
-        var target = cell;
-        var (relation, pos) = _index.LocateCell(target.Id);
+        MutableS2ShapeIndex.Enumerator it = new(_index);
+        S2CellRelation relation = it.Locate(target.Id);
 
         // If "target" does not overlap any index cell, there is no intersection.
-        if (relation == S2ShapeIndex.CellRelation.DISJOINT) return false;
+        if (relation == S2CellRelation.DISJOINT) return false;
 
         // If "target" is subdivided into one or more index cells, there is an
         // intersection to within the S2ShapeIndex error bound (see Contains).
-        if (relation == S2ShapeIndex.CellRelation.SUBDIVIDED) return true;
-
-        var icell = _index.GetIndexCell(pos);
+        if (relation == S2CellRelation.SUBDIVIDED) return true;
 
         // If "target" is an index cell, there is an intersection because index cells
         // are created only if they have at least one edge or they are entirely
         // contained by the loop.
-        if (icell!.Value.Item1 == target.Id) return true;
+        if (it.Id == target.Id) return true;
 
         // Otherwise check if any edges intersect "target".
-        if (BoundaryApproxIntersects(icell.Value, target)) return true;
+        if (BoundaryApproxIntersects(it, target)) return true;
 
         // Otherwise check if the loop contains the center of "target".
-        return Contains(icell.Value, target.Center());
+        return Contains(it, target.Center());
     }
     // The point 'p' does not need to be normalized.
     public bool Contains(S2Point p)
@@ -1479,11 +1474,10 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
         }
         // Otherwise we look up the S2ShapeIndex cell containing this point.  Note
         // the index is built automatically the first time an iterator is created.
-        var (pos, found) = _index.LocatePoint(p);
-        if (!found) return false;
+        MutableS2ShapeIndex.Enumerator it = new(_index);
+        if (!it.Locate(p)) return false;
 
-        var icell = _index.GetIndexCell(pos);
-        return Contains(icell!.Value, p);
+        return Contains(it, p);
     }
 
     #endregion
@@ -1758,6 +1752,80 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
         public abstract bool WedgesCross(S2Point a0, S2Point ab1, S2Point a2, S2Point b0, S2Point b2);
     }
 
+    // RangeIterator is a wrapper over MutableS2ShapeIndex::Iterator with extra
+    // methods that are useful for merging the contents of two or more
+    // S2ShapeIndexes.
+    public class RangeEnumerator : IReversableEnumerator<S2ShapeIndexCell>
+    {
+        private readonly S2ShapeIndex _index;
+        private readonly MutableS2ShapeIndex.Enumerator _it;
+        // The min and max leaf cell ids covered by the current cell.  If done() is
+        // true, these methods return a value larger than any valid cell id.
+        public S2CellId RangeMin { get; private set; }
+        public S2CellId RangeMax { get; private set; }
+
+        // Construct a new RangeIterator positioned at the first cell of the index.
+        public RangeEnumerator(MutableS2ShapeIndex index)
+        {
+            _index = index;
+            _it = new(index, S2ShapeIndex.InitialPosition.BEGIN);
+            Refresh();
+        }
+
+        // The current S2CellId and cell contents.
+        public S2CellId Id => _it.Id;
+        public S2ShapeIndexCell Cell => _it.Cell;
+
+        // Various other convenience methods for the current cell.
+        public S2ClippedShape Clipped() { return Cell.Clipped(0); }
+        public int NumEdges() { return Clipped().NumEdges; }
+        public bool ContainsCenter() { return Clipped().ContainsCenter; }
+
+        public S2ShapeIndexCell Current => _it.Current;
+        object System.Collections.IEnumerator.Current => _it.Current;
+
+        public bool MoveNext() { var has = _it.MoveNext(); Refresh(); return has; }
+        public bool MovePrevious() { var has = _it.MovePrevious(); Refresh(); return has; }
+        public void Reset() => _it.Reset();
+        public bool Done() => _it.Done();
+        public void SetPosition(int position) => _it.SetPosition(position);
+        public void Dispose() { GC.SuppressFinalize(this); }
+
+        // Position the iterator at the first cell that overlaps or follows
+        // "target", i.e. such that RangeMax >= target.RangeMin.
+        public void SeekTo(RangeEnumerator target)
+        {
+            _it.SetPosition(_index.SeekCell(target.RangeMin).pos);
+            // If the current cell does not overlap "target", it is possible that the
+            // previous cell is the one we are looking for.  This can only happen when
+            // the previous cell contains "target" but has a smaller S2CellId.
+            if (_it.Done() || _it.Id.RangeMin() > target.RangeMax)
+            {
+                if (_it.MovePrevious() && _it.Id.RangeMax() < target.Id) _it.MoveNext();
+            }
+            Refresh();
+        }
+
+        // Position the iterator at the first cell that follows "target", i.e. the
+        // first cell such that RangeMin > target.RangeMax.
+        public void SeekBeyond(RangeEnumerator target)
+        {
+            _it.SetPosition(_index.SeekCell(target.RangeMax.Next()).pos);
+            if (!_it.Done() && _it.Id.RangeMin() <= target.RangeMax)
+            {
+                _it.MoveNext();
+            }
+            Refresh();
+        }
+
+        // Updates internal state after the iterator has been repositioned.
+        private void Refresh()
+        {
+            RangeMin = Id.RangeMin();
+            RangeMax = Id.RangeMax();
+        }
+    }
+
     // LoopCrosser is a helper class for determining whether two loops cross.
     // It is instantiated twice for each pair of loops to be tested, once for the
     // pair (A,B) and once for the pair (B,A), in order to be able to process
@@ -1855,7 +1923,7 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
             int a_num_edges = a_clipped.NumEdges;
             for (int i = 0; i < a_num_edges; ++i)
             {
-                StartEdge(a_clipped.Edge(i));
+                StartEdge(a_clipped.Edges[i]);
                 if (EdgeCrossesCell(b_clipped)) return true;
             }
             return false;
@@ -1916,7 +1984,7 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
             int a_num_edges = a_clipped.NumEdges;
             for (int i = 0; i < a_num_edges; ++i)
             {
-                int aj = a_clipped.Edge(i);
+                int aj = a_clipped.Edges[i];
                 // Use an S2CrossingEdgeQuery starting at "b_root" to find the index cells
                 // of B that might contain crossing edges.
                 b_query_.GetCells(a_.Vertex(aj), a_.Vertex(aj + 1), b_root, b_cells_);
@@ -1947,7 +2015,7 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
             int b_num_edges = b_clipped.NumEdges;
             for (int j = 0; j < b_num_edges; ++j)
             {
-                int bj = b_clipped.Edge(j);
+                int bj = b_clipped.Edges[j];
                 if (bj != bj_prev_ + 1) crosser_.RestartAt(b_.Vertex(bj));
                 bj_prev_ = bj;
                 int crossing = crosser_.CrossingSign(b_.Vertex(bj + 1));
