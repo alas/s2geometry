@@ -836,7 +836,6 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
     // documentation for FLAGS_s2shape_index_tmp_memory_budget_mb.)
     private List<BatchDescriptor> GetUpdateBatches()
     {
-        var res = new List<BatchDescriptor>();
         // Count the edges being removed and added.
         var num_edges_removed = 0;
         if (pending_removals_ is not null)

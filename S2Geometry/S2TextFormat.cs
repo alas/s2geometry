@@ -1,6 +1,8 @@
 namespace S2Geometry;
 
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Numerics;
 using System.Text;
 
 public static class S2TextFormat
@@ -58,7 +60,7 @@ public static class S2TextFormat
     public static bool ParsePoints(string str, List<S2Point> vertices)
     {
         vertices.Clear();
-        var latlngs = new List<S2LatLng>();
+        List<S2LatLng> latlngs = new();
         if (!ParseLatLngs(str, latlngs)) return false;
 
         vertices.AddRange(latlngs.Select(t => t.ToPoint()).ToArray());
@@ -112,7 +114,7 @@ public static class S2TextFormat
 
     // As above, but does not Assert.True-fail on invalid input. Returns true if
     // conversion is successful.
-    public static bool MakeLatLngRect(string str, out S2LatLngRect? rect)
+    public static bool MakeLatLngRect(string str, [NotNullWhen(true)] out S2LatLngRect? rect)
     {
         rect = null;
         var latlngs = new List<S2LatLng>();
@@ -178,7 +180,7 @@ public static class S2TextFormat
 
     // As above, but does not Assert.True-fail on invalid input. Returns true if
     // conversion is successful.
-    public static bool MakeCellUnion(string str, out S2CellUnion? cell_union)
+    public static bool MakeCellUnion(string str, [NotNullWhen(true)] out S2CellUnion? cell_union)
     {
         cell_union = null;
         var cellIds = new List<S2CellId>();
@@ -213,7 +215,7 @@ public static class S2TextFormat
 
     // As above, but does not Assert.True-fail on invalid input. Returns true if
     // conversion is successful.
-    public static bool MakeLoop(string str, out S2Loop? loop, S2Debug override_ = S2Debug.ALLOW)
+    public static bool MakeLoop(string str, [NotNullWhen(true)] out S2Loop? loop, S2Debug override_ = S2Debug.ALLOW)
     {
         if (str == "empty")
         {
@@ -243,7 +245,7 @@ public static class S2TextFormat
 
     // As above, but does not Assert.True-fail on invalid input. Returns true if
     // conversion is successful.
-    public static bool MakePolyline(string str, out S2Polyline? polyline, S2Debug override_ = S2Debug.ALLOW)
+    public static bool MakePolyline(string str, [NotNullWhen(true)] out S2Polyline? polyline, S2Debug override_ = S2Debug.ALLOW)
     {
         polyline = null;
         var vertices = new List<S2Point>();
@@ -261,28 +263,27 @@ public static class S2TextFormat
 
     // As above, but does not Assert.True-fail on invalid input. Returns true if
     // conversion is successful.
-    public static bool MakeLaxPolyline(string str, out S2LaxPolylineShape? lax_polyline)
+    public static bool MakeLaxPolyline(string str, [NotNullWhen(true)] out S2LaxPolylineShape? lax_polyline)
     {
         lax_polyline = null;
-        var vertices = new List<S2Point>();
+        List<S2Point> vertices = new ();
         if (!ParsePoints(str, vertices)) return false;
         lax_polyline = new S2LaxPolylineShape(vertices);
         return true;
     }
 
-    private static bool InternalMakePolygon(string str, bool normalize_loops, out S2Polygon? polygon)
+    private static bool InternalMakePolygon(string str, bool normalize_loops, [NotNullWhen(true)]out S2Polygon? polygon)
     {
         polygon = null;
         if (str == "empty") str = "";
         var loop_strs = SplitString(str, ';');
-        var loops = new List<S2Loop>();
+        List<S2Loop> loops = new();
         foreach (var loop_str in loop_strs)
         {
             if (!MakeLoop(loop_str, out var loop)) return false;
-            var nnloop = loop!;
             // Don't normalize loops that were explicitly specified as "full".
-            if (normalize_loops && !nnloop.IsFull()) loop.Normalize();
-            loops.Add(nnloop);
+            if (normalize_loops && !loop.IsFull()) loop.Normalize();
+            loops.Add(loop);
         }
         polygon = new S2Polygon(loops);
         return true;
@@ -309,7 +310,7 @@ public static class S2TextFormat
 
     // As above, but does not Assert.True-fail on invalid input. Returns true if
     // conversion is successful.
-    public static bool MakePolygon(string str, out S2Polygon polygon)
+    public static bool MakePolygon(string str, [NotNullWhen(true)]out S2Polygon? polygon)
     {
         return InternalMakePolygon(str, true, out polygon);
     }
@@ -324,7 +325,7 @@ public static class S2TextFormat
 
     // As above, but does not Assert.True-fail on invalid input. Returns true if
     // conversion is successful.
-    public static bool MakeVerbatimPolygon(string str, out S2Polygon? polygon)
+    public static bool MakeVerbatimPolygon(string str, [NotNullWhen(true)] out S2Polygon? polygon)
     {
         return InternalMakePolygon(str, false, out polygon);
     }
@@ -341,7 +342,7 @@ public static class S2TextFormat
 
     // As above, but does not Assert.True-fail on invalid input. Returns true if
     // conversion is successful.
-    public static bool MakeLaxPolygon(string str, out S2LaxPolygonShape? lax_polygon)
+    public static bool MakeLaxPolygon(string str, [NotNullWhen(true)] out S2LaxPolygonShape? lax_polygon)
     {
         lax_polygon = null;
         var loop_strs = SplitString(str, ';');
@@ -395,7 +396,7 @@ public static class S2TextFormat
 
     // As above, but does not Assert.True-fail on invalid input. Returns true if
     // conversion is successful.
-    public static bool MakeIndex(string str, out MutableS2ShapeIndex? index)
+    public static bool MakeIndex(string str, [NotNullWhen(true)] out MutableS2ShapeIndex? index)
     {
         index = null;
         var result = new MutableS2ShapeIndex();

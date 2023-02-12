@@ -34,10 +34,10 @@ public class S2BuilderUtil_S2PointVectorLayerTests
 
     [Fact]
     internal void Test_S2PointVectorLayer_KeepDuplicates() {
-        S2Builder builder=new(new Options());
-        List<S2Point> output=new();
+        S2Builder builder = new(new Options());
+        List<S2Point> output = new();
         IdSetLexicon label_set_lexicon=new();
-        LabelSet label_set_ids=new();
+        LabelSet label_set_ids = new();
         builder.StartLayer(new S2PointVectorLayer(
             output, label_set_ids, label_set_lexicon,
             new S2PointVectorLayer.Options(
@@ -93,7 +93,7 @@ public class S2BuilderUtil_S2PointVectorLayerTests
         builder.AddPoint(MakePointOrDie(point1_str));
         Assert.True(builder.Build(out _));
         Assert.Equal(1, index.NumShapeIds());
-        var shape = (S2PointVectorShape) index.Shape(0);
+        var shape = (S2PointVectorShape)index.Shape(0);
         Assert.Equal(2, shape.NumPoints);
         Assert.Equal(point0_str, shape.Point(0).ToDebugString());
         Assert.Equal(point1_str, shape.Point(1).ToDebugString());

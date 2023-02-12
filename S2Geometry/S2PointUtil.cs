@@ -105,10 +105,12 @@ public static partial class S2
         MyDebug.Assert(z.IsUnitLength());
 
         var ortho = Ortho(z);
+        var prod = ortho.CrossProd(z); // Already unit-length.
+
         return new S2PointS2Point(
-            ortho.CrossProd(z), // Already unit-length.
-            ortho,
-            z);
+            prod[0], ortho[0], z[0],
+            prod[1], ortho[1], z[1],
+            prod[2], ortho[2], z[2]);
     }
 
     // Given an orthonormal basis "m" of column vectors and a point "p", returns

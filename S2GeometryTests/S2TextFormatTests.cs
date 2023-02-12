@@ -354,12 +354,12 @@ public class S2TextFormatTests
     internal void Test_MakeLoop_ValidInput()
     {
         Assert.True(MakeLoop("-20:150, -20:151, -19:150", out var loop));
-        var expected = new S2Loop(new[]
+        S2Loop expected = new (new[]
         {
-                S2LatLng.FromDegrees(-20, 150).ToPoint(),
-                S2LatLng.FromDegrees(-20, 151).ToPoint(),
-                S2LatLng.FromDegrees(-19, 150).ToPoint(),
-            });
+            S2LatLng.FromDegrees(-20, 150).ToPoint(),
+            S2LatLng.FromDegrees(-20, 151).ToPoint(),
+            S2LatLng.FromDegrees(-19, 150).ToPoint(),
+        });
         Assert.True(loop.BoundaryApproxEquals(expected));
     }
 
@@ -418,10 +418,8 @@ public class S2TextFormatTests
     }
 
     [Fact]
-    internal void Test_MakeLaxPolyline_InvalidInput()
-    {
+    internal void Test_MakeLaxPolyline_InvalidInput() =>
         Assert.False(MakeLaxPolyline("blah", out _));
-    }
 
     [Fact]
     internal void Test_MakePolygon_ValidInput()
@@ -429,11 +427,11 @@ public class S2TextFormatTests
         Assert.True(MakePolygon("-20:150, -20:151, -19:150", out var polygon));
         var vertices = new[]
         {
-                S2LatLng.FromDegrees(-20, 150).ToPoint(),
-                S2LatLng.FromDegrees(-20, 151).ToPoint(),
-                S2LatLng.FromDegrees(-19, 150).ToPoint(),
-            };
-        var expected = new S2Polygon(new S2Loop(vertices));
+            S2LatLng.FromDegrees(-20, 150).ToPoint(),
+            S2LatLng.FromDegrees(-20, 151).ToPoint(),
+            S2LatLng.FromDegrees(-19, 150).ToPoint(),
+        };
+        S2Polygon expected = new(new S2Loop(vertices));
         Assert.True(polygon == expected);
     }
 

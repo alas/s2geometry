@@ -1,10 +1,11 @@
 ﻿namespace S2Geometry;
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 internal static class MyDebug
 {
-    internal static void Assert(bool statement, string? message = null)
+    internal static void Assert([DoesNotReturnIf(false)] bool statement, string? message = null)
     {
         if (!statement) throw new InvalidDataException(message ?? string.Empty);
     }

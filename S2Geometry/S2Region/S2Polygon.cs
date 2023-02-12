@@ -1586,8 +1586,10 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
             PolylineType_ = S2Builder.Graph.PolylineType.WALK,
         };
         S2BooleanOperation op = new(op_type, new S2PolylineVectorLayer(result, layer_options), options);
-        MutableS2ShapeIndex a_index = new();
-        a_index.Add(new S2Polyline.Shape(a));
+        MutableS2ShapeIndex a_index = new()
+        {
+            new S2Polyline.Shape(a)
+        };
         if (!op.Build(a_index, Index, out var error))
         {
             throw new ApplicationException("Polyline " + op_type + " operation failed: " + error);
