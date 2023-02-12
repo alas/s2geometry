@@ -171,6 +171,24 @@ public readonly record struct Vector3<T>(T X, T Y, T Z) : IComparable<Vector3<T>
         return array;
     }
 
+    public Vector3<T> MulComponents(Vector3<T> b) =>
+        new(X * b.X, Y * b.Y, Z * b.Z);
+
+    public Vector3<T> DivComponents(Vector3<T> b) =>
+        new(X / b.X, Y / b.Y, Z / b.Z);
+
+    public Vector3<T> Sqrt() =>
+        new(T.Sqrt(X), T.Sqrt(Y), T.Sqrt(Z));
+
+    public Vector3<T> Floor() =>
+        new(T.Floor(X), T.Floor(Y), T.Floor(Z));
+
+    public Vector3<T> Ceiling() =>
+        new(T.Ceiling(X), T.Ceiling(Y), T.Ceiling(Z));
+
+    public Vector3<T> Round() =>
+        new(T.Round(X), T.Round(Y), T.Round(Z));
+
     #endregion
 
     #region Long Double

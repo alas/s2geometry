@@ -35,6 +35,7 @@ global using LabelSet = System.Collections.Generic.List<System.Int32>;
 global using LabelSetIds = System.Collections.Generic.List<System.Collections.Generic.List<int>>;
 
 global using S2Point = S2Geometry.Vector3<double>;
+//global using S2Point_Coder = S2Geometry.S2Coder_Testing.S2BasicCoder<S2Geometry.Vector3<double>>;
 // S2PointSpan represents a view of an S2Point array.  It is used to pass
 // vertex arrays to functions that don't care about the actual array type
 // (e.g. std::vector<S2Point> or S2Point[]).

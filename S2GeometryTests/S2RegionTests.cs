@@ -1,7 +1,5 @@
 namespace S2Geometry;
 
-using System.Text;
-
 public class S2RegionTests
 {
     #region Strings
@@ -131,7 +129,8 @@ public class S2RegionTests
     }
 
     [Fact]
-    internal void Test_S2RegionEncodeDecodeTest_S2Cell() {
+    internal void Test_S2RegionEncodeDecodeTest_S2Cell()
+    {
         S2Cell cell_from_point = new(new S2Point(1, 2, 3));
         S2Cell cell_from_latlng = new(S2LatLng.FromDegrees(39.0, -120.0));
         S2Cell cell_from_face_pos_lvl = S2Cell.FromFacePosLevel(3, 0x12345678, S2.kMaxCellLevel - 4);
@@ -148,7 +147,8 @@ public class S2RegionTests
     }
 
     [Fact]
-    internal void Test_S2RegionEncodeDecodeTest_S2CellUnion() {
+    internal void Test_S2RegionEncodeDecodeTest_S2CellUnion()
+    {
         S2CellUnion cu_empty = new();
         S2CellUnion cu_face1 = new(new List<S2CellId>{ S2CellId.FromFace(1)});
         // Cell ids taken from S2CellUnion EncodeDecode test.
@@ -198,7 +198,8 @@ public class S2RegionTests
     }
 
     [Fact]
-    internal void Test_S2RegionEncodeDecodeTest_S2PointRegion() {
+    internal void Test_S2RegionEncodeDecodeTest_S2PointRegion()
+    {
         S2PointRegion point_origin = new(S2.Origin);
         S2PointRegion point_testing = new(new S2Point(12.34, 56.78, 9.1011).Normalize());
         TestEncodeDecode(kEncodedPointOrigin, point_origin);
@@ -206,7 +207,8 @@ public class S2RegionTests
     }
 
     [Fact]
-    internal void Test_S2RegionEncodeDecodeTest_S2Polygon() {
+    internal void Test_S2RegionEncodeDecodeTest_S2Polygon()
+    {
         string kCross1 = "-2:1, -1:1, 1:1, 2:1, 2:-1, 1:-1, -1:-1, -2:-1";
         string kCrossCenterHole = "-0.5:0.5, 0.5:0.5, 0.5:-0.5, -0.5:-0.5;";
 
@@ -262,7 +264,7 @@ public class S2RegionTests
         var decoder = encoder.GetDecoder();
         var (success, dst) = Region.Decode(decoder);
         Assert.True(success);
-        return dst;
+        return dst!;
     }
 
     // TODO(user): When the remaining types implement Encode/Decode, add their

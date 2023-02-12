@@ -12,37 +12,87 @@ public class S2PointCompressionTests
     private readonly Encoder encoder_ = new();
 
     // Four vertex loop near the corner of faces 0, 1, and 2.
-    private S2Point[] loop_4_;
+    private readonly S2Point[] loop_4_;
     // Four vertex loop near the corner of faces 0, 1, and 2;
     // unsnapped.
-    private S2Point[] loop_4_unsnapped_;
+    private readonly S2Point[] loop_4_unsnapped_;
     // Four vertex loop near the corner of faces 0, 1, and 2;
     // snapped to level 14.
-    private S2Point[] loop_4_level_14_;
+    private readonly S2Point[] loop_4_level_14_;
     // 100 vertex loop near the corner of faces 0, 1, and 2.
-    private S2Point[] loop_100_;
+    private readonly S2Point[] loop_100_;
     // 100 vertex loop near the corner of faces 0, 1, and 2;
     // unsnapped.
-    private S2Point[] loop_100_unsnapped_;
+    private readonly S2Point[] loop_100_unsnapped_;
     // 100 vertex loop near the corner of faces 0, 1, and 2;
     // 15 points snapped to kMakCellLevel, the others not snapped.
-    private S2Point[] loop_100_mixed_15_;
+    private readonly S2Point[] loop_100_mixed_15_;
     // 100 vertex loop near the corner of faces 0, 1, and 2;
     // 25 points snapped to kMakCellLevel, the others not snapped.
-    private S2Point[] loop_100_mixed_25_;
+    private readonly S2Point[] loop_100_mixed_25_;
     // 100 vertex loop near the corner of faces 0, 1, and 2;
     // snapped to level 22.
-    private S2Point[] loop_100_level_22_;
+    private readonly S2Point[] loop_100_level_22_;
     // A loop with two vertices on each of three faces.
-    private S2Point[] loop_multi_face_;
+    private readonly S2Point[] loop_multi_face_;
     // A straight line of 100 vertices on face 0 that should compress well.
-    private S2Point[] line_;
+    private readonly S2Point[] line_;
 
     #endregion
 
     public S2PointCompressionTests()
     {
-        SetUp();
+        loop_4_ = MakeRegularPoints(4, 0.1, S2.kMaxCellLevel);
+
+        S2Point center = new S2Point(1.0, 1.0, 1.0).Normalize();
+        S1Angle radius = S2Testing.KmToAngle(0.1);
+        loop_4_unsnapped_ = S2Testing.MakeRegularPoints(center, radius, 4);
+
+        // Radius is 100m, so points are about 141 meters apart.
+        // Snapping to level 14 will move them by < 47m.
+        loop_4_level_14_ = MakeRegularPoints(4, 0.1, 14);
+
+        loop_100_ = MakeRegularPoints(100, 0.1, S2.kMaxCellLevel);
+
+        loop_100_unsnapped_ = S2Testing.MakeRegularPoints(center, radius, 100);
+
+        loop_100_mixed_15_ = S2Testing.MakeRegularPoints(center, radius, 100);
+        for (int i = 0; i < 15; ++i)
+        {
+            loop_100_mixed_15_[3 * i] = SnapPointToLevel(loop_100_mixed_15_[3 * i],
+                                                         S2.kMaxCellLevel);
+        }
+
+        loop_100_mixed_25_ = S2Testing.MakeRegularPoints(center, radius, 100);
+        for (int i = 0; i < 25; ++i)
+        {
+            loop_100_mixed_25_[4 * i] = SnapPointToLevel(loop_100_mixed_25_[4 * i],
+                                                         S2.kMaxCellLevel);
+        }
+
+        // Circumference is 628m, so points are about 6 meters apart.
+        // Snapping to level 22 will move them by < 2m.
+        loop_100_level_22_ = MakeRegularPoints(100, 0.1, 22);
+
+        var multi_face_points = new S2Point[6];
+        multi_face_points[0] = S2.FaceUVtoXYZ(0, -0.5, 0.5).Normalize();
+        multi_face_points[1] = S2.FaceUVtoXYZ(1, -0.5, 0.5).Normalize();
+        multi_face_points[2] = S2.FaceUVtoXYZ(1, 0.5, -0.5).Normalize();
+        multi_face_points[3] = S2.FaceUVtoXYZ(2, -0.5, 0.5).Normalize();
+        multi_face_points[4] = S2.FaceUVtoXYZ(2, 0.5, -0.5).Normalize();
+        multi_face_points[5] = S2.FaceUVtoXYZ(2, 0.5, 0.5).Normalize();
+        loop_multi_face_ = SnapPointsToLevel(multi_face_points, S2.kMaxCellLevel);
+
+        var line_points = new S2Point[100];
+        for (int i = 0; i < line_points.Length; ++i)
+        {
+            double s = 0.01 + 0.005 * i;
+            double t = 0.01 + 0.009 * i;
+            double u = S2.STtoUV(s);
+            double v = S2.STtoUV(t);
+            line_points[i] = S2.FaceUVtoXYZ(0, u, v).Normalize();
+        }
+        line_ = SnapPointsToLevel(line_points, S2.kMaxCellLevel);
     }
 
     [Fact]
@@ -193,10 +243,8 @@ public class S2PointCompressionTests
         Assert.True(result[1] == points[1].XYZ);
     }
 
-    private static S2Point SnapPointToLevel(S2Point point, int level)
-    {
-        return new S2CellId(point).Parent(level).ToPoint();
-    }
+    private static S2Point SnapPointToLevel(S2Point point, int level) =>
+        new S2CellId(point).Parent(level).ToPoint();
 
     private static S2Point[] SnapPointsToLevel(S2Point[] points, int level)
     {
@@ -220,69 +268,12 @@ public class S2PointCompressionTests
         return SnapPointsToLevel(unsnapped_points.ToArray(), level);
     }
 
-    private static S2PointCompression.S2XYZFaceSiTi[] MakeXYZFaceSiTiPoints(S2Point[] points)
-    {
-        return points.Select(t =>
+    private static S2PointCompression.S2XYZFaceSiTi[] MakeXYZFaceSiTiPoints(S2Point[] points) =>
+        points.Select(t =>
         {
             var cellLevel = S2.XYZtoFaceSiTi(t, out var face, out var si, out var ti);
             return new S2PointCompression.S2XYZFaceSiTi(t, face, si, ti, cellLevel);
         }).ToArray();
-    }
-
-    private void SetUp()
-    {
-        loop_4_ = MakeRegularPoints(4, 0.1, S2.kMaxCellLevel);
-
-        S2Point center = new S2Point(1.0, 1.0, 1.0).Normalize();
-        S1Angle radius = S2Testing.KmToAngle(0.1);
-        loop_4_unsnapped_ = S2Testing.MakeRegularPoints(center, radius, 4);
-
-        // Radius is 100m, so points are about 141 meters apart.
-        // Snapping to level 14 will move them by < 47m.
-        loop_4_level_14_ = MakeRegularPoints(4, 0.1, 14);
-
-        loop_100_ = MakeRegularPoints(100, 0.1, S2.kMaxCellLevel);
-
-        loop_100_unsnapped_ = S2Testing.MakeRegularPoints(center, radius, 100);
-
-        loop_100_mixed_15_ = S2Testing.MakeRegularPoints(center, radius, 100);
-        for (int i = 0; i < 15; ++i)
-        {
-            loop_100_mixed_15_[3 * i] = SnapPointToLevel(loop_100_mixed_15_[3 * i],
-                                                         S2.kMaxCellLevel);
-        }
-
-        loop_100_mixed_25_ = S2Testing.MakeRegularPoints(center, radius, 100);
-        for (int i = 0; i < 25; ++i)
-        {
-            loop_100_mixed_25_[4 * i] = SnapPointToLevel(loop_100_mixed_25_[4 * i],
-                                                         S2.kMaxCellLevel);
-        }
-
-        // Circumference is 628m, so points are about 6 meters apart.
-        // Snapping to level 22 will move them by < 2m.
-        loop_100_level_22_ = MakeRegularPoints(100, 0.1, 22);
-
-        var multi_face_points = new S2Point[6];
-        multi_face_points[0] = S2.FaceUVtoXYZ(0, -0.5, 0.5).Normalize();
-        multi_face_points[1] = S2.FaceUVtoXYZ(1, -0.5, 0.5).Normalize();
-        multi_face_points[2] = S2.FaceUVtoXYZ(1, 0.5, -0.5).Normalize();
-        multi_face_points[3] = S2.FaceUVtoXYZ(2, -0.5, 0.5).Normalize();
-        multi_face_points[4] = S2.FaceUVtoXYZ(2, 0.5, -0.5).Normalize();
-        multi_face_points[5] = S2.FaceUVtoXYZ(2, 0.5, 0.5).Normalize();
-        loop_multi_face_ = SnapPointsToLevel(multi_face_points, S2.kMaxCellLevel);
-
-        var line_points = new S2Point[100];
-        for (int i = 0; i < line_points.Length; ++i)
-        {
-            double s = 0.01 + 0.005 * i;
-            double t = 0.01 + 0.009 * i;
-            double u = S2.STtoUV(s);
-            double v = S2.STtoUV(t);
-            line_points[i] = S2.FaceUVtoXYZ(0, u, v).Normalize();
-        }
-        line_ = SnapPointsToLevel(line_points, S2.kMaxCellLevel);
-    }
 
     private void Encode(S2Point[] points, int level)
     {

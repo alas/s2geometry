@@ -259,7 +259,7 @@ public class S2CellUnionTests
 
             // Generate a covering for the expanded cap, and measure the new maximum
             // distance from the cap center to any point in the covering.
-            covering.Expand(S1Angle.FromRadians(radius), max_level_diff);
+            covering = covering.Expand(S1Angle.FromRadians(radius), max_level_diff);
             S2Testing.CheckCovering(expanded_cap, covering, false);
             double expanded_covering_radius = GetRadius(covering, cap.Center);
 
@@ -497,10 +497,10 @@ public class S2CellUnionTests
         cell_union = new S2CellUnion(ids);
         Assert.Equal(1UL << 60, cell_union.LeafCellsCovered());
         // Five faces.
-        cell_union.Expand(0);
+        cell_union = cell_union.Expand(0);
         Assert.Equal(5UL << 60, cell_union.LeafCellsCovered());
         // Whole world.
-        cell_union.Expand(0);
+        cell_union = cell_union.Expand(0);
         Assert.Equal(6UL << 60, cell_union.LeafCellsCovered());
 
         // Add some disjoint cells.
