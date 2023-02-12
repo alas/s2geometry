@@ -58,6 +58,11 @@ public record class S2CellUnion : IS2Region<S2CellUnion>, IEnumerable<S2CellId>,
     public S2CellUnion(UInt64[] cell_ids, bool checkValidity = true)
         : this(cell_ids.Select(t => new S2CellId(t)).ToList(), checkValidity) { }
 
+    // Internal constructor that does not check "cell_ids" for validity.
+    enum VerbatimFlag { VERBATIM };
+    private S2CellUnion(List<S2CellId> cell_ids, VerbatimFlag verbatim)
+        : this(cell_ids, false) { }
+
     #endregion
 
     #region Factories
@@ -71,7 +76,7 @@ public record class S2CellUnion : IS2Region<S2CellUnion>, IEnumerable<S2CellId>,
     // REQUIRES: "cell_ids" satisfies the requirements of IsNormalized().
     public static S2CellUnion FromNormalized(List<S2CellId> cell_ids)
     {
-        var result = new S2CellUnion(cell_ids);
+        S2CellUnion result = new(cell_ids, VerbatimFlag.VERBATIM);
         MyDebug.Assert(result.IsNormalized());
         return result;
     }
@@ -88,7 +93,7 @@ public record class S2CellUnion : IS2Region<S2CellUnion>, IEnumerable<S2CellId>,
     // REQUIRES: "cell_ids" satisfies the requirements of IsValid.
     public static S2CellUnion FromVerbatim(List<S2CellId> cell_ids)
     {
-        var result = new S2CellUnion(cell_ids);
+        S2CellUnion result = new(cell_ids, VerbatimFlag.VERBATIM);
 #if s2debug
         MyDebug.Assert(result.IsValid());
 #endif
@@ -96,10 +101,8 @@ public record class S2CellUnion : IS2Region<S2CellUnion>, IEnumerable<S2CellId>,
     }
 
 #if s2debug
-    public static S2CellUnion FromVerbatimNoCheck(List<S2CellId> cell_ids)
-    {
-        return new S2CellUnion(cell_ids);
-    }
+    public static S2CellUnion FromVerbatimNoCheck(List<S2CellId> cell_ids) =>
+        new(cell_ids, VerbatimFlag.VERBATIM);
 #endif
 
     // Constructs a cell union that corresponds to a continuous range of cell
@@ -109,7 +112,7 @@ public record class S2CellUnion : IS2Region<S2CellUnion>, IEnumerable<S2CellId>,
     // REQUIRES: min_id.IsLeaf, max_id.IsLeaf, min_id <= max_id.
     public static S2CellUnion FromMinMax(S2CellId min_id, S2CellId max_id)
     {
-        var result = new S2CellUnion();
+        S2CellUnion result = new();
         result.InitFromMinMax(min_id, max_id);
         return result;
     }
@@ -121,7 +124,7 @@ public record class S2CellUnion : IS2Region<S2CellUnion>, IEnumerable<S2CellId>,
     // REQUIRES: begin.IsLeaf, end.IsLeaf, begin <= end.
     public static S2CellUnion FromBeginEnd(S2CellId begin, S2CellId end)
     {
-        var result = new S2CellUnion();
+        S2CellUnion result = new();
         result.InitFromBeginEnd(begin, end);
         return result;
     }
@@ -825,7 +828,7 @@ public record class S2CellUnion : IS2Region<S2CellUnion>, IEnumerable<S2CellId>,
         if (decoder.Avail() < sizeof(byte) + sizeof(UInt64))
             return (false, null);
 
-        byte version = decoder.Get8();
+        var version = decoder.Get8();
         if (version > S2.kCurrentLosslessEncodingVersionNumber)
             return (false, null);
 
@@ -843,7 +846,7 @@ public record class S2CellUnion : IS2Region<S2CellUnion>, IEnumerable<S2CellId>,
                 return (false, null);
             temp_cell_ids.Add(id);
         }
-        var result = new S2CellUnion(temp_cell_ids);
+        S2CellUnion result = new(temp_cell_ids);
         return (true, result);
     }
 

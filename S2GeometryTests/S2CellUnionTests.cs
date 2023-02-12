@@ -4,13 +4,13 @@ public class S2CellUnionTests
 {
     private readonly ITestOutputHelper _logger;
 
-    public S2CellUnionTests(ITestOutputHelper logger) { _logger = logger; }
+    public S2CellUnionTests(ITestOutputHelper logger) => _logger = logger;
 
     [Fact]
     internal void Test_S2CellUnion_DefaultConstructor()
     {
-        var ids = new List<S2CellId>();
-        var empty = new S2CellUnion(ids);
+        List<S2CellId> ids = new();
+        S2CellUnion empty = new(ids);
         Assert.True(empty.IsEmpty());
     }
 
@@ -18,7 +18,7 @@ public class S2CellUnionTests
     internal void Test_S2CellUnion_S2CellIdConstructor()
     {
         var face1_id = S2CellId.FromFace(1);
-        var face1_union = new S2CellUnion(new List<S2CellId> { face1_id });
+        S2CellUnion face1_union = new(new List<S2CellId> { face1_id });
         Assert.Equal(1, face1_union.Size());
         Assert.Equal(face1_id, face1_union.CellId(0));
     }
@@ -35,7 +35,7 @@ public class S2CellUnionTests
     [Fact]
     internal void Test_S2CellUnion_DuplicateCellsNotValid()
     {
-        var id = new S2CellId(new S2Point(1, 0, 0));
+        S2CellId id = new(new S2Point(1, 0, 0));
         var cell_union = FromVerbatimNoChecks(new List<S2CellId> { id, id });
         Assert.False(cell_union.IsValid());
     }
@@ -86,12 +86,12 @@ public class S2CellUnionTests
         const int kIters = 2000;
         for (int i = 0; i < kIters; ++i)
         {
-            var input = new List<S2CellId>();
-            var expected = new List<S2CellId>();
+            List<S2CellId> input = new();
+            List<S2CellId> expected = new();
             AddCells(S2CellId.None, false, input, expected);
             in_sum += input.Count;
             out_sum += expected.Count;
-            var cellunion = new S2CellUnion(input);
+            S2CellUnion cellunion = new(input);
             Assert.Equal(expected.Count, cellunion.Size());
             for (var j = 0; j < expected.Count; ++j)
             {
@@ -141,10 +141,10 @@ public class S2CellUnionTests
 
             // Test Contains(S2CellUnion), Intersects(S2CellUnion), Union(),
             // Intersection(), and Difference().
-            var x = new List<S2CellId>();
-            var y = new List<S2CellId>();
-            var x_or_y = new List<S2CellId>();
-            var x_and_y = new List<S2CellId>();
+            List<S2CellId> x = new();
+            List<S2CellId> y = new();
+            List<S2CellId> x_or_y = new();
+            List<S2CellId> x_and_y = new();
             foreach (var input_id in input)
             {
                 var in_x = S2Testing.Random.OneIn(2);
@@ -153,9 +153,9 @@ public class S2CellUnionTests
                 if (in_y) y.Add(input_id);
                 if (in_x || in_y) x_or_y.Add(input_id);
             }
-            var xcells = new S2CellUnion(x);
-            var ycells = new S2CellUnion(y);
-            var x_or_y_expected = new S2CellUnion(x_or_y);
+            S2CellUnion xcells = new(x);
+            S2CellUnion ycells = new(y);
+            S2CellUnion x_or_y_expected = new(x_or_y);
             var x_or_y_cells = xcells.Union(ycells);
             Assert.True(x_or_y_cells == x_or_y_expected);
 
@@ -183,7 +183,7 @@ public class S2CellUnionTests
                 }
                 x_and_y.AddRange(ucells);
             }
-            var x_and_y_expected = new S2CellUnion(x_and_y);
+            S2CellUnion x_and_y_expected = new(x_and_y);
             var x_and_y_cells = xcells.Intersection(ycells);
             Assert.True(x_and_y_cells == x_and_y_expected);
 
@@ -198,8 +198,8 @@ public class S2CellUnionTests
             var diff_intersection_union = x_minus_y_cells.Union(y_minus_x_cells).Union(x_and_y_cells);
             Assert.True(diff_intersection_union == x_or_y_cells);
 
-            var test = new List<S2CellId>();
-            var dummy = new List<S2CellId>();
+            List<S2CellId> test = new();
+            List<S2CellId> dummy = new();
             AddCells(S2CellId.None, false, test, dummy);
             foreach (var test_id in test)
             {
@@ -225,7 +225,7 @@ public class S2CellUnionTests
         // covering covers the expanded cap.  It also makes sure that the
         // new covering is not too much larger than expected.
 
-        var coverer = new S2RegionCoverer();
+        S2RegionCoverer coverer = new();
         for (var i = 0; i < 1000; ++i)
         {
             _logger.WriteLine($"Iteration {i}");

@@ -3,7 +3,8 @@ namespace S2Geometry;
 public class S2PointUtilTests
 {
     [Fact]
-    internal void Test_S2_Frames() {
+    internal void Test_S2_Frames()
+    {
         var z = new S2Point(0.2, 0.5, -3.3).Normalize();
         var m = S2.GetFrame(z);
         Assert.True(S2.ApproxEquals(m.Col(2), z));
@@ -21,7 +22,8 @@ public class S2PointUtilTests
     }
 
     [Fact]
-    internal void Test_S2_Rotate() {
+    internal void Test_S2_Rotate()
+    {
         for (int iter = 0; iter < 1000; ++iter) {
             S2Point axis = S2Testing.RandomPoint();
             S2Point target = S2Testing.RandomPoint();
@@ -39,7 +41,8 @@ public class S2PointUtilTests
     }
 
     [Fact]
-    internal void Test_S2_OriginTest() {
+    internal void Test_S2_OriginTest()
+    {
         // To minimize the number of expensive Sign() calculations,
         // S2.Origin should not be nearly collinear with any commonly used edges.
         // Two important categories of such edges are:
@@ -84,7 +87,8 @@ public class S2PointUtilTests
         Assert.True(GetMinExpensiveLevel(equator_point) >= 22);
     }
 
-    private static void TestRotate(S2Point p, S2Point axis, S1Angle angle) {
+    private static void TestRotate(S2Point p, S2Point axis, S1Angle angle)
+    {
         S2Point result = S2.Rotate(p, axis, angle);
 
         // "result" should be unit length.
@@ -114,7 +118,8 @@ public class S2PointUtilTests
     // parent of P is nearly collinear with S2.Origin.  This is the minimum
     // level for which Sign() may need to resort to expensive calculations in
     // order to determine which side of an edge the origin lies on.
-    private static int GetMinExpensiveLevel(S2Point p) {
+    private static int GetMinExpensiveLevel(S2Point p)
+    {
         S2CellId id = new(p);
         for (int level = 0; level <= S2.kMaxCellLevel; ++level) {
             S2Cell cell = new(id.Parent(level));
