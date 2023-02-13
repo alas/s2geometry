@@ -231,18 +231,10 @@ public class S1ChordAngleTests
             }
             S1ChordAngle dist = new(x, y);
             var error = dist.GetS2PointConstructorMaxError();
-            var er1 = S2Pred.CompareDistance(x, y, dist.PlusError(error));
-            if (er1 > 0)
-            {
-
-            }
-            Assert.True(er1 <= 0);
-            var er2 = S2Pred.CompareDistance(x, y, dist.PlusError(-error));
-            if (er2 < 0)
-            {
-
-            }
-            Assert.True(er2 >= 0);
+            Assert.True(S2Pred.CompareDistance(x, y, dist.PlusError(error)) <= 0,
+                "angle=" + dist.ToAngle() + ", iter=" + iter);
+            Assert.True(S2Pred.CompareDistance(x, y, dist.PlusError(-error)) >= 0,
+                "angle=" + dist.ToAngle() + ", iter=" + iter);
         }
     }
 }

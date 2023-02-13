@@ -398,7 +398,7 @@ public partial class S2Builder
     {
         for (int i = 0; i < loop.Count; ++i)
         {
-            AddEdge(loop[i], loop.GetPoint(i + 1));
+            AddEdge(loop[i], loop[i + 1]);
         }
     }
 

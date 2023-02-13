@@ -10,7 +10,7 @@ public class S2ClosestCellQueryTests
     private const int kNumIndexes = 20;
     private const int kNumCells = 100;
     private const int kNumQueries = 100;
-    private static ITestOutputHelper _logger;
+    private readonly ITestOutputHelper _logger;
 
     public S2ClosestCellQueryTests(ITestOutputHelper logger) { _logger = logger; }
 
@@ -62,9 +62,14 @@ public class S2ClosestCellQueryTests
         // Verify that the S1Angle and S1ChordAngle versions do the same thing.
         // This is mainly to prevent the (so far unused) S1Angle versions from
         // being detected as dead code.
-        S2ClosestCellQuery.Options angle_options=new(), chord_angle_options=new();
-        angle_options.MaxDistance = new (S1Angle.FromDegrees(1));
-        chord_angle_options.MaxDistance = S1ChordAngle.FromDegrees(1);
+        S2ClosestCellQuery.Options angle_options = new()
+        {
+            MaxDistance = new(S1Angle.FromDegrees(1))
+        };
+        S2ClosestCellQuery.Options chord_angle_options = new()
+        {
+            MaxDistance = S1ChordAngle.FromDegrees(1)
+        };
         Assert.Equal(chord_angle_options.MaxDistance, angle_options.MaxDistance);
 
         angle_options.InclusiveMaxDistance = new(S1Angle.FromDegrees(1));
@@ -152,24 +157,24 @@ public class S2ClosestCellQueryTests
     }
 
     [Fact]
-    internal void Test_S2ClosestCellQuery_PointCloudCells() {
+    internal void Test_S2ClosestCellQuery_PointCloudCells() =>
         TestWithIndexFactory(new PointCloudCellIndexFactory(),
-                             kNumIndexes, kNumCells, kNumQueries);
-    }
+            kNumIndexes, kNumCells, kNumQueries);
 
     [Fact]
-    internal void Test_S2ClosestCellQuery_CapsCells() {
+    internal void Test_S2ClosestCellQuery_CapsCells() =>
         TestWithIndexFactory(new CapsCellIndexFactory(16 /*max_cells_per_cap*/, 0.1 /*density*/),
             kNumIndexes, kNumCells, kNumQueries);
-    }
 
     [Fact]
-    internal void Test_S2ClosestCellQuery_ConservativeCellDistanceIsUsed() {
+    internal void Test_S2ClosestCellQuery_ConservativeCellDistanceIsUsed()
+    {
         // Don't use google.FlagSaver, so it works in opensource without gflags.
         int saved_seed = S2Testing.Random.RandomSeed;
         // These specific test cases happen to fail if max_error() is not properly
         // taken into account when measuring distances to S2ShapeIndex cells.
-        foreach (int seed in new[] { 32, 109, 253, 342, 948, 1535, 1884, 1887, 2133 }) {
+        foreach (int seed in new[] { 32, 109, 253, 342, 948, 1535, 1884, 1887, 2133 })
+        {
             S2Testing.Random.RandomSeed = seed;
             TestWithIndexFactory(new PointCloudCellIndexFactory(), 5, 100, 10);
         }
@@ -184,7 +189,7 @@ public class S2ClosestCellQueryTests
         var query_results = query.FindClosestCells(target);
         Assert.True(query_results.Count <= query.Options_.MaxResults);
         var region = query.Options_.Region;
-        if (region is null && query.Options_.MaxDistance== S1ChordAngle.Infinity)
+        if (region is null && query.Options_.MaxDistance == S1ChordAngle.Infinity)
         {
             // We can predict exactly how many cells should be returned.
             Assert.Equal(Math.Min(query.Options_.MaxResults,
@@ -202,12 +207,12 @@ public class S2ClosestCellQueryTests
         }
     }
 
-    private static void TestFindClosestCells(Target target, S2ClosestCellQuery query)
+    private void TestFindClosestCells(Target target, S2ClosestCellQuery query)
     {
         List<(S1ChordAngle, LabelledCell)> expected = new(), actual = new();
-        query.Options_.UseBruteForce = (true);
+        query.Options_.UseBruteForce = true;
         GetClosestCells(target, query, expected);
-        query.Options_.UseBruteForce = (false);
+        query.Options_.UseBruteForce = false;
         GetClosestCells(target, query, actual);
         Assert.True(S2TestingCheckDistance<LabelledCell, S1ChordAngle>
             .CheckDistanceResults(expected, actual,
@@ -236,7 +241,7 @@ public class S2ClosestCellQueryTests
     // The running time of this test is proportional to
     //    (num_indexes + num_queries) * num_cells.
     // (Note that every query is checked using the brute force algorithm.)
-    private static void TestWithIndexFactory(ICellIndexFactory factory,
+    private void TestWithIndexFactory(ICellIndexFactory factory,
         int num_indexes, int num_cells, int num_queries)
     {
         // Build a set of S2CellIndexes containing the desired geometry.
@@ -246,7 +251,7 @@ public class S2ClosestCellQueryTests
         {
             S2Testing.Random.Reset(S2Testing.Random.RandomSeed + i);
             index_caps.Add(new S2Cap(S2Testing.RandomPoint(), kTestCapRadius));
-            var index = new S2CellIndex();
+            S2CellIndex index = new();
             factory.AddCells(index_caps.Last(), num_cells, index);
             index.Build();
             indexes.Add(index);
@@ -267,7 +272,7 @@ public class S2ClosestCellQueryTests
             // (This may return all cells if we also don't set a distance limit.)
             if (!S2Testing.Random.OneIn(10))
             {
-                query.Options_.MaxResults = (1 + S2Testing.Random.Uniform(10));
+                query.Options_.MaxResults = 1 + S2Testing.Random.Uniform(10);
             }
             // We set a distance limit 2/3 of the time.
             if (!S2Testing.Random.OneIn(3))
@@ -288,7 +293,7 @@ public class S2ClosestCellQueryTests
                          S2Testing.Random.RandDouble() * kTestCapRadius));
             if (S2Testing.Random.OneIn(5))
             {
-                query.Options_.Region = (filter_rect);
+                query.Options_.Region = filter_rect;
             }
             int target_type = S2Testing.Random.Uniform(5);
             if (target_type == 0)
@@ -322,7 +327,7 @@ public class S2ClosestCellQueryTests
             {
                 // Find the cells closest to an S2Cap covering.
                 S2Cap cap = new(S2Testing.SamplePoint(query_cap),
-                          0.1 * Math.Pow(1e-4, S2Testing.Random.RandDouble()) * query_radius);
+                    0.1 * Math.Pow(1e-4, S2Testing.Random.RandDouble()) * query_radius);
                 S2RegionCoverer coverer = new();
                 coverer.Options_.MaxCells=(16);
                 S2ClosestCellQuery.CellUnionTarget target = new(coverer.GetCovering(cap));
@@ -370,7 +375,7 @@ public class S2ClosestCellQueryTests
     // "cap_density" times the area of "index_cap".  In other words, a random
     // point inside "index_cap" is likely to intersect about "cap_density"
     // coverings (within a factor of 2 or so).
-    private struct CapsCellIndexFactory : ICellIndexFactory
+    private readonly struct CapsCellIndexFactory : ICellIndexFactory
     {
         internal CapsCellIndexFactory(int max_cells_per_cap, double cap_density)
         {
@@ -389,9 +394,9 @@ public class S2ClosestCellQueryTests
                 // The coverings are bigger than the caps, so we compensate for this by
                 // choosing the cap area randomly up to the limit value.
                 var cap = S2Cap.FromCenterArea(S2Testing.SamplePoint(index_cap),
-                                                 S2Testing.Random.RandDouble() * max_area);
+                    S2Testing.Random.RandDouble() * max_area);
                 S2RegionCoverer coverer = new();
-                coverer.Options_.MaxCells = (max_cells_per_cap_);
+                coverer.Options_.MaxCells = max_cells_per_cap_;
                 index.Add(coverer.GetCovering(cap), i);
             }
         }

@@ -310,14 +310,12 @@ public class S2LoopMeasuresTests
     // "abac"), returns a vector of S2Points of the form (ch, 0, 0).  Note that
     // these points are not unit length and therefore are not suitable for general
     // use, however they are useful for testing certain functions below.
-    private S2PointLoopSpan MakeTestLoop(string loop_str)
-    {
-        return S2Testing.StrPoints.StrToPoints(loop_str);
-    }
+    private static S2PointLoopSpan MakeTestLoop(string loop_str) =>
+        S2Testing.StrPoints.StrToPoints(loop_str);
 
     // Given a loop whose vertices are represented as characters (such as "abcd" or
     // "abccb"), verify that S2.PruneDegeneracies() yields the loop "expected".
-    private void TestPruneDegeneracies(string input_str, string expected_str)
+    private static void TestPruneDegeneracies(string input_str, string expected_str)
     {
         var input = MakeTestLoop(input_str);
         var actual_str = S2Testing.StrPoints.PointsToStr(S2.PruneDegeneracies(input));
@@ -326,7 +324,7 @@ public class S2LoopMeasuresTests
 
     // Given a loop whose vertices are represented as characters (such as "abcd" or
     // "abccb"), verify that S2.GetCanonicalLoopOrder returns the given result.
-    private void TestCanonicalLoopOrder(string input_str, S2.LoopOrder expected_order)
+    private static void TestCanonicalLoopOrder(string input_str, S2.LoopOrder expected_order)
     {
         Assert.Equal(expected_order, S2.GetCanonicalLoopOrder(MakeTestLoop(input_str)));
     }
