@@ -49,7 +49,7 @@ public class S2EdgeVectorShapeTests
         S2EdgeVectorShape shape = new();
         S2Testing.Random.Reset(S2Testing.Random.RandomSeed);
         int kNumEdges = 100;
-        List<(S2Point, S2Point)> edges = new();
+        List<(S2Point, S2Point)> edges = [];
         for (int i = 0; i < kNumEdges; ++i)
         {
             S2Point a = S2Testing.RandomPoint();  // Control the evaluation order

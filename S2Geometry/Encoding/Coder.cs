@@ -1,15 +1,14 @@
 namespace S2Geometry;
 
 // Class for encoding data into a memory buffer
-public class Encoder : IEquatable<Encoder>
+public class Encoder(byte[] buffer, int Limit) : IEquatable<Encoder>
 {
     // Support for variable length encoding with 7 bits per byte
     // (these are just simple wrappers around the Varint module)
     public const int kVarintMax32 = 5;
     public const int kVarintMax64 = 10;
 
-    private byte[] Buffer;
-    private int Limit;
+    private byte[] Buffer = buffer;
     private int Offset;
 
     static Encoder()
@@ -21,14 +20,7 @@ public class Encoder : IEquatable<Encoder>
     }
 
     // Initialize encoder to encode into "buf"
-    public Encoder() : this(Array.Empty<byte>(), 0) { }
-
-    public Encoder(byte[] buf, int maxn)
-    {
-        Buffer = buf;
-        Limit = maxn;
-        Offset = 0;
-    }
+    public Encoder() : this([], 0) { }
 
     #region Put
 
@@ -232,11 +224,11 @@ public class Encoder : IEquatable<Encoder>
 }
 
 // Class for decoding data from a memory buffer
-public class Decoder
+public class Decoder(byte[] buffer, int offset, int limit)
 {
-    public byte[] Buffer { get; private set; }
-    public int Offset { get; private set; }
-    public int Limit { get; private set; }
+    public byte[] Buffer { get; private set; } = buffer;
+    public int Offset { get; private set; } = offset;
+    public int Limit { get; private set; } = limit;
 
     static Decoder()
     {
@@ -244,14 +236,6 @@ public class Decoder
         MyDebug.Assert(sizeof(UInt16) == 2);
         MyDebug.Assert(sizeof(UInt32) == 4);
         MyDebug.Assert(sizeof(UInt64) == 8);
-    }
-
-    // Initialize decoder to decode from "buf"
-    public Decoder(byte[] buffer, int offset, int limit)
-    {
-        Buffer = buffer;
-        Offset = offset;
-        Limit = limit;
     }
 
     #region Get

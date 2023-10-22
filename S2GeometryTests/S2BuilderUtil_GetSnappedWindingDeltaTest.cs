@@ -7,11 +7,9 @@ using SiblingPairs = GraphOptions.SiblingPairs;
 // Used to build a histogram of winding numbers.
 using WindingTally = Dictionary<int, int>;
 
-public class S2BuilderUtil_GetSnappedWindingDeltaTest
+public class S2BuilderUtil_GetSnappedWindingDeltaTest(ITestOutputHelper logger)
 {
-    private readonly ITestOutputHelper _logger;
-
-    public S2BuilderUtil_GetSnappedWindingDeltaTest(ITestOutputHelper logger) { _logger = logger; }
+    private readonly ITestOutputHelper _logger = logger;
 
     // This S2Builder layer simply calls s2builderutil::GetSnappedWindingDelta()
     // with the given "ref_input_edge_id" and compares the result to
@@ -414,7 +412,7 @@ public class S2BuilderUtil_GetSnappedWindingDeltaTest
         // that the test is working as intended.
         const int numIters = 1000;  // Passes with 10,000,000 iterations.
         int num_not_isolated = 0;
-        WindingTally winding_tally = new();
+        WindingTally winding_tally = [];
         for (int iter = 0; iter < numIters; ++iter)
         {
             S2Testing.Random.Reset(iter + 1);  // For reproducability.
@@ -443,12 +441,12 @@ public class S2BuilderUtil_GetSnappedWindingDeltaTest
             // isolated vertex to reduce the chance that edges will snap to it.
             // (This can still happen with long edges, or because the reference
             // vertex snapped to a new location far away from its original location.)
-            List<S2Point> vertices_used = new(), loop = new();
+            List<S2Point> vertices_used = [], loop = [];
             for (int num_loops = S2Testing.Random.Uniform(5) + 1; --num_loops >= 0;)
             {
                 for (int num_vertices = S2Testing.Random.Uniform(9) + 1; --num_vertices >= 0;)
                 {
-                    if (vertices_used.Any() && S2Testing.Random.OneIn(4))
+                    if (vertices_used.Count!=0 && S2Testing.Random.OneIn(4))
                     {
                         loop.Add(vertices_used[S2Testing.Random.Uniform(vertices_used.Count)]);
                     }
@@ -462,7 +460,7 @@ public class S2BuilderUtil_GetSnappedWindingDeltaTest
                         loop.Add(S2Testing.SamplePoint(new S2Cap(ref_, snap_radius)));
                     }
                 }
-                builder.AddShape(new S2LaxLoopShape(loop.ToArray()));
+                builder.AddShape(new S2LaxLoopShape([.. loop]));
                 loop.Clear();
             }
 

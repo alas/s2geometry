@@ -17,8 +17,10 @@ public class S2ClosestCellQueryBaseTests
         index.Add(MakeCellUnionOrDie("0/123, 0/22, 0/3"), 1 /*label*/);
         index.Build();
         FurthestCellQuery query = new(index);
-        FurthestCellQuery.Options options = new();
-        options.MaxResults = (1);
+        FurthestCellQuery.Options options = new()
+        {
+            MaxResults = 1
+        };
         FurthestPointTarget target = new(MakeCellIdOrDie("3/123").ToPoint());
         var results = query.FindClosestCells(target, options);
         Assert.Single(results);

@@ -126,7 +126,7 @@ public class S2RegionCoverer
         output.Clear();
         all.Add((start, start.GetHashCode()));
         frontier.Add(start);
-        while (frontier.Any())
+        while (frontier.Count!=0)
         {
             S2CellId id = frontier.Last();
             frontier.RemoveAt(frontier.Count - 1);
@@ -312,20 +312,12 @@ public class S2RegionCoverer
         MyDebug.Assert(IsCanonical(covering));
     }
 
-    public class Candidate
+    public class Candidate(S2Cell cell, int maxChildren)
     {
-        public S2Cell Cell { get; }
-        public bool IsTerminal { get; set; }        // Cell should not be expanded further.
-        public int NumChildren { get; set; } = 0;   // Number of children that intersect the region.
-        public Candidate[] Children { get; }        // Actual size may be 0, 4, 16, or 64 elements.
-
-        public Candidate(S2Cell cell, int max_children)
-        {
-            Cell = cell;
-            IsTerminal = max_children == 0;
-            Children = new Candidate[max_children].Fill(() => null);
-            NumChildren = 0;
-        }
+        public S2Cell Cell { get; } = cell;
+        public bool IsTerminal { get; set; } = maxChildren == 0;
+        public int NumChildren { get; set; } = 0;
+        public Candidate[] Children { get; } = new Candidate[maxChildren].Fill(() => default);
     }
 
     // If the cell intersects the given region, return a new candidate with no
@@ -394,8 +386,8 @@ public class S2RegionCoverer
 
         // Expand one level at a time until we hit min_level() to ensure that we
         // don't skip over it.
-        int num_levels = ((candidate.Cell.Level < Options_.MinLevel) ?
-                          1 : Options_.LevelMod);
+        int num_levels = (candidate.Cell.Level < Options_.MinLevel) ?
+                          1 : Options_.LevelMod;
         int num_terminals = ExpandChildren(candidate, candidate.Cell, num_levels);
 
         if (candidate.NumChildren == 0)
@@ -466,7 +458,7 @@ public class S2RegionCoverer
         // region's bounding cap.
         var tmp_coverer = new S2RegionCoverer();
         tmp_coverer.Options_.MaxCells = Math.Min(4, Options_.MaxCells);
-        tmp_coverer.Options_.MaxLevel = (Options_.MaxLevel);
+        tmp_coverer.Options_.MaxLevel = Options_.MaxLevel;
         var cells = new List<S2CellId>();
         tmp_coverer.GetFastCovering(region_, cells);
         AdjustCellLevels(cells);
@@ -496,13 +488,13 @@ public class S2RegionCoverer
         // children first), and then by the number of fully contained children
         // (fewest children first).
 
-        MyDebug.Assert(!pq_.Any());
+        MyDebug.Assert(pq_.Count==0);
         var result = new List<S2CellId>();
         region_ = region;
         //candidates_created_counter_ = 0;
 
         GetInitialCandidates(result);
-        while (pq_.Any() && (!interior_covering_ || result.Count < Options_.MaxCells))
+        while (pq_.Count!=0 && (!interior_covering_ || result.Count < Options_.MaxCells))
         {
             var top = pq_.First();
             var candidate = top.Item2;
@@ -541,7 +533,7 @@ public class S2RegionCoverer
                 AddCandidate(candidate, result);
             }
         }
-        while (pq_.Any())
+        while (pq_.Count!=0)
         {
             var top = pq_.First();
             DeleteCandidate(top.Item2, true);
@@ -765,7 +757,7 @@ public class S2RegionCoverer
     // less<QueueEntry>, entries of equal priority would be sorted according to
     // the memory address of the candidate.)
 
-    private readonly SortedSet<KeyData<int, Candidate>> pq_ = new();
+    private readonly SortedSet<KeyData<int, Candidate>> pq_ = [];
 
     // True if we're computing an interior covering.
     private bool interior_covering_;

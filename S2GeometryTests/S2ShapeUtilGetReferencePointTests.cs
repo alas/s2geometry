@@ -19,11 +19,11 @@ public class S2ShapeUtilGetReferencePointTests
     [Fact]
     internal void Test_GetReferencePoint_DegenerateLoops()
     {
-        List<List<S2Point>> loops = new(){
+        List<List<S2Point>> loops = [
             ParsePointsOrDie("1:1, 1:2, 2:2, 1:2, 1:3, 1:2, 1:1"),
             ParsePointsOrDie("0:0, 0:3, 0:6, 0:9, 0:6, 0:3, 0:0"),
             ParsePointsOrDie("5:5, 6:6")
-        };
+        ];
         S2LaxPolygonShape shape = new(loops);
         Assert.False(shape.GetReferencePoint().Contained);
     }
@@ -31,10 +31,10 @@ public class S2ShapeUtilGetReferencePointTests
     [Fact]
     internal void Test_GetReferencePoint_InvertedLoops()
     {
-        List<List<S2Point>> loops = new(){
+        List<List<S2Point>> loops = [
             ParsePointsOrDie("1:2, 1:1, 2:2"),
             ParsePointsOrDie("3:4, 3:3, 4:4")
-        };
+        ];
         var shape = new S2LaxPolygonShape(loops);
         Assert.True(shape.ContainsBruteForce(S2.Origin));
     }

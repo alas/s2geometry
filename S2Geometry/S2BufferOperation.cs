@@ -115,9 +115,6 @@ public class S2BufferOperation
 
     private static readonly S1Angle kMaxAbsoluteInterpolationErrorS1Angle = S1Angle.FromRadians(kMaxAbsoluteInterpolationError);
 
-    // Default constructor; requires Init() to be called.
-    public S2BufferOperation() { }
-
     // Convenience constructor that calls Init().
     //
     // Starts a buffer operation that sends the output polygon to the given
@@ -184,7 +181,7 @@ public class S2BufferOperation
         // client so desires.
         S2WindingOperation.Options winding_options = new(Options_.SnapFunction_)
         {
-            IncludeDegeneracies = (buffer_sign_ == 0 && Options_.BufferRadius >= S1Angle.Zero),
+            IncludeDegeneracies = buffer_sign_ == 0 && Options_.BufferRadius >= S1Angle.Zero,
             MemoryTracker = Options_.MemoryTracker
         };
         op_ = new(result_layer, winding_options);
@@ -255,7 +252,7 @@ public class S2BufferOperation
         // buffering on the right.
         if (Options_.PolylineSide_ == PolylineSide.LEFT)
         {
-            polyline.Reverse();
+            polyline = polyline.Reverse().ToList();
         }
 
         // If buffer_radius < 0, polylines are discarded.
@@ -334,7 +331,7 @@ public class S2BufferOperation
         // The vertex copying below could be avoided by adding a version of
         // S2LaxLoopShape that doesn't own its vertices.
         if (!tracker_.Ok()) return;
-        ref_winding_ += S2ShapeUtil.ContainsBruteForce(new S2LaxLoopShape(loop.ToArray()),
+        ref_winding_ += S2ShapeUtil.ContainsBruteForce(new S2LaxLoopShape([.. loop]),
             ref_point_) ? 1 : 0;
         num_polygon_layers_ += 1;
     }
@@ -700,7 +697,7 @@ public class S2BufferOperation
         if (buffer_sign_ == 0)
         {
             if (!tracker_.AddSpace(path_, loop.Count)) return;
-            path_ = loop.ToList();
+            path_ = [.. loop];
         }
         else
         {
@@ -728,7 +725,7 @@ public class S2BufferOperation
             }
             else
             {
-                S2.GetChainVertices(shape, c, out tmp_vertices_);
+                S2.GetChainVertices(shape, c, out S2Point[] tmp_vertices_);
                 if (dimension == 1)
                 {
                     AddPolyline(new S2PointSpan(tmp_vertices_));
@@ -762,7 +759,7 @@ public class S2BufferOperation
 
     // The current offset path.  When each path is completed into a loop it is
     // added to op_ (the S2WindingOperation).
-    private List<S2Point> path_ = new();
+    private List<S2Point> path_ = [];
 
     // As buffered loops are added we keep track of the winding number of a
     // fixed reference point.  This is used to derive the winding numbers of
@@ -781,9 +778,6 @@ public class S2BufferOperation
     private S2Point input_start_, offset_start_;
     private bool have_input_start_, have_offset_start_;
 
-    // Used internally as a temporary to avoid excessive memory allocation.
-    private S2Point[] tmp_vertices_;
-
     private readonly S2MemoryTracker.Client tracker_;
 
     // For polylines, specifies whether the end caps should be round or flat.
@@ -796,7 +790,11 @@ public class S2BufferOperation
 
     public class Options
     {
-        public Options() => SnapFunction_ = new S2BuilderUtil.IdentitySnapFunction(S1Angle.Zero);
+        public Options()
+        {
+            SnapFunction_ = new S2BuilderUtil.IdentitySnapFunction(S1Angle.Zero);
+            snap_function__ = SnapFunction_;
+        }
 
         // Convenience constructor that calls set_buffer_radius().
         public Options(S1Angle buffer_radius)
@@ -810,6 +808,7 @@ public class S2BufferOperation
             EndCapStyle_ = options.EndCapStyle_;
             PolylineSide_ = options.PolylineSide_;
             SnapFunction_ = (S2BuilderUtil.SnapFunction)options.SnapFunction_.CustomClone();
+            snap_function__ = SnapFunction_;
             MemoryTracker = options.MemoryTracker;
         }
 

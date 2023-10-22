@@ -151,5 +151,5 @@ public class S2PointIndex<Data> : IEnumerable<TreeNode<Data>>
         return GetEnumerator();
     }
 
-    private readonly List<TreeNode<Data>> map_ = new(); // gtl.btree_multimap<S2CellId, PointData>;
+    private readonly List<TreeNode<Data>> map_ = []; // gtl.btree_multimap<S2CellId, PointData>;
 }

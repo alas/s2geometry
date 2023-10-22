@@ -6,11 +6,9 @@ using static S2BufferOperation;
 // convenient for testing the various input methods (AddPoint, AddShape, etc).
 using InputCallback = Action<S2BufferOperation>;
 
-public class S2BufferOperationTests
+public class S2BufferOperationTests(ITestOutputHelper logger)
 {
-    private readonly ITestOutputHelper _logger;
-
-    public S2BufferOperationTests(ITestOutputHelper logger) => _logger = logger;
+    private readonly ITestOutputHelper _logger = logger;
 
     // Convenience function that calls the given lambda expression to add input to
     // an S2BufferOperation and returns the buffered result.
@@ -20,7 +18,7 @@ public class S2BufferOperationTests
         S2LaxPolygonShape output = new();
         S2BufferOperation op = new(new LaxPolygonLayer(output), options);
         input_callback(op);
-        Assert.True(op.Build(out S2Error error));// << error;
+        Assert.True(op.Build(out _));// << error;
         /*if (S2_VLOG_IS_ON(1) && output.NumVertices < 1000)
         {
             _logger.WriteLine($"\nS2Polygon Error: {output}\n");
@@ -62,11 +60,11 @@ public class S2BufferOperationTests
     internal void Test_S2BufferOperation_EmptyPolyline() =>
         // Note that polylines with 1 vertex are defined to have no edges.
         TestBufferEmpty((S2BufferOperation op) =>
-            op.AddPolyline(new List<S2Point>() { new S2Point(1, 0, 0) }));
+            op.AddPolyline(new List<S2Point>() { new(1, 0, 0) }));
 
     [Fact]
     internal void Test_S2BufferOperation_EmptyLoop() =>
-        TestBufferEmpty((S2BufferOperation op) => op.AddLoop(new S2PointLoopSpan()));
+        TestBufferEmpty((S2BufferOperation op) => op.AddLoop([]));
 
     [Fact]
     internal void Test_S2BufferOperation_EmptyPointShape() =>
@@ -354,10 +352,10 @@ public class S2BufferOperationTests
             BufferRadius = buffer_radius,
             ErrorFraction = error_fraction,
         };
-        MutableS2ShapeIndex output = new()
-        {
+        MutableS2ShapeIndex output =
+        [
             DoBuffer((S2BufferOperation op) => op.AddShapeIndex(input), options)
-        };
+        ];
 
         _logger.WriteLine(@$"
 radius = {buffer_radius.Radians:g17}, error_fraction = {error_fraction:g17}
@@ -428,8 +426,7 @@ output = {S2TextFormat.ToDebugString(output)}");
             fractal.FractalDimension = dimension;
             var loop = fractal.MakeLoop(S2.GetFrame(new S2Point(1, 0, 0)),
                                             S1Angle.FromDegrees(10));
-            MutableS2ShapeIndex input = new();
-            input.Add(new S2Loop.Shape(loop));
+            MutableS2ShapeIndex input = [new S2Loop.Shape(loop)];
             TestBuffer(input, S1Angle.FromDegrees(0.4), 0.01);
         }
     }
@@ -439,7 +436,7 @@ output = {S2TextFormat.ToDebugString(output)}");
     {
         // Tests buffering the S2 curve by an amount that yields the full polygon.
         const int kLevel = 2;  // Number of input edges == 6 * (4 ** kLevel)
-        List<S2Point> points = new();
+        List<S2Point> points = [];
         for (S2CellId id = S2CellId.Begin(kLevel);
                 id != S2CellId.End(kLevel); id = id.Next())
         {
@@ -462,8 +459,8 @@ output = {S2TextFormat.ToDebugString(output)}");
     {
         // Try the full range of radii with a representative error fraction.
         const double kFrac = 0.01;
-        List<double> kTestRadiiRadians = new()
-        {
+        List<double> kTestRadiiRadians =
+        [
             0,
             1e-300,
             1e-15,
@@ -481,15 +478,14 @@ output = {S2TextFormat.ToDebugString(output)}");
             S2.M_PI - 1e-6,
             S2.M_PI,
             1e300
-        };
+        ];
         foreach (double radius in kTestRadiiRadians)
         {
             TestSignedBuffer(index_str, S1Angle.FromRadians(radius), kFrac);
         }
 
         // Now try the full range of error fractions with a few selected radii.
-        List<double> kTestErrorFractions = new()
-        { Options.kMinErrorFraction, 0.001, 0.01, 0.1, 1.0 };
+        List<double> kTestErrorFractions = [Options.kMinErrorFraction, 0.001, 0.01, 0.1, 1.0];
         foreach (double error_fraction in kTestErrorFractions)
         {
             TestBuffer(index_str, S1Angle.FromRadians(-1e-6), error_fraction);
@@ -539,8 +535,7 @@ output = {S2TextFormat.ToDebugString(output)}");
             Assert.True(polyline_.Count >= 2);
             Assert.True(buffer_radius_ > S1Angle.Zero);
 
-            MutableS2ShapeIndex input = new();
-            input.Add(MakeLaxPolylineOrDie(input_str));
+            MutableS2ShapeIndex input = [MakeLaxPolylineOrDie(input_str)];
             output_.Add(DoBuffer(
                 (S2BufferOperation op) => op.AddShapeIndex(input), options));
 
@@ -677,7 +672,7 @@ output = {S2TextFormat.ToDebugString(output)}");
         }
 
         private readonly List<S2Point> polyline_;
-        private readonly MutableS2ShapeIndex output_ = new();
+        private readonly MutableS2ShapeIndex output_ = [];
         private readonly S1Angle buffer_radius_, max_error_;
         private readonly S1ChordAngle min_dist_, max_dist_;
         private readonly bool round_, two_sided_;

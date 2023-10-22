@@ -1,10 +1,8 @@
 namespace S2Geometry;
 
-public class S2LatLngTests
+public class S2LatLngTests(ITestOutputHelper logger)
 {
-    private readonly ITestOutputHelper _logger;
-
-    public S2LatLngTests(ITestOutputHelper logger) { _logger = logger; }
+    private readonly ITestOutputHelper _logger = logger;
 
     [Fact]
     internal void Test_S2LatLng_TestBasic()
@@ -101,14 +99,14 @@ public class S2LatLngTests
     internal void Test_S2LatLng_TestToString()
     {
         (double lat, double lng, double expected_lat, double expected_lng)[] values =
-            {
+            [
                 (0, 0, 0, 0),
                 (1.5, 91.7, 1.5, 91.7),
                 (9.9, -0.31, 9.9, -0.31),
                 (Math.Sqrt(2), -Math.Sqrt(5), 1.414214, -2.236068),
                 (91.3, 190.4, 90, -169.6),
                 (-100, -710, -90, 10),
-            };
+            ];
         int i = 0;
         foreach (var v in values)
         {

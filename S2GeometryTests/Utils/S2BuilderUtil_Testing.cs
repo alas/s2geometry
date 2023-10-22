@@ -39,15 +39,12 @@ internal class GraphClone
 
 // A layer type that copies an Graph into a GraphClone object
 // (which owns the underlying data, unlike Graph itself).
-internal class GraphCloningLayer : Layer
+internal class GraphCloningLayer(GraphOptions graph_options, GraphClone gc) : Layer
 {
-    private readonly GraphClone gc_;
-
-    public GraphCloningLayer(GraphOptions graph_options, GraphClone gc)
-    { graph_options_ = graph_options; gc_ = gc; }
+    private readonly GraphClone gc_ = gc;
 
     public override GraphOptions GraphOptions_() => graph_options_;
-    private readonly GraphOptions graph_options_;
+    private readonly GraphOptions graph_options_ = graph_options;
 
     public override void Build(Graph g, out S2Error error)
     { error = S2Error.OK; gc_.Init(g); }
@@ -56,16 +53,13 @@ internal class GraphCloningLayer : Layer
 // A layer type that copies an Graph and appends it to a vector,
 // and appends the corresponding GraphClone object (which owns the Graph data)
 // to a separate vector.
-internal class GraphAppendingLayer : Layer
+internal class GraphAppendingLayer(GraphOptions graph_options, List<Graph> graphs, List<GraphClone> clones) : Layer
 {
-    private readonly List<Graph> graphs_;
-    private readonly List<GraphClone> clones_;
-
-    public GraphAppendingLayer(GraphOptions graph_options, List<Graph> graphs, List<GraphClone> clones)
-    { graph_options_ = graph_options; graphs_ = graphs; clones_ = clones; }
+    private readonly List<Graph> graphs_ = graphs;
+    private readonly List<GraphClone> clones_ = clones;
 
     public override GraphOptions GraphOptions_() => graph_options_;
-    private readonly GraphOptions graph_options_;
+    private readonly GraphOptions graph_options_ = graph_options;
 
     public override void Build(Graph g, out S2Error error)
     {
@@ -104,7 +98,7 @@ internal class IndexMatchingLayer : Layer
     public override void Build(Graph g, out S2Error error)
     {
         error = S2Error.OK;
-        List<S2Shape.Edge> actual=new(), expected=new();
+        List<S2Shape.Edge> actual=[], expected=[];
         for (int e = 0; e < g.NumEdges; ++e)
         {
             var edge = g.GetEdge(e);
@@ -124,7 +118,7 @@ internal class IndexMatchingLayer : Layer
         expected.Sort();
 
         // The edges are a multiset, so we can't use std::set_difference.
-        List<S2Shape.Edge> missing=new(), extra = new();
+        List<S2Shape.Edge> missing=[], extra = [];
         var ai = actual.FirstOrDefault();
         var ei = expected.FirstOrDefault();
         var ai_i = 0;
@@ -148,7 +142,7 @@ internal class IndexMatchingLayer : Layer
             ai = actual[ai_i];
             ei = expected[ei_i];
         }
-        if (missing.Any() || extra.Any())
+        if (missing.Count!=0 || extra.Count!=0)
         {
             // There may be errors in more than one dimension, so we append to the
             // existing error text.

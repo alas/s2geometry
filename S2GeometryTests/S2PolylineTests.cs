@@ -3,11 +3,9 @@ namespace S2Geometry;
 using System.Runtime.InteropServices;
 using System.Text;
 
-public class S2PolylineTests
+public class S2PolylineTests(ITestOutputHelper logger)
 {
-    private readonly ITestOutputHelper _logger;
-
-    public S2PolylineTests(ITestOutputHelper logger) => _logger = logger;
+    private readonly ITestOutputHelper _logger = logger;
 
     [Fact]
     internal void Test_S2Polyline_Basic()
@@ -18,10 +16,10 @@ public class S2PolylineTests
         empty.Reverse();
         Assert.Equal(0, empty.NumVertices());
 
-        S2LatLng[] latlngs = {
+        S2LatLng[] latlngs = [
                 S2LatLng.FromDegrees(0, 0),
                 S2LatLng.FromDegrees(0, 90),
-                S2LatLng.FromDegrees(0, 180)};
+                S2LatLng.FromDegrees(0, 180)];
         S2Polyline semi_equator = new(latlngs);
         Assert.True(S2.ApproxEquals(semi_equator.Interpolate(0.5),
                                      new S2Point(0, 1, 0)));
@@ -90,7 +88,7 @@ public class S2PolylineTests
                  theta += Math.Pow(S2Testing.Random.RandDouble(), 10))
             {
                 S2Point p = Math.Cos(theta) * x + Math.Sin(theta) * y;
-                if (!vertices.Any() || p != vertices.Last())
+                if (vertices.Count==0 || p != vertices.Last())
                     vertices.Add(p);
             }
             // Close the circle.
@@ -117,16 +115,16 @@ public class S2PolylineTests
                 new S2CellId(S2LatLng.FromDegrees(20, 20)).Parent(22).ToPoint()}).GetSnapLevel(), -1);
 
         // Unsnapped polyline.
-        Assert.Equal(new S2Polyline(new[]{
+        Assert.Equal(new S2Polyline([
                 S2LatLng.FromDegrees(10, 10),
-                S2LatLng.FromDegrees(20, 20)}).GetSnapLevel(), -1);
+                S2LatLng.FromDegrees(20, 20)]).GetSnapLevel(), -1);
     }
 
     [Fact]
     internal void Test_S2Polyline_MayIntersect()
     {
-        S2Point[] vertices = {new S2Point(1, -1.1, 0.8).Normalize(),
-                              new S2Point(1, -0.8, 1.1).Normalize()};
+        S2Point[] vertices = [new S2Point(1, -1.1, 0.8).Normalize(),
+                              new S2Point(1, -0.8, 1.1).Normalize()];
         S2Polyline line = new(vertices);
         for (int face = 0; face < 6; ++face)
         {
@@ -138,10 +136,10 @@ public class S2PolylineTests
     [Fact]
     internal void Test_S2Polyline_Interpolate()
     {
-        S2Point[] vertices = {new S2Point(1, 0, 0),
+        S2Point[] vertices = [new S2Point(1, 0, 0),
                               new S2Point(0, 1, 0),
                               new S2Point(0, 1, 1).Normalize(),
-                              new S2Point(0, 0, 1)};
+                              new S2Point(0, 0, 1)];
         S2Polyline line = new(vertices);
         Assert.Equal(vertices[0], line.Interpolate(-0.1));
         Assert.True(S2.ApproxEquals(line.Interpolate(0.1),
@@ -160,10 +158,10 @@ public class S2PolylineTests
 
         // Check the case where the interpolation fraction is so close to 1 that
         // the interpolated point is identical to the last vertex.
-        vertices = new[]{
+        vertices = [
                 new S2Point(1, 1, 1).Normalize(),
               new S2Point(1, 1, 1 + 1e-15).Normalize(),
-              new S2Point(1, 1, 1 + 2e-15).Normalize()};
+              new S2Point(1, 1, 1 + 2e-15).Normalize()];
         S2Polyline short_line = new(vertices);
         Assert.Equal(vertices[2], short_line.GetSuffix(1.0 - 2e-16, out next_vertex));
         Assert.Equal(3, next_vertex);
@@ -172,7 +170,7 @@ public class S2PolylineTests
     [Fact]
     internal void Test_S2Polyline_UnInterpolate()
     {
-        var vertices = new List<S2Point> { new S2Point(1, 0, 0) };
+        var vertices = new List<S2Point> { new(1, 0, 0) };
         S2Polyline point_line = new(vertices.ToArray());
         Assert2.Near(0.0, point_line.UnInterpolate(new S2Point(0, 1, 0), 1));
 
@@ -200,9 +198,9 @@ public class S2PolylineTests
     [Fact]
     internal void Test_S2Polyline_Project()
     {
-        S2LatLng[] latlngs = {
+        S2LatLng[] latlngs = [
                 S2LatLng.FromDegrees(0, 0), S2LatLng.FromDegrees(0, 1),
-                S2LatLng.FromDegrees(0, 2), S2LatLng.FromDegrees(1, 2)};
+                S2LatLng.FromDegrees(0, 2), S2LatLng.FromDegrees(1, 2)];
         S2Polyline line = new(latlngs);
 
         Assert.True(S2.ApproxEquals(line.Project(
@@ -227,7 +225,7 @@ public class S2PolylineTests
         Assert.Equal(4, next_vertex);
 
         // Polyline with 1 vertex should project all points to that vertex.
-        S2Polyline single_vertex_polyline = new(new[] { S2LatLng.FromDegrees(1, 1) });
+        S2Polyline single_vertex_polyline = new([S2LatLng.FromDegrees(1, 1)]);
         Assert.True(S2.ApproxEquals(single_vertex_polyline.Project(
             S2LatLng.FromDegrees(2, 2).ToPoint(),
             out next_vertex), S2LatLng.FromDegrees(1, 1).ToPoint()));
@@ -241,9 +239,9 @@ public class S2PolylineTests
     [Fact]
     internal void Test_S2Polyline_IsOnRight()
     {
-        S2LatLng[] latlngs = {
+        S2LatLng[] latlngs = [
                 S2LatLng.FromDegrees(0, 0), S2LatLng.FromDegrees(0, 1),
-                S2LatLng.FromDegrees(0, 2), S2LatLng.FromDegrees(1, 2)};
+                S2LatLng.FromDegrees(0, 2), S2LatLng.FromDegrees(1, 2)];
         S2Polyline line = new(latlngs);
 
         Assert.True(line.IsOnRight(S2LatLng.FromDegrees(-0.5, 0.5).ToPoint()));
@@ -254,8 +252,8 @@ public class S2PolylineTests
         Assert.True(line.IsOnRight(S2LatLng.FromDegrees(1.5, 2.5).ToPoint()));
 
         // Explicitly test the case where the closest point is an interior vertex.
-        latlngs = new[]{ S2LatLng.FromDegrees(0, 0), S2LatLng.FromDegrees(0, 1),
-             S2LatLng.FromDegrees(-1, 0)};
+        latlngs = [ S2LatLng.FromDegrees(0, 0), S2LatLng.FromDegrees(0, 1),
+             S2LatLng.FromDegrees(-1, 0)];
         S2Polyline line2 = new(latlngs);
 
         // The points are chosen such that they are on different sides of the two

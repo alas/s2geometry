@@ -38,11 +38,11 @@ public class S2ClosestPointQueryBase<Distance, Data> where Distance : IEquatable
     // Return a reference to the underlying S2PointIndex.
     public S2PointIndex<Data> Index { get; private set; }
     private Options Options_ { get; set; }
-    private readonly SortedSet<QueueEntry> queue_ = new();
+    private readonly SortedSet<QueueEntry> queue_ = [];
 
     // Temporaries, defined here to avoid multiple allocations / initializations.
-    private readonly List<S2CellId> intersection_with_region_ = new();
-    private readonly List<S2CellId> intersection_with_max_distance_ = new();
+    private readonly List<S2CellId> intersection_with_region_ = [];
+    private readonly List<S2CellId> intersection_with_max_distance_ = [];
     private readonly (S2Point, Data)[] tmp_point_data_ = new (S2Point, Data)[kMinPointsToEnqueue - 1];
 
     private S2DistanceTarget<Distance> target_;
@@ -56,7 +56,7 @@ public class S2ClosestPointQueryBase<Distance, Data> where Distance : IEquatable
     // For the optimized algorihm we precompute the top-level S2CellIds that
     // will be added to the priority queue.  There can be at most 6 of these
     // cells.  Essentially this is just a covering of the indexed points.
-    private readonly List<S2CellId> index_covering_ = new();
+    private readonly List<S2CellId> index_covering_ = [];
 
     // The distance beyond which we can safely ignore further candidate points.
     // (Candidates that are exactly at the limit are ignored; this is more
@@ -78,31 +78,22 @@ public class S2ClosestPointQueryBase<Distance, Data> where Distance : IEquatable
     //    progressively reduce the distance limit once max_results() results
     //    have been found.
     private Result result_singleton_;
-    private readonly List<Result> result_vector_ = new();
-    private readonly SortedSet<Result> result_set_ = new();
+    private readonly List<Result> result_vector_ = [];
+    private readonly SortedSet<Result> result_set_ = [];
 
     #endregion
 
     #region Constructors
 
-    // Default constructor; requires Init() to be called.
-    public S2ClosestPointQueryBase() { }
-
     // Convenience constructor that calls Init().
-    public S2ClosestPointQueryBase(S2PointIndex<Data> index)
-    {
-        Init(index);
-    }
-
-    #endregion
-
-    // Initializes the query.
     // REQUIRES: ReInit() must be called if "index" is modified.
-    public void Init(S2PointIndex<Data> index)
+    public S2ClosestPointQueryBase(S2PointIndex<Data> index)
     {
         Index = index;
         ReInit();
     }
+
+    #endregion
 
     // Reinitializes the query.  This method must be called whenever the
     // underlying index is modified.
@@ -144,7 +135,7 @@ public class S2ClosestPointQueryBase<Distance, Data> where Distance : IEquatable
         else
         {
             results.Capacity = result_set_.Count;
-            for (; result_set_.Any(); result_set_.Remove(result_set_.First()))
+            for (; result_set_.Count!=0; result_set_.Remove(result_set_.First()))
             {
                 results.Add(result_set_.First());
             }
@@ -173,8 +164,8 @@ public class S2ClosestPointQueryBase<Distance, Data> where Distance : IEquatable
 
         distance_limit_ = options.MaxDistance;
         result_singleton_ = new Result();
-        MyDebug.Assert(!result_vector_.Any());
-        MyDebug.Assert(!result_set_.Any());
+        MyDebug.Assert(result_vector_.Count==0);
+        MyDebug.Assert(result_set_.Count==0);
         MyDebug.Assert(target.MaxBruteForceIndexSize >= 0);
         if (Equals(distance_limit_, Distance.Zero)) return;
 
@@ -236,7 +227,7 @@ public class S2ClosestPointQueryBase<Distance, Data> where Distance : IEquatable
     private void FindClosestPointsOptimized()
     {
         InitQueue();
-        while (queue_.Any())
+        while (queue_.Count!=0)
         {
             // We need to copy the top entry before removing it, and we need to remove
             // it before adding any new entries to the queue.
@@ -264,7 +255,7 @@ public class S2ClosestPointQueryBase<Distance, Data> where Distance : IEquatable
     }
     private void InitQueue()
     {
-        MyDebug.Assert(!queue_.Any());
+        MyDebug.Assert(queue_.Count==0);
 
         // Optimization: rather than starting with the entire index, see if we can
         // limit the search region to a small disc.  Then we can find a covering for
@@ -303,7 +294,7 @@ public class S2ClosestPointQueryBase<Distance, Data> where Distance : IEquatable
         }
         // We start with a covering of the set of indexed points, then intersect it
         // with the given region (if any) and maximum search radius disc (if any).
-        if (!index_covering_.Any()) InitCovering();
+        if (index_covering_.Count==0) InitCovering();
         var initial_cells = index_covering_;
         var region = Options_.Region;
         if (region is not null)
@@ -469,7 +460,7 @@ public class S2ClosestPointQueryBase<Distance, Data> where Distance : IEquatable
                     if (use_conservative_cell_distance_)
                     {
                         // Ensure that "distance" is a lower bound on distance to the cell.
-                        distance = distance - Options_.MaxError;
+                        distance -= Options_.MaxError;
                     }
                     queue_.Add(new QueueEntry(distance, id));
                 }
@@ -618,19 +609,14 @@ public class S2ClosestPointQueryBase<Distance, Data> where Distance : IEquatable
 
     // The algorithm maintains a priority queue of unprocessed S2CellIds, sorted
     // in increasing order of distance from the target.
-    public readonly struct QueueEntry
+    public readonly struct QueueEntry(Distance _distance, S2CellId _id)
     {
         // A lower bound on the distance from the target to "id".  This is the key
         // of the priority queue.
-        public readonly Distance Distance;
+        public readonly Distance Distance = _distance;
 
         // The cell being queued.
-        public readonly S2CellId Id;
-
-        public QueueEntry(Distance _distance, S2CellId _id)
-        {
-            Distance = _distance; Id = _id;
-        }
+        public readonly S2CellId Id = _id;
 
         public static bool operator <(QueueEntry a, QueueEntry b)
         {

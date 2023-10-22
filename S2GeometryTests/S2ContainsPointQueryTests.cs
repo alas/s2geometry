@@ -82,7 +82,7 @@ public class S2ContainsPointQueryTests
         int kNumVerticesPerLoop = 10;
         S1Angle kMaxLoopRadius = S2Testing.KmToAngle(10);
         S2Cap center_cap = new(S2Testing.RandomPoint(), kMaxLoopRadius);
-        MutableS2ShapeIndex index = new();
+        MutableS2ShapeIndex index = [];
         for (int i = 0; i < 100; ++i)
         {
             var loop = S2Loop.MakeRegularLoop(
@@ -94,7 +94,7 @@ public class S2ContainsPointQueryTests
         for (int i = 0; i < 100; ++i)
         {
             S2Point p = S2Testing.SamplePoint(center_cap);
-            List<S2Shape> expected = new();
+            List<S2Shape> expected = [];
             foreach (var shape in index)
             {
                 var loop = ((S2Loop.Shape)shape).Loop;
@@ -117,17 +117,17 @@ public class S2ContainsPointQueryTests
     internal void Test_S2ContainsPointQuery_VisitIncidentEdges()
     {
         var index = MakeIndexOrDie("0:0 | 1:1 # 1:1, 1:2 # 1:2, 1:3, 2:2");
-        ExpectIncidentEdgeIds(new EdgeVector { new(0, 0) }, index, MakePointOrDie("0:0"));
-        ExpectIncidentEdgeIds(new EdgeVector { new(0, 1), new(1, 0) }, index, MakePointOrDie("1:1"));
-        ExpectIncidentEdgeIds(new EdgeVector { new(1, 0), new(2, 0), new(2, 2) }, index, MakePointOrDie("1:2"));
-        ExpectIncidentEdgeIds(new EdgeVector { new(2, 0), new(2, 1) }, index, MakePointOrDie("1:3"));
-        ExpectIncidentEdgeIds(new EdgeVector { new(2, 1), new(2, 2) }, index, MakePointOrDie("2:2"));
+        ExpectIncidentEdgeIds([new(0, 0)], index, MakePointOrDie("0:0"));
+        ExpectIncidentEdgeIds([new(0, 1), new(1, 0)], index, MakePointOrDie("1:1"));
+        ExpectIncidentEdgeIds([new(1, 0), new(2, 0), new(2, 2)], index, MakePointOrDie("1:2"));
+        ExpectIncidentEdgeIds([new(2, 0), new(2, 1)], index, MakePointOrDie("1:3"));
+        ExpectIncidentEdgeIds([new(2, 1), new(2, 2)], index, MakePointOrDie("2:2"));
     }
 
     private static void ExpectIncidentEdgeIds(EdgeVector expected,
         MutableS2ShapeIndex index, S2Point p)
     {
-        EdgeVector actual = new();
+        EdgeVector actual = [];
         var q = index.MakeS2ContainsPointQuery();
         Assert.True(
             q.VisitIncidentEdges(p, (S2ShapeUtil.ShapeEdge e) =>

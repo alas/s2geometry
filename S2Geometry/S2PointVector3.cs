@@ -122,7 +122,7 @@ public readonly record struct S2PointS2Point
     {
         var det = Det();
         MyDebug.Assert(det != 0, "Can't inverse. Determinant = 0.");
-        return (1 / det) * ComatrixTransposed();
+        return 1 / det * ComatrixTransposed();
     }
 
     // Return true is one of the elements of the matrix is NaN

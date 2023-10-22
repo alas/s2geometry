@@ -44,14 +44,14 @@ public static class BitsInterleave
                 (kInterleaveLut[val1 >> 8] << 17));
 
     public static UInt64 InterleaveUInt32(UInt32 val0, UInt32 val1) => 
-        ((UInt64)(kInterleaveLut[val0 & 0xff])) |
-        ((UInt64)(kInterleaveLut[(val0 >> 8) & 0xff]) << 16) |
-        ((UInt64)(kInterleaveLut[(val0 >> 16) & 0xff]) << 32) |
-        ((UInt64)(kInterleaveLut[val0 >> 24]) << 48) |
-        ((UInt64)(kInterleaveLut[val1 & 0xff]) << 1) |
-        ((UInt64)(kInterleaveLut[(val1 >> 8) & 0xff]) << 17) |
-        ((UInt64)(kInterleaveLut[(val1 >> 16) & 0xff]) << 33) |
-        ((UInt64)(kInterleaveLut[val1 >> 24]) << 49);
+        ((UInt64)kInterleaveLut[val0 & 0xff]) |
+        ((UInt64)kInterleaveLut[(val0 >> 8) & 0xff] << 16) |
+        ((UInt64)kInterleaveLut[(val0 >> 16) & 0xff] << 32) |
+        ((UInt64)kInterleaveLut[val0 >> 24] << 48) |
+        ((UInt64)kInterleaveLut[val1 & 0xff] << 1) |
+        ((UInt64)kInterleaveLut[(val1 >> 8) & 0xff] << 17) |
+        ((UInt64)kInterleaveLut[(val1 >> 16) & 0xff] << 33) |
+        ((UInt64)kInterleaveLut[val1 >> 24] << 49);
 
     #endregion
 
@@ -164,10 +164,10 @@ public static class BitsInterleave
     // BM_3_ReferenceBitInterleave3         58         58   10000000
     // BM_3_InterleaveUsbyte_NoTemplate      11         11   61082024
     private static UInt64 SplitFor3(byte x, int kShift) => 
-        ((((x * 0x0101010101010101UL) &
+        (((x * 0x0101010101010101UL) &
                 0x000000C00C003003UL) *
                (0x0000000000500005UL << kShift)) &
-               (0x0000024924900000UL << kShift));
+               (0x0000024924900000UL << kShift);
 
     // Multiplication based de-interleave algorithm:
     // 1. Original value, bit positions shown:
@@ -207,8 +207,8 @@ public static class BitsInterleave
                      & 0x00381C0CU)
                      * 0x00001041U) >> 14);
 
-    private static readonly UInt16[] kInterleaveLut = new UInt16[256]
-    {
+    private static readonly UInt16[] kInterleaveLut =
+    [
         0x0000, 0x0001, 0x0004, 0x0005, 0x0010, 0x0011, 0x0014, 0x0015,
         0x0040, 0x0041, 0x0044, 0x0045, 0x0050, 0x0051, 0x0054, 0x0055,
         0x0100, 0x0101, 0x0104, 0x0105, 0x0110, 0x0111, 0x0114, 0x0115,
@@ -244,7 +244,7 @@ public static class BitsInterleave
         0x5440, 0x5441, 0x5444, 0x5445, 0x5450, 0x5451, 0x5454, 0x5455,
         0x5500, 0x5501, 0x5504, 0x5505, 0x5510, 0x5511, 0x5514, 0x5515,
         0x5540, 0x5541, 0x5544, 0x5545, 0x5550, 0x5551, 0x5554, 0x5555,
-    };
+    ];
 
     // Extracting the even bits (bit 0, 2, ...).
     private static byte ExtractEvenBits(ushort bits)

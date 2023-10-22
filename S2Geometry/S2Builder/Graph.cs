@@ -38,17 +38,17 @@ public partial class S2Builder
         public int NumVertices { get; }  // vertices_.Count requires division by 24.
 
         // Returns the entire set of vertices.
-        public List<S2Point>? Vertices { get; }
+        public List<S2Point> Vertices { get; }
 
         // Returns the entire set of edges.
-        public List<Edge>? Edges { get; }
+        public List<Edge> Edges { get; }
 
         // Low-level method that returns a vector where each element represents the
         // set of input edge ids that were snapped to a particular output edge.
-        public EdgeIdSet? InputEdgeIdSetIds { get; }
+        public EdgeIdSet InputEdgeIdSetIds { get; }
 
         // Returns a mapping from an int to a set of input edge ids.
-        public IdSetLexicon? InputEdgeIdSetLexicon { get; }
+        public IdSetLexicon InputEdgeIdSetLexicon { get; }
 
         // Low-level method that returns a vector where each element represents the
         // set of labels associated with a particular input edge.  Note that this
@@ -69,10 +69,11 @@ public partial class S2Builder
 
         public Graph()
         {
-            Options = new(); NumVertices = -1; Vertices = null;
-            Edges = null; InputEdgeIdSetIds = null;
-            InputEdgeIdSetLexicon = null; LabelSetIds = null;
+            Options = new(); NumVertices = -1; Vertices = [];
+            Edges = []; InputEdgeIdSetIds = [];
+            InputEdgeIdSetLexicon = new(); LabelSetIds = null;
             LabelSetLexicon = null;
+            is_full_polygon_predicate_ = null;
         }
 
         // Note that most of the parameters are passed by reference and must
@@ -103,8 +104,8 @@ public partial class S2Builder
         //   - a predicate called to determine whether a graph consisting only of
         //     polygon degeneracies represents the empty polygon or the full polygon
         //     (see s2builder.h for details).
-        public Graph(GraphOptions options, List<S2Point>? vertices, List<Edge>? edges,
-            EdgeIdSet? input_edge_id_set_ids, IdSetLexicon? input_edge_id_set_lexicon,
+        public Graph(GraphOptions options, List<S2Point> vertices, List<Edge> edges,
+            EdgeIdSet input_edge_id_set_ids, IdSetLexicon input_edge_id_set_lexicon,
             LabelSet? label_set_ids, IdSetLexicon? label_set_lexicon,
             IsFullPolygonPredicate? is_full_polygon_predicate)
         {
@@ -264,7 +265,7 @@ public partial class S2Builder
         // Low-level method that returns an integer representing the set of
         // labels associated with a given input edge.  The elements of
         // the IdSet can be accessed using label_set_lexicon().
-        public int LabelSetId(int e) => (LabelSetIds is null || !LabelSetIds.Any())
+        public int LabelSetId(int e) => (LabelSetIds is null || LabelSetIds.Count==0)
             ? IdSetLexicon.kEmptySetId
             : LabelSetIds[e];
 
@@ -311,7 +312,7 @@ public partial class S2Builder
         public bool GetLeftTurnMap(EdgeLoop in_edge_ids, out EdgeLoop left_turn_map, out S2Error error)
         {
             error = S2Error.OK;
-            left_turn_map = new EdgeLoop();
+            left_turn_map = [];
             left_turn_map.Fill(-1, NumEdges);
             if (NumEdges == 0) return true;
 
@@ -375,7 +376,7 @@ public partial class S2Builder
                     {
                         e_in.Add(in_edge_ids[e.Index]);
                     }
-                    else if (e_in.Any())
+                    else if (e_in.Count!=0)
                     {
                         left_turn_map[e_in.Last()] = e.Index;
                         e_in.RemoveAt(e_in.Count - 1);
@@ -387,13 +388,13 @@ public partial class S2Builder
                 }
                 // Pair up additional edges using the fact that the ordering is circular.
                 e_out.Reverse();
-                for (; e_out.Any() && e_in.Any(); e_out.RemoveAt(e_out.Count - 1), e_in.RemoveAt(e_in.Count - 1))
+                for (; e_out.Count!=0 && e_in.Count!=0; e_out.RemoveAt(e_out.Count - 1), e_in.RemoveAt(e_in.Count - 1))
                 {
                     left_turn_map[e_in.Last()] = e_out.Last();
                 }
                 // We only need to process unmatched incoming edges, since we are only
                 // responsible for creating left turn map entries for those edges.
-                if (e_in.Any() && error.IsOk())
+                if (e_in.Count!=0 && error.IsOk())
                 {
                     error = new(S2ErrorCode.BUILDER_EDGES_DO_NOT_FORM_LOOPS, "Given edges do not form loops (indegree != outdegree)");
                 }
@@ -452,7 +453,7 @@ public partial class S2Builder
         // "min_input_ids" is the output of GetMinInputEdgeIds().
         public static void CanonicalizeLoopOrder(InputEdgeLoop min_input_ids, EdgeLoop loop)
         {
-            if (!loop.Any()) return;
+            if (loop.Count==0) return;
             // Find the position of the element with the highest input edge id.  If
             // there are multiple such elements together (i.e., the edge was split
             // into several pieces by snapping it to several vertices), then we choose
@@ -564,7 +565,7 @@ public partial class S2Builder
                 }
                 if (loop_type == LoopType.SIMPLE)
                 {
-                    MyDebug.Assert(!path.Any(), "Invariant.");
+                    MyDebug.Assert(path.Count==0, "Invariant.");
                 }
                 else
                 {
@@ -605,7 +606,7 @@ public partial class S2Builder
                 // of the edges used so far.
                 var component = new DirectedComponent();
                 frontier.Add(start);
-                while (frontier.Any())
+                while (frontier.Count!=0)
                 {
                     var e = frontier.Last();
                     frontier.RemoveAt(frontier.Count - 1);
@@ -731,7 +732,7 @@ public partial class S2Builder
                 // of the edges used so far.
                 var component = new UndirectedComponent(() => new List<List<int>>());
                 frontier.Add((min_start, 0));
-                while (frontier.Any())
+                while (frontier.Count!=0)
                 {
                     var (start, slot) = frontier.Last();
                     frontier.RemoveAt(frontier.Count - 1);
@@ -778,7 +779,7 @@ public partial class S2Builder
                     }
                     if (loop_type == LoopType.SIMPLE)
                     {
-                        MyDebug.Assert(!path.Any(), "Invariant.");
+                        MyDebug.Assert(path.Count==0, "Invariant.");
                     }
                     else
                     {
@@ -1004,7 +1005,7 @@ public partial class S2Builder
         public Graph? MakeSubgraph(
             GraphOptions new_options, List<Edge> new_edges,
             List<InputEdgeIdSetId> new_input_edge_id_set_ids,
-            IdSetLexicon? new_input_edge_id_set_lexicon,
+            IdSetLexicon new_input_edge_id_set_lexicon,
             IsFullPolygonPredicate? is_full_polygon_predicate,
             out S2Error error, S2MemoryTracker.Client? tracker = null)
         {
@@ -1090,18 +1091,11 @@ public partial class S2Builder
         public enum DegenerateBoundaries { DISCARD, KEEP }
 
         // A struct for sorting the incoming and outgoing edges around a vertex "v0".
-        public readonly struct VertexEdge
-        {
-            public VertexEdge(bool _incoming, int _index, int _endpoint, int _rank)
-            {
-                Incoming = _incoming; Index = _index;
-                Endpoint = _endpoint; Rank = _rank;
-            }
-            public readonly bool Incoming;             // Is this an incoming edge to "v0"?
-            public readonly int Index;       // Index of this edge in "edges_" or "in_edge_ids"
-            public readonly int Endpoint;  // The other (not "v0") endpoint of this edge
-            public readonly int Rank;                // Secondary key for edges with the same endpoint
-        }
+        public readonly record struct VertexEdge(
+            bool Incoming, // Is this an incoming edge to "v0"?
+            int Index,     // Index of this edge in "edges_" or "in_edge_ids"
+            int Endpoint,  // The other (not "v0") endpoint of this edge
+            int Rank);     // Secondary key for edges with the same endpoint
 
         public class VertexEdgeList : List<VertexEdge> { }
 
@@ -1111,8 +1105,7 @@ public partial class S2Builder
         //   for (var edge in out.edges(v)) { ... }
         public class VertexOutMap
         {
-            public VertexOutMap(Graph g) => Init(g);
-            public void Init(Graph g)
+            public VertexOutMap(Graph g)
             {
                 edges_ = g.Edges;
                 edge_begins_.Capacity = g.NumVertices + 1;
@@ -1153,8 +1146,8 @@ public partial class S2Builder
                 return new VertexOutEdges(range.Item1-edges_, range.Item2-edges_);*/
             }
 
-            private List<Edge> edges_;
-            private readonly EdgeLoop edge_begins_ = new();
+            private readonly List<Edge> edges_;
+            private readonly EdgeLoop edge_begins_ = [];
         }
 
         // A class that maps vertices to their incoming edge ids.  Example usage:
@@ -1162,8 +1155,7 @@ public partial class S2Builder
         //   for (var e in in.edge_ids(v)) { ... }
         public class VertexInMap
         {
-            public VertexInMap(Graph g) => Init(g);
-            public void Init(Graph g)
+            public VertexInMap(Graph g)
             {
                 InEdgeIds = g.GetInEdgeIds();
                 in_edge_begins_.Capacity = g.NumVertices + 1;
@@ -1181,7 +1173,7 @@ public partial class S2Builder
             // Returns a sorted vector of all incoming edges (see GetInEdgeIds).
             public EdgeLoop InEdgeIds { get; private set; }
 
-            private readonly EdgeLoop in_edge_begins_ = new();
+            private readonly EdgeLoop in_edge_begins_ = [];
         }
 
         // Convenience class to return the set of labels associated with a given
@@ -1195,14 +1187,12 @@ public partial class S2Builder
         // labels; the automatically generated sibling edge does not.
         public class LabelFetcher
         {
-            public LabelFetcher(Graph g, EdgeType edge_type) => Init(g, edge_type);
-
             // Prepares to fetch labels associated with the given edge type.  For
             // EdgeType.UNDIRECTED, labels associated with both edges of the sibling
             // pair will be returned.  "edge_type" is a parameter (rather than using
             // g.options().edge_type()) so that clients can explicitly control whether
             // labels from one or both siblings are returned.
-            public void Init(Graph g, EdgeType edge_type)
+            public LabelFetcher(Graph g, EdgeType edge_type)
             {
                 g_ = g;
                 edge_type_ = edge_type;
@@ -1227,7 +1217,7 @@ public partial class S2Builder
                 }
                 if (edge_type_ == EdgeType.UNDIRECTED)
                 {
-                    foreach (var input_edge_id in g_.InputEdgeIds(sibling_map_[e]))
+                    foreach (var input_edge_id in g_.InputEdgeIds(sibling_map_![e]))
                     {
                         foreach (var label in g_.Labels(input_edge_id))
                         {
@@ -1237,31 +1227,20 @@ public partial class S2Builder
                 }
             }
 
-            private Graph g_;
-            private EdgeType edge_type_;
-            private EdgeLoop sibling_map_;
+            private readonly Graph g_;
+            private readonly EdgeType edge_type_;
+            private readonly EdgeLoop? sibling_map_;
         }
 
-        private class CcwComp : IComparer<VertexEdge>
+        private class CcwComp(int min_endpoint, List<S2Point> vertices, int v0) : IComparer<VertexEdge>
         {
-            private readonly int min_endpoint_;
-            private readonly List<S2Point> vertices_;
-            private readonly int v0;
-
-            public CcwComp(int min_endpoint, List<S2Point> vertices, int v0)
-            {
-                min_endpoint_ = min_endpoint;
-                vertices_ = vertices;
-                this.v0 = v0;
-            }
-
             public int Compare([AllowNull] VertexEdge a, [AllowNull] VertexEdge b)
             {
                 if (a.Endpoint == b.Endpoint) return a.Rank.CompareTo(b.Rank);
-                if (a.Endpoint == min_endpoint_) return 1;
-                if (b.Endpoint == min_endpoint_) return -1;
-                var res = !S2Pred.OrderedCCW(vertices_[a.Endpoint], vertices_[b.Endpoint],
-                    vertices_[min_endpoint_], vertices_[v0]);
+                if (a.Endpoint == min_endpoint) return 1;
+                if (b.Endpoint == min_endpoint) return -1;
+                var res = !S2Pred.OrderedCCW(vertices[a.Endpoint], vertices[b.Endpoint],
+                    vertices[min_endpoint], vertices[v0]);
                 return res ? 1 : -1;
             }
         }
@@ -1338,8 +1317,8 @@ public partial class S2Builder
                         }
                         // DegenerateEdges::DISCARD_EXCESS also merges degenerate edges.
                         bool merge =
-                            (options_.DuplicateEdges_ == DuplicateEdges.MERGE ||
-                             options_.DegenerateEdges_ == DegenerateEdges.DISCARD_EXCESS);
+                            options_.DuplicateEdges_ == DuplicateEdges.MERGE ||
+                             options_.DegenerateEdges_ == DegenerateEdges.DISCARD_EXCESS;
                         if (options_.EdgeType_ == EdgeType.UNDIRECTED &&
                             (options_.SiblingPairs_ == SiblingPairs.REQUIRE ||
                              options_.SiblingPairs_ == SiblingPairs.CREATE))
@@ -1493,10 +1472,10 @@ public partial class S2Builder
             private readonly EdgeLoop out_edges_;
             private readonly EdgeLoop in_edges_;
 
-            private List<Edge> new_edges_ = new();
-            private List<int> new_input_ids_ = new();
+            private List<Edge> new_edges_ = [];
+            private List<int> new_input_ids_ = [];
 
-            private readonly InputEdgeLoop tmp_ids_ = new();
+            private readonly InputEdgeLoop tmp_ids_ = [];
         }
 
         private class PolylineBuilder
@@ -1734,13 +1713,13 @@ public partial class S2Builder
             private readonly Graph g_;
             private readonly VertexInMap in_;
             private readonly VertexOutMap out_;
-            private readonly EdgeLoop sibling_map_;
+            private readonly EdgeLoop? sibling_map_;
             private readonly InputEdgeLoop min_input_ids_;
             private readonly bool directed_;
             private int edges_left_;
             private readonly bool[] used_;
             // A map of (outdegree(v) - indegree(v)) considering used edges only.
-            private readonly Dictionary<int, int> excess_used_ = new(); // gtl.btree_map
+            private readonly Dictionary<int, int> excess_used_ = []; // gtl.btree_map
         }
     }
 }

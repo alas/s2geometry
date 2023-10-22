@@ -1,15 +1,13 @@
 namespace S2Geometry;
 
-public class S2CellUnionTests
+public class S2CellUnionTests(ITestOutputHelper logger)
 {
-    private readonly ITestOutputHelper _logger;
-
-    public S2CellUnionTests(ITestOutputHelper logger) => _logger = logger;
+    private readonly ITestOutputHelper _logger = logger;
 
     [Fact]
     internal void Test_S2CellUnion_DefaultConstructor()
     {
-        List<S2CellId> ids = new();
+        List<S2CellId> ids = [];
         S2CellUnion empty = new(ids);
         Assert.True(empty.IsEmpty());
     }
@@ -36,7 +34,7 @@ public class S2CellUnionTests
     internal void Test_S2CellUnion_DuplicateCellsNotValid()
     {
         S2CellId id = new(new S2Point(1, 0, 0));
-        var cell_union = FromVerbatimNoChecks(new List<S2CellId> { id, id });
+        var cell_union = FromVerbatimNoChecks([id, id]);
         Assert.False(cell_union.IsValid());
     }
 
@@ -44,7 +42,7 @@ public class S2CellUnionTests
     internal void Test_S2CellUnion_UnsortedCellsNotValid()
     {
         var id = new S2CellId(new S2Point(1, 0, 0)).Parent(10);
-        var cell_union = FromVerbatimNoChecks(new List<S2CellId> { id, id.Prev() });
+        var cell_union = FromVerbatimNoChecks([id, id.Prev()]);
         Assert.False(cell_union.IsValid());
     }
 
@@ -52,7 +50,7 @@ public class S2CellUnionTests
     internal void Test_S2CellUnion_InvalidCellIdNotValid()
     {
         Assert.False(S2CellId.None.IsValid());
-        var cell_union = FromVerbatimNoChecks(new List<S2CellId> { S2CellId.None });
+        var cell_union = FromVerbatimNoChecks([S2CellId.None]);
         Assert.False(cell_union.IsValid());
     }
 
@@ -62,7 +60,7 @@ public class S2CellUnionTests
         // Manually save and restore flag, to preserve test state in opensource
         // without gflags.
         Assert.False(S2CellId.None.IsValid());
-        var cell_union = S2CellUnion.FromVerbatimNoCheck(new List<S2CellId> { S2CellId.None });
+        var cell_union = S2CellUnion.FromVerbatimNoCheck([S2CellId.None]);
         Assert.False(cell_union.IsValid());
     }
 
@@ -71,7 +69,7 @@ public class S2CellUnionTests
     {
         var id = new S2CellId(new S2Point(1, 0, 0)).Parent(10);
         var cell_union = S2CellUnion.FromVerbatim(
-            new List<S2CellId> { id.Child(0), id.Child(1), id.Child(2), id.Child(3) });
+            [id.Child(0), id.Child(1), id.Child(2), id.Child(3)]);
         Assert.True(cell_union.IsValid());
         Assert.False(cell_union.IsNormalized());
     }
@@ -86,8 +84,8 @@ public class S2CellUnionTests
         const int kIters = 2000;
         for (int i = 0; i < kIters; ++i)
         {
-            List<S2CellId> input = new();
-            List<S2CellId> expected = new();
+            List<S2CellId> input = [];
+            List<S2CellId> expected = [];
             AddCells(S2CellId.None, false, input, expected);
             in_sum += input.Count;
             out_sum += expected.Count;
@@ -141,10 +139,10 @@ public class S2CellUnionTests
 
             // Test Contains(S2CellUnion), Intersects(S2CellUnion), Union(),
             // Intersection(), and Difference().
-            List<S2CellId> x = new();
-            List<S2CellId> y = new();
-            List<S2CellId> x_or_y = new();
-            List<S2CellId> x_and_y = new();
+            List<S2CellId> x = [];
+            List<S2CellId> y = [];
+            List<S2CellId> x_or_y = [];
+            List<S2CellId> x_and_y = [];
             foreach (var input_id in input)
             {
                 var in_x = S2Testing.Random.OneIn(2);
@@ -198,8 +196,8 @@ public class S2CellUnionTests
             var diff_intersection_union = x_minus_y_cells.Union(y_minus_x_cells).Union(x_and_y_cells);
             Assert.True(diff_intersection_union == x_or_y_cells);
 
-            List<S2CellId> test = new();
-            List<S2CellId> dummy = new();
+            List<S2CellId> test = [];
+            List<S2CellId> dummy = [];
             AddCells(S2CellId.None, false, test, dummy);
             foreach (var test_id in test)
             {
@@ -274,9 +272,9 @@ public class S2CellUnionTests
     [Fact]
     internal void Test_S2CellUnion_EncodeDecode()
     {
-        var cell_ids = new List<S2CellId>{new S2CellId(0x33),
-                           new S2CellId(0x8e3748fab),
-                           new S2CellId(0x91230abcdef83427)};
+        var cell_ids = new List<S2CellId>{new(0x33),
+                           new(0x8e3748fab),
+                           new(0x91230abcdef83427)};
         var cell_union = S2CellUnion.FromVerbatim(cell_ids);
 
         Encoder encoder = new();
@@ -364,7 +362,7 @@ public class S2CellUnionTests
         Assert.True(empty_cell_union.IsEmpty());
 
         // Denormalize(...)
-        List<S2CellId> output=new();
+        List<S2CellId> output=[];
         empty_cell_union.Denormalize(0, 2, output);
         Assert.True(empty_cell_union.IsEmpty());
 
@@ -449,7 +447,7 @@ public class S2CellUnionTests
     [Fact]
     internal void Test_S2CellUnion_RefuseToDecode()
     {
-        List<S2CellId> cellids = new();
+        List<S2CellId> cellids = [];
         S2CellId id = S2CellId.Begin(S2.kMaxCellLevel);
         for (int i = 0; i <= S2CellUnion.Union_decode_max_num_cells; ++i)
         {
@@ -521,7 +519,7 @@ public class S2CellUnionTests
     internal void Test_S2CellUnion_WorksInContainers()
     {
         var ids = new List<S2CellId> { S2CellId.FromFace(1) };
-        var union_vector = new List<S2CellUnion> { new S2CellUnion(ids) };
+        var union_vector = new List<S2CellUnion> { new(ids) };
         Assert.Equal(ids, union_vector.Last().CellIds);
     }
 
@@ -549,7 +547,7 @@ public class S2CellUnionTests
     [Fact]
     internal void Test_S2CellUnion_ToStringOver500Cells()
     {
-        List<S2CellId> ids=new();
+        List<S2CellId> ids=[];
         new S2CellUnion(new List<S2CellId> { S2CellId.FromFace(1)}).Denormalize(6, 1, ids);  // 4096 cells
         var result = S2CellUnion.FromVerbatim(ids).ToString();
         Assert.Equal(result.Count(t => t == ','), 500);
@@ -562,7 +560,7 @@ public class S2CellUnionTests
         S2CellId id = S2CellId.FromFace(3);  // arbitrary
         S2CellUnion parent=new(new List<S2CellId> { id });
         S2CellUnion children = S2CellUnion.FromVerbatim(
-          new(){ id.Child(0), id.Child(1), id.Child(2), id.Child(3)});
+          [id.Child(0), id.Child(1), id.Child(2), id.Child(3)]);
         S2CellUnion intersection = parent.Intersection(children);
         Assert.Equal(intersection, children);
     }

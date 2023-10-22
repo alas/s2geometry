@@ -9,9 +9,8 @@ namespace S2Geometry;
 using S2MaxDistanceTargets = S2DistanceTarget<S2MaxDistance>;
 
 // An S2DistanceTarget subtype for computing the maximum distance to a point.
-public class S2MaxDistancePointTarget : S2MaxDistanceTargets
+public class S2MaxDistancePointTarget(S2Point point) : S2MaxDistanceTargets
 {
-    public S2MaxDistancePointTarget(S2Point point) => point_ = point;
 
     // This method returns an S2Cap that bounds the antipode of the target.  (This
     // is the set of points whose S2MaxDistance to the target is
@@ -36,17 +35,12 @@ public class S2MaxDistancePointTarget : S2MaxDistanceTargets
         index.MakeS2ContainsPointQuery().VisitContainingShapes(
             -point_, (S2Shape shape) => visitor(shape, point_));
 
-    private readonly S2Point point_;
+    private readonly S2Point point_ = point;
 }
 
 // An S2DistanceTarget subtype for computing the maximum distance to an edge.
-public class S2MaxDistanceEdgeTarget : S2MaxDistanceTargets
+public class S2MaxDistanceEdgeTarget(S2Point a, S2Point b) : S2MaxDistanceTargets
 {
-    public S2MaxDistanceEdgeTarget(S2Point a, S2Point b)
-    {
-        a_ = a.Normalize();
-        b_ = b.Normalize();
-    }
 
     // This method returns an S2Cap that bounds the antipode of the target.  (This
     // is the set of points whose S2MaxDistance to the target is
@@ -56,7 +50,7 @@ public class S2MaxDistanceEdgeTarget : S2MaxDistanceTargets
         // The following computes a radius equal to half the edge length in an
         // efficient and numerically stable way.
         double d2 = new S1ChordAngle(a_, b_).Length2;
-        double r2 = (0.5 * d2) / (1 + Math.Sqrt(1 - 0.25 * d2));
+        double r2 = 0.5 * d2 / (1 + Math.Sqrt(1 - 0.25 * d2));
         return new S2Cap(-(a_ + b_).Normalize(), S1ChordAngle.FromLength2(r2));
     }
     public sealed override bool UpdateMinDistance(S2Point p, ref S2MaxDistance min_dist)
@@ -96,14 +90,13 @@ public class S2MaxDistanceEdgeTarget : S2MaxDistanceTargets
         return target.VisitContainingShapes(index, visitor);
     }
 
-    private readonly S2Point a_, b_;
+    private readonly S2Point a_ = a.Normalize(), b_ = b.Normalize();
 }
 
 // An S2DistanceTarget subtype for computing the maximum distance to an S2Cell
 // (including the interior of the cell).
-public class S2MaxDistanceCellTarget : S2MaxDistanceTargets
+public class S2MaxDistanceCellTarget(S2Cell cell) : S2MaxDistanceTargets
 {
-    public S2MaxDistanceCellTarget(S2Cell cell) { cell_ = cell; }
 
     // This method returns an S2Cap that bounds the antipode of the target.  (This
     // is the set of points whose S2MaxDistance to the target is
@@ -133,7 +126,7 @@ public class S2MaxDistanceCellTarget : S2MaxDistanceTargets
         return target.VisitContainingShapes(index, visitor);
     }
 
-    private readonly S2Cell cell_;
+    private readonly S2Cell cell_ = cell;
 }
 
 // An S2DistanceTarget subtype for computing the maximum distance to an
@@ -158,13 +151,8 @@ public class S2MaxDistanceCellTarget : S2MaxDistanceTargets
 // is used, then distances will be measured from the boundary of one
 // S2ShapeIndex to the boundary and interior of the other.
 //
-public class S2MaxDistanceShapeIndexTarget : S2MaxDistanceTargets
+public class S2MaxDistanceShapeIndexTarget(S2ShapeIndex index) : S2MaxDistanceTargets
 {
-    public S2MaxDistanceShapeIndexTarget(S2ShapeIndex index)
-    {
-        index_ = index;
-        query_ = new S2FurthestEdgeQuery(index);
-    }
 
     // Specifies that distance will be measured to the boundary and interior
     // of polygons in the S2ShapeIndex rather than to polygon boundaries only.
@@ -202,7 +190,7 @@ public class S2MaxDistanceShapeIndexTarget : S2MaxDistanceTargets
     }
     public sealed override bool UpdateMinDistance(S2Point p, ref S2MaxDistance min_dist)
     {
-        query_.Options_.MinDistance = (min_dist.Distance);
+        query_.Options_.MinDistance = min_dist.Distance;
         var target = new S2FurthestEdgeQuery.PointTarget(p);
         var r = query_.FindFurthestEdge(target);
         if (r.IsEmpty()) return false;
@@ -211,7 +199,7 @@ public class S2MaxDistanceShapeIndexTarget : S2MaxDistanceTargets
     }
     public sealed override bool UpdateMinDistance(S2Point v0, S2Point v1, ref S2MaxDistance min_dist)
     {
-        query_.Options_.MinDistance = (min_dist.Distance);
+        query_.Options_.MinDistance = min_dist.Distance;
         var target = new S2FurthestEdgeQuery.EdgeTarget(v0, v1);
         var r = query_.FindFurthestEdge(target);
         if (r.IsEmpty()) return false;
@@ -220,7 +208,7 @@ public class S2MaxDistanceShapeIndexTarget : S2MaxDistanceTargets
     }
     public sealed override bool UpdateMinDistance(S2Cell cell, ref S2MaxDistance min_dist)
     {
-        query_.Options_.MinDistance = (min_dist.Distance);
+        query_.Options_.MinDistance = min_dist.Distance;
         var target = new S2FurthestEdgeQuery.CellTarget(cell);
         var r = query_.FindFurthestEdge(target);
         if (r.IsEmpty()) return false;
@@ -274,6 +262,6 @@ public class S2MaxDistanceShapeIndexTarget : S2MaxDistanceTargets
         return true;
     }
 
-    private readonly S2ShapeIndex index_;
-    private readonly S2FurthestEdgeQuery query_;
+    private readonly S2ShapeIndex index_ = index;
+    private readonly S2FurthestEdgeQuery query_ = new(index);
 }

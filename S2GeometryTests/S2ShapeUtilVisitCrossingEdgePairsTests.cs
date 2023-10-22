@@ -2,11 +2,9 @@ namespace S2Geometry;
 
 using static S2ShapeUtil;
 
-public class S2ShapeUtilVisitCrossingEdgePairsTests
+public class S2ShapeUtilVisitCrossingEdgePairsTests(ITestOutputHelper logger)
 {
-    private readonly ITestOutputHelper _logger;
-
-    public S2ShapeUtilVisitCrossingEdgePairsTests(ITestOutputHelper logger) { _logger = logger; }
+    private readonly ITestOutputHelper _logger = logger;
 
     [Fact]
     internal void Test_GetCrossingEdgePairs_NoIntersections()
@@ -65,7 +63,7 @@ public class S2ShapeUtilVisitCrossingEdgePairsTests
     {
         if (i == loops.Count)
         {
-            MutableS2ShapeIndex index = new();
+            MutableS2ShapeIndex index = [];
             S2Polygon polygon = new(loops);
             index.Add(new S2Polygon.Shape(polygon));
             Assert.Equal(has_crossing, HasSelfIntersection(index));
@@ -104,7 +102,7 @@ public class S2ShapeUtilVisitCrossingEdgePairsTests
 
     private static List<EdgePair> GetCrossings(S2ShapeIndex index, CrossingType type)
     {
-        List<EdgePair> edge_pairs = new();
+        List<EdgePair> edge_pairs = [];
         EdgePairs.VisitCrossingEdgePairs(index, type, (ShapeEdge a, ShapeEdge b, bool bo) =>
         {
             edge_pairs.Add(new(a.Id, b.Id));
@@ -119,7 +117,7 @@ public class S2ShapeUtilVisitCrossingEdgePairsTests
 
     private static List<EdgePair> GetCrossingEdgePairsBruteForce(S2ShapeIndex index, CrossingType type)
     {
-        List<EdgePair> result = new();
+        List<EdgePair> result = [];
         var min_sign = (type == CrossingType.ALL) ? 0 : 1;
         var a_iter = new EdgeEnumerator(index);
         while (a_iter.MoveNext())

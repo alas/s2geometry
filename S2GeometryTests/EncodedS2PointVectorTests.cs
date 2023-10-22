@@ -1,29 +1,27 @@
 namespace S2Geometry;
 
-public class EncodedS2PointVectorTests
+public class EncodedS2PointVectorTests(ITestOutputHelper logger)
 {
     private const int kBlockSize = 16;  // Number of deltas per block in implementation.
-    private readonly ITestOutputHelper _logger;
-
-    public EncodedS2PointVectorTests(ITestOutputHelper logger) { _logger = logger; }
+    private readonly ITestOutputHelper _logger = logger;
 
     [Fact]
     internal void Test_EncodedS2PointVectorTest_Empty()
     {
-        TestEncodedS2PointVector(Array.Empty<S2Point>(), CodingHint.FAST, 1);
+        TestEncodedS2PointVector([], CodingHint.FAST, 1);
 
         // Test that an empty vector uses the UNCOMPRESSED encoding.
-        TestEncodedS2PointVector(Array.Empty<S2Point>(), CodingHint.COMPACT, 1);
+        TestEncodedS2PointVector([], CodingHint.COMPACT, 1);
     }
 
     [Fact]
     internal void Test_EncodedS2PointVectorTest_OnePoint()
     {
-        TestEncodedS2PointVector(new S2Point[] { new S2Point(1, 0, 0) }, CodingHint.FAST, 25);
+        TestEncodedS2PointVector([new S2Point(1, 0, 0)], CodingHint.FAST, 25);
 
         // Encoding: header (2 bytes), block count (1 byte), block offsets (1 byte),
         // block header (1 byte), delta (1 byte).
-        TestEncodedS2PointVector(new S2Point[] { new S2Point(1, 0, 0) }, CodingHint.COMPACT, 6);
+        TestEncodedS2PointVector([new S2Point(1, 0, 0)], CodingHint.COMPACT, 6);
     }
 
     [Fact]
@@ -37,10 +35,10 @@ public class EncodedS2PointVectorTests
         // Block 0: block header (1 byte), 16 deltas (16 bytes), exception (24 bytes)
         // Block 1: block header (1 byte), delta (1 byte)
         S2Point a = new(1, 0, 0);
-        S2Point[] points = {
+        S2Point[] points = [
                 new S2Point(1, 2, 3).Normalize(), a, a, a, a, a, a, a, a, a, a, a, a, a, a, a,
                 a  // Second block
-            };
+            ];
         TestEncodedS2PointVector(points, CodingHint.COMPACT, 48);
     }
 
@@ -58,10 +56,10 @@ public class EncodedS2PointVectorTests
         // Block 1: header (1 byte), offset (2 bytes), delta (1 byte)
         S2Point a = new S2CellId(0x946df618d0000000).ToPoint();
         S2Point b = new S2CellId(0x947209e070000000).ToPoint();
-        S2Point[] points = {
+        S2Point[] points = [
                 new S2Point(1, 2, 3).Normalize(), a, a, a, a, a, a, a, a, a, a, a, a, a, a, a,
                 b  // Second block
-             };
+             ];
         TestEncodedS2PointVector(points, CodingHint.COMPACT, 54);
     }
 
@@ -73,8 +71,7 @@ public class EncodedS2PointVectorTests
         //
         // Encoding: header (2 bytes), block count (1 byte), block offsets (1 byte),
         // block header (1 byte), two deltas (2 bytes), exception (24 bytes).
-        TestEncodedS2PointVector(new S2Point[]
-            { MakeCellIdOrDie("1/23").ToPoint(), new S2Point(0.1, 0.2, 0.3).Normalize()},
+        TestEncodedS2PointVector([MakeCellIdOrDie("1/23").ToPoint(), new S2Point(0.1, 0.2, 0.3).Normalize()],
             CodingHint.COMPACT, 31);
     }
 
@@ -92,14 +89,14 @@ public class EncodedS2PointVectorTests
         // Encoding: header (2 bytes), base (1 byte), block count (1 byte), block
         // offsets (1 byte), block header (1 byte), 5 deltas (5 bytes), S2Point
         // exceptions (72 bytes).
-        TestEncodedS2PointVector(new S2Point[]
-            {
+        TestEncodedS2PointVector(
+            [
                     MakeCellIdOrDie("2/11001310230102").ToPoint(),
                     MakeCellIdOrDie("1/23322").ToPoint(),
                     MakeCellIdOrDie("3/3").ToPoint(),
                     MakeCellIdOrDie("1/23323").ToPoint(),
                     MakeCellIdOrDie("2/12101023022012").ToPoint()
-            },
+            ],
             CodingHint.COMPACT, 83);
     }
 
@@ -268,7 +265,7 @@ public class EncodedS2PointVectorTests
         for (int level = 0; level <= S2.kMaxCellLevel; ++level)
         {
             _logger.WriteLine("Level = " + level);
-            TestEncodedS2PointVector(new S2Point[] { S2CellId.Begin(level).ToPoint() },
+            TestEncodedS2PointVector([S2CellId.Begin(level).ToPoint()],
                                      CodingHint.COMPACT, 6);
         }
     }
@@ -286,7 +283,7 @@ public class EncodedS2PointVectorTests
             // Note that 8 bit deltas are used to encode blocks of size 1, which
             // reduces the size of "base" from ((level + 2) / 4) to (level / 4) bytes.
             int expected_size = 6 + level / 4;
-            TestEncodedS2PointVector(new S2Point[] { S2CellId.End(level).Prev().ToPoint() },
+            TestEncodedS2PointVector([S2CellId.End(level).Prev().ToPoint()],
                 CodingHint.COMPACT, expected_size);
         }
     }
@@ -311,7 +308,7 @@ public class EncodedS2PointVectorTests
             // at level==3 is unaffected because for singleton blocks, the lowest 8
             // value bits are encoded in the delta.
             int expected_size = (level < 4) ? 6 : 6 + (level + 1) / 4;
-            TestEncodedS2PointVector(new S2Point[] { id.ToPoint() },
+            TestEncodedS2PointVector([id.ToPoint()],
                                      CodingHint.COMPACT, expected_size);
         }
     }
@@ -329,7 +326,7 @@ public class EncodedS2PointVectorTests
             // size 1 uses 8-bit deltas (which reduces the size of "base" by 4 bits),
             // while this test uses two 4-bit deltas.
             int expected_size = 6 + (level + 2) / 4;
-            TestEncodedS2PointVector(new S2Point[] { id.ToPoint(), id.Prev().ToPoint() },
+            TestEncodedS2PointVector([id.ToPoint(), id.Prev().ToPoint()],
                                      CodingHint.COMPACT, expected_size);
         }
     }
@@ -375,7 +372,7 @@ public class EncodedS2PointVectorTests
                 fractal.SetLevelForApproxMaxEdges(num_points);
                 var frame = S2Testing.GetRandomFrame();
                 var loop = fractal.MakeLoop(frame, S2Testing.KmToAngle(10));
-                List<S2Point> points = new();
+                List<S2Point> points = [];
                 for (int j = 0; j < loop.NumVertices; ++j)
                 {
                     points.Add(new S2CellId(loop.Vertex(j)).ToPoint());
@@ -386,7 +383,7 @@ public class EncodedS2PointVectorTests
                 s2polygon_size += (uint)encoder.Length();
                 // S2LaxPolygonShape has 2 extra bytes of overhead to encode one loop.
                 lax_polygon_size +=
-                    (uint)TestEncodedS2PointVector(points.ToArray(), CodingHint.COMPACT, -1) + 2;
+                    (uint)TestEncodedS2PointVector([.. points], CodingHint.COMPACT, -1) + 2;
             }
             _logger.WriteLine($"n={num_points:d5}  s2={s2polygon_size:d9}  lax={lax_polygon_size:d9}");
         }
@@ -453,7 +450,7 @@ public class EncodedS2PointVectorTests
         pointsList.Add(EncodedValueToPoint(0x7a, level));
         pointsList.Add(EncodedValueToPoint(0x7c, level));
         pointsList.Add(EncodedValueToPoint(0x84, level));
-        pointsArray = pointsList.ToArray();
+        pointsArray = [.. pointsList];
 
         EncodedS2PointVector a_vector;
         Encoder a_encoder = new();

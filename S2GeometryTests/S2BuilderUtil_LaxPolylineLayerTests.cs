@@ -22,8 +22,8 @@ public class S2BuilderUtil_LaxPolylineLayerTests
         {
             builder.AddShape(MakeLaxPolylineOrDie(input_str));
         }
-        S2Error error;
-        Assert.True(builder.Build(out error));
+
+        Assert.True(builder.Build(out _));
         Assert.Equal(expected_str, S2TextFormat.ToDebugString(output));
     }
 
@@ -39,12 +39,12 @@ public class S2BuilderUtil_LaxPolylineLayerTests
 
     private void TestS2LaxPolylineShapeUnchanged(string input_str)
     {
-        TestS2LaxPolylineShape(new List<string>(){ input_str}, input_str);
+        TestS2LaxPolylineShape([input_str], input_str);
     }
 
     [Fact]
     internal void LaxPolylineLayer_NoEdges() {
-        TestS2LaxPolylineShape(new List<string>(), "");
+        TestS2LaxPolylineShape([], "");
     }
 
     [Fact]
@@ -69,9 +69,11 @@ public class S2BuilderUtil_LaxPolylineLayerTests
         //
         // This example tests a code path where the early walk termination code
         // should not be triggered at all (but was at one point due to a bug).
-        S2Builder.Options options=new();
-        options.SnapFunction = new IntLatLngSnapFunction(2);
-        TestS2LaxPolylineShape(new List<string>{ "0:0, 0:2, 0:1"}, "0:0, 0:1, 0:2, 0:1", options);
+        S2Builder.Options options = new()
+        {
+            SnapFunction = new IntLatLngSnapFunction(2)
+        };
+        TestS2LaxPolylineShape(["0:0, 0:2, 0:1"], "0:0, 0:1, 0:2, 0:1", options);
     }
 
     [Fact]
@@ -79,7 +81,7 @@ public class S2BuilderUtil_LaxPolylineLayerTests
         // This tests a different code path where the walk is terminated early
         // (yield a polyline with one edge), and then the walk is "maximimzed" by
         // appending a two-edge loop to the end.
-        TestS2LaxPolylineShape(new List<string>{ "0:0, 0:1", "0:2, 0:1", "0:1, 0:2"},
+        TestS2LaxPolylineShape(["0:0, 0:1", "0:2, 0:1", "0:1, 0:2"],
                          "0:0, 0:1, 0:2, 0:1");
     }
 
@@ -104,13 +106,13 @@ public class S2BuilderUtil_LaxPolylineLayerTests
         // This test consists of 5 squares that touch diagonally, similar to the 5
         // white squares of a 3x3 chessboard.  The edges of these squares need to be
         // reordered to assemble them into a single unbroken polyline.
-        TestS2LaxPolylineShape(new List<string>{
+        TestS2LaxPolylineShape([
             "3:3, 3:2, 2:2, 2:3, 3:3",
       "1:0, 0:0, 0:1, 1:1, 1:0",
       "3:1, 3:0, 2:0, 2:1, 3:1",
       "1:3, 1:2, 0:2, 0:1, 1:3",
       "1:1, 1:2, 2:2, 2:1, 1:1",  // Central square
-      },
+      ],
     "3:3, 3:2, 2:2, 2:1, 3:1, 3:0, 2:0, 2:1, 1:1, 1:0, 0:0, "+
     "0:1, 1:1, 1:2, 0:2, 0:1, 1:3, 1:2, 2:2, 2:3, 3:3");
     }
@@ -122,11 +124,12 @@ public class S2BuilderUtil_LaxPolylineLayerTests
         // because (1) the edges form a loop, and (2) the first and last edges are
         // identical (but reversed).  This is designed to test the heuristics that
         // attempt to find the first edge of the input polyline.
-        S2Builder.Options options=new();
-        options.SplitCrossingEdges = true;
-        options.SnapFunction = new IntLatLngSnapFunction(7);
-        TestS2LaxPolylineShape(new List<string>
-      { "0:10, 0:0, 1:0, -1:2, 1:4, -1:6, 1:8, -1:10, -5:0, 0:0, 0:10"},
+        S2Builder.Options options = new()
+        {
+            SplitCrossingEdges = true,
+            SnapFunction = new IntLatLngSnapFunction(7)
+        };
+        TestS2LaxPolylineShape(["0:10, 0:0, 1:0, -1:2, 1:4, -1:6, 1:8, -1:10, -5:0, 0:0, 0:10"],
       "0:10, 0:9, 0:7, 0:5, 0:3, 0:1, 0:0, 1:0, 0:1, -1:2, 0:3, 1:4, 0:5, "+
       "-1:6, 0:7, 1:8, 0:9, -1:10, -5:0, 0:0, 0:1, 0:3, 0:5, 0:7, 0:9, 0:10",
       options);
@@ -136,7 +139,7 @@ public class S2BuilderUtil_LaxPolylineLayerTests
     internal void LaxPolylineLayer_SimpleEdgeLabels() {
         S2Builder builder=new(new Options());
         S2LaxPolylineShape output=new();
-        LabelSetIds label_set_ids=new();
+        LabelSetIds label_set_ids=[];
         IdSetLexicon label_set_lexicon=new();
         builder.StartLayer(new LaxPolylineLayer(
             output, label_set_ids, label_set_lexicon,
@@ -149,9 +152,8 @@ public class S2BuilderUtil_LaxPolylineLayerTests
         builder.AddShape(MakeLaxPolylineOrDie("0:3, 0:4, 0:5"));
         builder.SetLabel(11);
         builder.AddShape(MakeLaxPolylineOrDie("0:6, 0:5"));
-        S2Error error;
-        Assert.True(builder.Build(out error));
-        List<List<int>> expected = new(){ new() { 5 }, new() { 5 }, new() { 5, 7 }, new() { }, new() { }, new() { 11 } };
+        Assert.True(builder.Build(out S2Error error));
+        List<List<int>> expected = [new() { 5 }, new() { 5 }, new() { 5, 7 }, new() { }, new() { }, new() { 11 }];
         Assert.Equal(expected.Count, label_set_ids.Count);
         for (int i = 0; i < expected.Count; ++i)
         {
@@ -171,8 +173,7 @@ public class S2BuilderUtil_LaxPolylineLayerTests
         S2LaxPolylineShape output=new();
         builder.StartLayer(new LaxPolylineLayer(output));
         builder.AddEdge(new S2Point(1, 0, 0), new S2Point(-1, 0, 0));
-        S2Error error;
-        Assert.True(builder.Build(out error));
+        Assert.True(builder.Build(out _));
         Assert.Equal(output.NumVertices(), 2);
         Assert.Equal(output.Vertex(0), new S2Point(1, 0, 0));
         Assert.Equal(output.Vertex(1), new S2Point(-1, 0, 0));
@@ -181,12 +182,11 @@ public class S2BuilderUtil_LaxPolylineLayerTests
     [Fact]
     internal void IndexedLaxPolylineLayer_AddsShape() {
         S2Builder builder=new(new Options());
-        MutableS2ShapeIndex index=new();
+        MutableS2ShapeIndex index=[];
         builder.StartLayer(new LaxPolylineLayer.IndexedLaxPolylineLayer(index));
         string polyline_str = "0:0, 0:10";
         builder.AddShape(MakeLaxPolylineOrDie(polyline_str));
-        S2Error error;
-        Assert.True(builder.Build(out error));
+        Assert.True(builder.Build(out S2Error error));
         Assert.Equal(1, index.NumShapeIds());
         S2LaxPolylineShape polyline = (S2LaxPolylineShape)index.Shape(0);
         Assert.Equal(polyline_str, S2TextFormat.ToDebugString(polyline));
@@ -195,10 +195,9 @@ public class S2BuilderUtil_LaxPolylineLayerTests
     [Fact]
     internal void IndexedLaxPolylineLayer_AddsEmptyShape() {
         S2Builder builder=new(new Options());
-        MutableS2ShapeIndex index=new();
+        MutableS2ShapeIndex index=[];
         builder.StartLayer(new LaxPolylineLayer.IndexedLaxPolylineLayer(index));
-        S2Error error;
-        Assert.True(builder.Build(out error));
+        Assert.True(builder.Build(out S2Error error));
         Assert.Equal(0, index.NumShapeIds());
     }
 }

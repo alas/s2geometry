@@ -7,73 +7,73 @@ public class S2BuilderUtil_FindPolygonDegeneraciesTests
 {
     [Fact]
     internal void Test_FindPolygonDegeneracies_EmptyPolygon() {
-        ExpectDegeneracies("", Array.Empty<TestDegeneracy>());
+        ExpectDegeneracies("", []);
     }
 
     [Fact]
     internal void Test_FindPolygonDegeneracies_NoDegeneracies() {
-        ExpectDegeneracies("0:0, 0:1, 1:0", Array.Empty<TestDegeneracy>());
+        ExpectDegeneracies("0:0, 0:1, 1:0", []);
     }
 
     [Fact]
     internal void Test_FindPolygonDegeneracies_PointShell() {
-        ExpectDegeneracies("0:0", new[] { new TestDegeneracy("0:0, 0:0", false) });
+        ExpectDegeneracies("0:0", [new TestDegeneracy("0:0, 0:0", false)]);
     }
 
     [Fact]
     internal void Test_FindPolygonDegeneracies_SiblingPairShells() {
-        ExpectDegeneracies("0:0, 0:1, 1:0; 1:0, 0:1, 0:0", new[] {
+        ExpectDegeneracies("0:0, 0:1, 1:0; 1:0, 0:1, 0:0", [
             new TestDegeneracy("0:0, 0:1", false), new TestDegeneracy("0:1, 0:0", false),
             new TestDegeneracy("0:1, 1:0", false), new TestDegeneracy("1:0, 0:1", false),
             new TestDegeneracy("0:0, 1:0", false), new TestDegeneracy("1:0, 0:0", false),
-        });
+        ]);
     }
 
     [Fact]
     internal void Test_FindPolygonDegeneracies_AttachedSiblingPairShells() {
-        ExpectDegeneracies("0:0, 0:1, 1:0; 1:0, 2:0", new[] {
-            new TestDegeneracy("1:0, 2:0", false), new TestDegeneracy("2:0, 1:0", false) });
+        ExpectDegeneracies("0:0, 0:1, 1:0; 1:0, 2:0", [
+            new TestDegeneracy("1:0, 2:0", false), new TestDegeneracy("2:0, 1:0", false) ]);
     }
 
     [Fact]
     internal void Test_FindPolygonDegeneracies_AttachedSiblingPairHoles() {
-        ExpectDegeneracies("0:0, 0:3, 3:0; 0:0, 1:1", new[] {
-                 new TestDegeneracy("0:0, 1:1", true), new TestDegeneracy("1:1, 0:0", true) });
+        ExpectDegeneracies("0:0, 0:3, 3:0; 0:0, 1:1", [
+                 new TestDegeneracy("0:0, 1:1", true), new TestDegeneracy("1:1, 0:0", true) ]);
     }
 
     [Fact]
     internal void Test_FindPolygonDegeneracies_AttachedSiblingPairShellsAndHoles() {
-        ExpectDegeneracies("0:0, 0:3, 3:0; 3:0, 1:1; 3:0, 5:5", new[] {
+        ExpectDegeneracies("0:0, 0:3, 3:0; 3:0, 1:1; 3:0, 5:5", [
             new TestDegeneracy("3:0, 1:1", true), new TestDegeneracy("1:1, 3:0", true),
-            new TestDegeneracy("3:0, 5:5", false), new TestDegeneracy("5:5, 3:0", false) });
+            new TestDegeneracy("3:0, 5:5", false), new TestDegeneracy("5:5, 3:0", false) ]);
     }
 
     [Fact]
     internal void Test_FindPolygonDegeneracies_DegenerateShellsOutsideLoop() {
-        ExpectDegeneracies("0:0, 0:3, 3:3, 3:0; 4:4, 5:5; 6:6", new[] {
+        ExpectDegeneracies("0:0, 0:3, 3:3, 3:0; 4:4, 5:5; 6:6", [
             new TestDegeneracy("4:4, 5:5", false), new TestDegeneracy("5:5, 4:4", false),
-            new TestDegeneracy("6:6, 6:6", false) });
+            new TestDegeneracy("6:6, 6:6", false) ]);
     }
 
     [Fact]
     internal void Test_FindPolygonDegeneracies_DegenerateHolesWithinLoop() {
-        ExpectDegeneracies("0:0, 0:5, 5:5, 5:0; 1:1, 2:2; 3:3", new[]{
+        ExpectDegeneracies("0:0, 0:5, 5:5, 5:0; 1:1, 2:2; 3:3", [
             new TestDegeneracy("1:1, 2:2", true), new TestDegeneracy("2:2, 1:1", true),
-            new TestDegeneracy("3:3, 3:3", true) });
+            new TestDegeneracy("3:3, 3:3", true) ]);
     }
 
     [Fact]
     internal void Test_FindPolygonDegeneracies_PointHoleWithinFull() {
-        ExpectDegeneracies("full; 0:0", new[] { new TestDegeneracy("0:0, 0:0", true) });
+        ExpectDegeneracies("full; 0:0", [new TestDegeneracy("0:0, 0:0", true)]);
     }
 
     [Fact]
     internal void Test_FindPolygonDegeneracies_SiblingPairHolesWithinFull() {
-        ExpectDegeneracies("full; 0:0, 0:1, 1:0; 1:0, 0:1, 0:0", new []{
+        ExpectDegeneracies("full; 0:0, 0:1, 1:0; 1:0, 0:1, 0:0", [
             new TestDegeneracy("0:0, 0:1", true), new TestDegeneracy("0:1, 0:0", true),
             new TestDegeneracy("0:1, 1:0", true), new TestDegeneracy("1:0, 0:1", true),
             new TestDegeneracy("0:0, 1:0", true), new TestDegeneracy("1:0, 0:0", true)
-        });
+        ]);
     }
 
     private struct TestDegeneracy : IEquatable<TestDegeneracy>, IComparable<TestDegeneracy>
@@ -84,14 +84,14 @@ public class S2BuilderUtil_FindPolygonDegeneraciesTests
         internal TestDegeneracy(string _edge_str, bool _is_hole)
         { EdgeStr = _edge_str; IsHole = _is_hole; }
 
-        public bool Equals(TestDegeneracy other) => EdgeStr == other.EdgeStr && IsHole == other.IsHole;
-        public override bool Equals(object? obj) => obj is TestDegeneracy td && Equals(td);
-        public override int GetHashCode() => HashCode.Combine(EdgeStr, IsHole);
+        public readonly bool Equals(TestDegeneracy other) => EdgeStr == other.EdgeStr && IsHole == other.IsHole;
+        public override readonly bool Equals(object? obj) => obj is TestDegeneracy td && Equals(td);
+        public override readonly int GetHashCode() => HashCode.Combine(EdgeStr, IsHole);
 
         public static bool operator ==(TestDegeneracy x, TestDegeneracy y) => Equals(x, y);
         public static bool operator !=(TestDegeneracy left, TestDegeneracy right) => !Equals(left, right);
 
-        public int CompareTo(TestDegeneracy other)
+        public readonly int CompareTo(TestDegeneracy other)
         {
             if (EdgeStr.CompareTo(other.EdgeStr) != 0)
                 return EdgeStr.CompareTo(other.EdgeStr);
@@ -107,7 +107,7 @@ public class S2BuilderUtil_FindPolygonDegeneraciesTests
             return x.CompareTo(y) > 0;
         }
 
-        public override string ToString() => $"{(IsHole ? "Hole(" : "Shell(")}{EdgeStr}) ";
+        public override readonly string ToString() => $"{(IsHole ? "Hole(" : "Shell(")}{EdgeStr}) ";
     }
 
     private class DegeneracyCheckingLayer : Layer
@@ -122,7 +122,7 @@ public class S2BuilderUtil_FindPolygonDegeneraciesTests
         {
             var degeneracies = PolygonDegeneracy.FindPolygonDegeneracies(g, out error);
             // Convert the output into a human-readable format.
-            List<TestDegeneracy> actual = new();
+            List<TestDegeneracy> actual = [];
             foreach (var degeneracy in degeneracies)
             {
                 var edge = g.GetEdge((int)degeneracy.EdgeId);

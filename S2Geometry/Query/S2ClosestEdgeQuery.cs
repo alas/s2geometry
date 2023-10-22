@@ -66,8 +66,6 @@
 
 namespace S2Geometry;
 
-using System.Runtime.InteropServices;
-
 using Distance = S2MinDistance;
 
 // Each "Result" object represents a closest edge.  Here are its main
@@ -98,7 +96,7 @@ using Result = S2ClosestEdgeQueryBase<S2MinDistance>.Result;
 // S2Cell, or an S2ShapeIndex (an arbitrary collection of geometry).
 using Target = S2MinDistanceTarget;
 
-public class S2ClosestEdgeQuery
+public class S2ClosestEdgeQuery(S2ShapeIndex index, S2ClosestEdgeQuery.Options? options = null)
 {
     // See S2ClosestEdgeQueryBase for full documentation.
 
@@ -131,9 +129,8 @@ public class S2ClosestEdgeQuery
     }
 
     // Target subtype that computes the closest distance to a point.
-    public sealed class PointTarget : S2MinDistancePointTarget
+    public sealed class PointTarget(S2Point point) : S2MinDistancePointTarget(point)
     {
-        public PointTarget(S2Point point) : base(point) { }
         public override int MaxBruteForceIndexSize =>
             // Using BM_FindClosest (which finds the single closest edge), the
             // break-even points are approximately 80, 100, and 250 edges for point
@@ -142,9 +139,8 @@ public class S2ClosestEdgeQuery
     }
 
     // Target subtype that computes the closest distance to an edge.
-    public sealed class EdgeTarget : S2MinDistanceEdgeTarget
+    public sealed class EdgeTarget(S2Point a, S2Point b) : S2MinDistanceEdgeTarget(a, b)
     {
-        public EdgeTarget(S2Point a, S2Point b) : base(a, b) { }
         public override int MaxBruteForceIndexSize =>
             // Using BM_FindClosestToEdge (which finds the single closest edge), the
             // break-even points are approximately 40, 50, and 100 edges for point
@@ -154,9 +150,8 @@ public class S2ClosestEdgeQuery
 
     // Target subtype that computes the closest distance to an S2Cell
     // (including the interior of the cell).
-    public sealed class CellTarget : S2MinDistanceCellTarget
+    public sealed class CellTarget(S2Cell cell) : S2MinDistanceCellTarget(cell)
     {
-        public CellTarget(S2Cell cell) : base(cell) { }
         public override int MaxBruteForceIndexSize =>
             // Using BM_FindClosestToCell (which finds the single closest edge), the
             // break-even points are approximately 20, 25, and 40 edges for point cloud,
@@ -174,9 +169,8 @@ public class S2ClosestEdgeQuery
     //   target.set_include_interiors(false);
     //
     // (see S2MinDistanceShapeIndexTarget for details).
-    public sealed class ShapeIndexTarget : S2MinDistanceShapeIndexTarget
+    public sealed class ShapeIndexTarget(S2ShapeIndex index) : S2MinDistanceShapeIndexTarget(index)
     {
-        public ShapeIndexTarget(S2ShapeIndex index) : base(index) { }
         public override int MaxBruteForceIndexSize =>
             // For BM_FindClosestToSameSizeAbuttingIndex (which uses two nearby indexes
             // with similar edge counts), the break-even points are approximately 20,
@@ -184,17 +178,6 @@ public class S2ClosestEdgeQuery
             // respectively.
             25;
     };
-
-    // Convenience constructor.  Options may be specified here
-    // or changed at any time using the Options() accessor method.
-    //
-    // REQUIRES: "index" must persist for the lifetime of this object.
-    // REQUIRES: ReInit() must be called if "index" is modified.
-    public S2ClosestEdgeQuery(S2ShapeIndex index, Options? options = null)
-    {
-        Options_ = options ?? new Options();
-        base_ = new(index);
-    }
 
     // Reinitializes the query.  This method must be called whenever the
     // underlying S2ShapeIndex is modified.
@@ -210,7 +193,7 @@ public class S2ClosestEdgeQuery
     }
 
     // Options_ can be modified between queries.
-    public Options Options_ { get; private set; }
+    public Options Options_ { get; private set; } = options ?? new Options();
 
     // Returns the closest edges to the given target that satisfy the current
     // options.  This method may be called multiple times.
@@ -239,7 +222,7 @@ public class S2ClosestEdgeQuery
     {
         // Assert.True(Marshal.SizeOf(Options_) <= 32); // Consider not copying Options here
         Options tmp_options = Options_;
-        tmp_options.MaxResults = (1);
+        tmp_options.MaxResults = 1;
         return base_.FindClosestEdge(target, tmp_options);
     }
 
@@ -259,9 +242,9 @@ public class S2ClosestEdgeQuery
     {
         MyDebug.Assert(SizeHelper.SizeOf(Options_) <= 32, "Consider not copying Options here");
         Options tmp_options = Options_;
-        tmp_options.MaxResults = (1);
-        tmp_options.MaxDistance = (limit);
-        tmp_options.MaxError = (Distance.Straight);
+        tmp_options.MaxResults = 1;
+        tmp_options.MaxDistance = limit;
+        tmp_options.MaxError = Distance.Straight;
         return !base_.FindClosestEdge(target, tmp_options).IsEmpty();
     }
 
@@ -271,9 +254,9 @@ public class S2ClosestEdgeQuery
     {
         MyDebug.Assert(SizeHelper.SizeOf(Options_) <= 32, "Consider not copying Options here");
         Options tmp_options = Options_;
-        tmp_options.MaxResults = (1);
-        tmp_options.InclusiveMaxDistance = (limit);
-        tmp_options.MaxError = (Distance.Straight);
+        tmp_options.MaxResults = 1;
+        tmp_options.InclusiveMaxDistance = limit;
+        tmp_options.MaxError = Distance.Straight;
         return !base_.FindClosestEdge(target, tmp_options).IsEmpty();
     }
 
@@ -293,9 +276,9 @@ public class S2ClosestEdgeQuery
     {
         MyDebug.Assert(SizeHelper.SizeOf(Options_) <= 32, "Consider not copying Options here");
         Options tmp_options = Options_;
-        tmp_options.MaxResults = (1);
-        tmp_options.ConservativeMaxDistance = (limit);
-        tmp_options.MaxError = (Distance.Straight);
+        tmp_options.MaxResults = 1;
+        tmp_options.ConservativeMaxDistance = limit;
+        tmp_options.MaxError = Distance.Straight;
         return !base_.FindClosestEdge(target, tmp_options).IsEmpty();
     }
 
@@ -311,5 +294,5 @@ public class S2ClosestEdgeQuery
         return S2.Project(point, edge.V0, edge.V1);
     }
 
-    private readonly S2ClosestEdgeQueryBase<Distance> base_;
+    private readonly S2ClosestEdgeQueryBase<Distance> base_ = new(index);
 }

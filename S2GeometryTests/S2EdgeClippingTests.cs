@@ -3,11 +3,9 @@ using static S2Geometry.S2EdgeClipping;
 
 namespace S2Geometry;
 
-public class S2EdgeClippingTests
+public class S2EdgeClippingTests(ITestOutputHelper logger)
 {
-    private readonly ITestOutputHelper _logger;
-
-    public S2EdgeClippingTests(ITestOutputHelper logger) { _logger = logger; }
+    private readonly ITestOutputHelper _logger = logger;
 
     private void TestFaceClipping(S2Point a_raw, S2Point b_raw)
     {
@@ -15,7 +13,7 @@ public class S2EdgeClippingTests
         S2Point b = b_raw.Normalize();
 
         // First we test GetFaceSegments.
-        FaceSegmentVector segments = new();
+        FaceSegmentVector segments = [];
         GetFaceSegments(a, b, segments);
         int n = segments.Count;
         Assert.True(n >= 1);
@@ -38,9 +36,8 @@ public class S2EdgeClippingTests
                   kErrorRadians);
 
         // Similarly, in UV space.
-        R2Point a_uv_, b_uv_;
-        Assert.True(S2.FaceXYZtoUV(segments[0].face, a, out a_uv_));
-        Assert.True(S2.FaceXYZtoUV(segments[n-1].face, b, out b_uv_));
+        Assert.True(S2.FaceXYZtoUV(segments[0].face, a, out R2Point a_uv_));
+        Assert.True(S2.FaceXYZtoUV(segments[n-1].face, b, out R2Point b_uv_));
         Assert.True((a_uv_ - segments[0].a).GetNorm() <= S2EdgeClipping.kFaceClipErrorUVDist);
         Assert.True((b_uv_ - segments[n-1].b).GetNorm() <= S2EdgeClipping.kFaceClipErrorUVDist);
 
@@ -286,7 +283,7 @@ public class S2EdgeClippingTests
         }
         else
         {
-            return (S2Testing.Random.Uniform(3)) switch
+            return S2Testing.Random.Uniform(3) switch
             {
                 0 => clip.Lo - S2Testing.Random.RandDouble(),
                 1 => clip.Hi + S2Testing.Random.RandDouble(),

@@ -29,7 +29,7 @@ public static class LinqUtils
         return arr;
     }
 
-    public static T[] Fill<T>(this T[] arr, Func<T?> getDefault)
+    public static T[] Fill<T>(this T[] arr, Func<T> getDefault)
     {
         for (int i = 0; i < arr.Length; i++)
         {
@@ -81,10 +81,7 @@ public static class LinqUtils
     /// <remarks>from: https://stackoverflow.com/questions/16323386/fast-efficient-way-to-get-index-of-minimum-value-in-listt/16323480</remarks>
     public static int IndexOfMin<T>(this IList<T> self) where T : IComparable<T>
     {
-        if (self is null)
-        {
-            throw new ArgumentNullException(nameof(self));
-        }
+        ArgumentNullException.ThrowIfNull(self);
 
         if (self.Count == 0)
         {
@@ -152,9 +149,9 @@ public static class LinqUtils
         return i + 1;
     }
 
-    public static int GetLowerBound<T>(this List<T> arr, T value, IComparer<T>? comp)
+    public static int GetLowerBound<T>(this List<T> arr, T value, IComparer<T> comp)
     {
-        var i = comp is null ? arr.BinarySearch(value) : arr.BinarySearch(0, arr.Count, value, comp);
+        var i = arr.BinarySearch(0, arr.Count, value, comp);
         if (i < 0) return ~i;
 
         while (i > 0 && comp.Compare(arr[i], value) == 0) i--;

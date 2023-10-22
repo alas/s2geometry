@@ -30,28 +30,16 @@ public static class S2ContainsPointQueryFactory
 // However, note that if you need to do a large number of point containment
 // tests, it is more efficient to re-use the S2ContainsPointQuery object
 // rather than constructing a new one each time.
-public class S2ContainsPointQuery<TIndex> where TIndex : S2ShapeIndex
+public class S2ContainsPointQuery<TIndex>(TIndex index, Options? options = null) where TIndex : S2ShapeIndex
 {
-    public EnumeratorBase<S2ShapeIndexCell> Iterator { get; }
-
-    // Rather than calling this constructor, which requires specifying the
-    // IndexType template argument explicitly, the preferred idiom is to call
-    // MakeS2ContainsPointQuery() instead.  For example:
-    //
-    //   return index.MakeS2ContainsPointQuery.Contains(p);
-    public S2ContainsPointQuery(TIndex index, Options? options = null)
-    {
-        Index = index;
-        Options_ = options ?? new Options();
-        Iterator = index.GetNewEnumerator(InitialPosition.UNPOSITIONED);
-    }
+    public EnumeratorBase<S2ShapeIndexCell> Iterator { get; } = index.GetNewEnumerator(InitialPosition.UNPOSITIONED);
 
     // Convenience constructor that accepts the S2VertexModel directly.
     public S2ContainsPointQuery(TIndex index, S2VertexModel vertex_model)
         : this(index, new Options(vertex_model)) { }
 
-    public TIndex Index { get; }
-    public Options Options_ { get; }
+    public TIndex Index { get; } = index;
+    public Options Options_ { get; } = options ?? new Options();
 
     // Returns true if any shape in the given index() contains the point "p"
     // under the vertex model specified (OPEN, SEMI_OPEN, or CLOSED).
@@ -148,7 +136,7 @@ public class S2ContainsPointQuery<TIndex> where TIndex : S2ShapeIndex
         var (pos, found) = Index.LocatePoint(p);
         if (!found) return true;
 
-        var icell = Index.GetCellId(pos)!.Value;
+        //var icell = Index.GetCellId(pos)!.Value;
         var cell = Index.GetCell(pos)!;
         int num_clipped = cell.NumClipped();
         for (int s = 0; s < num_clipped; ++s)
@@ -212,7 +200,7 @@ public class S2ContainsPointQuery<TIndex> where TIndex : S2ShapeIndex
                     if (Options_.VertexModel != S2VertexModel.SEMI_OPEN &&
                         (edge.V0 == p || edge.V1 == p))
                     {
-                        return (Options_.VertexModel == S2VertexModel.CLOSED);
+                        return Options_.VertexModel == S2VertexModel.CLOSED;
                     }
                     sign = S2.VertexCrossing(crosser.A, crosser.B, edge.V0, edge.V1) ? 1 : 0;
                 }

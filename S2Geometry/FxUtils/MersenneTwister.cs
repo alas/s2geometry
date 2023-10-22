@@ -45,17 +45,17 @@ public class MersenneTwister
     private readonly ulong[] mt = new ulong[N];  // the array for the state vector
     private int mti = N + 1;            // mti==N+1 means mt[N] is not initialized
     
-    public MersenneTwister() => init_by_array(new ulong[] { 0x123, 0x234, 0x345, 0x456 });  // set default seeds
+    public MersenneTwister() => InitByArray([0x123, 0x234, 0x345, 0x456]);  // set default seeds
 
     // initialize by an array with array-length
     // init_key is the array for initializing keys
     // init_key.Length is its length
-    private void init_by_array(ulong[] init_key)
+    private void InitByArray(ulong[] init_key)
     {
-        init_genrand(19650218UL);
+        InitGenRand(19650218UL);
         int i = 1;
         int j = 0;
-        int k = (N > init_key.Length ? N : init_key.Length);
+        int k = N > init_key.Length ? N : init_key.Length;
         for (; k != 0; k--)
         {
             mt[i] = (mt[i] ^ ((mt[i - 1] ^ (mt[i - 1] >> 30)) * 1664525UL)) + init_key[j] + (ulong)j; /* non linear */
@@ -75,12 +75,12 @@ public class MersenneTwister
     }
         
     // initializes mt[N] with a seed
-    private void init_genrand(ulong s)
+    private void InitGenRand(ulong s)
     {
         mt[0] = s & 0xffffffffUL;
         for (mti = 1; mti < N; mti++)
         {
-            mt[mti] = (1812433253UL * (mt[mti - 1] ^ (mt[mti - 1] >> 30)) + (ulong)mti);
+            mt[mti] = 1812433253UL * (mt[mti - 1] ^ (mt[mti - 1] >> 30)) + (ulong)mti;
             /* See Knuth TAOCP Vol2. 3rd Ed. P.106 for multiplier. */
             /* In the previous versions, MSBs of the seed affect   */
             /* only MSBs of the array mt[].                        */
@@ -91,12 +91,12 @@ public class MersenneTwister
     }
 
     // generates a random integer number from 0 to N-1
-    public int GenerateRandomN(int iN) => (int)(genrand_uint32() * (iN / 4294967296.0));
+    public int GenerateRandomN(int iN) => (int)(GenRandUInt32() * (iN / 4294967296.0));
 
     // generates a random number on [0,0xffffffff]-interval
-    private ulong genrand_uint32()
+    private ulong GenRandUInt32()
     {
-        ulong[] mag01 = new ulong[] { 0x0UL, MATRIX_A };
+        ulong[] mag01 = [0x0UL, MATRIX_A];
         ulong y = 0;
         // mag01[x] = x * MATRIX_A  for x=0,1
         if (mti >= N)
@@ -104,7 +104,7 @@ public class MersenneTwister
             int kk;
             if (mti == N + 1)
             {           // if init_genrand() has not been called,
-                init_genrand(5489UL);   // a default initial seed is used
+                InitGenRand(5489UL);   // a default initial seed is used
             }
             for (kk = 0; kk < N - M; kk++)
             {
@@ -122,10 +122,10 @@ public class MersenneTwister
         }
         y = mt[mti++];
         // Tempering
-        y ^= (y >> 11);
+        y ^= y >> 11;
         y ^= (y << 7) & 0x9d2c5680UL;
         y ^= (y << 15) & 0xefc60000UL;
-        y ^= (y >> 18);
+        y ^= y >> 18;
         return y;
     }
 }

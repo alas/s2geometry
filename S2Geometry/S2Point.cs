@@ -107,7 +107,7 @@ public struct ExactFloat : INumber<ExactFloat>, IFloatingPointIeee754<ExactFloat
 
     public static ExactFloat FromDouble(double p) => new() { Value = (decimal)p };
 
-    public double ToDouble() => decimal.ToDouble(Value);
+    public readonly double ToDouble() => decimal.ToDouble(Value);
 
     /// <summary>
     /// Return true if this value is a normal floating-point number.  Non-normal
@@ -115,7 +115,7 @@ public struct ExactFloat : INumber<ExactFloat>, IFloatingPointIeee754<ExactFloat
     /// because they are represented using special exponent values and their
     /// mantissa is not defined.
     /// </summary>
-    public bool IsNormal() =>
+    public readonly bool IsNormal() =>
         Value != 0 && Value != 0.0M /*&& !decimal.IsInfinity(Value) && !decimal.IsNaN(Value)*/;
 
     /// <summary>
@@ -123,7 +123,7 @@ public struct ExactFloat : INumber<ExactFloat>, IFloatingPointIeee754<ExactFloat
     /// range [0.5, 1).  It is an error to call this method if the value is zero,
     /// infinity, or NaN.
     /// </summary>
-    public int Exp() =>
+    public readonly int Exp() =>
         1 + (int)decimal.Floor(MathM.Log10(decimal.Abs(Value)));
 
     #endregion
@@ -158,14 +158,14 @@ public struct ExactFloat : INumber<ExactFloat>, IFloatingPointIeee754<ExactFloat
 
     static ExactFloat IFloatingPointConstants<ExactFloat>.Tau => new() { Value = MathM.TAU };
 
-    public int CompareTo(object? obj)
+    public readonly int CompareTo(object? obj)
     {
         return obj is not ExactFloat ef
             ? throw new NotImplementedException("CompareTo unssuported type: " + obj?.GetType().FullName)
             : CompareTo(ef);
     }
 
-    public int CompareTo(ExactFloat other) => Value.CompareTo(other.Value);
+    public readonly int CompareTo(ExactFloat other) => Value.CompareTo(other.Value);
 
     public static ExactFloat Abs(ExactFloat value) => new() { Value = MathM.Abs(value.Value) };
 
@@ -619,6 +619,10 @@ public struct ExactFloat : INumber<ExactFloat>, IFloatingPointIeee754<ExactFloat
     public static ExactFloat operator +(ExactFloat value) => value;
 
     public static int Sign(ExactFloat value) => MathM.Sign(value.Value);
+
+    public override readonly bool Equals(object? obj) => obj is ExactFloat other && this == other;
+
+    public override readonly int GetHashCode() => Value.GetHashCode();
 
     #endregion
 }

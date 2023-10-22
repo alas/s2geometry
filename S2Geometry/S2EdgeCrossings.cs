@@ -367,7 +367,7 @@ public static partial class S2
             // (80-bit precision can handle inputs as close as 2.5 * LDBL_EPSILON.)
             var T_ERR = S2Pred.DBL_ERR;
             var kMinNorm =
-                (32 * S2Pred.kSqrt3 * S2Pred.DBL_ERR) /
+                32 * S2Pred.kSqrt3 * S2Pred.DBL_ERR /
                 (kRobustCrossProdError / T_ERR - (1 + 2 * S2Pred.kSqrt3));
 
             result = (a - b).CrossProd(a + b);
@@ -545,8 +545,7 @@ public static partial class S2
         // falling back to extended precision, arbitrary precision, and even symbolic
         // perturbations to handle the case when "a" and "b" are exactly
         // proportional, e.g. a == -b (see s2predicates.cc for details).
-        S2Point result;
-        if (Internal.GetStableCrossProd(a, b, out result))
+        if (Internal.GetStableCrossProd(a, b, out S2Point result))
         {
             return result;
         }
@@ -559,8 +558,7 @@ public static partial class S2
             return Ortho(a);
         }
         // Next we try using "long double" precision (if available).
-        S2Point result_ld;
-        if (S2Pred.kHasLongDouble && Internal.GetStableCrossProd(a.ToLD(), b.ToLD(), out result_ld))
+        if (S2Pred.kHasLongDouble && Internal.GetStableCrossProd(a.ToLD(), b.ToLD(), out S2Point result_ld))
         {
             return result_ld;
         }
@@ -752,7 +750,7 @@ public static partial class S2
         var length = tmp.Norm();
         if (length != 0)
         {
-            result = (1 / length) * tmp;
+            result = 1 / length * tmp;
         }
         else
         {
@@ -942,7 +940,7 @@ public static partial class S2
         {
             return false;
         }
-        result = (1 / x_len) * x;
+        result = 1 / x_len * x;
         return true;
     }
 
@@ -951,7 +949,10 @@ public static partial class S2
     private static bool CompareEdges(S2Point a0, S2Point a1, S2Point b0, S2Point b1)
     {
         var a = new[] { a0, a1 }.Min();
-        if (b0 >= b1) { var tmp = b0; b0 = b1; b1 = tmp; }
+        if (b0 >= b1)
+        {
+            (b1, b0)=(b0, b1);
+        }
         return a < b0 || (a == b0 && b0 < b1);
     }
 

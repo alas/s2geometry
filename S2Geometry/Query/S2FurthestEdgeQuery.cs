@@ -80,7 +80,7 @@ using Base = S2ClosestEdgeQueryBase<S2MaxDistance>;
 // (e.g. S2MaxDistancePointTarget) extend.
 using Target = S2DistanceTarget<S2MaxDistance>;
 
-public class S2FurthestEdgeQuery
+public class S2FurthestEdgeQuery(S2ShapeIndex index, S2FurthestEdgeQuery.Options? options = null)
 {
     // Options that control the set of edges returned.  Note that by default
     // *all* edges are returned, so you will always want to set either the
@@ -96,15 +96,14 @@ public class S2FurthestEdgeQuery
 
         public S1ChordAngle ConservativeMinDistance
         {
-            set => MaxDistance = (new(value.PlusError(
-                -S2.GetUpdateMinDistanceMaxError(value)).Predecessor()));
+            set => MaxDistance = new(value.PlusError(
+                -S2.GetUpdateMinDistanceMaxError(value)).Predecessor());
         }
     }
 
     // Target subtype that computes the furthest distance to a point.
-    public sealed class PointTarget : S2MaxDistancePointTarget
+    public sealed class PointTarget(S2Point point) : S2MaxDistancePointTarget(point)
     {
-        public PointTarget(S2Point point) : base(point) { }
 
         // See s2closest_edge_query.cc for justifications of
         // max_brute_force_index_size() for that query.
@@ -116,9 +115,8 @@ public class S2FurthestEdgeQuery
     }
 
     // Target subtype that computes the furthest distance to an edge.
-    public sealed class EdgeTarget : S2MaxDistanceEdgeTarget
+    public sealed class EdgeTarget(S2Point a, S2Point b) : S2MaxDistanceEdgeTarget(a, b)
     {
-        public EdgeTarget(S2Point a, S2Point b) : base(a, b) { }
         public override int MaxBruteForceIndexSize =>
             // Using BM_FindFurthestToEdge (which finds the single furthest edge), the
             // break-even points are approximately 80, 100, and 230 edges for point
@@ -128,9 +126,8 @@ public class S2FurthestEdgeQuery
 
     // Target subtype that computes the furthest distance to an S2Cell
     // (including the interior of the cell).
-    public sealed class CellTarget : S2MaxDistanceCellTarget
+    public sealed class CellTarget(S2Cell cell) : S2MaxDistanceCellTarget(cell)
     {
-        public CellTarget(S2Cell cell) : base(cell) { }
         public override int MaxBruteForceIndexSize =>
             // Using BM_FindFurthestToCell (which finds the single furthest edge), the
             // break-even points are approximately 70, 100, and 170 edges for point
@@ -148,9 +145,8 @@ public class S2FurthestEdgeQuery
     //   target.set_include_interiors(false);
     //
     // (see S2MaxDistanceShapeIndexTarget for details).
-    public sealed class ShapeIndexTarget : S2MaxDistanceShapeIndexTarget
+    public sealed class ShapeIndexTarget(S2ShapeIndex index) : S2MaxDistanceShapeIndexTarget(index)
     {
-        public ShapeIndexTarget(S2ShapeIndex index) : base(index) { }
         public override int MaxBruteForceIndexSize =>
             // For BM_FindFurthestToSameSizeAbuttingIndex (which uses two nearby indexes
             // with similar edge counts), the break-even points are approximately 30,
@@ -214,17 +210,6 @@ public class S2FurthestEdgeQuery
         #endregion
     }
 
-    // Convenience constructor that calls Init().  Options may be specified here
-    // or changed at any time using the Options() accessor method.
-    //
-    // REQUIRES: "index" must persist for the lifetime of this object.
-    // REQUIRES: ReInit() must be called if "index" is modified.
-    public S2FurthestEdgeQuery(S2ShapeIndex index, Options? options = null)
-    {
-        Options_ = options ?? new Options();
-        base_ = new(index);
-    }
-
     // Reinitializes the query.  This method must be called whenever the
     // underlying S2ShapeIndex is modified.
     public void ReInit() => base_.ReInit();
@@ -233,7 +218,7 @@ public class S2FurthestEdgeQuery
     public S2ShapeIndex Index() => base_.Index;
 
     // Returns the query options.  Options can be modified between queries.
-    public Options Options_ { get; set; }
+    public Options Options_ { get; set; } = options ?? new Options();
 
     // Returns the furthest edges to the given target that satisfy the given
     // options.  This method may be called multiple times.
@@ -308,8 +293,8 @@ public class S2FurthestEdgeQuery
         // Assert.True(Marshal.SizeOf(typeof(Options)) <= 32); // Consider not copying Options here
         Options tmp_options = Options_;
         tmp_options.MaxResults = 1;
-        tmp_options.InclusiveMinDistance = (limit);
-        tmp_options.MaxError = (S1ChordAngle.Straight);
+        tmp_options.InclusiveMinDistance = limit;
+        tmp_options.MaxError = S1ChordAngle.Straight;
         return base_.FindClosestEdge(target, tmp_options).ShapeId >= 0;
     }
 
@@ -332,5 +317,5 @@ public class S2FurthestEdgeQuery
     public S2Shape.Edge GetEdge(Result result) =>
         Index().Shape(result.ShapeId).GetEdge(result.EdgeId);
 
-    private readonly Base base_;
+    private readonly Base base_ = new(index);
 }

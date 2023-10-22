@@ -155,8 +155,8 @@ public static partial class S2
             s = tan(S2Constants.M_PI_2 * s - S2Constants.M_PI_4);
             return s + (1.0 / (int64{1} << 53)) * s;
 #elif S2_QUADRATIC_PROJECTION
-        if (s >= 0.5) return (1 / 3.0) * (4 * s * s - 1);
-        else return (1 / 3.0) * (1 - 4 * (1 - s) * (1 - s));
+        if (s >= 0.5) return 1 / 3.0 * (4 * s * s - 1);
+        else return 1 / 3.0 * (1 - 4 * (1 - s) * (1 - s));
 #else
             throw new NotImplementedException("Unknown value for S2_PROJECTION");
 #endif
@@ -186,7 +186,7 @@ public static partial class S2
     public static double IJtoSTMin(int i)
     {
         MyDebug.Assert(i >= 0 && i <= S2.kLimitIJ);
-        return (1.0 / S2.kLimitIJ) * i;
+        return 1.0 / S2.kLimitIJ * i;
     }
 
     // Return the i- or j-index of the leaf cell containing the given
@@ -203,7 +203,7 @@ public static partial class S2
     public static double SiTitoST(uint si)
     {
         MyDebug.Assert(si <= S2.kMaxSiTi);
-        return (1.0 / S2.kMaxSiTi) * si;
+        return 1.0 / S2.kMaxSiTi * si;
     }
 
     // Return the si- or ti-coordinate that is nearest to the given s- or
@@ -420,9 +420,10 @@ public static partial class S2
     {
         MyDebug.Assert(face >= 0 && face <= 5);
         MyDebug.Assert(axis >= 0 && axis <= 2);
-        MyDebug.Assert(new[] { 0, 1 }.Contains(direction));
+        MyDebug.Assert(sourceArray.Contains(direction));
         return kFaceUVWFaces[face][axis][direction];
     }
+    private static readonly int[] sourceArray = [0, 1];
 
     #region Tables
 

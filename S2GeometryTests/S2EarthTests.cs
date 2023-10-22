@@ -80,8 +80,8 @@ public class S2EarthTests
     [Fact]
     internal void Test_S2EarthTest_TestGetInitialBearing()
     {
-        List<(string description, S2LatLng a, S2LatLng b, S1Angle bearing)> test_configs = new()
-        {
+        List<(string description, S2LatLng a, S2LatLng b, S1Angle bearing)> test_configs =
+        [
             ("Westward on equator", S2LatLng.FromDegrees(0, 50),
             S2LatLng.FromDegrees(0, 100), S1Angle.FromDegrees(90)),
             ("Eastward on equator", S2LatLng.FromDegrees(0, 50),
@@ -98,7 +98,7 @@ public class S2EarthTests
             S2LatLng.FromDegrees(35.6733227, 139.6403486), S1Angle.FromDegrees(29.2)),
             ("Japan to Spain", S2LatLng.FromDegrees(35.6733227, 139.6403486),
             S2LatLng.FromDegrees(40.4379332, -3.749576), S1Angle.FromDegrees(-27.2)),
-        };
+        ];
 
         foreach (var config in test_configs)
         {

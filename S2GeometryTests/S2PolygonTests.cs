@@ -72,7 +72,7 @@ public class S2PolygonTests
 
     private readonly ITestOutputHelper _logger;
 
-    private readonly TestCase[] test_cases = {
+    private readonly TestCase[] test_cases = [
         // Two triangles that share an edge.
         new("4:2, 3:1, 3:3;",
             "3:1, 2:2, 3:3;",
@@ -135,7 +135,7 @@ public class S2PolygonTests
             "10:44, 10:46, 12:46, 12:45.001774937, 12:44;",  // or
             "10:44, 10:46, 12:46, 12:45.001774937, 12:44;",  // minus
             "10:44, 10:46, 12:46, 12:45.001774937, 12:44;"),  // xor
-    };
+    ];
 
     // Some standard polygons to use in the tests.
     private readonly S2Polygon empty_;
@@ -197,7 +197,7 @@ public class S2PolygonTests
     private ModifyPolygonDelegate modify_polygon_hook_;
 
     private bool init_oriented_;
-    private readonly List<List<S2Point>> vloops_ = new();
+    private readonly List<List<S2Point>> vloops_ = [];
 
     #endregion
 
@@ -607,10 +607,9 @@ public class S2PolygonTests
         Assert.True(result.IsEmpty());
 
         // Repeat with the version of InitToIntersection that allows error reporting.
-        S2Error error;
         result = MakePolygon("0:0, 0:1, 1:0");
         Assert.True(result.InitToIntersection(a, b,
-            new IdentitySnapFunction(S1Angle.Zero), out error));
+            new IdentitySnapFunction(S1Angle.Zero), out _));
         Assert.True(result.IsEmpty());
     }
 
@@ -646,15 +645,15 @@ public class S2PolygonTests
     [Fact]
     internal void Test_S2Polygon_Bug1() {
         var a_vertices = new S2Point[][]{
-new []{
+[
   new S2Point(-0.10531193335759943, -0.80522214810955617, 0.58354664670985534),
   new S2Point(-0.10531194840431297, -0.80522215192439039, 0.58354663873039425),
   new S2Point(-0.10531192794033867, -0.80522217497559767, 0.58354661061568747),
   new S2Point(-0.10531191284235047, -0.80522217121852058, 0.58354661852470402)
-},
+],
 };
         var b_vertices = new S2Point[][]{
- new S2Point[]{
+ [
   new S2Point(-0.10531174240075937, -0.80522236320875284, 0.58354638436119843),
   new S2Point(-0.1053119128423491, -0.80522217121852213, 0.58354661852470235),
   new S2Point(-0.10531192039134209, -0.80522217309706012, 0.58354661457019508),  // A
@@ -663,7 +662,7 @@ new []{
   new S2Point(-0.10531192039151964, -0.80522217309710431, 0.58354661457010204),  // A
   new S2Point(-0.10531192794033779, -0.80522217497559878, 0.58354661061568636),
   new S2Point(-0.1053117575499668, -0.80522236690813498, 0.58354637652254981),
-},
+],
 };
         S2Polygon a = new(MakeLoops(a_vertices));
         S2Polygon b = new(MakeLoops(b_vertices));
@@ -677,22 +676,22 @@ new []{
 
     [Fact]
     internal void Test_S2Polygon_Bug2() {
-        S2Point[][] a_vertices = new S2Point[][]{
-new S2Point[]{
+        S2Point[][] a_vertices = [
+[
   new S2Point(-0.10618951389689163, -0.80546461394606728, 0.58305277875939732),
   new S2Point(-0.10618904764039243, -0.8054645437464607, 0.58305296065497536),
   new S2Point(-0.10618862643748632, -0.80546451917975415, 0.58305307130470341),
   new S2Point(-0.10617606798507535, -0.80544758470051458, 0.58307875187433833),
-},
-};
-        S2Point[][] b_vertices = {
-new S2Point[]{
+],
+];
+        S2Point[][] b_vertices = [
+[
   new S2Point(-0.10618668131028208, -0.80544613076731553, 0.58307882755616247),
   new S2Point(-0.10618910658843225, -0.80546454998744921, 0.58305294129732887),
   new S2Point(-0.10618904764039225, -0.80546454374646081, 0.58305296065497536),
   new S2Point(-0.10618898834264634, -0.80546453817003949, 0.58305297915823251),
-},
-};
+],
+];
         S2Polygon a = new(MakeLoops(a_vertices));
         S2Polygon b = new(MakeLoops(b_vertices));
         S2Polygon c = new();
@@ -706,7 +705,7 @@ new S2Point[]{
     [Fact]
     internal void Test_S2Polygon_Bug3() {
        var  a_vertices = new S2Point[][]{
-new S2Point[]{
+[
   new S2Point(-0.10703494861068318, -0.80542232562508131, 0.58295659972299307),
   new S2Point(-0.10703494998722708, -0.80542232255642865, 0.58295660370995028),
   new S2Point(-0.10703495367938694, -0.80542232008675829, 0.58295660644418046),
@@ -719,10 +718,10 @@ new S2Point[]{
   new S2Point(-0.10703495856059538, -0.80542233070590552, 0.58295659087636931),
   new S2Point(-0.10703495356051966, -0.80542233033018396, 0.58295659231352159),
   new S2Point(- 0.10703494991859903, -0.80542232847047324, 0.58295659555161061),
-},
+],
 };
-        S2Point[][] b_vertices = new S2Point[][]{
-new S2Point[]{
+        S2Point[][] b_vertices = [
+[
   new S2Point(-0.10703494861068762, -0.80542232562508098, 0.58295659972299274),
   new S2Point(-0.10703494998723152, -0.80542232255642832, 0.58295660370994995),
   new S2Point(-0.10703495367939138, -0.80542232008675796, 0.58295660644418013),
@@ -735,8 +734,8 @@ new S2Point[]{
   new S2Point(-0.10703495856059982, -0.80542233070590519, 0.58295659087636897),
   new S2Point(-0.1070349535605241, -0.80542233033018362, 0.58295659231352126),
   new S2Point(-0.10703494991860348, -0.8054223284704729, 0.58295659555161028),
-},
-};
+],
+];
         S2Polygon a = new(MakeLoops(a_vertices));
         S2Polygon b = new(MakeLoops(b_vertices));
         S2Polygon c = new();
@@ -750,7 +749,7 @@ new S2Point[]{
     [Fact]
     internal void Test_S2Polygon_Bug4() {
         var a_vertices = new S2Point[][]{
-new S2Point[]{
+[
   new S2Point(-0.10667065556339718, -0.80657502337947207, 0.58142764201754193),
   new S2Point(-0.10667064691895933, -0.80657502457251051, 0.58142764194845853),
   new S2Point(-0.10667064691930939, -0.80657502457246333, 0.58142764194845975),
@@ -760,22 +759,22 @@ new S2Point[]{
   new S2Point(-0.10667063827452879, -0.80657502576554818, 0.58142764187937435),
   new S2Point(-0.10667063169531328, -0.80657498170361974, 0.58142770421053058),
   new S2Point(- 0.10667064898418178, -0.8065749793175444, 0.58142770434869739),
-},
-new S2Point[]{
+],
+[
   new S2Point(-0.10667064691897719, -0.80657502457250896, 0.58142764194845697),
   new S2Point(-0.10667063827452879, -0.80657502576554818, 0.58142764187937435),
   new S2Point(-0.10667064691861985, -0.80657502457255736, 0.58142764194845586),
-},
+],
 };
         var b_vertices = new S2Point[][]{
-new S2Point[]{
+[
   new S2Point(-0.10667064691896312, -0.80657502457251107, 0.58142764194845697),
   new S2Point(-0.10667064691896297, -0.80657502457251007, 0.58142764194845853),
   new S2Point(-0.10667064033974753, -0.80657498051058207, 0.58142770427961399),
   new S2Point(-0.10667064076268165, -0.80657498045444342, 0.58142770427989865),
   new S2Point(-0.10667051785242875, -0.80657409963649807, 0.58142894872603923),
   new S2Point(-0.1066707756642685, -0.80657588679775971, 0.58142642222003538),
-},
+],
 };
         S2Polygon a = new(MakeLoops(a_vertices));
         S2Polygon b = new(MakeLoops(b_vertices));
@@ -789,18 +788,18 @@ new S2Point[]{
 
     [Fact]
     internal void Test_S2Polygon_Bug5() {
-        S2Point[][] a_vertices = new S2Point[][]{
-new S2Point[]{
+        S2Point[][] a_vertices = [
+[
   new S2Point(-0.10574444273627338, -0.80816264611829447, 0.57938868667714882),
   new S2Point(-0.10574444845633162, -0.80816268110163325, 0.57938863683652475),
   new S2Point(-0.10574444825833453, -0.80816268112970524, 0.57938863683350494),
   new S2Point(-0.10574444253827629, -0.80816264614636646, 0.57938868667412902),
   new S2Point(-0.10574408792844124, -0.80816047738475361, 0.57939177648757634),
   new S2Point(-0.10574408812643833, -0.80816047735668162, 0.57939177649059592),
-},
-};
-        S2Point[][] b_vertices = new S2Point[][]{
-new S2Point[]{
+],
+];
+        S2Point[][] b_vertices = [
+[
   new S2Point(-0.1057440881264381, -0.80816047735668017, 0.57939177649059825),
   new S2Point(-0.10574408802743954, -0.80816047737071606, 0.57939177648908835),
   new S2Point(-0.10574408812649677, -0.8081604773570521, 0.57939177649006868),
@@ -811,8 +810,8 @@ new S2Point[]{
   new S2Point(-0.1057440879283823, -0.80816047738438002, 0.57939177648810791),
   new S2Point(-0.10574407993470979, -0.80816042849578984, 0.57939184613891748),
   new S2Point(-0.10574408013270691, -0.80816042846771807, 0.57939184614193739),
-},
-};
+],
+];
         S2Polygon a = new(MakeLoops(a_vertices));
         S2Polygon b = new(MakeLoops(b_vertices));
         S2Polygon c = new();
@@ -825,8 +824,8 @@ new S2Point[]{
 
     [Fact]
     internal void Test_S2Polygon_Bug6() {
-        S2Point[][] a_vertices = new S2Point[][]{
-new S2Point[]{
+        S2Point[][] a_vertices = [
+[
   new S2Point(-0.10618849949725141, -0.80552159562437586, 0.58297423747304822),
   new S2Point(-0.10618849959636036, -0.80552159561106063, 0.58297423747339361),
   new S2Point(-0.10618849949722192, -0.80552159562415893, 0.5829742374733532),
@@ -837,18 +836,18 @@ new S2Point[]{
   new S2Point(-0.10618849969549882, -0.80552159559796233, 0.58297423747343424),
   new S2Point(-0.10618849959710704, -0.80552159561096182, 0.58297423747339394),
   new S2Point(-0.10618849949725161, -0.80552159562437742, 0.58297423747304589),
-},
-};
-        S2Point[][] b_vertices = new S2Point[][]{
-new S2Point[]{
+],
+];
+        S2Point[][] b_vertices = [
+[
   new S2Point(-0.10618856154870562, -0.80552206324314812, 0.58297358004005528),
   new S2Point(-0.10618849949722212, -0.80552159562416048, 0.58297423747335086),
   new S2Point(-0.10618849969549901, -0.80552159559796388, 0.58297423747343191),
   new S2Point(-0.10618856174698249, -0.8055220632169513, 0.58297358004013622),
   new S2Point(-0.10618857104277038, -0.80552213326985989, 0.58297348155149287),
   new S2Point(-0.10618857084449349, -0.80552213329605649, 0.58297348155141182),
-},
-};
+],
+];
         S2Polygon a = new(MakeLoops(a_vertices));
         S2Polygon b = new(MakeLoops(b_vertices));
         S2Polygon c = new ();
@@ -861,8 +860,8 @@ new S2Point[]{
 
     [Fact]
     internal void Test_S2Polygon_Bug7() {
-        S2Point[][] a_vertices = new S2Point[][]{
-new S2Point[]{
+        S2Point[][] a_vertices = [
+[
   new S2Point(-0.10651728339354898, -0.80806023027835039, 0.57938996589599123),
   new S2Point(-0.10651728368541774, -0.80806023024121265, 0.57938996589412783),
   new S2Point(-0.10651743884289547, -0.80806147782022508, 0.5793881973990701),
@@ -897,10 +896,10 @@ new S2Point[]{
   new S2Point(-0.10651678418140036, -0.80805634336988752, 0.57939547860450136),
   new S2Point(-0.10651680240261223, -0.80805648524178364, 0.57939527739240138),
   new S2Point(-0.10651680240261237, -0.80805648524178486, 0.57939527739239993),
-},
-};
-        S2Point[][] b_vertices = new S2Point[][]{
-new S2Point[]{
+],
+];
+        S2Point[][] b_vertices = [
+[
   new S2Point(-0.10651727337444802, -0.80806023111043901, 0.57938996657744879),
   new S2Point(-0.10651727440799089, -0.80806022882029649, 0.57938996958144073),
   new S2Point(-0.10651679374955145, -0.80805648637258243, 0.57939527740611751),
@@ -925,13 +924,13 @@ new S2Point[]{
   new S2Point(-0.10651728332499401, -0.80806023615590394, 0.5793899577113224),
   new S2Point(-0.10651727832462815, -0.80806023578450537, 0.57938995914858893),
   new S2Point(-0.10651727468247554, -0.80806023393773707, 0.57938996239381635),
-},
-new S2Point[]{
+],
+[
   new S2Point(-0.10651680240204828, -0.80805648524185858, 0.57939527739240082),
   new S2Point(-0.10651679861449742, -0.80805648573682254, 0.57939527739840524),
   new S2Point(-0.10651680240261419, -0.80805648524178353, 0.57939527739240138),
-},
-};
+],
+];
         S2Polygon a = new(MakeLoops(a_vertices));
         S2Polygon b = new(MakeLoops(b_vertices));
         S2Polygon c = new();
@@ -944,8 +943,8 @@ new S2Point[]{
 
     [Fact]
     internal void Test_S2Polygon_Bug8() {
-        S2Point[][] a_vertices = new S2Point[][]{
-new S2Point[]{
+        S2Point[][] a_vertices = [
+[
   new S2Point(-0.10703872198218529, -0.80846112144645677, 0.57873424566545062),
   new S2Point(-0.10703872122182066, -0.80846111957630917, 0.57873424841857957),
   new S2Point(-0.10703873813385757, -0.80846111582010538, 0.57873425053786276),
@@ -954,10 +953,10 @@ new S2Point[]{
   new S2Point(-0.1070387388942227, -0.80846111769025419, 0.57873424778473193),
   new S2Point(-0.10703919382477994, -0.80846223660916783, 0.57873260056976505),
   new S2Point(-0.10703917691274406, -0.80846224036537406, 0.57873259845047831),
-},
-};
-        S2Point[][] b_vertices = new S2Point[][]{
-new S2Point[]{
+],
+];
+        S2Point[][] b_vertices = [
+[
   new S2Point(-0.10703917691274355, -0.80846224036537273, 0.57873259845047997),
   new S2Point(-0.1070391853685064, -0.8084622384873289, 0.57873259951008804),
   new S2Point(-0.10703919381027188, -0.80846223657409677, 0.57873260062144094),
@@ -966,8 +965,8 @@ new S2Point[]{
   new S2Point(-0.10703919382478132, -0.80846223660917116, 0.57873260056976017),
   new S2Point(-0.10703957146434441, -0.80846316542623331, 0.57873123320737097),
   new S2Point(-0.10703955455230836, -0.8084631691824391, 0.57873123108808489),
-},
-};
+],
+];
         S2Polygon a = new(MakeLoops(a_vertices));
         S2Polygon b = new(MakeLoops(b_vertices));
         S2Polygon c = new();
@@ -977,22 +976,22 @@ new S2Point[]{
 
     [Fact]
     internal void Test_S2Polygon_Bug9() {
-        S2Point[][] a_vertices = new S2Point[][]{
-new S2Point[]{
+        S2Point[][] a_vertices = [
+[
   new S2Point(-0.10639937100501309, -0.80810205676564995, 0.57935329437301375),
   new S2Point(-0.10639937101137514, -0.80810205688156922, 0.57935329421015713),
   new S2Point(-0.10639937101137305, -0.80810205688156944, 0.57935329421015713),
   new S2Point(-0.106399371005011, -0.80810205676565017, 0.57935329437301375),
-},
-};
-        S2Point[][] b_vertices = new S2Point[][]{
-new S2Point[]{
+],
+];
+        S2Point[][] b_vertices = [
+[
   new S2Point(-0.10639937099530022, -0.8081020567669569, 0.57935329437297489),
   new S2Point(-0.10639937102108385, -0.80810205688026293, 0.5793532942101961),
   new S2Point(-0.10639937102108181, -0.80810205688026326, 0.5793532942101961),
   new S2Point(-0.10639937099529816, -0.80810205676695701, 0.57935329437297478),
-},
-};
+],
+];
         S2Polygon a = new(MakeLoops(a_vertices));
         S2Polygon b = new(MakeLoops(b_vertices));
         S2Polygon c = new();
@@ -1005,8 +1004,8 @@ new S2Point[]{
 
     [Fact]
     internal void Test_S2Polygon_Bug10() {
-        S2Point[][] a_vertices = new S2Point[][]{
-new S2Point[]{
+        S2Point[][] a_vertices = [
+[
   new S2Point(-0.10592889932808099, -0.80701394501854917, 0.58095400922339757),
   new S2Point(-0.10592787800899696, -0.8070140771413753, 0.58095401191158469),
   new S2Point(-0.1059270044681431, -0.80701419014619669, 0.58095401421031945),
@@ -1042,10 +1041,10 @@ new S2Point[]{
   new S2Point(-0.10592869784516552, -0.80701226393793402, 0.58095638117383475),
   new S2Point(-0.10592869415258396, -0.80701226639725276, 0.58095637843085768),
   new S2Point(-0.10592868991437976, -0.80701226741266929, 0.58095637779310561),
-},
-};
-        S2Point[][] b_vertices = new S2Point[][]{
-new S2Point[]{
+],
+];
+        S2Point[][] b_vertices = [
+[
   new S2Point(-0.10592564460843924, -0.80700972122716552, 0.58096046996257766),
   new S2Point(-0.10592539435053176, -0.80700975987840939, 0.58096046190138972),
   new S2Point(-0.10592547496472972, -0.80701045435596641, 0.58095948250602925),
@@ -1104,18 +1103,18 @@ new S2Point[]{
   new S2Point(-0.10592564496449927, -0.80700971099098684, 0.58096048411668999),
   new S2Point(-0.10592678502227458, -0.80700965660628099, 0.58096035179610783),
   new S2Point(-0.10592678388014524, -0.80700966687995779, 0.58096033773323019),
-},
-new S2Point[]{
+],
+[
   new S2Point(-0.10592585898876757, -0.80701428569270128, 0.58095409034224987),
   new S2Point(-0.10592585897888845, -0.80701428569390288, 0.58095409034238166),
   new S2Point(-0.1059258503266465, -0.80701428674547793, 0.58095409045919011),
-},
-new S2Point[]{
+],
+[
   new S2Point(-0.10592546626664477, -0.80701045545315664, 0.58095948256783148),
   new S2Point(-0.10592546623958927, -0.8070104554564449, 0.58095948256819674),
   new S2Point(-0.10592546626662946, -0.80701045545303429, 0.580959482568004),
-},
-};
+],
+];
         S2Polygon a = new(MakeLoops(a_vertices));
         S2Polygon b = new(MakeLoops(b_vertices));
         S2Polygon c = new();
@@ -1125,13 +1124,13 @@ new S2Point[]{
 
     [Fact]
     internal void Test_S2Polygon_Bug11() {
-        S2Point[][] a_vertices = new S2Point[][]{
-new S2Point[]{
+        S2Point[][] a_vertices = [
+[
   new S2Point(-0.10727349803435572, -0.80875763107088172, 0.57827631008375979),
   new S2Point(-0.10727349807040805, -0.80875763112192245, 0.57827631000568813),
   new S2Point(-0.10727349807040625, -0.80875763112192278, 0.57827631000568813),
-},
-new S2Point[]{
+],
+[
   new S2Point(-0.1072729603486537, -0.80875606054879057, 0.57827860629945249),
   new S2Point(-0.10727299870478688, -0.80875633377729705, 0.57827821705818028),
   new S2Point(-0.10727299875560981, -0.80875633413933223, 0.57827821654242495),
@@ -1153,10 +1152,10 @@ new S2Point[]{
   new S2Point(-0.10727296023340849, -0.8087560604477102, 0.57827860646219797),
   new S2Point(-0.10727348576547496, -0.80875598914629976, 0.57827860869282954),
   new S2Point(-0.1072734857817042, -0.80875598926081438, 0.57827860852966395),
-},
-};
-        S2Point[][] b_vertices = new S2Point[][]{
-new S2Point[]{
+],
+];
+        S2Point[][] b_vertices = [
+[
   new S2Point(-0.1072734857735896, -0.80875598920355718, 0.5782786086112468),
   new S2Point(-0.10727348576547457, -0.80875598914629976, 0.57827860869282954),
   new S2Point(-0.10727839137361543, -0.80875532356817348, 0.57827862950694298),
@@ -1184,8 +1183,8 @@ new S2Point[]{
   new S2Point(-0.10727299865651231, -0.80875633415273218, 0.57827821654206735),
   new S2Point(-0.10727299860568951, -0.80875633379069789, 0.57827821705782179),
   new S2Point(-0.10727296024152314, -0.80875606050496718, 0.57827860638061501),
-},
-};
+],
+];
         S2Polygon a = new(MakeLoops(a_vertices));
         S2Polygon b = new(MakeLoops(b_vertices));
         S2Polygon c = new();
@@ -1198,22 +1197,22 @@ new S2Point[]{
 
     [Fact]
     internal void Test_S2Polygon_Bug12() {
-        S2Point[][] a_vertices = new S2Point[][]{
-new S2Point[]{
+        S2Point[][] a_vertices = [
+[
   new S2Point(-0.10772916872905106, -0.80699542608967267, 0.58064861015531188),
   new S2Point(-0.10772916892726483, -0.80699542606300401, 0.58064861015560143),
   new S2Point(-0.10772916892726613, -0.80699542606301333, 0.58064861015558844),
   new S2Point(-0.10772916872905235, -0.806995426089682, 0.58064861015529889),
-},
-};
-        S2Point[][] b_vertices = new S2Point[][]{
-new S2Point[]{
+],
+];
+        S2Point[][] b_vertices = [
+[
   new S2Point(-0.10772916872905348, -0.80699542608969022, 0.58064861015528724),
   new S2Point(-0.10772916892726496, -0.80699542606300489, 0.58064861015559999),
   new S2Point(-0.10772930108168739, -0.80699639165138115, 0.58064724364290399),
   new S2Point(-0.10772930088347589, -0.80699639167806647, 0.58064724364259113),
-},
-};
+],
+];
         S2Polygon a = new(MakeLoops(a_vertices));
         S2Polygon b = new(MakeLoops(b_vertices));
         S2Polygon c = new();
@@ -1354,16 +1353,16 @@ new S2Point[]{
 
     [Fact]
     internal void Test_S2Polygon_UnionWithAmbgiuousCrossings() {
-        S2Point[] a_vertices = {
+        S2Point[] a_vertices = [
 new S2Point(0.044856812877680216, -0.80679210859571904, 0.5891301722422051),
 new S2Point(0.044851868273159699, -0.80679240802900054, 0.5891301386444033),
 new S2Point(0.044854246527738666, -0.80679240292188514, 0.58912996457145106)
-};
-        S2Point[] b_vertices = {
+];
+        S2Point[] b_vertices = [
 new S2Point(0.044849715793028468, -0.80679253837178111, 0.58913012401412856),
 new S2Point(0.044855344598821352, -0.80679219751320641, 0.589130162266992),
 new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
-};
+];
         S2Polygon a = new(new S2Loop(a_vertices));
         S2Polygon b = new(new S2Loop(b_vertices));
         S2Polygon c = new();
@@ -1499,9 +1498,9 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
 
     [Fact]
     internal void Test_S2Polygon_InitSingleLoop() {
-        S2Polygon polygon = new(S2Loop.kEmpty);
+        S2Polygon polygon = new(S2Loop.KEmpty);
         Assert.True(polygon.IsEmpty());
-        polygon = new S2Polygon(S2Loop.kFull);
+        polygon = new S2Polygon(S2Loop.KFull);
         Assert.True(polygon.IsFull());
         polygon = new S2Polygon(MakeLoopOrDie("0:0, 0:10, 10:0"));
         Assert.Equal(3, polygon.NumVertices);
@@ -1762,7 +1761,7 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
     internal void Test_IsValidTest_EmptyLoop() {
         for (int iter = 0; iter < kIters; ++iter) {
             AddConcentricLoops(S2Testing.Random.Uniform(5), 3 /*min_vertices*/);
-            AddLoop(S2Loop.kEmpty.Vertices);
+            AddLoop(S2Loop.KEmpty.Vertices);
             CheckInvalid("empty loop");
         }
     }
@@ -1772,7 +1771,7 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
         for (int iter = 0; iter < kIters; ++iter) {
             // This is only an error if there is at least one other loop.
             AddConcentricLoops(1 + S2Testing.Random.Uniform(5), 3 /*min_vertices*/);
-            AddLoop(S2Loop.kFull.Vertices);
+            AddLoop(S2Loop.KFull.Vertices);
             CheckInvalid("full loop");
         }
     }
@@ -1985,7 +1984,7 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
     [Fact]
     internal void Test_InitToSimplifiedInCell_PointsOnCellBoundaryKept() {
         S2Cell cell = new(S2CellId.FromToken("89c25c"));
-        var polygon = MakeCellPolygon(cell, new[]{ "0.1:0, 0.2:0, 0.2:0.5"});
+        var polygon = MakeCellPolygon(cell, ["0.1:0, 0.2:0, 0.2:0.5"]);
         S1Angle tolerance = new S1Angle(polygon.Loop(0).Vertex(0), polygon.Loop(0).Vertex(1)) * 1.1;
         S2Polygon simplified = new();
         simplified.InitToSimplified(polygon, new IdentitySnapFunction(tolerance));
@@ -2002,7 +2001,7 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
         S2CellId cell_id = S2CellId.FromToken("89c25c");
         S2Cell cell = new(cell_id);
         var polygon = MakeCellPolygon(
-            cell, new[]{ "0.3:0, 0.4:0, 0.4:0.5, 0.4:0.8, 0.2:0.8"});
+            cell, ["0.3:0, 0.4:0, 0.4:0.5, 0.4:0.8, 0.2:0.8"]);
         S1Angle tolerance = new S1Angle(polygon.Loop(0).Vertex(0), polygon.Loop(0).Vertex(1)) * 1.1;
         S2Polygon simplified = new();
         simplified.InitToSimplifiedInCell(polygon, cell, tolerance);
@@ -2014,7 +2013,7 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
     [Fact]
     internal void Test_InitToSimplifiedInCell_CellCornerKept() {
         S2Cell cell = new(S2CellId.FromToken("00001"));
-        var input = MakeCellPolygon(cell, new[]{ "1:0, 1:0.05, 0.99:0"});
+        var input = MakeCellPolygon(cell, ["1:0, 1:0.05, 0.99:0"]);
         S1Angle tolerance = 0.02 * new S1Angle(cell.Vertex(0), cell.Vertex(1));
         S2Polygon simplified = new();
         simplified.InitToSimplifiedInCell(input, cell, tolerance);
@@ -2024,7 +2023,7 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
     [Fact]
     internal void Test_InitToSimplifiedInCell_NarrowStripRemoved() {
         S2Cell cell = new(S2CellId.FromToken("00001"));
-        var input = MakeCellPolygon(cell, new[]{ "0.9:0, 0.91:0, 0.91:1, 0.9:1"});
+        var input = MakeCellPolygon(cell, ["0.9:0, 0.91:0, 0.91:1, 0.9:1"]);
         S1Angle tolerance = 0.02 * new S1Angle(cell.Vertex(0), cell.Vertex(1));
         S2Polygon simplified = new();
         simplified.InitToSimplifiedInCell(input, cell, tolerance);
@@ -2035,8 +2034,8 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
     internal void Test_InitToSimplifiedInCell_NarrowGapRemoved() {
         S2Cell cell = new(S2CellId.FromToken("00001"));
         var input = MakeCellPolygon(
-            cell, new[] { "0.7:0, 0.75:0, 0.75:1, 0.7:1", "0.76:0, 0.8:0, 0.8:1, 0.76:1"});
-        var expected = MakeCellPolygon(cell, new[] { "0.7:0, 0.8:0, 0.8:1, 0.7:1"});
+            cell, ["0.7:0, 0.75:0, 0.75:1, 0.7:1", "0.76:0, 0.8:0, 0.8:1, 0.76:1"]);
+        var expected = MakeCellPolygon(cell, ["0.7:0, 0.8:0, 0.8:1, 0.7:1"]);
         S1Angle tolerance = 0.02 * new S1Angle(cell.Vertex(0), cell.Vertex(1));
         S2Polygon simplified = new();
         simplified.InitToSimplifiedInCell(input, cell, tolerance);
@@ -2047,7 +2046,7 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
     internal void Test_InitToSimplifiedInCell_CloselySpacedEdgeVerticesKept() {
         S2Cell cell = new(S2CellId.FromToken("00001"));
         var input = MakeCellPolygon(
-            cell, new[]{ "0:0.303, 0:0.302, 0:0.301, 0:0.3, 0.1:0.3, 0.1:0.4"});
+            cell, ["0:0.303, 0:0.302, 0:0.301, 0:0.3, 0.1:0.3, 0.1:0.4"]);
         S1Angle tolerance = 0.02 * new S1Angle(cell.Vertex(0), cell.Vertex(1));
         S2Polygon simplified = new();
         simplified.InitToSimplifiedInCell(input, cell, tolerance);
@@ -2509,8 +2508,8 @@ for (int i = 0; i < 100000; ++i) {
     private void PolylineIntersectionSharedEdgeTest(S2Polygon p, int start_vertex, int direction)
     {
         _logger.WriteLine($@"Polyline intersection shared edge test start={start_vertex} direction=direction");
-        S2Point[] points = {p.Loop(0).Vertex(start_vertex),
-                        p.Loop(0).Vertex(start_vertex + direction)};
+        S2Point[] points = [p.Loop(0).Vertex(start_vertex),
+                        p.Loop(0).Vertex(start_vertex + direction)];
         S2Polyline polyline = new(points);
         if (direction < 0)
         {
@@ -2603,9 +2602,9 @@ for (int i = 0; i < 100000; ++i) {
 
             // Now choose a level that has up to 500 cells in the covering.
             int level = min_level + S2Testing.Random.Uniform(debug ? 4 : 6);
-            coverer.Options_.MinLevel = (min_level);
-            coverer.Options_.MaxLevel = (level);
-            coverer.Options_.MaxCells = (500);
+            coverer.Options_.MinLevel = min_level;
+            coverer.Options_.MaxLevel = level;
+            coverer.Options_.MaxCells = 500;
 
             coverer.GetCovering(polygon, out var cells);
             var covering = new S2CellUnion(cells);
@@ -2696,11 +2695,11 @@ for (int i = 0; i < 100000; ++i) {
         int i = S2Testing.Random.Uniform(polygon.NumLoops());
         if (i == 0 || S2Testing.Random.OneIn(3))
         {
-            polygon.Loop(i).Depth = (-1);
+            polygon.Loop(i).Depth = -1;
         }
         else
         {
-            polygon.Loop(i).Depth = (polygon.Loop(i - 1).Depth + 2);
+            polygon.Loop(i).Depth = polygon.Loop(i - 1).Depth + 2;
         }
     }
 
@@ -2940,7 +2939,7 @@ for (int i = 0; i < 100000; ++i) {
 
     private void AddLoop(S2Point[]points)
     {
-        vloops_.Add(points.ToList());
+        vloops_.Add([.. points]);
     }
 
     // Create "num_loops" nested regular loops around a common center point.

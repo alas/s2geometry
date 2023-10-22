@@ -188,7 +188,7 @@ public class SnappedWindingDelta
 
         // First we group all the incident edges by input edge id, to handle the
         // problem that input edges can map to either one or two snapped edges.
-        Dictionary<InputEdgeId, EdgeSnap> input_id_edge_map = new();
+        Dictionary<InputEdgeId, EdgeSnap> input_id_edge_map = [];
         foreach (EdgeId e in incident_edges)
         {
             var edge = g.GetEdge(e);
@@ -204,7 +204,7 @@ public class SnappedWindingDelta
         // Now we regroup the edges according to the reference vertex of the
         // corresponding input edge.  This makes it easier to assemble these edges
         // into (portions of) input edge loops.
-        InputVertexEdgeMap input_vertex_edge_map = new();
+        InputVertexEdgeMap input_vertex_edge_map = [];
         foreach (var entry in input_id_edge_map)
         {
             var snap = entry.Value;
@@ -237,9 +237,9 @@ public class SnappedWindingDelta
         // Any changes to this code should be validated by running the RandomLoops
         // unit test with at least 10 million iterations.
         int winding_delta = 0;
-        while (input_vertex_edge_map.Any())
+        while (input_vertex_edge_map.Count!=0)
         {
-            List<S2Point> chain_in = new(), chain_out = new();
+            List<S2Point> chain_in = [], chain_out = [];
             if (!BuildChain(ref_v, g, input_vertex_edge_map,
                             chain_in, chain_out, out error))
             {
@@ -351,15 +351,15 @@ public class SnappedWindingDelta
                 // Compute the change in winding number for reference vertex Zb.  Note
                 // that we must duplicate the first/last vertex of the loop since the
                 // argument to GetEdgeWindingDelta() is a polyline.
-                List<S2Point> chain_z = new()
-                {
+                List<S2Point> chain_z =
+                [
                     chain_out[0],
                     chain_out[1],
                     chain_in[1],
                     chain_in[0],
                     a0_connector,
                     chain_out[0]
-                };
+                ];
                 winding_delta += GetEdgeWindingDelta(za, zb, chain_z);
 
                 // Compute the change in winding number of ZbR due to snapping C to C'.
@@ -391,7 +391,7 @@ public class SnappedWindingDelta
     // use Graph::VertexOutMap and Graph::VertexInMap instead.
     private static List<EdgeId> GetIncidentEdgesBruteForce(VertexId v, Graph g)
     {
-        List<EdgeId> result = new();
+        List<EdgeId> result = [];
         for (EdgeId e = 0; e < g.NumEdges; ++e)
         {
             if (g.GetEdge(e).ShapeId == v || g.GetEdge(e).EdgeId == v)
@@ -407,8 +407,8 @@ public class SnappedWindingDelta
         List<S2Point> chain_in, List<S2Point> chain_out, out S2Error error)
     {
         error = S2Error.OK;
-        MyDebug.Assert(!chain_in.Any());
-        MyDebug.Assert(!chain_out.Any());
+        MyDebug.Assert(chain_in.Count==0);
+        MyDebug.Assert(chain_out.Count==0);
 
         // First look for an incoming edge to the reference vertex.  (This will be
         // the start of a chain that eventually leads to an outgoing edge.)
@@ -517,7 +517,7 @@ public class SnappedWindingDelta
         // more efficiently if duplicate edges are not being merged and the mapping
         // returned by Graph::GetInputEdgeOrder() is available.  The algorithm would
         // also be much simpler if input_edge_id were known to be degenerate.
-        Dictionary<VertexId, int> excess_degree_map = new();
+        Dictionary<VertexId, int> excess_degree_map = [];
         for (EdgeId e = 0; e < g.NumEdges; ++e)
         {
             var id_set = g.InputEdgeIds(e);
@@ -532,7 +532,7 @@ public class SnappedWindingDelta
                 }
             }
         }
-        if (!excess_degree_map.Any()) return -1;  // Does not exist.
+        if (excess_degree_map.Count==0) return -1;  // Does not exist.
 
         // Look for the (unique) vertex whose excess degree is +1.
         foreach (var entry in excess_degree_map)
@@ -550,18 +550,11 @@ public class SnappedWindingDelta
     //
     // If v_in >= 0, an incoming edge to the reference vertex is present.
     // If v_out >= 0, an outgoing edge from the reference vertex is present.
-    public struct EdgeSnap
+    public struct EdgeSnap(S2Shape.Edge input, int v_in = -1, int v_out = -1)
     {
-        public S2Shape.Edge input;
-        public VertexId v_in;
-        public VertexId v_out;
-
-        public EdgeSnap(S2Shape.Edge input, int v_in = -1, int v_out = -1)
-        {
-            this.input = input;
-            this.v_in = v_in;
-            this.v_out = v_out;
-        }
+        public S2Shape.Edge input = input;
+        public VertexId v_in = v_in;
+        public VertexId v_out = v_out;
     }
 
     public readonly record struct InputVertexEdge(S2Point Point, EdgeSnap EdgeSnap)

@@ -136,7 +136,7 @@
 
 namespace S2Geometry;
 
-public class S2RegionTermIndexer
+public class S2RegionTermIndexer(S2RegionTermIndexer.Options options)
 {
     // The following parameters control the tradeoffs between index size, query
     // size, and accuracy (see s2region_coverer.h for details).
@@ -264,11 +264,8 @@ public class S2RegionTermIndexer
         private string marker_ = new('$', 1);
     }
 
-    // Constructs an S2RegionTermIndexer with the given options.
-    public S2RegionTermIndexer(Options options) => Options_ = options;
-
     // Returns the current options.  Options can be modifed between calls.
-    public Options Options_ { get; set; }
+    public Options Options_ { get; set; } = options;
 
     // Converts the given region into a set of terms for indexing.  Terms
     // consist of lowercase letters, numbers, '$', and an optional prefix.

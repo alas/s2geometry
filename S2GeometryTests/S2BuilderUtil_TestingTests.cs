@@ -20,14 +20,14 @@ public class S2BuilderUtil_TestingTests
         Assert.True(builder.Build(out _));
         Graph g = gc.Graph();
         Assert.True(graph_options == g.Options);
-        Assert.Equal(new List<S2Point> { v0, v1 }, g.Vertices);
-        Assert.Equal(new List<Edge> { new Edge(0, 1) }, g.Edges);
+        Assert.Equal([v0, v1], g.Vertices);
+        Assert.Equal([new Edge(0, 1)], g.Edges);
         Assert.Single(g.InputEdgeIds(0));
         Assert.Equal(0, g.InputEdgeIds(0).First());
         Graph.LabelFetcher fetcher = new(g, g.Options.EdgeType_);
-        List<int> labels = new();
+        List<int> labels = [];
         fetcher.Fetch(0, labels);
-        Assert.Equal(new List<int> { 14 }, labels);
+        Assert.Equal([14], labels);
         // S2Builder sets a default IsFullPolygonPredicate that returns an error.
         Assert.True(g.IsFullPolygonPredicate() is not null);
     }
@@ -35,8 +35,8 @@ public class S2BuilderUtil_TestingTests
     [Fact]
     internal void Test_GraphAppendingLayer_AppendsTwoGraphs()
     {
-        List<Graph> graphs = new();
-        List<GraphClone> clones = new();
+        List<Graph> graphs = [];
+        List<GraphClone> clones = [];
         S2Builder builder = new(new Options());
         builder.StartLayer(new GraphAppendingLayer(
             new GraphOptions(), graphs, clones));
@@ -71,8 +71,8 @@ public class S2BuilderUtil_TestingTests
             {
                 if (dim < 0 || shape.Dimension() == dim) builder.AddShape(shape);
             }
-            S2Error error;
-            Assert.True(builder.Build(out error));
+
+            Assert.True(builder.Build(out _));
         }
     }
 
@@ -90,8 +90,7 @@ public class S2BuilderUtil_TestingTests
         builder.StartLayer(new IndexMatchingLayer(graph_options,
                                                            expected));
         foreach (var shape in actual) builder.AddShape(shape);
-        S2Error error;
-        Assert.False(builder.Build(out error));
+        Assert.False(builder.Build(out S2Error error));
         Assert.False(error.IsOk());
         Assert.Equal(error.Text,
                   "Missing edges: 3:4, 3:3; 3:3, 3:4; 1:1, 2:2; 0:0, 0:0 "+          

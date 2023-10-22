@@ -35,14 +35,14 @@ public class S2BuilderUtil_S2PolygonLayerTests
     [Fact]
     internal void Test_S2PolygonLayer_PartialLoop()
     {
-        TestS2PolygonError(new[] { "0:1, 2:3, 4:5" },
+        TestS2PolygonError(["0:1, 2:3, 4:5"],
                            S2ErrorCode.BUILDER_EDGES_DO_NOT_FORM_LOOPS);
     }
 
     [Fact]
     internal void Test_S2PolygonLayer_InvalidPolygon()
     {
-        TestS2PolygonError(new[] { "0:0, 0:10, 10:0, 10:10, 0:0" },
+        TestS2PolygonError(["0:0, 0:10, 10:0, 10:10, 0:0"],
                            S2ErrorCode.LOOP_SELF_INTERSECTION);
     }
 
@@ -54,8 +54,10 @@ public class S2BuilderUtil_S2PolygonLayerTests
         // duplicate edges as an error.
         S2Builder builder = new(new Options());
         S2Polygon output = new();
-        S2PolygonLayer.Options options = new();
-        options.Validate = (true);
+        S2PolygonLayer.Options options = new()
+        {
+            Validate = true
+        };
         builder.StartLayer(new S2PolygonLayer(output, options));
         builder.AddPolyline(MakePolylineOrDie(
             "0:0, 0:2, 2:2, 1:1, 0:2, 2:2, 2:0, 0:0"));
@@ -63,7 +65,7 @@ public class S2BuilderUtil_S2PolygonLayerTests
         Assert.Equal(S2ErrorCode.POLYGON_LOOPS_SHARE_EDGE, error.Code);
         Assert.Equal(2, output.NumLoops());
         S2Loop loop0 = MakeLoopOrDie("0:0, 0:2, 2:2, 2:0");
-        S2Loop loop1 = (MakeLoopOrDie("0:2, 2:2, 1:1"));
+        S2Loop loop1 = MakeLoopOrDie("0:2, 2:2, 1:1");
         Assert.True(loop0 == output.Loop(0));
         Assert.True(loop1 == output.Loop(1));
     }
@@ -86,13 +88,12 @@ public class S2BuilderUtil_S2PolygonLayerTests
         // Tests the situation where labels are requested but none were provided.
         S2Builder builder=new(new S2Builder.Options());
         S2Polygon output=new();
-        LabelSetIds label_set_ids=new();
+        LabelSetIds label_set_ids=[];
         IdSetLexicon label_set_lexicon=new();
         builder.StartLayer(new S2PolygonLayer(
             output, label_set_ids, label_set_lexicon));
         builder.AddPolyline(MakePolylineOrDie("0:0, 0:1, 1:0, 0:0"));
-        S2Error error;
-        Assert.True(builder.Build(out error));
+        Assert.True(builder.Build(out S2Error error));
         Assert.Equal(label_set_ids.Count, 1);     // One loop.
         Assert.Equal(label_set_ids[0].Count, 3);  // Three edges.
         foreach (var label_set_id in label_set_ids[0])
@@ -105,10 +106,10 @@ public class S2BuilderUtil_S2PolygonLayerTests
     internal void Test_S2PolygonLayer_ThreeLoopsIntoOne()
     {
         // Three loops (two shells and one hole) that combine into one.
-        TestS2Polygon(new[]{
+        TestS2Polygon([
             "10:0, 0:0, 0:10, 5:10, 10:10, 10:5",
             "0:10, 0:15, 5:15, 5:10",
-            "10:10, 5:10, 5:5, 10:5"},
+            "10:10, 5:10, 5:5, 10:5"],
             "10:5, 10:0, 0:0, 0:10, 0:15, 5:15, 5:10, 5:5");
     }
 
@@ -118,11 +119,11 @@ public class S2BuilderUtil_S2PolygonLayerTests
         // A big CCW triangle containing 3 CW triangular holes.  The whole thing
         // looks like a pyramid of nine triangles.  The output consists of 6
         // positive triangles with no holes.
-        TestS2Polygon(new[]{
+        TestS2Polygon([
   "0:0, 0:2, 0:4, 0:6, 1:5, 2:4, 3:3, 2:2, 1:1",
    "0:2, 1:1, 1:3",
    "0:4, 1:3, 1:5",
-   "1:3, 2:2, 2:4"},
+   "1:3, 2:2, 2:4"],
             "0:4, 0:6, 1:5; 2:4, 3:3, 2:2; 2:2, 1:1, 1:3; " +
             "1:1, 0:0, 0:2; 1:3, 0:2, 0:4; 1:3, 1:5, 2:4");
     }
@@ -166,11 +167,11 @@ public class S2BuilderUtil_S2PolygonLayerTests
         // vertices with the diamond inside it and shares its other two vertices
         // with the diamond that contains it.  The resulting shape looks vaguely
         // like an eye made out of chevrons.
-        TestS2Polygon(new[]{
+        TestS2Polygon([
   "0:10, -10:0, 0:-10, 10:0",
    "0:-20, -10:0, 0:20, 10:0",
    "0:-10, -5:0, 0:10, 5:0",
-   "0:5, -5:0, 0:-5, 5:0"},
+   "0:5, -5:0, 0:-5, 5:0"],
             "10:0, 0:10, -10:0, 0:20; " +
             "0:-20, -10:0, 0:-10, 10:0; " +
             "5:0, 0:-10, -5:0, 0:-5; " +
@@ -195,7 +196,7 @@ public class S2BuilderUtil_S2PolygonLayerTests
     internal void Test_IndexedS2PolygonLayer_AddsShape()
     {
         S2Builder builder = new(new Options());
-        MutableS2ShapeIndex index = new();
+        MutableS2ShapeIndex index = [];
         builder.StartLayer(new IndexedS2PolygonLayer(index));
         string polygon_str = "0:0, 0:10, 10:0";
         builder.AddPolygon(MakePolygonOrDie(polygon_str));
@@ -209,7 +210,7 @@ public class S2BuilderUtil_S2PolygonLayerTests
     internal void Test_IndexedS2PolygonLayer_IgnoresEmptyShape()
     {
         S2Builder builder = new(new Options());
-        MutableS2ShapeIndex index = new();
+        MutableS2ShapeIndex index = [];
         builder.StartLayer(new IndexedS2PolygonLayer(index));
         Assert.True(builder.Build(out var error));
         Assert.Equal(0, index.NumShapeIds());
@@ -228,7 +229,7 @@ public class S2BuilderUtil_S2PolygonLayerTests
             builder.AddPolygon(MakeVerbatimPolygonOrDie(input_str));
         }
         builder.AddIsFullPolygonPredicate(IsFullPolygon(is_full));
-        Assert.True(builder.Build(out var error));
+        Assert.True(builder.Build(out _));
         // The input strings in tests may not be in normalized form, so we build an
         // S2Polygon and convert it back to a string.
         S2Polygon expected = MakePolygonOrDie(expected_str);
@@ -244,7 +245,7 @@ public class S2BuilderUtil_S2PolygonLayerTests
 
     private static void TestS2PolygonUnchanged(string input_str)
     {
-        TestS2Polygon(new[] { input_str }, input_str);
+        TestS2Polygon([input_str], input_str);
     }
 
     // Unlike the methods above, the input consists of a set of *polylines*.
@@ -252,8 +253,10 @@ public class S2BuilderUtil_S2PolygonLayerTests
     {
         S2Builder builder = new(new Options());
         S2Polygon output = new();
-        S2PolygonLayer.Options options = new(edge_type);
-        options.Validate = (true);
+        S2PolygonLayer.Options options = new(edge_type)
+        {
+            Validate = true
+        };
         builder.StartLayer(new S2PolygonLayer(output, options));
         foreach (var input_str in input_strs)
         {
@@ -289,7 +292,7 @@ public class S2BuilderUtil_S2PolygonLayerTests
     {
         S2Builder builder = new(new Options());
         S2Polygon output = new();
-        List<LabelSet> label_set_ids = new();
+        List<LabelSet> label_set_ids = [];
         IdSetLexicon label_set_lexicon = new();
         builder.StartLayer(new S2PolygonLayer(
             output, label_set_ids, label_set_lexicon,
@@ -297,12 +300,12 @@ public class S2BuilderUtil_S2PolygonLayerTests
 
         // We use a polygon consisting of 3 loops.  The loops are reordered and
         // some of the loops are inverted during S2Polygon construction.
-        EdgeLabelMap edge_label_map = new();
+        EdgeLabelMap edge_label_map = [];
         AddPolylineWithLabels(MakePolylineOrDie(
             "0:0, 9:1, 1:9, 0:0, 2:8, 8:2, 0:0, 0:10, 10:10, 10:0, 0:0"),
             edge_type, 0, builder, edge_label_map);
         Assert.True(builder.Build(out var error));
-        int[] expected_loop_sizes = { 4, 3, 3 };
+        int[] expected_loop_sizes = [4, 3, 3];
         Assert.Equal(expected_loop_sizes.Length, label_set_ids.Count);
         for (int i = 0; i < expected_loop_sizes.Length; ++i)
         {

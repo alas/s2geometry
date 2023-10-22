@@ -19,7 +19,7 @@ public class S2ShapeIndexBufferedRegionTests
     {
         // As above, but with Init().  This is mainly to prevent Init() from being
         // detected as dead code.
-        MutableS2ShapeIndex index=new();
+        MutableS2ShapeIndex index=[];
         S1ChordAngle radius=new(S1Angle.FromDegrees(2));
         S2ShapeIndexBufferedRegion region=new(index, radius);
         S2RegionCoverer coverer=new();
@@ -106,7 +106,7 @@ public class S2ShapeIndexBufferedRegionTests
     {
         // Test buffering a polyline.
         S2RegionCoverer coverer = new();
-        coverer.Options_.MaxCells = (100);
+        coverer.Options_.MaxCells = 100;
         TestBufferIndex("# 10:5, 20:30, -10:60, -60:100 #",
                         S1Angle.FromDegrees(2), coverer);
     }
@@ -116,7 +116,7 @@ public class S2ShapeIndexBufferedRegionTests
     {
         // Test buffering a polygon with a hole.
         S2RegionCoverer coverer = new();
-        coverer.Options_.MaxCells = (100);
+        coverer.Options_.MaxCells = 100;
         TestBufferIndex("# # 10:10, 10:100, 70:0; 11:11, 69:0, 11:99",
                         S1Angle.FromDegrees(2), coverer);
     }
@@ -146,8 +146,7 @@ public class S2ShapeIndexBufferedRegionTests
         // Compute an S2Polygon representing the union of the cells in the covering.
         S2Polygon covering_polygon = new();
         covering_polygon.InitToCellUnionBorder(covering);
-        MutableS2ShapeIndex covering_index = new();
-        covering_index.Add(new S2Polygon.Shape(covering_polygon));
+        MutableS2ShapeIndex covering_index = [new S2Polygon.Shape(covering_polygon)];
 
         // (a) Check that the covering contains the original index.
         Assert.True(S2BooleanOperation.Contains(covering_index, index));
@@ -155,7 +154,7 @@ public class S2ShapeIndexBufferedRegionTests
         // (b) Check that the distance between the boundary of the covering and the
         // the original indexed geometry is at least "radius".
         S2ClosestEdgeQuery query = new(covering_index);
-        query.Options_.IncludeInteriors = (false);
+        query.Options_.IncludeInteriors = false;
         var target = new S2ClosestEdgeQuery.ShapeIndexTarget(index);
         Assert.False(query.IsDistanceLess(target, radius));
     }

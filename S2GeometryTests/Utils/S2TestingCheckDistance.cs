@@ -51,11 +51,11 @@ internal static class S2TestingCheckDistance<Id, Distance> where Distance : IEqu
                 limit = max_distance - max_pruning_error;
             }
         }
-        else if (x.Any())
+        else if (x.Count!=0)
         {
             // Result set X contains only the closest "max_size" items, to within a
             // tolerance of "max_error + max_pruning_error".
-            limit = (x.Last().Item1 - max_error) - max_pruning_error;
+            limit = x.Last().Item1 - max_error - max_pruning_error;
         }
 
         bool result = true;

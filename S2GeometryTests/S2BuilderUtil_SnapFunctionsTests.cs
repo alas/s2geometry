@@ -7,13 +7,11 @@
 
 namespace S2Geometry;
 
-public class S2BuilderUtil_SnapFunctionsTests
+public class S2BuilderUtil_SnapFunctionsTests(ITestOutputHelper logger)
 {
     private static readonly S2CellId kSearchRootId = S2CellId.FromFace(0);
     private static readonly S2CellId kSearchFocusId = S2CellId.FromFace(0).Child(3);
-    private readonly ITestOutputHelper _logger;
-
-    public S2BuilderUtil_SnapFunctionsTests(ITestOutputHelper logger) { _logger = logger; }
+    private readonly ITestOutputHelper _logger = logger;
 
     [Fact]
     internal void Test_S2CellIdSnapFunction_LevelToFromSnapRadius()
@@ -116,7 +114,7 @@ public class S2BuilderUtil_SnapFunctionsTests
         // a fairly large number of candidates ("num_to_keep"), we are essentially
         // keeping all the neighbors of the optimal cell as well.
         double best_score = 1e10;
-        List<S2CellId> best_cells = new();
+        List<S2CellId> best_cells = [];
         for (int level = 0; level <= S2.kMaxCellLevel; ++level)
         {
             double score = GetS2CellIdMinVertexSeparation(level, best_cells);
@@ -168,7 +166,7 @@ public class S2BuilderUtil_SnapFunctionsTests
     internal void Test_IntLatLngSnapFunction_MinVertexSeparationSnapRadiusRatio()
     {
         double best_score = 1e10;
-        List<IntLatLng> best_configs = new();
+        List<IntLatLng> best_configs = [];
         Int64 scale = 18L;
         for (int lat0 = 0; lat0 <= 9; ++lat0)
         {
@@ -226,7 +224,7 @@ public class S2BuilderUtil_SnapFunctionsTests
     private static void UpdateS2CellIdMinVertexSeparation(S2CellId id0, List<(double, S2CellId)> scores)
     {
         S2Point site0 = id0.ToPoint();
-        List<S2CellId> nbrs = new();
+        List<S2CellId> nbrs = [];
         id0.AppendAllNeighbors(id0.Level(), nbrs);
         foreach (S2CellId id1 in nbrs)
         {
@@ -250,7 +248,7 @@ public class S2BuilderUtil_SnapFunctionsTests
         // 8-way neighbors, then look at the ratio of the distance to the center of
         // that neighbor to the distance to the furthest corner of that neighbor
         // (which is the largest possible snap radius for this configuration).
-        List<(double ratio, S2CellId)> scores = new();
+        List<(double ratio, S2CellId)> scores = [];
         if (level == 0)
         {
             UpdateS2CellIdMinVertexSeparation(kSearchRootId, scores);
@@ -309,13 +307,13 @@ public class S2BuilderUtil_SnapFunctionsTests
     private static List<S2CellId> GetNeighbors(S2CellId id)
     {
         int kNumLayers = 2;
-        List<S2CellId> nbrs = new()
-        {
+        List<S2CellId> nbrs =
+        [
             id
-        };
+        ];
         for (int layer = 0; layer < kNumLayers; ++layer)
         {
-            List<S2CellId> new_nbrs = new();
+            List<S2CellId> new_nbrs = [];
             foreach (var nbr in nbrs)
             {
                 nbr.AppendAllNeighbors(id.Level(), new_nbrs);
@@ -374,8 +372,8 @@ public class S2BuilderUtil_SnapFunctionsTests
         // next level.  In order to get better coverage, we keep track of the best
         // score and configuration (i.e. the two neighboring cells "id1" and "id2")
         // for each initial cell "id0".
-        Dictionary<S2CellId, double> best_scores = new();
-        Dictionary<S2CellId, (S2CellId, S2CellId)> best_configs = new();
+        Dictionary<S2CellId, double> best_scores = [];
+        Dictionary<S2CellId, (S2CellId, S2CellId)> best_configs = [];
         foreach (var parent in best_cells)
         {
             for (var id0 = parent.ChildBegin(level);
@@ -428,7 +426,7 @@ public class S2BuilderUtil_SnapFunctionsTests
         num_to_keep = 20;
 #endif
         int num_to_print = 3;
-        List<(double ratio, S2CellId)> sorted = new();
+        List<(double ratio, S2CellId)> sorted = [];
         foreach (var entry in best_scores)
         {
             sorted.Add((entry.Value, entry.Key));
@@ -471,10 +469,10 @@ public class S2BuilderUtil_SnapFunctionsTests
         string label, S2CellIdMinEdgeSeparationFunction objective)
     {
         double best_score = 1e10;
-        List<S2CellId> best_cells = new()
-        {
+        List<S2CellId> best_cells =
+        [
             kSearchRootId
-        };
+        ];
         for (int level = 0; level <= S2.kMaxCellLevel; ++level)
         {
             double score = GetS2CellIdMinEdgeSeparation(label, objective, level, best_cells);
@@ -486,14 +484,14 @@ public class S2BuilderUtil_SnapFunctionsTests
     private static bool IsValid(IntLatLng ll, Int64 scale)
     {
         // A coordinate value of "scale" corresponds to 180 degrees.
-        return (Math.Abs(ll.Lat) <= scale / 2 && Math.Abs(ll.Lng) <= scale);
+        return Math.Abs(ll.Lat) <= scale / 2 && Math.Abs(ll.Lng) <= scale;
     }
 
     private static bool HasValidVertices(IntLatLng ll, Int64 scale)
     {
         // Like IsValid, but excludes latitudes of 90 and longitudes of 180.
         // A coordinate value of "scale" corresponds to 180 degrees.
-        return (Math.Abs(ll.Lat) < scale / 2 && Math.Abs(ll.Lng) < scale);
+        return Math.Abs(ll.Lat) < scale / 2 && Math.Abs(ll.Lng) < scale;
     }
 
     private static IntLatLng Rescale(IntLatLng ll, double scale_factor)
@@ -540,7 +538,7 @@ public class S2BuilderUtil_SnapFunctionsTests
         // that neighbor to the distance to the furthest corner of that neighbor
         // (which is the largest possible snap radius for this configuration).
         S1Angle min_snap_radius_at_scale = S1Angle.FromRadians(S2.M_SQRT1_2 * Math.PI / scale);
-        List<(double ratio, IntLatLng ll)> scores = new();
+        List<(double ratio, IntLatLng ll)> scores = [];
         double scale_factor = (double)scale / old_scale;
         foreach (var parent in best_configs)
         {
@@ -590,7 +588,7 @@ public class S2BuilderUtil_SnapFunctionsTests
         Int64 scale, List<LatLngConfig> best_configs)
     {
         var min_snap_radius_at_scale = S1Angle.FromRadians(S2.M_SQRT1_2 * Math.PI / scale);
-        List<LatLngConfigScore> scores = new();
+        List<LatLngConfigScore> scores = [];
         for (var i = 0; i < best_configs.Count; i++)
         {
             var (scale_, ll0_, ll1_, ll2_) = best_configs[i];
@@ -689,7 +687,7 @@ public class S2BuilderUtil_SnapFunctionsTests
         string label, LatLngMinEdgeSeparationFunction objective)
     {
         double best_score = 1e10;
-        List<LatLngConfig> best_configs = new();
+        List<LatLngConfig> best_configs = [];
         Int64 scale = 6L;  // Initially points are 30 degrees apart.
         int max_lng = (int)scale;
         int max_lat = (int)(scale / 2);

@@ -68,13 +68,13 @@ public class S2CellIdSnapFunction : SnapFunction
     // of leaf cells), and uses the minimum allowable snap radius at that level.
     public S2CellIdSnapFunction()
     {
-        Level = (S2.kMaxCellLevel);
+        Level = S2.kMaxCellLevel;
     }
 
     // Convenience constructor equivalent to calling set_level(level).
     public S2CellIdSnapFunction(int level)
     {
-        Level = (level);
+        Level = level;
     }
 
     private S2CellIdSnapFunction(int level, S1Angle snap_radius)
@@ -99,7 +99,7 @@ public class S2CellIdSnapFunction : SnapFunction
             MyDebug.Assert(value >= 0);
             MyDebug.Assert(value <= S2.kMaxCellLevel);
             level_ = value;
-            SnapRadius = (MinSnapRadiusForLevel(value));
+            SnapRadius = MinSnapRadiusForLevel(value);
         }
     }
     private int level_;
@@ -308,7 +308,7 @@ public class IntLatLngSnapFunction : SnapFunction
             MyDebug.Assert(value >= kMinExponent);
             MyDebug.Assert(value <= kMaxExponent);
             _exponent = value;
-            SnapRadius = (MinSnapRadiusForExponent(value));
+            SnapRadius = MinSnapRadiusForExponent(value);
 
             // Precompute the scale factors needed for snapping.  Note that these
             // calculations need to exactly match the ones in s1angle.h to ensure
@@ -368,8 +368,8 @@ public class IntLatLngSnapFunction : SnapFunction
         // up to (Math.Sqrt(2) * 0.5 * to_degrees_) radians.
         double power = 1;
         for (int i = 0; i < exponent; ++i) power *= 10;
-        return (S1Angle.FromDegrees(S2.M_SQRT1_2 / power) +
-                S1Angle.FromRadians((9 * S2.M_SQRT2 + 1.5) * S2.DoubleEpsilon));
+        return S1Angle.FromDegrees(S2.M_SQRT1_2 / power) +
+                S1Angle.FromRadians((9 * S2.M_SQRT2 + 1.5) * S2.DoubleEpsilon);
     }
 
     // Returns the minimum exponent such that vertices will not move by more
@@ -395,7 +395,7 @@ public class IntLatLngSnapFunction : SnapFunction
         // small error tolerance.
         return Math.Max(kMinExponent,
                    Math.Min(kMaxExponent,
-                       (int)(Math.Ceiling(exponent - 2 * S2.DoubleEpsilon))));
+                       (int)Math.Ceiling(exponent - 2 * S2.DoubleEpsilon)));
     }
 
     // For IntLatLng snapping, the minimum separation between vertices depends on

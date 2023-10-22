@@ -17,7 +17,7 @@ public class S2MaxDistanceTargetsTests
             {
                 S2Point p_test = S2Testing.RandomPoint();
                 // Check points outside of cap to be away from S2MaxDistance.Zero().
-                if (!(cap.Contains(p_test)))
+                if (!cap.Contains(p_test))
                 {
                     S1ChordAngle dist = cell.MaxDistance(p_test);
                     Assert.True(S2MaxDistance.Zero < new S2MaxDistance(dist));
@@ -29,13 +29,13 @@ public class S2MaxDistanceTargetsTests
     [Fact]
     internal void Test_IndexTarget_GetCapBound()
     {
-        MutableS2ShapeIndex index = new();
+        MutableS2ShapeIndex index = [];
 
         S2Polygon polygon = new(new S2Cell(S2Testing.GetRandomCellId()));
         index.Add(new S2Polygon.Shape(polygon));
 
         S2Point p = S2Testing.RandomPoint();
-        S2Point[] pts = { p };
+        S2Point[] pts = [p];
         index.Add(new S2PointVectorShape(pts));
 
         S2MaxDistanceShapeIndexTarget target = new(index);
@@ -45,7 +45,7 @@ public class S2MaxDistanceTargetsTests
         {
             var p_test = S2Testing.RandomPoint();
             // Check points outside of cap to be away from S2MaxDistance.Zero().
-            if (!(cap.Contains(p_test)))
+            if (!cap.Contains(p_test))
             {
                 var cur_dist = S2MaxDistance.Infinity;
                 Assert.True(target.UpdateMinDistance(p_test, ref cur_dist));
@@ -258,8 +258,8 @@ public class S2MaxDistanceTargetsTests
         S2Point p = MakePointOrDie("1:1");
         // Test against antipodal point.
         S2MaxDistancePointTarget target = new(-p);
-        Assert.Equal((new int[] { 2 }), GetContainingShapes(target, index, 1));
-        Assert.Equal((new int[] { 2, 4 }), GetContainingShapes(target, index, 5));
+        Assert.Equal([2], GetContainingShapes(target, index, 1));
+        Assert.Equal([2, 4], GetContainingShapes(target, index, 5));
     }
 
     [Fact]
@@ -270,8 +270,8 @@ public class S2MaxDistanceTargetsTests
         // Test against antipodal edge.
         var edge = ParsePointsOrDie("1:2, 2:1");
         S2MaxDistanceEdgeTarget target = new(-edge[0], -edge[1]);
-        Assert.Equal((new int[] { 2 }), GetContainingShapes(target, index, 1));
-        Assert.Equal((new int[] { 2, 4 }), GetContainingShapes(target, index, 5));
+        Assert.Equal([2], GetContainingShapes(target, index, 1));
+        Assert.Equal([2, 4], GetContainingShapes(target, index, 5));
     }
 
     [Fact]
@@ -282,8 +282,8 @@ public class S2MaxDistanceTargetsTests
         // the antipode of 1:1.
         S2CellId cellid1 = new(-MakePointOrDie("1:1"));
         S2MaxDistanceCellTarget target1 = new(new S2Cell(cellid1));
-        Assert.Equal((new int[] { 2 }), GetContainingShapes(target1, index, 1));
-        Assert.Equal((new int[] { 2, 4 }), GetContainingShapes(target1, index, 5));
+        Assert.Equal([2], GetContainingShapes(target1, index, 1));
+        Assert.Equal([2, 4], GetContainingShapes(target1, index, 5));
 
         // For a larger antipodal cell that properly contains one or more index
         // cells, all shapes that intersect the first such cell in S2CellId order are
@@ -291,7 +291,7 @@ public class S2MaxDistanceTargetsTests
         // polygons (whose shape_ids are 2 and 4).
         var cellid2 = cellid1.Parent(5);
         S2MaxDistanceCellTarget target2 = new(new S2Cell(cellid2));
-        Assert.Equal((new int[] { 2, 4 }), GetContainingShapes(target2, index, 5));
+        Assert.Equal([2, 4], GetContainingShapes(target2, index, 5));
     }
 
     [Fact]
@@ -306,7 +306,7 @@ public class S2MaxDistanceTargetsTests
         // Construct a target consisting of one point, one polyline, and one polygon
         // with two loops where only the second loop is contained by a polygon in
         // the index above.
-        MutableS2ShapeIndex target_index = new();
+        MutableS2ShapeIndex target_index = [];
 
         var pts = Reflect(ParsePointsOrDie("1:1")).ToArray();
         target_index.Add(new S2PointVectorShape(pts));
@@ -316,13 +316,13 @@ public class S2MaxDistanceTargetsTests
 
         var loop1 = Reflect(ParsePointsOrDie("20:20, 20:21, 21:20"));
         var loop2 = Reflect(ParsePointsOrDie("10:10, 10:11, 11:10"));
-        List<List<S2Point>> loops = new(){ loop1, loop2 };
+        List<List<S2Point>> loops = [loop1, loop2];
         target_index.Add(new S2LaxPolygonShape(loops));
 
         S2MaxDistanceShapeIndexTarget target = new(target_index);
         // These are the shape_ids of the 1st, 2nd, and 4th polygons of "index"
         // (noting that the 4 points are represented by one S2PointVectorShape).
-        Assert.Equal((new int[] { 5, 6, 8 }), GetContainingShapes(target, index, 5));
+        Assert.Equal([5, 6, 8], GetContainingShapes(target, index, 5));
     }
 
     [Fact]
@@ -337,25 +337,25 @@ public class S2MaxDistanceTargetsTests
         // Check only the full polygon is returned for a point target.
         var point_index = MakeIndexOrDie("1:1 # #");
         S2MaxDistanceShapeIndexTarget point_target = new(point_index);
-        Assert.Equal((new int[] { 1 }), GetContainingShapes(point_target, index, 5));
+        Assert.Equal([1], GetContainingShapes(point_target, index, 5));
 
         // Check only the full polygon is returned for a full polygon target.
         var full_polygon_index = MakeIndexOrDie("# # full");
         S2MaxDistanceShapeIndexTarget full_target = new(full_polygon_index);
-        Assert.Equal((new int[] { 1 }), GetContainingShapes(full_target, index, 5));
+        Assert.Equal([1], GetContainingShapes(full_target, index, 5));
 
         // Check that nothing is returned for an empty polygon target.  (An empty
         // polygon has no connected components and does not intersect anything, so
         // according to the API of GetContainingShapes nothing should be returned.)
         var empty_polygon_index = MakeIndexOrDie("# # empty");
         S2MaxDistanceShapeIndexTarget empty_target = new(empty_polygon_index);
-        Assert.Equal((Array.Empty<int>()), GetContainingShapes(empty_target, index, 5));
+        Assert.Equal([], GetContainingShapes(empty_target, index, 5));
     }
 
     // Negates S2 points to reflect them through the sphere.
     private static List<S2Point> Reflect(List<S2Point> pts)
     {
-        List<S2Point> negative_pts = new();
+        List<S2Point> negative_pts = [];
         foreach (var p in pts)
         {
             negative_pts.Add(-p);
@@ -365,14 +365,14 @@ public class S2MaxDistanceTargetsTests
 
     private static int[] GetContainingShapes(S2MaxDistanceTargets target, S2ShapeIndex index, int max_shapes)
     {
-        SortedSet<Int32> shape_ids = new();
+        SortedSet<Int32> shape_ids = [];
         target.VisitContainingShapes(
             index, (S2Shape containing_shape, S2Point target_point) =>
             {
                 shape_ids.Add(containing_shape.Id);
                 return shape_ids.Count < max_shapes;
             });
-        return shape_ids.ToArray();
+        return [.. shape_ids];
     }
 }
 

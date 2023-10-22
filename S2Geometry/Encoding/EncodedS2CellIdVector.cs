@@ -5,7 +5,7 @@
 // that contains other encoded data as well.
 //
 // This is one of several helper classes that allow complex data structures to
-// be initialized from an encoded format inant time and then decoded on
+// be initialized from an encoded format in constant time and then decoded on
 // demand.  This can be a big performance advantage when only a small part of
 // the data structure is actually used.
 //

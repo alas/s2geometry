@@ -16,7 +16,7 @@ public class S2EdgeVectorShape : S2Shape, IEquatable<S2EdgeVectorShape>
 {
     #region Fields, Constants
 
-    private readonly List<(S2Point, S2Point)> edges_ = new();
+    private readonly List<(S2Point, S2Point)> edges_ = [];
 
     #endregion
 

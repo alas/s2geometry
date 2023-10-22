@@ -7,11 +7,9 @@
 
 namespace S2Geometry;
 
-public class S2WrappedShape : S2Shape
+public class S2WrappedShape(S2Shape shape) : S2Shape
 {
-    private readonly S2Shape shape_;
-
-    public S2WrappedShape(S2Shape shape) => shape_ = shape;
+    private readonly S2Shape shape_ = shape;
 
     // S2Shape interface:
     public sealed override int NumEdges() => shape_.NumEdges();

@@ -154,7 +154,7 @@ public static class S2ShapeUtilCoding
     //
     // REQUIRES: "encoder" uses the default constructor, so that its buffer
     //           can be enlarged as necessary by calling Ensure(int).
-    public static bool EncodeTaggedShapes(S2ShapeIndex index, ShapeEncoder shape_encoder, Encoder encoder)
+    public static bool EncodeTaggedShapes(S2ShapeIndex index, ShapeEncoder shapeEncoder, Encoder encoder)
     {
         StringVectorEncoder shape_vector = new();
         foreach (var shape in index)
@@ -164,7 +164,7 @@ public static class S2ShapeUtilCoding
 
             sub_encoder.Ensure(Encoder.kVarintMax32);
             sub_encoder.PutVarInt32((int)shape.GetTypeTag());
-            if (!shape_encoder(shape, sub_encoder)) return false;
+            if (!shapeEncoder(shape, sub_encoder)) return false;
         }
         shape_vector.Encode(encoder);
         return true;
@@ -204,10 +204,10 @@ public static class S2ShapeUtilCoding
         private readonly Decoder decoder_;
 
         // Returns an empty vector and/or null S2Shapes on decoding errors.
-        public TaggedShapeFactory(ShapeDecoder shape_decoder, Decoder decoder)
+        public TaggedShapeFactory(ShapeDecoder shapeDecoder, Decoder decoder)
         {
             decoder_ = decoder;
-            shape_decoder_ = shape_decoder;
+            shape_decoder_ = shapeDecoder;
             var (success, shape) = EncodedStringVector.Init(decoder);
             if (success)
             {
@@ -247,14 +247,9 @@ public static class S2ShapeUtilCoding
     // REQUIRES: Each shape is requested at most once.  (This implies that when
     // the ShapeFactory is passed to an S2ShapeIndex, S2ShapeIndex.Minimize must
     // not be called.)  Additional requests for the same shape return null.
-    public class VectorShapeFactory : S2ShapeIndex.ShapeFactory
+    public class VectorShapeFactory(List<S2Shape?> shapes) : S2ShapeIndex.ShapeFactory
     {
-        public VectorShapeFactory(List<S2Shape?> shapes)
-        {
-            shared_shapes_ = shapes;
-        }
-
-        public override int Count => shared_shapes_.Count;
+        public override int Count => shapes.Count;
         public override S2Shape? this[int shape_id]
         {
             get
@@ -269,35 +264,32 @@ public static class S2ShapeUtilCoding
 
         // Since this class is copyable, we need to access the shape vector through
         // a shared pointer.
-        private readonly List<S2Shape?> shared_shapes_;
+        private readonly List<S2Shape?> shared_shapes_ = [];
     }
 
     // A ShapeFactory that returns the single given S2Shape.  Useful for testing.
     public static VectorShapeFactory SingletonShapeFactory(S2Shape shape)
     {
-        return new VectorShapeFactory(new List<S2Shape?> { shape });
+        return new VectorShapeFactory([shape]);
     }
 
     // A ShapeFactory that wraps the shapes from the given index.  Used for testing.
-    public class WrappedShapeFactory : S2ShapeIndex.ShapeFactory
+    //
+    // REQUIRES: The given index must persist for the lifetime of this object.
+    public class WrappedShapeFactory(S2ShapeIndex index) : S2ShapeIndex.ShapeFactory
     {
-        // REQUIRES: The given index must persist for the lifetime of this object.
-        public WrappedShapeFactory(S2ShapeIndex index) { index_ = index; }
-
-        public override int Count => index_.NumShapeIds();
+        public override int Count => index.NumShapeIds();
         public override S2Shape? this[int shape_id]
         {
             get
             {
-                var shape = index_.Shape(shape_id);
+                var shape = index.Shape(shape_id);
                 if (shape is null) return null;
                 return new S2WrappedShape(shape);
             }
         }
 
-        public override object CustomClone() => new WrappedShapeFactory(index_);
-
-        private readonly S2ShapeIndex index_;
+        public override object CustomClone() => new WrappedShapeFactory(index);
     }
 
     // Encodes the shapes in the given index, which must all have the same type.

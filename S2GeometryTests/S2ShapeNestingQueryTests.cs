@@ -21,7 +21,7 @@ public class S2ShapeNestingQueryTests
     {
         var radian_step = 2 * S2.M_PI / verticesPerLoop;
 
-        List<List<S2Point>> loops = new();
+        List<List<S2Point>> loops = [];
         foreach (var spec in ringSpecs)
         {
             // Check that we're not in reach of the poles.
@@ -76,9 +76,9 @@ public class S2ShapeNestingQueryTests
     // then the orientation becomes clockwise.
     internal static S2LaxPolygonShape ArcShape(int vertices_per_loop, List<ArcSpec> specs)
     {
-        var deg2rad = (double degrees) => { return (S2.M_PI / 180.0) * degrees; };
+        var deg2rad = (double degrees) => { return S2.M_PI / 180.0 * degrees; };
 
-        List<List<S2Point>> loops = new();
+        List<List<S2Point>> loops = [];
         foreach (var spec in specs)
         {
             double start_rad = deg2rad(spec.StartDeg);
@@ -142,8 +142,8 @@ public class S2ShapeNestingQueryTests
     {
         const int kNumEdges = 100;
 
-        MutableS2ShapeIndex index = new();
-        int id = index.Add(RingShape(kNumEdges, new List<RingSpec>() { new(S2LatLng.FromDegrees(0.0, 0.0), 1.0) }));
+        MutableS2ShapeIndex index = [];
+        int id = index.Add(RingShape(kNumEdges, [new(S2LatLng.FromDegrees(0.0, 0.0), 1.0)]));
 
         S2ShapeNestingQuery query = new(index);
         var relations = query.ComputeShapeNesting(id);
@@ -162,9 +162,9 @@ public class S2ShapeNestingQueryTests
 
         {
             // Nested rings, like a donut.
-            MutableS2ShapeIndex index = new();
+            MutableS2ShapeIndex index = [];
             int id = index.Add(
-                RingShape(kNumEdges, new List<RingSpec>() { new(kCenter, 1.0, false), new(kCenter, 0.5, true) }));
+                RingShape(kNumEdges, [new(kCenter, 1.0, false), new(kCenter, 0.5, true)]));
 
             S2ShapeNestingQuery query = new(index);
             var relations = query.ComputeShapeNesting(id);
@@ -188,9 +188,9 @@ public class S2ShapeNestingQueryTests
 
         {
             // Swapping ring ordering shouldn't change anything.
-            MutableS2ShapeIndex index = new();
+            MutableS2ShapeIndex index = [];
             int id = index.Add(
-                RingShape(kNumEdges, new List<RingSpec>() { new(kCenter, 0.5, true), new(kCenter, 1.0, false) }));
+                RingShape(kNumEdges, [new(kCenter, 0.5, true), new(kCenter, 1.0, false)]));
 
             S2ShapeNestingQuery query = new(index);
             var relations = query.ComputeShapeNesting(id);
@@ -215,9 +215,9 @@ public class S2ShapeNestingQueryTests
         {
             // If we reverse the vertex order of the rings.  We should end up with two
             // shells since the hole and shell don't face each other.
-            MutableS2ShapeIndex index = new();
+            MutableS2ShapeIndex index = [];
             int id = index.Add(
-                RingShape(kNumEdges, new List<RingSpec>() { new(kCenter, 1.0, true), new(kCenter, 0.5, false) }));
+                RingShape(kNumEdges, [new(kCenter, 1.0, true), new(kCenter, 0.5, false)]));
 
             S2ShapeNestingQuery query = new(index);
             var relations = query.ComputeShapeNesting(id);
@@ -241,9 +241,9 @@ public class S2ShapeNestingQueryTests
         var kCenter = S2LatLng.FromDegrees(0.0, 0.0);
 
         // Nested rings, like a donut.
-        MutableS2ShapeIndex index = new();
+        MutableS2ShapeIndex index = [];
         int id = index.Add(
-            RingShape(kNumEdges, new List<RingSpec>() { new(kCenter, 1.0, false), new(kCenter, 0.5, true) }));
+            RingShape(kNumEdges, [new(kCenter, 1.0, false), new(kCenter, 0.5, true)]));
 
         // We should be able to override the default datum shell strategy.
         S2ShapeNestingQuery.Options options = new()
@@ -268,15 +268,15 @@ public class S2ShapeNestingQueryTests
         const int kNumEdges = 16;
 
         // A ring with four holes in it like a shirt button.
-        MutableS2ShapeIndex index = new();
+        MutableS2ShapeIndex index = [];
         int id = index.Add(
-            RingShape(kNumEdges, new List<RingSpec>(){
+            RingShape(kNumEdges, [
             new(S2LatLng.FromDegrees(0.5, 0.5), 2.0),
             new(S2LatLng.FromDegrees(1.0, 0.5), 0.25, true),
             new(S2LatLng.FromDegrees(0.0, 0.5), 0.25, true),
             new(S2LatLng.FromDegrees(0.5, 1.0), 0.25, true),
             new(S2LatLng.FromDegrees(0.5, 0.0), 0.25, true)
-            }));
+            ]));
 
         S2ShapeNestingQuery query = new(index);
         var relations = query.ComputeShapeNesting(id);
@@ -318,15 +318,15 @@ public class S2ShapeNestingQueryTests
             {
                 //S2_VLOG(1) << "Offset (" << offset0 << "," << offset1 << ")";
 
-                MutableS2ShapeIndex index = new();
+                MutableS2ShapeIndex index = [];
                 int id = index.Add(ArcShape(
                     //            center radius thickness start end  offset  reverse
-                    kNumEdges, new List<ArcSpec>(){
+                    kNumEdges, [
                 new(kCenter, 0.3, 0.15, -240.0, 60.0, offset0, false),
                 new(kCenter, 0.3, 0.05, -230.0, 50.0, offset1, true),
                 new(kCenter, 1.0, 0.15, -85.0, 265.0, offset1, false),
                 new(kCenter, 1.0, 0.05, -80.0, 260.0, offset1, true)
-                }));
+                ]));
 
                 S2ShapeNestingQuery query = new(index);
                 var relations = query.ComputeShapeNesting(id);
@@ -366,10 +366,10 @@ public class S2ShapeNestingQueryTests
         const int kNumEdges = 16;
         var kCenter = S2LatLng.FromDegrees(0.0, 0.0);
 
-        List<RingSpec> rings = new()
-        {
+        List<RingSpec> rings =
+        [
             new RingSpec(kCenter, 2.0 / (firstChain + 1), firstChain % 2 == 1)
-        };
+        ];
 
         for (int i = 0; i < depth; ++i)
         {
@@ -386,7 +386,7 @@ public class S2ShapeNestingQueryTests
             //gtl.legacy_random_shuffle(rings.begin() + 1, rings.end(), S2Testing.rnd);
         }
 
-        MutableS2ShapeIndex index = new();
+        MutableS2ShapeIndex index = [];
         int id = index.Add(RingShape(kNumEdges, rings));
 
         S2ShapeNestingQuery query = new(index);

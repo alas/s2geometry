@@ -181,7 +181,7 @@ public static class S2PolylineAlignment
         return GetApproxVertexAlignment(a, b, radius);
     }
 
-    public readonly struct VertexAlignment
+    public readonly struct VertexAlignment(double cost, WarpPath path)
     {
         // `alignment_cost` represents the sum of the squared chordal distances
         // between each pair of vertices in the warp path. Specifically,
@@ -192,7 +192,7 @@ public static class S2PolylineAlignment
         // square root. All we need to compute vertex alignment is a metric that
         // satisifies the triangle inequality, and squared chordal distance works as
         // well as spherical S1Angle distance for this purpose.
-        public readonly double AlignmentCost;
+        public readonly double AlignmentCost = cost;
 
         // Each entry (i, j) of `warp_path` represents a pairing between vertex
         // a.vertex(i) and vertex b.vertex(j) in the optimal alignment.
@@ -201,13 +201,7 @@ public static class S2PolylineAlignment
         // = {0,0} and warp_path.Last() = {a.NumVertices - 1, b.NumVertices - 1}
         // Note that this DOES NOT define an alignment from a point sequence to an
         // edge sequence. That functionality may come at a later date.
-        public readonly WarpPath WarpPath_;
-
-        public VertexAlignment(double cost, WarpPath path)
-        {
-            AlignmentCost = cost;
-            WarpPath_ = path;
-        }
+        public readonly WarpPath WarpPath_ = path;
     }
 
     // Perform dynamic timewarping by filling in the DP table on cells that are
@@ -478,9 +472,9 @@ public static class S2PolylineAlignment
                 var alignment = AlignmentFn(consensus, polyline, approx);
                 foreach (var (start, end) in alignment.WarpPath_)
                 {
-                    if (points.ContainsKey(start))
+                    if (points.TryGetValue(start, out S2Point value))
                     {
-                        points[start] = points[start] + polyline.Vertex(end);
+                        points[start] = value + polyline.Vertex(end);
                     }
                     else
                     {
@@ -593,7 +587,7 @@ public static class S2PolylineAlignment
         // Construct a Window from a non-empty list of column strides.
         public Window((int start, int end)[] strides)
         {
-            MyDebug.Assert(strides.Any(), "Cannotruct empty window.");
+            MyDebug.Assert(strides.Length!=0, "Cannotruct empty window.");
             MyDebug.Assert(strides[0].start == 0, "First element of start_cols is non-zero.");
             strides_ = strides;
             rows_ = strides.Length;
@@ -604,7 +598,7 @@ public static class S2PolylineAlignment
         // Construct a Window from a non-empty sequence of warp path index pairs.
         public Window(WarpPath warp_path)
         {
-            MyDebug.Assert(warp_path.Any(), "Cannot construct window from empty warp path.");
+            MyDebug.Assert(warp_path.Count!=0, "Cannot construct window from empty warp path.");
             MyDebug.Assert(warp_path.First() == (0, 0), "Must start at (0, 0).");
             rows_ = warp_path.Last().start + 1;
             MyDebug.Assert(rows_ > 0, "Must have at least one row.");

@@ -159,7 +159,7 @@ public static class S2Pred
         // when the distance limit is near 180 degrees because the S1ChordAngle
         // representation itself has has a rounding error of up to 2e-8 radians for
         // distances near 180 degrees.
-        if (r < k45Degrees)
+        if (r < K45Degrees)
         {
             sign = TriageCompareSin2Distance(x, y, r.Length2);
             if (kHasLongDouble && sign == 0)
@@ -506,7 +506,7 @@ public static class S2Pred
     public const double kSqrt3 = 1.7320508075688772935274463415058;
 
     // A predefined S1ChordAngle representing (approximately) 45 degrees.
-    private static S1ChordAngle k45Degrees { get; } = S1ChordAngle.FromLength2(2 - S2.M_SQRT2);
+    private static S1ChordAngle K45Degrees { get; } = S1ChordAngle.FromLength2(2 - S2.M_SQRT2);
 
     // Efficiently tests whether an ExactFloat vector is (0, 0, 0).
     public static bool IsZero(S2Point a) =>
@@ -671,7 +671,7 @@ public static class S2Pred
         if (det_sign != 0) return det_sign;
         det_sign = double.Sign(c[0]);                        // db[2] * da[1]
         if (det_sign != 0) return det_sign;
-        det_sign = -(double.Sign(c[1]));                     // db[2] * da[0]
+        det_sign = -double.Sign(c[1]);                     // db[2] * da[0]
         if (det_sign != 0) return det_sign;
         det_sign = double.Sign(c[2] * a[0] - c[0] * a[2]);     // db[1]
         if (det_sign != 0) return det_sign;
@@ -683,7 +683,7 @@ public static class S2Pred
 
         det_sign = double.Sign(a[0] * b[1] - a[1] * b[0]);     // dc[2]
         if (det_sign != 0) return det_sign;
-        det_sign = -(double.Sign(b[0]));                     // dc[2] * da[1]
+        det_sign = -double.Sign(b[0]);                     // dc[2] * da[1]
         if (det_sign != 0) return det_sign;
         det_sign = double.Sign(b[1]);                        // dc[2] * da[0]
         if (det_sign != 0) return det_sign;
@@ -765,9 +765,9 @@ public static class S2Pred
         // distances as small as DBL_ERR.
         S2Point n = (x - y).CrossProd(x + y);
         double d2 = 0.25 * n.Norm2();
-        error = ((21 + 4 * Math.Sqrt(3)) * DBL_ERR * d2 +
+        error = (21 + 4 * Math.Sqrt(3)) * DBL_ERR * d2 +
                   32 * Math.Sqrt(3) * DBL_ERR * DBL_ERR * Math.Sqrt(d2) +
-                  768 * DBL_ERR * DBL_ERR * DBL_ERR * DBL_ERR);
+                  768 * DBL_ERR * DBL_ERR * DBL_ERR * DBL_ERR;
         return d2;
     }
 
@@ -784,9 +784,9 @@ public static class S2Pred
         // the additional effort.)
         S2Point n = (x - y).CrossProd(x + y);
         double d2 = 0.25 * n.Norm2() / (x.Norm2() * y.Norm2());
-        error = ((13 + 4 * Math.Sqrt(3)) * LD_ERR * d2 +
+        error = (13 + 4 * Math.Sqrt(3)) * LD_ERR * d2 +
                   32 * Math.Sqrt(3) * DBL_ERR * LD_ERR * Math.Sqrt(d2) +
-                  768 * DBL_ERR * DBL_ERR * LD_ERR * LD_ERR);
+                  768 * DBL_ERR * DBL_ERR * LD_ERR * LD_ERR;
         return d2;
     }
 
@@ -916,7 +916,7 @@ public static class S2Pred
         // valid when the actual distance and the distance limit are both less than
         // 90 degrees.  So we always start with the Cos method.
         int sign = TriageCompareCosDistance(x, y, r2);
-        if (sign == 0 && r2 < k45Degrees.Length2)
+        if (sign == 0 && r2 < K45Degrees.Length2)
         {
             sign = TriageCompareSin2Distance(x, y, r2);
         }
@@ -965,7 +965,7 @@ public static class S2Pred
         double n2sin2_r_error = 6 * TT_ERR * n2sin2_r;
         double ax2, xDn = (x - GetClosestVertex(x, a0, a1, out ax2)).DotProd(n);
         double xDn2 = xDn * xDn;
-        double c1 = (((3.5 + 2 * Math.Sqrt(3)) * n1 + 32 * Math.Sqrt(3) * DBL_ERR) * TT_ERR * Math.Sqrt(ax2));
+        double c1 = ((3.5 + 2 * Math.Sqrt(3)) * n1 + 32 * Math.Sqrt(3) * DBL_ERR) * TT_ERR * Math.Sqrt(ax2);
         double xDn2_error = 4 * TT_ERR * xDn2 + (2 * Math.Abs(xDn) + c1) * c1;
 
         /*
@@ -1029,7 +1029,7 @@ public static class S2Pred
 
     private static int TriageCompareLineDistance(S2Point x, S2Point a0, S2Point a1, double r2, S2Point n, double n1, double n2)
     {
-        if (r2 < k45Degrees.Length2)
+        if (r2 < K45Degrees.Length2)
         {
             return TriageCompareLineSin2Distance(x, a0, a1, r2, n, n1, n2);
         }
@@ -1176,10 +1176,10 @@ public static class S2Pred
         var bc_len = bc_diff.Norm();
         S2Point mab = nab.CrossProd(ab_sum);
         S2Point mbc = nbc.CrossProd(bc_sum);
-        error = (((16 + 24 * Math.Sqrt(3)) * TT_ERR +
+        error = ((16 + 24 * Math.Sqrt(3)) * TT_ERR +
                       8 * DBL_ERR * (ab_len + bc_len)) * nab_len * nbc_len +
                      128 * Math.Sqrt(3) * DBL_ERR * TT_ERR * (nab_len + nbc_len) +
-                     3 * 4096 * DBL_ERR * DBL_ERR * TT_ERR * TT_ERR);
+                     3 * 4096 * DBL_ERR * DBL_ERR * TT_ERR * TT_ERR;
         return mab.CrossProd(mbc);
     }
 
@@ -1196,7 +1196,7 @@ public static class S2Pred
         double z_len = z.Norm();
         double nx_len = nx.Norm();
         double nx_error = ((1 + 2 * Math.Sqrt(3)) * nx_len + 32 * Math.Sqrt(3) * DBL_ERR) * TT_ERR;
-        double result_error = ((3 * TT_ERR * nx_len + nx_error) * z_len + z_error * nx_len);
+        double result_error = (3 * TT_ERR * nx_len + nx_error) * z_len + z_error * nx_len;
         return (result > result_error) ? 1 : (result < -result_error) ? -1 : 0;
     }
 

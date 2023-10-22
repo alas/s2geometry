@@ -151,6 +151,6 @@ public static class MathUtils
 
     public static int Sgn<T>(T x) where T : IFloatingPointIeee754<T>
     {
-        return (x == T.Zero ? 0 : (x < T.Zero ? -1 : 1));
+        return x == T.Zero ? 0 : (x < T.Zero ? -1 : 1);
     }
 }

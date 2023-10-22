@@ -58,7 +58,9 @@ namespace S2Geometry;
 
 using Base = S2ClosestCellQueryBase<S1ChordAngle>;
 
-public class S2ClosestCellQuery
+// REQUIRES: "index" must persist for the lifetime of this object.
+// REQUIRES: ReInit() must be called if "index" is modified.
+public class S2ClosestCellQuery(S2CellIndex index, S2ClosestCellQuery.Options? options = null)
 {
     #region MaxBruteForceIndexSize
 
@@ -110,7 +112,7 @@ public class S2ClosestCellQuery
         // Like set_max_distance(), except that cells whose distance is exactly
         // equal to "max_distance" are also returned.  Equivalent to calling
         // set_max_distance(max_distance.Successor()).
-        public S1ChordAngle InclusiveMaxDistance { set => MaxDistance = (value.Successor()); }
+        public S1ChordAngle InclusiveMaxDistance { set => MaxDistance = value.Successor(); }
 
         // Like set_inclusive_max_distance(), except that "max_distance" is also
         // increased by the maximum error in the distance calculation.  This
@@ -129,31 +131,27 @@ public class S2ClosestCellQuery
     }
 
     // Target subtype that computes the closest distance to a point.
-    public sealed class PointTarget : S2MinDistancePointTarget
+    public sealed class PointTarget(S2Point point) : S2MinDistancePointTarget(point)
     {
-        public PointTarget(S2Point point) : base(point) { }
         public override int MaxBruteForceIndexSize => PointTarget_MaxBruteForceIndexSize;
     }
 
     // Target subtype that computes the closest distance to an edge.
-    public sealed class EdgeTarget : S2MinDistanceEdgeTarget
+    public sealed class EdgeTarget(S2Point a, S2Point b) : S2MinDistanceEdgeTarget(a, b)
     {
-        public EdgeTarget(S2Point a, S2Point b) : base(a, b) { }
         public override int MaxBruteForceIndexSize => EdgeTarget_MaxBruteForceIndexSize;
     }
 
     // Target subtype that computes the closest distance to an S2Cell
     // (including the interior of the cell).
-    public sealed class CellTarget : S2MinDistanceCellTarget
+    public sealed class CellTarget(S2Cell cell) : S2MinDistanceCellTarget(cell)
     {
-        public CellTarget(S2Cell cell) : base(cell) { }
         public override int MaxBruteForceIndexSize => CellTarget_MaxBruteForceIndexSize;
     }
 
     // Target subtype that computes the closest distance to an S2CellUnion.
-    public sealed class CellUnionTarget : S2MinDistanceCellUnionTarget
+    public sealed class CellUnionTarget(S2CellUnion cell_union) : S2MinDistanceCellUnionTarget(cell_union)
     {
-        public CellUnionTarget(S2CellUnion cell_union) : base(cell_union) { }
         public override int MaxBruteForceIndexSize => CellUnionTarget_MaxBruteForceIndexSize;
     }
 
@@ -167,25 +165,12 @@ public class S2ClosestCellQuery
     //   target.set_include_interiors(false);
     //
     // (see S2MinDistanceShapeIndexTarget for details).
-    public sealed class ShapeIndexTarget : S2MinDistanceShapeIndexTarget
+    public sealed class ShapeIndexTarget(S2ShapeIndex index) : S2MinDistanceShapeIndexTarget(index)
     {
-        public ShapeIndexTarget(S2ShapeIndex index) : base(index) { }
         public override int MaxBruteForceIndexSize => ShapeIndexTarget_MaxBruteForceIndexSize;
     }
 
-    // Convenience constructor that calls Init().  Options may be specified here
-    // or changed at any time using the Options() accessor method.
-    //
-    // REQUIRES: "index" must persist for the lifetime of this object.
-    // REQUIRES: ReInit() must be called if "index" is modified.
-    public S2ClosestCellQuery(S2CellIndex index, Options? options = null)
-    {
-        Options_ = options ?? new Options();
-        base_.Init(index);
-    }
-
-    // Default constructor; requires Init() to be called.
-    public S2ClosestCellQuery() { }
+    private readonly Base base_ = new(index);
 
     // Reinitializes the query.  This method must be called if the underlying
     // S2CellIndex is modified (by calling Clear() and Build() again).
@@ -201,7 +186,7 @@ public class S2ClosestCellQuery
     }
 
     // Returns the query options.  Options can be modified between queries.
-    public Options Options_ { get; private set; }
+    public Options Options_ { get; private set; } = options ?? new Options();
 
     // Returns the closest cells to the given target that satisfy the current
     // options.  This method may be called multiple times.
@@ -226,7 +211,7 @@ public class S2ClosestCellQuery
     {
         // Assert.True(Marshal.SizeOf(typeof(Options)) <= 32); // Consider not copying Options here
         Options tmp_options = Options_;
-        tmp_options.MaxResults = (1);
+        tmp_options.MaxResults = 1;
         return base_.FindClosestCell(target, tmp_options);
     }
 
@@ -249,9 +234,9 @@ public class S2ClosestCellQuery
     {
         // Assert.True(Marshal.SizeOf(typeof(Options)) <= 32); // Consider not copying Options here
         Options tmp_options = Options_;
-        tmp_options.MaxResults = (1);
-        tmp_options.MaxDistance = (limit);
-        tmp_options.MaxError = (S1ChordAngle.Straight);
+        tmp_options.MaxResults = 1;
+        tmp_options.MaxDistance = limit;
+        tmp_options.MaxError = S1ChordAngle.Straight;
         return !base_.FindClosestCell(target, tmp_options).IsEmpty();
     }
 
@@ -261,9 +246,9 @@ public class S2ClosestCellQuery
     {
         // Assert.True(Marshal.SizeOf(typeof(Options)) <= 32); // Consider not copying Options here
         Options tmp_options = Options_;
-        tmp_options.MaxResults = (1);
-        tmp_options.InclusiveMaxDistance = (limit);
-        tmp_options.MaxError = (S1ChordAngle.Straight);
+        tmp_options.MaxResults = 1;
+        tmp_options.InclusiveMaxDistance = limit;
+        tmp_options.MaxError = S1ChordAngle.Straight;
         return !base_.FindClosestCell(target, tmp_options).IsEmpty();
     }
 
@@ -275,11 +260,9 @@ public class S2ClosestCellQuery
     {
         // Assert.True(Marshal.SizeOf(typeof(Options)) <= 32); // Consider not copying Options here
         Options tmp_options = Options_;
-        tmp_options.MaxResults = (1);
-        tmp_options.ConservativeMaxDistance = (limit);
-        tmp_options.MaxError = (S1ChordAngle.Straight);
+        tmp_options.MaxResults = 1;
+        tmp_options.ConservativeMaxDistance = limit;
+        tmp_options.MaxError = S1ChordAngle.Straight;
         return !base_.FindClosestCell(target, tmp_options).IsEmpty();
     }
-
-    private readonly Base base_ = new();
 }

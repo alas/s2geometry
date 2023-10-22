@@ -309,7 +309,7 @@ public class S2LatLngRectBounderTests
         // latitude of ABC (after expanding to account for errors).
         var ac = GetEdgeBound(a, c);
         var ab = GetEdgeBound(a, b);
-        var bc = GetEdgeBound(b, c);
+        _ = GetEdgeBound(b, c);
         var ac_expanded = S2LatLngRectBounder.ExpandForSubregions(ac);
         Assert.True(ac_expanded.Lat.Hi >= ab.Lat.Hi);
         Assert.True(ac_expanded.Lat.Hi >= ac.Lat.Hi);

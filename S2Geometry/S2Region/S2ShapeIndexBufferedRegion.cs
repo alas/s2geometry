@@ -37,7 +37,7 @@ public sealed class S2ShapeIndexBufferedRegion : IS2Region<S2ShapeIndexBufferedR
     // In order to handle (radius_ == 0) corectly, we need to test whether
     // distances are less than or equal to "radius_".  This is done by testing
     // whether distances are less than radius_.Successor().
-    private S1ChordAngle radius_successor_;
+    private readonly S1ChordAngle radius_successor_;
 
     private readonly S2ClosestEdgeQuery query_;  // This class is not thread-safe! 
 

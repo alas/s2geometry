@@ -95,12 +95,9 @@ public class S2LaxPolylineShape : S2Shape, IInitEncoder<S2LaxPolylineShape>
 // very fast initialization and no additional memory use beyond the encoded
 // data.  The encoded data is not owned by this class; typically it points
 // into a large contiguous buffer that contains other encoded data as well.
-public class EncodedS2LaxPolylineShape : S2Shape, IInitEncoder<EncodedS2LaxPolylineShape>
+public class EncodedS2LaxPolylineShape(EncodedS2PointVector vertices) : S2Shape, IInitEncoder<EncodedS2LaxPolylineShape>
 {
-    public EncodedS2PointVector vertices_ { private get; init; }
-
-    // Constructs an uninitialized object; requires Init() to be called.
-    public EncodedS2LaxPolylineShape(EncodedS2PointVector vertices) { vertices_ = vertices; }
+    public EncodedS2PointVector Vertices { private get; init; } = vertices;
 
     // Initializes an EncodedS2LaxPolylineShape.
     //
@@ -123,11 +120,11 @@ public class EncodedS2LaxPolylineShape : S2Shape, IInitEncoder<EncodedS2LaxPolyl
     // The encoding must be identical to S2LaxPolylineShape::Encode().
     public override void Encode(Encoder encoder, CodingHint hint = CodingHint.COMPACT)
     {
-        vertices_.Encode(encoder);
+        Vertices.Encode(encoder);
     }
 
-    public int NumVertices => vertices_.Count();
-    public S2Point Vertex(int i) { return vertices_[i]; }
+    public int NumVertices => Vertices.Count();
+    public S2Point Vertex(int i) { return Vertices[i]; }
 
     // S2Shape interface:
     public sealed override int NumEdges()

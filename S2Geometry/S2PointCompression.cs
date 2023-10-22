@@ -99,27 +99,20 @@ public static class S2PointCompression
     /// </summary>
     private class Faces
     {
-        public class Enumerator : IEnumerator<int>
+        public class Enumerator(Faces faces) : IEnumerator<int>
         {
             /// <summary>
             /// The faces_ vector of the Faces object for which this is an iterator.
             /// </summary>
-            private readonly List<FaceRun> faces_;
+            private readonly List<FaceRun> faces_ = faces.faces_;
 
             /// <summary>
             /// The index that the next face will come from.
             /// </summary>
-            private int face_index_;
+            private int face_index_ = 0;
 
             // Number of faces already consumed for face_index_.
-            private int num_faces_used_for_index_;
-
-            public Enumerator(Faces faces)
-            {
-                faces_ = faces.faces_;
-                face_index_ = 0;
-                num_faces_used_for_index_ = 0;
-            }
+            private int num_faces_used_for_index_ = 0;
 
             public int Current => faces_[face_index_].Face;
 
@@ -150,7 +143,7 @@ public static class S2PointCompression
         /// </summary>
         public void AddFace(int face)
         {
-            if (faces_.Any() && faces_.Last().Face == face)
+            if (faces_.Count!=0 && faces_.Last().Face == face)
             {
                 faces_.Last().Count++;
             }
@@ -191,7 +184,7 @@ public static class S2PointCompression
         /// <summary>
         /// Run-length encoded list of faces.
         /// </summary>
-        private readonly List<FaceRun> faces_ = new();
+        private readonly List<FaceRun> faces_ = [];
     }
 
     /// <summary>

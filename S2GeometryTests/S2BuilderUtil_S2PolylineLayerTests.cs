@@ -5,7 +5,7 @@ public class S2BuilderUtil_S2PolylineLayerTests
     [Fact]
     internal void Test_S2PolylineLayer_NoEdges()
     {
-        TestS2Polyline(Array.Empty<string>(), "");
+        TestS2Polyline([], "");
     }
 
     [Fact]
@@ -32,9 +32,11 @@ public class S2BuilderUtil_S2PolylineLayerTests
         //
         // This example tests a code path where the early walk termination code
         // should not be triggered at all (but was at one point due to a bug).
-        Options options = new();
-        options.SnapFunction = (new IntLatLngSnapFunction(2));
-        TestS2Polyline(new[] { "0:0, 0:2, 0:1" }, "0:0, 0:1, 0:2, 0:1", options);
+        Options options = new()
+        {
+            SnapFunction = new IntLatLngSnapFunction(2)
+        };
+        TestS2Polyline(["0:0, 0:2, 0:1"], "0:0, 0:1, 0:2, 0:1", options);
     }
 
     [Fact]
@@ -43,7 +45,7 @@ public class S2BuilderUtil_S2PolylineLayerTests
         // This tests a different code path where the walk is terminated early
         // (yield a polyline with one edge), and then the walk is "maximimzed" by
         // appending a two-edge loop to the end.
-        TestS2Polyline(new[] { "0:0, 0:1", "0:2, 0:1", "0:1, 0:2" },
+        TestS2Polyline(["0:0, 0:1", "0:2, 0:1", "0:1, 0:2"],
              "0:0, 0:1, 0:2, 0:1");
     }
 
@@ -71,13 +73,13 @@ public class S2BuilderUtil_S2PolylineLayerTests
         // This test consists of 5 squares that touch diagonally, similar to the 5
         // white squares of a 3x3 chessboard.  The edges of these squares need to be
         // reordered to assemble them into a single unbroken polyline.
-        TestS2Polyline(new[]{
+        TestS2Polyline([
             "3:3, 3:2, 2:2, 2:3, 3:3",
   "1:0, 0:0, 0:1, 1:1, 1:0",
   "3:1, 3:0, 2:0, 2:1, 3:1",
   "1:3, 1:2, 0:2, 0:1, 1:3",
   "1:1, 1:2, 2:2, 2:1, 1:1",  // Central square
-  },
+  ],
 "3:3, 3:2, 2:2, 2:1, 3:1, 3:0, 2:0, 2:1, 1:1, 1:0, 0:0, " +
 "0:1, 1:1, 1:2, 0:2, 0:1, 1:3, 1:2, 2:2, 2:3, 3:3");
     }
@@ -90,11 +92,13 @@ public class S2BuilderUtil_S2PolylineLayerTests
         // because (1) the edges form a loop, and (2) the first and last edges are
         // identical (but reversed).  This is designed to test the heuristics that
         // attempt to find the first edge of the input polyline.
-        Options options = new();
-        options.SplitCrossingEdges = (true);
-        options.SnapFunction = (new IntLatLngSnapFunction(7));
+        Options options = new()
+        {
+            SplitCrossingEdges = true,
+            SnapFunction = new IntLatLngSnapFunction(7)
+        };
         TestS2Polyline(
-  new[] { "0:10, 0:0, 1:0, -1:2, 1:4, -1:6, 1:8, -1:10, -5:0, 0:0, 0:10" },
+  ["0:10, 0:0, 1:0, -1:2, 1:4, -1:6, 1:8, -1:10, -5:0, 0:0, 0:10"],
   "0:10, 0:9, 0:7, 0:5, 0:3, 0:1, 0:0, 1:0, 0:1, -1:2, 0:3, 1:4, 0:5, " +
   "-1:6, 0:7, 1:8, 0:9, -1:10, -5:0, 0:0, 0:1, 0:3, 0:5, 0:7, 0:9, 0:10",
   options);
@@ -105,7 +109,7 @@ public class S2BuilderUtil_S2PolylineLayerTests
     {
         S2Builder builder = new(new Options());
         S2Polyline output = new();
-        LabelSet label_set_ids = new();
+        LabelSet label_set_ids = [];
         IdSetLexicon label_set_lexicon = new();
         builder.StartLayer(new S2PolylineLayer(
             output, label_set_ids, label_set_lexicon,
@@ -120,8 +124,8 @@ public class S2BuilderUtil_S2PolylineLayerTests
         builder.AddPolyline(MakePolylineOrDie("0:6, 0:5"));
         Assert.True(builder.Build(out _));
         var expected = new List<LabelSet> {
-            new LabelSet { 5 }, new LabelSet { 5 }, new LabelSet { 5, 7 },
-            new LabelSet { }, new LabelSet { }, new LabelSet { 11 } };
+            new() { 5 }, new() { 5 }, new() { 5, 7 },
+            new() { }, new() { }, new() { 11 } };
         Assert.Equal(expected.Count, label_set_ids.Count);
         for (int i = 0; i < expected.Count; ++i)
         {
@@ -140,8 +144,10 @@ public class S2BuilderUtil_S2PolylineLayerTests
     {
         S2Builder builder = new(new Options());
         S2Polyline output = new();
-        S2PolylineLayer.Options options = new();
-        options.Validate = (true);
+        S2PolylineLayer.Options options = new()
+        {
+            Validate = true
+        };
         builder.StartLayer(new S2PolylineLayer(output, options));
         var vertices = new[]
         {
@@ -158,7 +164,7 @@ public class S2BuilderUtil_S2PolylineLayerTests
     internal void Test_IndexedS2PolylineLayer_AddsShape()
     {
         S2Builder builder = new(new Options());
-        MutableS2ShapeIndex index = new();
+        MutableS2ShapeIndex index = [];
         builder.StartLayer(new IndexedS2PolylineLayer(index));
         string polyline_str = "0:0, 0:10";
         builder.AddPolyline(MakePolylineOrDie(polyline_str));
@@ -173,7 +179,7 @@ public class S2BuilderUtil_S2PolylineLayerTests
     internal void Test_IndexedS2PolylineLayer_AddsEmptyShape()
     {
         S2Builder builder = new(new Options());
-        MutableS2ShapeIndex index = new();
+        MutableS2ShapeIndex index = [];
         builder.StartLayer(new IndexedS2PolylineLayer(index));
         S2Polyline line = new();
         builder.AddPolyline(line);
@@ -209,6 +215,6 @@ public class S2BuilderUtil_S2PolylineLayerTests
 
     private static void TestS2PolylineUnchanged(string input_str)
     {
-        TestS2Polyline(new[] { input_str }, input_str);
+        TestS2Polyline([input_str], input_str);
     }
 }

@@ -15,8 +15,7 @@ public class S2ShapeIndexMeasuresTests
         Assert.Equal(0, S2ShapeIndexMeasures.GetDimension(MakeIndexOrDie("0:0 # #")));
 
         // Create an index with an empty point set.
-        MutableS2ShapeIndex index = new();
-        index.Add(new S2PointVectorShape());
+        MutableS2ShapeIndex index = [new S2PointVectorShape()];
         Assert.Equal(0, S2ShapeIndexMeasures.GetDimension(index));
     }
 

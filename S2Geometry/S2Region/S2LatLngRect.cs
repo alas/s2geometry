@@ -259,8 +259,8 @@ public readonly record struct S2LatLngRect : IS2Region<S2LatLngRect>, IDecoder<S
     {
         if (!ll.IsValid()) MyDebug.WriteLine($"Invalid S2LatLng in S2LatLngRect.Contains: {ll}");
 
-        return (Lat.Contains(ll.LatRadians) &&
-                Lng.Contains(ll.LngRadians));
+        return Lat.Contains(ll.LatRadians) &&
+                Lng.Contains(ll.LngRadians);
     }
 
     // Returns true if and only if the given point is contained in the interior
@@ -277,8 +277,8 @@ public readonly record struct S2LatLngRect : IS2Region<S2LatLngRect>, IDecoder<S
     {
         if (!ll.IsValid()) MyDebug.WriteLine($"Invalid S2LatLng in S2LatLngRect.InteriorContains: {ll}");
 
-        return (Lat.InteriorContains(ll.LatRadians) &&
-                Lng.InteriorContains(ll.LngRadians));
+        return Lat.InteriorContains(ll.LatRadians) &&
+                Lng.InteriorContains(ll.LngRadians);
     }
 
     // Returns true if and only if the rectangle contains the given other
@@ -292,8 +292,8 @@ public readonly record struct S2LatLngRect : IS2Region<S2LatLngRect>, IDecoder<S
     // points of the given other rectangle (including its boundary).
     public bool InteriorContains(S2LatLngRect other)
     {
-        return (Lat.InteriorContains(other.Lat) &&
-                Lng.InteriorContains(other.Lng));
+        return Lat.InteriorContains(other.Lat) &&
+                Lng.InteriorContains(other.Lng);
     }
 
     // Returns true if this rectangle and the given other rectangle have any
@@ -362,8 +362,8 @@ public readonly record struct S2LatLngRect : IS2Region<S2LatLngRect>, IDecoder<S
     // any point (including the boundary) of the given other rectangle.
     public bool InteriorIntersects(S2LatLngRect other)
     {
-        return (Lat.InteriorIntersects(other.Lat) &&
-                Lng.InteriorIntersects(other.Lng));
+        return Lat.InteriorIntersects(other.Lat) &&
+                Lng.InteriorIntersects(other.Lng);
     }
 
     // Returns true if the boundary of this rectangle intersects the given
@@ -695,15 +695,15 @@ public readonly record struct S2LatLngRect : IS2Region<S2LatLngRect>, IDecoder<S
     }
     public bool ApproxEquals(S2LatLngRect other, S1Angle max_error)
     {
-        return (Lat.ApproxEquals(other.Lat, max_error.Radians) &&
-                Lng.ApproxEquals(other.Lng, max_error.Radians));
+        return Lat.ApproxEquals(other.Lat, max_error.Radians) &&
+                Lng.ApproxEquals(other.Lng, max_error.Radians);
     }
 
     // ApproxEquals() with separate tolerances for latitude and longitude.
     public bool ApproxEquals(S2LatLngRect other, S2LatLng max_error)
     {
-        return (Lat.ApproxEquals(other.Lat, max_error.LatRadians) &&
-                Lng.ApproxEquals(other.Lng, max_error.LngRadians));
+        return Lat.ApproxEquals(other.Lat, max_error.LatRadians) &&
+                Lng.ApproxEquals(other.Lng, max_error.LngRadians);
     }
 
     // Returns true if the edge AB intersects the given edge of constant

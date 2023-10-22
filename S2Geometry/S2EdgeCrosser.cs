@@ -202,7 +202,7 @@ public class S2EdgeCrosserBase
     // When AB crosses CD, the crossing sign is Sign(ABC).  S2EdgeCrosser doesn't
     // store this, but it does store the sign of the *next* triangle ACB.  These
     // two values happen to be the same.
-    public int last_interior_crossing_sign() => acb_;
+    public int LastInteriorCrossingSign() => acb_;
        
 
     ///////////////////////// Edge Chain Methods ///////////////////////////
@@ -318,7 +318,7 @@ public class S2EdgeCrosserBase
         var c = C;
         var crossing = CrossingSign(d);
         if (crossing < 0) return 0;
-        if (crossing > 0) return last_interior_crossing_sign();
+        if (crossing > 0) return LastInteriorCrossingSign();
         return S2.SignedVertexCrossing(A, B, c, d);
     }
 

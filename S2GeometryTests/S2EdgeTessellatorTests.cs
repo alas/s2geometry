@@ -1,6 +1,6 @@
 namespace S2Geometry;
 
-public class S2EdgeTessellatorTests
+public class S2EdgeTessellatorTests(ITestOutputHelper logger)
 {
     // The interpolation parameter actually used in the .cc file.
     private const double kBestFraction = 0.31215691082248312;
@@ -10,15 +10,13 @@ public class S2EdgeTessellatorTests
     // combination of projecting and unprojecting an S2Point can have slightly more
     // error than is allowed by ApproxEquals.
     private static readonly S1Angle kMaxProjError = S1Angle.FromRadians(2e-15);
-    private readonly ITestOutputHelper _logger;
-
-    public S2EdgeTessellatorTests(ITestOutputHelper logger) { _logger = logger; }
+    private readonly ITestOutputHelper _logger = logger;
 
     [Fact]
     internal void Test_S2EdgeTessellator_ProjectedNoTessellation() {
         PlateCarreeProjection proj=new(180);
         S2EdgeTessellator tess = new(proj, S1Angle.FromDegrees(0.01));
-        List<R2Point> vertices = new();
+        List<R2Point> vertices = [];
         tess.AppendProjected(new S2Point(1, 0, 0), new S2Point(0, 1, 0), vertices);
         Assert.Equal(2, vertices.Count);
     }
@@ -27,7 +25,7 @@ public class S2EdgeTessellatorTests
     internal void Test_S2EdgeTessellator_UnprojectedNoTessellation() {
         PlateCarreeProjection proj = new(180);
         S2EdgeTessellator tess = new(proj, S1Angle.FromDegrees(0.01));
-        List<S2Point> vertices = new();
+        List<S2Point> vertices = [];
         tess.AppendUnprojected(new R2Point(0, 30), new R2Point(0, 50), vertices);
         Assert.Equal(2, vertices.Count);
     }
@@ -39,7 +37,7 @@ public class S2EdgeTessellatorTests
 
         PlateCarreeProjection proj = new(180);
         S2EdgeTessellator tess = new(proj, S1Angle.FromDegrees(0.01));
-        List<S2Point> vertices = new();
+        List<S2Point> vertices = [];
         tess.AppendUnprojected(new R2Point(-170, 0), new R2Point(170, 80), vertices);
         foreach (var v in vertices) {
             Assert.True(Math.Abs(S2LatLng.Longitude(v).GetDegrees()) >= 170);
@@ -54,7 +52,7 @@ public class S2EdgeTessellatorTests
         // any sudden jumps in value, which is convenient for interpolating them.
         PlateCarreeProjection proj = new(180);
         S2EdgeTessellator tess = new(proj, S1Angle.FromDegrees(0.01));
-        List<R2Point> vertices = new();
+        List<R2Point> vertices = [];
         tess.AppendProjected(S2LatLng.FromDegrees(0, -170).ToPoint(),
                              S2LatLng.FromDegrees(0, 170).ToPoint(), vertices);
         foreach (var v in vertices) {
@@ -69,7 +67,7 @@ public class S2EdgeTessellatorTests
         // exactly match the first edge of the next edge after unprojection.
         PlateCarreeProjection proj = new(180);
         S2EdgeTessellator tess = new(proj, S1Angle.FromDegrees(0.01));
-        List<S2Point> vertices = new();
+        List<S2Point> vertices = [];
         for (double lat = 1; lat <= 60; ++lat) {
             tess.AppendUnprojected(new R2Point(180 - 0.03 * lat, lat),
                                    new R2Point(-180 + 0.07 * lat, lat), vertices);
@@ -90,7 +88,7 @@ public class S2EdgeTessellatorTests
         PlateCarreeProjection proj = new(180);
         S1Angle tolerance = S1Angle.FromE7(1);
         S2EdgeTessellator tess = new(proj, tolerance);
-        List<R2Point> vertices = new();
+        List<R2Point> vertices = [];
         for (int i = 0; i + 1 < loop.Count; ++i) {
             tess.AppendProjected(loop[i], loop[i + 1], vertices);
         }
@@ -112,7 +110,7 @@ public class S2EdgeTessellatorTests
         PlateCarreeProjection proj = new(180);
         S1Angle kOneMicron = S1Angle.FromRadians(1e-6 / 6371.0);
         S2EdgeTessellator tess = new(proj, kOneMicron);
-        List<R2Point> vertices = new();
+        List<R2Point> vertices = [];
         tess.AppendProjected(S2LatLng.FromDegrees(3, 21).ToPoint(),
                              S2LatLng.FromDegrees(1, -159).ToPoint(), vertices);
         Assert.Equal(36, vertices.Count);
@@ -298,7 +296,7 @@ public class S2EdgeTessellatorTests
     private Stats TestUnprojected(Projection proj, S1Angle tolerance, R2Point pa, R2Point pb_in, bool log_stats)
     {
         S2EdgeTessellator tess=new(proj, tolerance);
-        List<S2Point> vertices = new();
+        List<S2Point> vertices = [];
         tess.AppendUnprojected(pa, pb_in, vertices);
         R2Point pb = proj.WrapDestination(pa, pb_in);
         Assert.True(new S1Angle(proj.Unproject(pa), vertices.First()) <= kMaxProjError);
@@ -335,7 +333,7 @@ public class S2EdgeTessellatorTests
     private Stats TestProjected(Projection proj, S1Angle tolerance, S2Point a, S2Point b, bool log_stats)
     {
         S2EdgeTessellator tess = new(proj, tolerance);
-        List<R2Point> vertices = new();
+        List<R2Point> vertices = [];
         tess.AppendProjected(a, b, vertices);
         Assert.True(new S1Angle(a, proj.Unproject(vertices.First())) <= kMaxProjError);
         Assert.True(new S1Angle(b, proj.Unproject(vertices.Last())) <= kMaxProjError);
@@ -392,7 +390,7 @@ public class S2EdgeTessellatorTests
         double dsin2 = dlat * dlat + dlng * dlng * Math.Sin(S2.M_PI_4 * x) * S2.M_SQRT1_2;
         double dsin2_max = 0.5 * (1 - S2.M_SQRT1_2);
         // Note that this is the reciprocal of the value used in the .cc file!
-        double kScaleFactor = Math.Max((2 * Math.Sqrt(3) / 9) / (x * (1 - x * x)),
+        double kScaleFactor = Math.Max(2 * Math.Sqrt(3) / 9 / (x * (1 - x * x)),
                                         Math.Asin(Math.Sqrt(dsin2_max)) / Math.Asin(Math.Sqrt(dsin2)));
 
         // Keep track of the average and maximum geometric and parametric errors.
@@ -419,9 +417,9 @@ public class S2EdgeTessellatorTests
             R2Point pb = proj.WrapDestination(pa, proj.Project(b));
             S1Angle max_dist_g = GetMaxDistance(proj, pa, a, pb, b, DistType.GEOMETRIC);
             // Ignore edges where the error is too small.
-            if (max_dist_g <= S2EdgeTessellator.kMinTolerance()) continue;
+            if (max_dist_g <= S2EdgeTessellator.KMinTolerance()) continue;
             S1Angle max_dist_p = GetMaxDistance(proj, pa, a, pb, b, DistType.PARAMETRIC);
-            if (max_dist_p <= S2EdgeTessellator.kMinTolerance()) continue;
+            if (max_dist_p <= S2EdgeTessellator.KMinTolerance()) continue;
 
             // Compute the estimated error bound.
             S1Angle d1 = new(S2.Interpolate(a, b, t), proj.Unproject((1 - t) * pa + t * pb));

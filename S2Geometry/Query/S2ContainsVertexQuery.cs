@@ -13,19 +13,15 @@
 
 namespace S2Geometry;
 
-public class S2ContainsVertexQuery
+public class S2ContainsVertexQuery(S2Point target)
 {
-    // "target" is the vertex whose containment will be determined.
-    public S2ContainsVertexQuery(S2Point target) => target_ = target;
 
     // Indicates that the polygon has an edge between "target" and "v" in the
     // given direction (+1 = outgoing, -1 = incoming, 0 = degenerate).
     public void AddEdge(S2Point v, int direction)
     {
-        if (edge_map_.ContainsKey(v))
+        if (!edge_map_.TryAdd(v, direction))
             edge_map_[v] += direction;
-        else
-            edge_map_.Add(v, direction);
     }
 
     // Returns +1 if the vertex is contained, -1 if it is not contained, and 0
@@ -54,6 +50,6 @@ public class S2ContainsVertexQuery
         return best.Value;
     }
 
-    private readonly S2Point target_;
-    private readonly Dictionary<S2Point, int> edge_map_ = new(); // absl::btree_map
+    private readonly S2Point target_ = target;
+    private readonly Dictionary<S2Point, int> edge_map_ = []; // absl::btree_map
 }

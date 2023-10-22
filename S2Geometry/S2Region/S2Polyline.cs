@@ -23,7 +23,7 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoder<S2Polyline>
 
     // Allows overriding the automatic validity checking controlled by the
     // --s2debug flag.
-    public S2Debug s2debug_override_ { get; set; } 
+    public S2Debug S2DebugOverride { get; set; } 
 
     #endregion
 
@@ -35,7 +35,7 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoder<S2Polyline>
     public S2Polyline(S2Point[] vertices, S2Debug s2debug_override = S2Debug.ALLOW)
     {
         Vertices = vertices;
-        s2debug_override_ = s2debug_override;
+        S2DebugOverride = s2debug_override;
         //Init();
     //}
 
@@ -45,7 +45,7 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoder<S2Polyline>
     //public void Init()
     //{
 #if s2debug
-        if (s2debug_override_ == S2Debug.ALLOW)
+        if (S2DebugOverride == S2Debug.ALLOW)
         {
             // Note that s2debug is false in optimized builds (by default).
             MyDebug.Assert(IsValid());
@@ -60,7 +60,7 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoder<S2Polyline>
     private S2Polyline(S2Polyline src)
     {
         Vertices = (S2Point[])src.Vertices.Clone();
-        s2debug_override_ = src.s2debug_override_;
+        S2DebugOverride = src.S2DebugOverride;
         // TODO(user, ericv): Decide whether to use a canonical empty
         // representation.
         // If num_vertices_ == 0, then src.vertices_ will be null if src was default
@@ -74,7 +74,7 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoder<S2Polyline>
     // Convenience function that snaps the vertices to S2CellId centers at the
     // given level (default level 30, which has S2CellId centers spaced about 1
     // centimeter apart)
-    public void InitToSnapped(S2Polyline polyline, int snap_level = S2CellId.kMaxLevel)
+    public readonly void InitToSnapped(S2Polyline polyline, int snap_level = S2CellId.kMaxLevel)
     {
         S2Builder builder =new(new(new S2CellIdSnapFunction(snap_level)));
         InitFromBuilder(polyline, builder);
@@ -87,25 +87,26 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoder<S2Polyline>
     // Simplification works by replacing nearly straight chains of short edges
     // with longer edges, in a way that preserves the topology of the input
     // polyline up to the creation of degeneracies.
-    public void InitToSimplified(S2Polyline polyline, SnapFunction snap_function)
+    public readonly void InitToSimplified(S2Polyline polyline, SnapFunction snap_function)
     {
-        S2Builder.Options options=new(snap_function);
-        options.SimplifyEdgeChains = true;
+        S2Builder.Options options = new(snap_function)
+        {
+            SimplifyEdgeChains = true
+        };
         S2Builder builder=new(options);
         InitFromBuilder(polyline, builder);
     }
 
     // Initializes this polyline from input polyline using the given S2Builder.
-    public void InitFromBuilder(S2Polyline polyline, S2Builder builder)
+    public readonly void InitFromBuilder(S2Polyline polyline, S2Builder builder)
     {
         builder.StartLayer(new S2PolylineLayer(this));
         builder.AddPolyline(polyline);
-        S2Error error;
-        MyDebug.Assert(builder.Build(out error), "Could not build polyline: " + error);
+        MyDebug.Assert(builder.Build(out S2Error error), "Could not build polyline: " + error);
     }
 
     // Return true if the given vertices form a valid polyline.
-    public bool IsValid()
+    public readonly bool IsValid()
     {
         if (FindValidationError(out S2Error error))
         {
@@ -121,7 +122,7 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoder<S2Polyline>
     // appropriately.  Otherwise returns false and leaves "error" unchanged.
     //
     // REQUIRES: error != null
-    public bool FindValidationError(out S2Error error)
+    public readonly bool FindValidationError(out S2Error error)
     {
         // All vertices must be unit length.
         for (int i = 0; i < Vertices.Length; ++i)
@@ -150,11 +151,11 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoder<S2Polyline>
         return false;
     }
 
-    public int NumVertices() => Vertices?.Length ?? 0;
+    public readonly int NumVertices() => Vertices?.Length ?? 0;
 
-    public S2Point[] VerticesClone() => (S2Point[])Vertices.Clone();
+    public readonly S2Point[] VerticesClone() => (S2Point[])Vertices.Clone();
 
-    public S2Point Vertex(int k)
+    public readonly S2Point Vertex(int k)
     {
         MyDebug.Assert(k >= 0);
         MyDebug.Assert(k <= Vertices.Length);
@@ -162,10 +163,10 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoder<S2Polyline>
     }
 
     // Returns an S2PointSpan containing the polyline's vertices.
-    public S2PointSpan GetVerticesSpan() => new(Vertices);
+    public readonly S2PointSpan GetVerticesSpan() => new(Vertices);
 
     // Return the length of the polyline.
-    public S1Angle GetLength() => S2PolylineMeasures.GetLength(GetVerticesSpan());
+    public readonly S1Angle GetLength() => S2PolylineMeasures.GetLength(GetVerticesSpan());
 
     // Return the true centroid of the polyline multiplied by the length of the
     // polyline (see s2centroids.h for details on centroids).  The result is not
@@ -173,20 +174,18 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoder<S2Polyline>
     //
     // Prescaling by the polyline length makes it easy to compute the centroid
     // of several polylines (by simply adding up their centroids).
-    public S2Point GetCentroid() => S2PolylineMeasures.GetCentroid(GetVerticesSpan());
+    public readonly S2Point GetCentroid() => S2PolylineMeasures.GetCentroid(GetVerticesSpan());
 
     // If all of the polyline's vertices happen to be the centers of S2Cells at
     // some level, then returns that level, otherwise returns -1.  See also
     // InitToSnapped() and s2builderutil::S2CellIdSnapFunction.
     // Returns -1 if the polyline has no vertices.
-    public int GetSnapLevel()
+    public readonly int GetSnapLevel()
     {
         int snap_level = -1;
         for (int i = 0; i < NumVertices(); ++i)
         {
-            int face;
-            uint si, ti;
-            var level = S2.XYZtoFaceSiTi(Vertices[i], out face, out si, out ti);
+            var level = S2.XYZtoFaceSiTi(Vertices[i], out _, out _, out _);
             if (level< 0) return level;  // Vertex is not a cell center.
             if (level != snap_level)
             {
@@ -209,7 +208,7 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoder<S2Polyline>
     // or greater than one are clamped.  The return value is unit length.  This
     // cost of this function is currently linear in the number of vertices.
     // The polyline must not be empty.
-    public S2Point Interpolate(double fraction) => GetSuffix(fraction, out _);
+    public readonly S2Point Interpolate(double fraction) => GetSuffix(fraction, out _);
 
     // Like Interpolate(), but also return the index of the next polyline
     // vertex after the interpolated point P.  This allows the caller to easily
@@ -227,7 +226,7 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoder<S2Polyline>
     // taking the polyline vertices up to "next_vertex - 1" and appending the
     // returned point P if it is different from the last vertex (since in this
     // case there is no guarantee of distinctness).
-    public S2Point GetSuffix(double fraction, out int next_vertex)
+    public readonly S2Point GetSuffix(double fraction, out int next_vertex)
     {
         MyDebug.Assert(Vertices.Length > 0);
         // We intentionally let the (fraction >= 1) case fall through, since
@@ -270,7 +269,7 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoder<S2Polyline>
     //
     // The polyline should not be empty.  If it has fewer than 2 vertices, the
     // return value is zero.
-    public double UnInterpolate(S2Point point, int next_vertex)
+    public readonly double UnInterpolate(S2Point point, int next_vertex)
     {
         MyDebug.Assert(Vertices.Length > 0);
         if (Vertices.Length < 2)
@@ -298,7 +297,7 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoder<S2Polyline>
     // GetSuffix().
     //
     // The polyline must be non-empty.
-    public S2Point Project(S2Point point, out int next_vertex)
+    public readonly S2Point Project(S2Point point, out int next_vertex)
     {
         MyDebug.Assert(Vertices.Length > 0);
 
@@ -338,7 +337,7 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoder<S2Polyline>
     // the polyline which it is closest to.
     //
     // The polyline must have at least 2 vertices.
-    public bool IsOnRight(S2Point point)
+    public readonly bool IsOnRight(S2Point point)
     {
         MyDebug.Assert(Vertices.Length >= 2);
 
@@ -376,7 +375,7 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoder<S2Polyline>
     // The running time is quadratic in the number of vertices.  (To intersect
     // polylines more efficiently, or compute the actual intersection geometry,
     // use S2BooleanOperation.)
-    public bool Intersects(S2Polyline line)
+    public readonly bool Intersects(S2Polyline line)
     {
         if (Vertices.Length <= 0 || line.Vertices.Length <= 0)
         {
@@ -430,7 +429,7 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoder<S2Polyline>
     // simplify polylines and polygons, supports snapping (e.g. to E7 lat/lng
     // coordinates or S2CellId centers), and can split polylines at intersection
     // points.
-    public void SubsampleVertices(S1Angle tolerance, out int[]? indices)
+    public readonly void SubsampleVertices(S1Angle tolerance, out int[]? indices)
     {
         var indicesTmp = new InputEdgeLoop();
         if (Vertices.Length == 0)
@@ -451,7 +450,7 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoder<S2Polyline>
             }
             index = next_index;
         }
-        indices = indicesTmp.ToArray();
+        indices = [.. indicesTmp];
     }
 
     // Given a polyline, a tolerance distance, and a start index, this function
@@ -536,9 +535,9 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoder<S2Polyline>
     // Return true if two polylines have the same number of vertices, and
     // corresponding vertex pairs are separated by no more than "max_error".
     // (For testing purposes.)
-    public bool ApproxEquals(S2Polyline b) => ApproxEquals(b, S1Angle.FromRadians(S2.DoubleError));
+    public readonly bool ApproxEquals(S2Polyline b) => ApproxEquals(b, S1Angle.FromRadians(S2.DoubleError));
 
-    public bool ApproxEquals(S2Polyline b, S1Angle max_error)
+    public readonly bool ApproxEquals(S2Polyline b, S1Angle max_error)
     {
         if (Vertices.Length != b.Vertices.Length) return false;
         for (int offset = 0; offset < Vertices.Length; ++offset)
@@ -565,7 +564,7 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoder<S2Polyline>
     // This function is well-defined for empty polylines:
     //    anything.covers(empty) = true
     //    empty.covers(nonempty) = false
-    public bool NearlyCovers(S2Polyline covered, S1Angle max_error)
+    public readonly bool NearlyCovers(S2Polyline covered, S1Angle max_error)
     {
         // NOTE: This algorithm is described assuming that adjacent vertices in a
         // polyline are never at the same point.  That is, the ith and i+1th vertices
@@ -635,7 +634,7 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoder<S2Polyline>
             }
         }
 
-        while (pending.Any())
+        while (pending.Count!=0)
         {
             SearchState state = pending.Last();
             pending.RemoveAt(pending.Count - 1);
@@ -681,7 +680,7 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoder<S2Polyline>
     }
 
     // Returns the total number of bytes used by the polyline.
-    public int SpaceUsed() =>
+    public readonly int SpaceUsed() =>
         Marshal.SizeOf(typeof(S2Polyline)) + Vertices.Length * SizeHelper.SizeOf(typeof(S2Point));
 
     // Return the first i > "index" such that the ith vertex of "pline" is not at
@@ -697,7 +696,7 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoder<S2Polyline>
         return index;
     }
 
-    public void Reverse()
+    public readonly void Reverse()
     {
         if (NumVertices() > 0)
         {
@@ -712,8 +711,8 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoder<S2Polyline>
     ////////////////////////////////////////////////////////////////////////
     // S2Region interface (see s2region.h for details):
 
-    public S2Cap GetCapBound() => GetRectBound().GetCapBound();
-    public S2LatLngRect GetRectBound()
+    public readonly S2Cap GetCapBound() => GetRectBound().GetCapBound();
+    public readonly S2LatLngRect GetRectBound()
     {
         var bounder = new S2LatLngRectBounder();
         for (int i = 0; i < Vertices.Length; ++i)
@@ -722,8 +721,8 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoder<S2Polyline>
         }
         return bounder.GetBound();
     }
-    public bool Contains(S2Cell cell) => false;
-    public bool MayIntersect(S2Cell cell)
+    public readonly bool Contains(S2Cell cell) => false;
+    public readonly bool MayIntersect(S2Cell cell)
     {
         if (Vertices.Length == 0) return false;
 
@@ -756,7 +755,7 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoder<S2Polyline>
 
     // Always return false, because "containment" is not numerically
     // well-defined except at the polyline vertices.
-    public bool Contains(S2Point p) => false;
+    public readonly bool Contains(S2Point p) => false;
 
     #endregion
 
@@ -770,14 +769,14 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoder<S2Polyline>
     //
     // REQUIRES: "encoder" uses the default constructor, so that its buffer
     //           can be enlarged as necessary by calling Ensure(int).
-    public void Encode(Encoder encoder, CodingHint hint = CodingHint.COMPACT)
+    public readonly void Encode(Encoder encoder, CodingHint hint = CodingHint.COMPACT)
     {
         EncodeUncompressed(encoder);
     }
 
     // Appends a serialized uncompressed representation of the S2Polyline to
     // "encoder".
-    public void EncodeUncompressed(Encoder encoder)
+    public readonly void EncodeUncompressed(Encoder encoder)
     {
         encoder.Ensure(Vertices.Length * SizeHelper.SizeOf(typeof(S2Point)) + 10);  // sufficient
 
@@ -790,11 +789,11 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoder<S2Polyline>
 
     // Encode the polylines's vertices using the most compact way: compressed or
     // uncompressed.
-    public void EncodeMostCompact(Encoder encoder) 
+    public readonly void EncodeMostCompact(Encoder encoder) 
     {
         if (NumVertices() == 0)
         {
-            EncodeCompressed(encoder, Array.Empty<S2XYZFaceSiTi>(), S2.kMaxCellLevel);
+            EncodeCompressed(encoder, [], S2.kMaxCellLevel);
             return;
         }
         
@@ -847,7 +846,7 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoder<S2Polyline>
     }
 
     // Encode the polylines's vertices using S2EncodePointsCompressed().
-    public void EncodeCompressed(Encoder encoder, S2XYZFaceSiTi[] all_vertices, int snap_level)
+    public readonly void EncodeCompressed(Encoder encoder, S2XYZFaceSiTi[] all_vertices, int snap_level)
     {
         // Set version number.
         encoder.Ensure(2 + Encoder.kVarintMax32);
@@ -930,17 +929,17 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoder<S2Polyline>
 
     #region ICustomCloneable
 
-    public object CustomClone() => new S2Polyline(this);
+    public readonly object CustomClone() => new S2Polyline(this);
 
     #endregion
 
     #region IEquatable
 
-    public bool Equals(S2Polyline b)
+    public readonly bool Equals(S2Polyline b)
     {
         return Vertices.SequenceEqual(b.Vertices);
     }
-    public override int GetHashCode() => LinqUtils.GetSequenceHashCode(Vertices);
+    public override readonly int GetHashCode() => LinqUtils.GetSequenceHashCode(Vertices);
 
     #endregion
 
@@ -1017,7 +1016,7 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoder<S2Polyline>
             Math.Max(0, pol.Vertices.Length - 1);
 
         public sealed override Edge GetEdge(int e) =>
-            new Edge(Polyline.Vertex(e), Polyline.Vertex(e + 1));
+            new(Polyline.Vertex(e), Polyline.Vertex(e + 1));
 
         public sealed override int Dimension() => 1;
 
@@ -1049,19 +1048,8 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoder<S2Polyline>
     // Like Shape, except that the S2Polyline is automatically deleted when this
     // object is deleted by the S2ShapeIndex.  This is useful when an S2Polyline
     // is constructed solely for the purpose of indexing it.
-    public class OwningShape : Shape, IInitEncoder<OwningShape>
+    public class OwningShape(S2Polyline polyline) : Shape(polyline), IInitEncoder<OwningShape>
     {
-        private S2Polyline owned_polyline_;
-
-        public OwningShape() { }  // Must call Init().
-        public OwningShape(S2Polyline polyline) : base(polyline) => owned_polyline_ = polyline;
-
-        public override void Init(S2Polyline polyline)
-        {
-            base.Init(polyline);
-            owned_polyline_ = polyline;
-        }
-
         public static (bool, OwningShape?) Init(Decoder decoder)
         {
             var (success, result) = Decode(decoder);

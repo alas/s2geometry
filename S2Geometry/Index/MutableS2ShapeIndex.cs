@@ -238,14 +238,14 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
 
     // The shapes in the index, accessed by their shape id.  Removed shapes are
     // replaced by null pointers.
-    private readonly List<S2Shape?> shapes_ = new();
+    private readonly List<S2Shape?> shapes_ = [];
 
     // A map from S2CellId to the set of clipped shapes that intersect that
     // cell.  The cell ids cover a set of non-overlapping regions on the
     // sphere.  Note that this field is updated lazily (see below).  Const
     // methods *must* call MaybeApplyUpdates() before accessing this field.
     // (The easiest way to achieve this is simply to use an Iterator.)
-    private readonly List<S2ShapeIndexIdCell> cell_map_ = new(); // gtl.btree_map
+    private readonly List<S2ShapeIndexIdCell> cell_map_ = []; // gtl.btree_map
 
     // The id of the first shape that has been queued for addition but not
     // processed yet.
@@ -302,7 +302,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
     // just been called).  May be called before or after set_memory_tracker().
     public void Init()
     {
-        MyDebug.Assert(!shapes_.Any());
+        MyDebug.Assert(shapes_.Count==0);
         // Memory tracking is not affected by this method.
     }
 
@@ -372,7 +372,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
             !it.Done(); it.MoveNext())
         {
             cell_ids.Add(it.Id);
-            it.Cell.Encode(NumShapeIds(), encoded_cells.AddViaEncoder());
+            it.Cell!.Encode(NumShapeIds(), encoded_cells.AddViaEncoder());
         }
         EncodedS2CellIdVector.EncodeS2CellIdVector(cell_ids, encoder);
         encoded_cells.Encode(encoder);
@@ -526,7 +526,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
 
         // If a memory tracking error has occurred we set the index status to FRESH
         // in order to prevent us from attempting to rebuild it.
-        var status = (!shapes_.Any() || !mem_tracker_.Ok()) ? IndexStatus.FRESH : IndexStatus.STALE;
+        var status = (shapes_.Count==0 || !mem_tracker_.Ok()) ? IndexStatus.FRESH : IndexStatus.STALE;
         index_status_ = status;
     }
 
@@ -578,7 +578,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
                     Minimize();
                     return shape;
                 }
-                pending_removals_ = new List<RemovedShape>();
+                pending_removals_ = [];
             }
             var removed = new RemovedShape(shape.Id, shape.Dimension() == 2,
                 shape.ContainsBruteForce(InteriorTracker.Origin()), edges);
@@ -627,7 +627,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         for (it_ = new(this, InitialPosition.BEGIN); !it_.Done(); it_.MoveNext())
         {
             var cell = it_.Cell;
-            size += cell.NumClipped() * SizeHelper.SizeOf(typeof(S2ClippedShape));
+            size += cell!.NumClipped() * SizeHelper.SizeOf(typeof(S2ClippedShape));
             for (var s = 0; s < cell.NumClipped(); ++s)
             {
                 var clipped = cell.Clipped(s);
@@ -734,101 +734,106 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
             // to lock a mutex that is held by the updating thread.  When this mutex
             // is unlocked the index_status_ is guaranteed to be FRESH.
 #if DEBUG
-            if (Awaiter is not null)
+#pragma warning disable IDE0031 // Use null propagation
+            if (ApplyUpdatesTask is not null)
+#pragma warning restore IDE0031 // Use null propagation
 #endif
-                Awaiter.Wait();
+                ApplyUpdatesTask.Wait();
         }
         else
         {
             lock (_channelLock)
             {
                 index_status_ = IndexStatus.UPDATING;
-                Awaiter = ApplyUpdatesInternalAsync();
+                ApplyUpdatesTask = ApplyUpdatesInternalAsync();
                 index_status_ = IndexStatus.FRESH;
             }
         }
     }
-    private Task? Awaiter;
+    private Task? ApplyUpdatesTask;
 
     // This method updates the index by applying all pending additions and
     // removals.  It does *not* update index_status_ (see ApplyUpdatesThreadSafe).
     private async Task ApplyUpdatesInternalAsync()
     {
-        // Check whether we have so many edges to process that we should process
-        // them in multiple batches to save memory.  Building the index can use up
-        // to 20x as much memory (per edge) as the final index size.
-        var batches = GetUpdateBatches();
-        for (int i = 0; i < batches.Count; i++)
+        await Task.Run(() =>
         {
-            var batch = batches[i];
-            if (mem_tracker_.IsActive())
+            // Check whether we have so many edges to process that we should process
+            // them in multiple batches to save memory.  Building the index can use up
+            // to 20x as much memory (per edge) as the final index size.
+            var batches = GetUpdateBatches();
+            for (int i = 0; i < batches.Count; i++)
             {
-                MyDebug.Assert(mem_tracker_.ClientUsageBytes == SpaceUsed(), "Invariant.");
-            }
-            Array6<List<FaceEdge>> all_edges = new (() => new());
-
-            ReserveSpace(ref batch, all_edges);
-            if (!mem_tracker_.Ok())
-            {
-                batches[i] = batch;
-                Minimize();
-                return;
-            }
-
-            InteriorTracker tracker = new();
-            if (pending_removals_ is not null)
-            {
-                // The first batch implicitly includes all shapes being removed.
-                foreach (var pending_removal in pending_removals_)
+                var batch = batches[i];
+                if (mem_tracker_.IsActive())
                 {
-                    RemoveShape(pending_removal, all_edges, tracker);
+                    MyDebug.Assert(mem_tracker_.ClientUsageBytes == SpaceUsed(), "Invariant.");
                 }
-                pending_removals_ = null;
-            }
+                Array6<List<FaceEdge>> all_edges = new(() => new());
 
-            // A batch consists of zero or more full shapes followed by zero or one
-            // partial shapes.  The loop below handles all such cases.
-            var begin = batch.Begin;
-            var beginShapeId = begin.ShapeId;
-            var beginEdgeId = begin.EdgeId;
-            for (; new ShapeEdgeId(beginShapeId, beginEdgeId) < batch.End;
-                ++beginShapeId, beginEdgeId = 0)
-            {
-                var shape = shapes_[beginShapeId];
-                if (shape is null) continue;  // Already removed.
-                int edges_end = beginShapeId == batch.End.ShapeId
-                    ? batch.End.EdgeId
-                    : shape.NumEdges();
-                AddShape(shape, beginEdgeId, edges_end, all_edges, tracker);
-            }
-            batches[i] = new(new(beginShapeId, beginEdgeId), batch.End, batch.NumEdges);
-
-            for (var face = 0; face < 6; ++face)
-            {
-                UpdateFaceEdges(face, all_edges[face], tracker);
-                // Save memory by clearing vectors after we are done with them.
-                all_edges[face].Clear();
-            }
-
-            pending_additions_begin_ = batch.End.ShapeId;
-            if (beginEdgeId > 0 && batch.End.EdgeId == 0)
-            {
-                // We have just finished adding the edges of shape that was split over
-                // multiple batches.  Now we need to mark the interior of the shape, if
-                // any, by setting contains_center() on the appropriate index cells.
-                FinishPartialShape(tracker.PartialShapeId);
-            }
-            if (mem_tracker_.IsActive())
-            {
-                mem_tracker_.Tally(-mem_tracker_.ClientUsageBytes);
-                if (!mem_tracker_.Tally(SpaceUsed()))
+                ReserveSpace(ref batch, all_edges);
+                if (!mem_tracker_.Ok())
                 {
+                    batches[i] = batch;
                     Minimize();
                     return;
                 }
+
+                InteriorTracker tracker = new();
+                if (pending_removals_ is not null)
+                {
+                    // The first batch implicitly includes all shapes being removed.
+                    foreach (var pending_removal in pending_removals_)
+                    {
+                        RemoveShape(pending_removal, all_edges, tracker);
+                    }
+                    pending_removals_ = null;
+                }
+
+                // A batch consists of zero or more full shapes followed by zero or one
+                // partial shapes.  The loop below handles all such cases.
+                var begin = batch.Begin;
+                var beginShapeId = begin.ShapeId;
+                var beginEdgeId = begin.EdgeId;
+                for (; new ShapeEdgeId(beginShapeId, beginEdgeId) < batch.End;
+                    ++beginShapeId, beginEdgeId = 0)
+                {
+                    var shape = shapes_[beginShapeId];
+                    if (shape is null) continue;  // Already removed.
+                    int edges_end = beginShapeId == batch.End.ShapeId
+                        ? batch.End.EdgeId
+                        : shape.NumEdges();
+                    AddShape(shape, beginEdgeId, edges_end, all_edges, tracker);
+                }
+                batches[i] = new(new(beginShapeId, beginEdgeId), batch.End, batch.NumEdges);
+
+                for (var face = 0; face < 6; ++face)
+                {
+                    UpdateFaceEdges(face, all_edges[face], tracker);
+                    // Save memory by clearing vectors after we are done with them.
+                    all_edges[face].Clear();
+                }
+
+                pending_additions_begin_ = batch.End.ShapeId;
+                if (beginEdgeId > 0 && batch.End.EdgeId == 0)
+                {
+                    // We have just finished adding the edges of shape that was split over
+                    // multiple batches.  Now we need to mark the interior of the shape, if
+                    // any, by setting contains_center() on the appropriate index cells.
+                    FinishPartialShape(tracker.PartialShapeId);
+                }
+                if (mem_tracker_.IsActive())
+                {
+                    mem_tracker_.Tally(-mem_tracker_.ClientUsageBytes);
+                    if (!mem_tracker_.Tally(SpaceUsed()))
+                    {
+                        Minimize();
+                        return;
+                    }
+                }
             }
-        }
-        ResetChannelInternal();
+            ResetChannelInternal();
+        });
     }
 
     // Count the number of edges being updated, and break them into several
@@ -887,7 +892,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         Int64 kMaxCheapBytes =
             Math.Min(s2shape_index_tmp_memory_budget / 2,
                 30L << 20 /*30 MB*/);
-        Int64 face_edge_usage = batch.NumEdges * (6 * Marshal.SizeOf(typeof(FaceEdge)));
+        Int64 face_edge_usage = batch.NumEdges * 6 * Marshal.SizeOf(typeof(FaceEdge));
         if (face_edge_usage <= kMaxCheapBytes)
         {
             if (!mem_tracker_.TallyTemp(face_edge_usage + other_usage))
@@ -1053,7 +1058,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         {
             var new_usage = Convert.ToInt64(
                 SpaceUsed() - mem_tracker_.ClientUsageBytes +
-                0.1 * shape.NumEdges() * (1.5 * Marshal.SizeOf(typeof(S2ShapeIndexCell)) + //cell_map_.value_type
+                0.1 * shape!.NumEdges() * (1.5 * Marshal.SizeOf(typeof(S2ShapeIndexCell)) + //cell_map_.value_type
                                             Marshal.SizeOf(typeof(S2ShapeIndexCell)) +
                                             Marshal.SizeOf(typeof(S2ClippedShape))));
             if (!mem_tracker_.TallyTemp(new_usage)) return;
@@ -1073,14 +1078,14 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         // simpler to just iterate through the entire index.
         //
         // "tmp_edges" below speeds up large polygon index construction by 3-12%.
-        List<S2Shape.Edge> tmp_edges = new();  // Temporary storage.
+        List<S2Shape.Edge> tmp_edges = [];  // Temporary storage.
         InteriorTracker tracker=new();
         tracker.AddShape(shape_id,
-                         shape.ContainsBruteForce(tracker.Focus()));
+                         shape!.ContainsBruteForce(tracker.Focus()));
         S2CellId begin = S2CellId.Begin(S2.kMaxCellLevel);
         for (var index_it = 0; ; ++index_it)
         {
-            if (tracker.ShapeIds().Any())
+            if (tracker.ShapeIds().Count!=0)
             {
                 // Check whether we need to add new cells that are entirely contained by
                 // the partial shape.
@@ -1120,13 +1125,13 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
                 MyDebug.Assert(num_edges > 0);
                 for (int i = 0; i < num_edges; ++i)
                 {
-                    tmp_edges.Add(shape.GetEdge(clipped.Edges[i]));
+                    tmp_edges.Add(shape!.GetEdge(clipped.Edges[i]));
                 }
                 foreach (var edge in tmp_edges)
                 {
                     tracker.TestEdge(shape_id, edge);
                 }
-                if (tracker.ShapeIds().Any())
+                if (tracker.ShapeIds().Count!=0)
                 {
                     // The partial shape contains the center of this index cell.
                     clipped.ContainsCenter = true;
@@ -1140,7 +1145,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
                 tmp_edges.Clear();
 
             }
-            else if (tracker.ShapeIds().Any())
+            else if (tracker.ShapeIds().Count!=0)
             {
                 // The partial shape contains the center of an existing index cell that
                 // does not intersect any of its edges.
@@ -1188,7 +1193,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
     private void UpdateFaceEdges(int face, List<FaceEdge> face_edges, InteriorTracker tracker)
     {
         var num_edges = face_edges.Count;
-        if (num_edges == 0 && !tracker.ShapeIds().Any()) return;
+        if (num_edges == 0 && tracker.ShapeIds().Count==0) return;
 
         // Create the initial ClippedEdge for each FaceEdge.  Additional clipped
         // edges are created when edges are split between child cells.  We create
@@ -1261,7 +1266,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
     private void SkipCellRange(S2CellId begin, S2CellId end, InteriorTracker tracker, EdgeAllocator alloc, bool disjoint_from_index)
     {
         // If we aren't in the interior of a shape, then skipping over cells is easy.
-        if (!tracker.ShapeIds().Any()) return;
+        if (tracker.ShapeIds().Count==0) return;
 
         // Otherwise generate the list of cell ids that we need to visit, and create
         // an index entry for each one.
@@ -1304,7 +1309,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
     private void UpdateEdges(S2PaddedCell pcell, List<ClippedEdge> edges, InteriorTracker tracker, EdgeAllocator alloc, bool disjoint_from_index)
     {
         // Cases where an index cell is not needed should be detected before this.
-        MyDebug.Assert(edges.Any() || tracker.ShapeIds().Any());
+        MyDebug.Assert(edges.Count!=0 || tracker.ShapeIds().Count!=0);
 
         // This function is recursive with a maximum recursion depth of 30
         // (S2Constants.kMaxCellLevel).  Note that using an explicit stack does not seem
@@ -1368,8 +1373,8 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
             int num_edges = edges.Count;
             var child_edges = new List<ClippedEdge>[][]   // [i][j]
             {
-                   new [] { new List<ClippedEdge>(num_edges), new List<ClippedEdge>(num_edges) },
-                   new [] { new List<ClippedEdge>(num_edges), new List<ClippedEdge>(num_edges) },
+                   [new List<ClippedEdge>(num_edges), new List<ClippedEdge>(num_edges)],
+                   [new List<ClippedEdge>(num_edges), new List<ClippedEdge>(num_edges)],
             };
 
             // Remember the current size of the EdgeAllocator so that we can free any
@@ -1428,7 +1433,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
             for (var pos = 0; pos < 4; ++pos)
             {
                 pcell.GetChildIJ(pos, out int i, out int j);
-                if (child_edges[i][j].Any() || tracker.ShapeIds().Any())
+                if (child_edges[i][j].Count!=0 || tracker.ShapeIds().Count!=0)
                 {
                     UpdateEdges(new S2PaddedCell(pcell, i, j), child_edges[i][j],
                                 tracker, alloc, disjoint_from_index);
@@ -1467,7 +1472,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         // InteriorTracker state.  This state will be restored by UpdateEdges when
         // it is finished processing the contents of this cell.  (Note in the test
         // below that removed edges are always sorted before added edges.)
-        if (tracker.IsActive && edges.Any() &&
+        if (tracker.IsActive && edges.Count!=0 &&
             IsShapeBeingRemoved(edges[0].FaceEdge.ShapeId))
         {
             // We probably need to update the InteriorTracker.  ("Probably" because
@@ -1620,7 +1625,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
     // if successful.  (Otherwise the edges should be subdivided further.)
     private bool MakeIndexCell(S2PaddedCell pcell, List<ClippedEdge> edges, InteriorTracker tracker)
     {
-        if (!edges.Any() && !tracker.ShapeIds().Any())
+        if (edges.Count==0 && tracker.ShapeIds().Count==0)
         {
             // No index cell is needed.  (In most cases this situation is detected
             // before we get to this point, but this can happen when all shapes in a
@@ -1768,7 +1773,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         // state is unchanged because the intervening cells have no edges.
 
         // Shift the InteriorTracker focus point to the center of the current cell.
-        if (tracker.IsActive && edges.Any())
+        if (tracker.IsActive && edges.Count!=0)
         {
             if (!tracker.AtCellId(pcell.Id))
             {
@@ -1842,7 +1847,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         // todo: maybe add sorted
 
         // Shift the InteriorTracker focus point to the exit vertex of this cell.
-        if (tracker.IsActive && edges.Any())
+        if (tracker.IsActive && edges.Count!=0)
         {
             tracker.DrawTo(pcell.GetExitVertex());
             TestAllEdges(edges, tracker);
@@ -2125,7 +2130,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         // separately.
         public void SaveAndClearStateBefore(Int32 limit_shape_id)
         {
-            MyDebug.Assert(!saved_ids_.Any());
+            MyDebug.Assert(saved_ids_.Count==0);
             var limit = LowerBound(limit_shape_id);
             saved_ids_.AddRange(shape_ids_.Take(limit));
             shape_ids_.RemoveRange(0, limit);
@@ -2148,7 +2153,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
             // Since shape_ids_.size() is typically *very* small (0, 1, or 2), it turns
             // out to be significantly faster to maintain a sorted array rather than
             // using an STL set or btree_set.
-            if (!shape_ids_.Any())
+            if (shape_ids_.Count==0)
             {
                 shape_ids_.Add(shape_id);
             }
@@ -2192,11 +2197,11 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
 
         private S2Point a_, b_;
         private readonly S2EdgeCrosser crosser_ = new();
-        private readonly List<int> shape_ids_ = new();
+        private readonly List<int> shape_ids_ = [];
 
         // Shape ids saved by SaveAndClearStateBefore().  The state is never saved
         // recursively so we don't need to worry about maintaining a stack.
-        private readonly List<int> saved_ids_ = new();
+        private readonly List<int> saved_ids_ = [];
 
         // As an optimization, we also save is_active_ so that RestoreStateBefore()
         // can deactivate the tracker again in the case where the shapes being added
@@ -2250,12 +2255,12 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         // once they have been allocated.  Instead we keep a pool of allocated edges
         // that are all deleted together at the end.
         private int size_;
-        private readonly List<ClippedEdge> clipped_edges_ = new();
+        private readonly List<ClippedEdge> clipped_edges_ = [];
 
         // On the other hand, we can use FaceEdge[] because they are allocated
         // only at one level during the recursion (namely, the level at which we
         // absorb an existing index cell).
-        public List<FaceEdge> FaceEdges = new();
+        public List<FaceEdge> FaceEdges = [];
     }
 
     // The purpose of BatchGenerator is to divide large updates into batches such
@@ -2271,7 +2276,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         {
             max_batch_sizes_ = GetMaxBatchSizes(num_edges_removed, num_edges_added);
             batch_begin_ = new(shape_id_begin, 0);
-            shape_id_end_ = (shape_id_begin);
+            shape_id_end_ = shape_id_begin;
 
             if (max_batch_sizes_.Count > 1)
             {
@@ -2343,7 +2348,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
             // We must generate at least one batch even when num_edges_removed ==
             // num_edges_added == 0, because some shapes have an interior but no edges.
             // (Specifically, the full polygon has this property.)
-            if (!batches_.Any() || shape_id_end_ != batch_begin_.ShapeId)
+            if (batches_.Count==0 || shape_id_end_ != batch_begin_.ShapeId)
             {
                 FinishBatch(0, new ShapeEdgeId(shape_id_end_, 0));
             }
@@ -2370,7 +2375,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
                 s2shape_index_tmp_memory_budget;
             if (num_edges_total * kTmpBytesPerEdge <= tmp_memory_budget_bytes)
             {
-                return new int[] { num_edges_total }.ToList();
+                return [num_edges_total];
             }
 
             // Each batch is allowed to use up to "total_budget_bytes".  The memory
@@ -2415,7 +2420,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
                 ideal_batch_size *= kTmpSpaceMultiplier;
             }
             MyDebug.Assert(batch_sizes.Count <= kMaxBatches);
-            return batch_sizes.ToList();
+            return [.. batch_sizes];
         }
 
         // Returns the maximum number of edges in the current batch.
@@ -2466,12 +2471,12 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         private ShapeEdgeId batch_begin_;  // The start of the current batch.
         private int shape_id_end_;         // One beyond the last shape to be added.
         private int batch_size_ = 0;       // The number of edges in the current batch.
-        private readonly List<BatchDescriptor> batches_ = new();  // The completed batches so far.
+        private readonly List<BatchDescriptor> batches_ = [];  // The completed batches so far.
     }
 
     public new sealed class Enumerator : EnumeratorBase<S2ShapeIndexCell>
     {
-        private MutableS2ShapeIndex index_ { get; }
+        private MutableS2ShapeIndex Index { get; }
         private int iter_;
         private readonly int end_;
 
@@ -2497,8 +2502,8 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         public Enumerator(MutableS2ShapeIndex index, InitialPosition pos = InitialPosition.UNPOSITIONED)
         {
             index.MaybeApplyUpdates();
-            index_ = index;
-            end_ = index_.cell_map_.Count;
+            Index = index;
+            end_ = Index.cell_map_.Count;
             if (pos == InitialPosition.BEGIN)
             {
                 iter_ = 0;
@@ -2514,10 +2519,10 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         //   S2CellId id() const;
         //   bool done() const;
         //   S2Point center() const;
-        public override S2ShapeIndexCell Cell =>
+        public override S2ShapeIndexCell? Cell =>
             // Since MutableS2ShapeIndex always sets the "cell_" field, we can skip the
             // logic in the base class that conditionally calls GetCell().
-            _Cell;
+            CellInternal;
 
         #region S2CellIterator API
 
@@ -2527,7 +2532,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         public override void Reset()
         {
             // Make sure that the index has not been modified since Init() was called.
-            MyDebug.Assert(index_.IsFresh());
+            MyDebug.Assert(Index.IsFresh());
             iter_ = 0;
             Refresh();
         }
@@ -2554,7 +2559,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         }
         public override void Seek(S2CellId target)
         {
-            iter_ = index_.cell_map_.GetLowerBound(new(target, default));
+            iter_ = Index.cell_map_.GetLowerBound(new(target, default));
             Refresh();
         }
 
@@ -2583,7 +2588,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
             }
             else
             {
-                SetState(index_.GetCellId(iter_)!.Value, index_.GetCell(iter_));
+                SetState(Index.GetCellId(iter_)!.Value, Index.GetCell(iter_));
             }
         }
     }

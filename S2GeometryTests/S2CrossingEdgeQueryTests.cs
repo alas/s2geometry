@@ -2,11 +2,9 @@ namespace S2Geometry;
 
 using static S2Geometry.S2ShapeUtil;
 
-public class S2CrossingEdgeQueryTests
+public class S2CrossingEdgeQueryTests(ITestOutputHelper logger)
 {
-    private readonly ITestOutputHelper _logger;
-
-    public S2CrossingEdgeQueryTests(ITestOutputHelper logger) { _logger = logger; }
+    private readonly ITestOutputHelper _logger = logger;
 
     // Test edges that lie in the plane of one of the S2 cube edges.  Such edges
     // may lie on the boundary between two cube faces, or pass through a cube
@@ -18,7 +16,7 @@ public class S2CrossingEdgeQueryTests
     [Fact]
     internal void Test_GetCrossingCandidates_PerturbedCubeEdges()
     {
-        List<(S2Point, S2Point)> edges = new();
+        List<(S2Point, S2Point)> edges = [];
         for (int iter = 0; iter < 10; ++iter)
         {
             int face = S2Testing.Random.Uniform(6);
@@ -39,7 +37,7 @@ public class S2CrossingEdgeQueryTests
     [Fact]
     internal void Test_GetCrossingCandidates_PerturbedCubeFaceAxes()
     {
-        List<(S2Point, S2Point)> edges = new();
+        List<(S2Point, S2Point)> edges = [];
         for (int iter = 0; iter < 5; ++iter)
         {
             int face = S2Testing.Random.Uniform(6);
@@ -57,7 +55,7 @@ public class S2CrossingEdgeQueryTests
     {
         // Test a random collection of edges near the S2 cube vertex where the
         // Hilbert curve starts and ends.
-        List<(S2Point, S2Point)> edges = new();
+        List<(S2Point, S2Point)> edges = [];
         GetCapEdges(new S2Cap(new S2Point(-1, -1, 1).Normalize(), S1Angle.FromRadians(1e-3)),
                     S1Angle.FromRadians(1e-4), 1000, edges);
         TestAllCrossings(edges);
@@ -68,7 +66,7 @@ public class S2CrossingEdgeQueryTests
     {
         for (int i = 0; i < 100; ++i)
         {
-            List<(S2Point, S2Point)> edges = new();
+            List<(S2Point, S2Point)> edges = [];
             S2Cell cell = new(S2Testing.GetRandomCellId());
             edges.Add((cell.Vertex(0), cell.Vertex(0)));
             TestAllCrossings(edges);
@@ -86,7 +84,7 @@ public class S2CrossingEdgeQueryTests
             S2Point p1 = cell.VertexRaw(j2);
             S2Point p2 = cell.VertexRaw(j2 + 1);
             S2Point delta = (p2 - p1) / kNumEdgeIntervals;
-            List<(S2Point, S2Point)> edges = new();
+            List<(S2Point, S2Point)> edges = [];
             for (int i = 0; i <= kNumEdgeIntervals; ++i)
             {
                 for (int j = 0; j < i; ++j)
@@ -102,14 +100,16 @@ public class S2CrossingEdgeQueryTests
     [Fact]
     internal void Test_GetCrossings_PolylineCrossings()
     {
-        MutableS2ShapeIndex index = new();
-        // Three zig-zag lines near the equator.
-        index.Add(new S2Polyline.OwningShape(
-            MakePolylineOrDie("0:0, 2:1, 0:2, 2:3, 0:4, 2:5, 0:6")));
-        index.Add(new S2Polyline.OwningShape(
-            MakePolylineOrDie("1:0, 3:1, 1:2, 3:3, 1:4, 3:5, 1:6")));
-        index.Add(new S2Polyline.OwningShape(
-            MakePolylineOrDie("2:0, 4:1, 2:2, 4:3, 2:4, 4:5, 2:6")));
+        MutableS2ShapeIndex index =
+        [
+            // Three zig-zag lines near the equator.
+            new S2Polyline.OwningShape(
+                MakePolylineOrDie("0:0, 2:1, 0:2, 2:3, 0:4, 2:5, 0:6")),
+            new S2Polyline.OwningShape(
+                MakePolylineOrDie("1:0, 3:1, 1:2, 3:3, 1:4, 3:5, 1:6")),
+            new S2Polyline.OwningShape(
+                MakePolylineOrDie("2:0, 4:1, 2:2, 4:3, 2:4, 4:5, 2:6")),
+        ];
         TestPolylineCrossings(index, MakePointOrDie("1:0"), MakePointOrDie("1:4"));
         TestPolylineCrossings(index, MakePointOrDie("5:5"), MakePointOrDie("6:6"));
     }
@@ -119,13 +119,15 @@ public class S2CrossingEdgeQueryTests
     {
         // This tests that when some index cells contain only one shape, the
         // intersecting edges are returned with the correct shape id.
-        MutableS2ShapeIndex index = new();
-        index.Add(new S2Polyline.OwningShape(
-            new S2Polyline(S2Testing.MakeRegularPoints(
-                MakePointOrDie("0:0"), S1Angle.FromDegrees(5), 100))));
-        index.Add(new S2Polyline.OwningShape(
-            new S2Polyline(S2Testing.MakeRegularPoints(
-                MakePointOrDie("0:20"), S1Angle.FromDegrees(5), 100))));
+        MutableS2ShapeIndex index =
+        [
+            new S2Polyline.OwningShape(
+                new S2Polyline(S2Testing.MakeRegularPoints(
+                    MakePointOrDie("0:0"), S1Angle.FromDegrees(5), 100))),
+            new S2Polyline.OwningShape(
+                new S2Polyline(S2Testing.MakeRegularPoints(
+                    MakePointOrDie("0:20"), S1Angle.FromDegrees(5), 100))),
+        ];
         TestPolylineCrossings(index, MakePointOrDie("1:-10"), MakePointOrDie("1:30"));
     }
 
@@ -170,9 +172,11 @@ public class S2CrossingEdgeQueryTests
             // same S2 cube face as B (which is different than the face containing A).
             S2Point c = S2.FaceUVtoXYZ(b_face, S2Testing.Random.UniformDouble(-1, 1),
                                         S2Testing.Random.UniformDouble(-1, 1)).Normalize();
-            MutableS2ShapeIndex index = new();
-            index.Add(new S2Polyline.OwningShape(
-                new S2Polyline(new S2Point[] { b, c })));
+            MutableS2ShapeIndex index =
+            [
+                new S2Polyline.OwningShape(
+                    new S2Polyline(new S2Point[] { b, c })),
+            ];
 
             // Check that the intersection between AB and BC is detected when the face
             // containing BC is specified as a root cell.  (Note that VisitCells()
@@ -236,7 +240,7 @@ public class S2CrossingEdgeQueryTests
     // ShapeEdge does not have operator==, but ShapeEdgeId does.
     private static List<Edge> GetShapeEdgeIds(List<ShapeEdge> shape_edges)
     {
-        List<Edge> shape_edge_ids = new();
+        List<Edge> shape_edge_ids = [];
         foreach (var shape_edge in shape_edges)
         {
             shape_edge_ids.Add(shape_edge.Id);
@@ -252,8 +256,10 @@ public class S2CrossingEdgeQueryTests
             shape.Add(edge.Item1, edge.Item2);
         }
         // Force more subdivision than usual to make the test more challenging.
-        MutableS2ShapeIndex.Options options = new();
-        options.MaxEdgesPerCell = (1);
+        MutableS2ShapeIndex.Options options = new()
+        {
+            MaxEdgesPerCell = 1
+        };
         MutableS2ShapeIndex index = new(options);
         int shape_id = index.Add(shape);
         Assert.Equal(0, shape_id);
@@ -273,7 +279,7 @@ public class S2CrossingEdgeQueryTests
             // Verify that the second version of GetCandidates returns the same result.
             var edge_candidates = query.GetCandidates(a, b);
             Assert.Equal(candidates, edge_candidates);
-            Assert.True(candidates.Any());
+            Assert.True(candidates.Count!=0);
 
             // Now check the actual candidates.
             Assert.True(candidates.IsSorted());
@@ -282,7 +288,7 @@ public class S2CrossingEdgeQueryTests
             Assert.True(candidates.Last().EdgeId < shape.NumEdges());
             num_candidates += candidates.Count;
             var missing_candidates = string.Empty;
-            List<Edge> expected_crossings = new(), expected_interior_crossings = new();
+            List<Edge> expected_crossings = [], expected_interior_crossings = [];
             for (int i = 0; i < shape.NumEdges(); ++i)
             {
                 var edge2 = shape.GetEdge(i);
@@ -314,7 +320,7 @@ public class S2CrossingEdgeQueryTests
                     }
                 }
             }
-            Assert.True(!missing_candidates.Any());
+            Assert.True(missing_candidates.Length==0);
 
             // Test that GetCrossings() returns only the actual crossing edges.
             var actual_crossings =
@@ -343,7 +349,7 @@ public class S2CrossingEdgeQueryTests
         S2CrossingEdgeQuery query = new(index);
         var edges =
             query.GetCrossingEdges(a0, a1, CrossingType.ALL);
-        if (!edges.Any()) return;
+        if (edges.Count==0) return;
 
         foreach (var edge in edges)
         {

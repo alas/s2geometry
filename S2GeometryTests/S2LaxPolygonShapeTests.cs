@@ -3,11 +3,9 @@ namespace S2Geometry;
 using System.Runtime.InteropServices;
 using Loop = List<S2Point>;
 
-public class S2LaxPolygonShapeTests
+public class S2LaxPolygonShapeTests(ITestOutputHelper logger)
 {
-    private readonly ITestOutputHelper _logger;
-
-    public S2LaxPolygonShapeTests(ITestOutputHelper logger) { _logger = logger; }
+    private readonly ITestOutputHelper _logger = logger;
 
     // Verifies that EncodedS2LaxPolygonShape behaves identically to
     // S2LaxPolygonShape. Also supports testing that the encoded form is identical
@@ -81,11 +79,11 @@ public class S2LaxPolygonShapeTests
     {
         // Construct a shape to use as the correct answer and a second identical shape
         // to be moved.
-        List<Loop> loops = new()
-        {
+        List<Loop> loops =
+        [
             new Loop(ParsePointsOrDie("0:0, 0:3, 3:3")),
             new Loop(ParsePointsOrDie("1:1, 2:2, 1:2"))
-        };
+        ];
         S2LaxPolygonShape correct=new(loops);
         S2LaxPolygonShape to_move=new(loops);
         Assert.Equal(correct, to_move);
@@ -127,14 +125,12 @@ public class S2LaxPolygonShapeTests
     internal void Test_S2LaxPolygonShape_MoveFromShapeIndex()
     {
         // Construct an index containing shapes to be moved.
-        List<Loop> loops = new()
-        {
+        List<Loop> loops =
+        [
             new Loop(ParsePointsOrDie("0:0, 0:3, 3:3")),
             new Loop(ParsePointsOrDie("1:1, 2:2, 1:2"))
-        };
-        MutableS2ShapeIndex index=new();
-        index.Add(new S2LaxPolygonShape(loops));
-        index.Add(new S2LaxPolygonShape(loops));
+        ];
+        MutableS2ShapeIndex index=[new S2LaxPolygonShape(loops), new S2LaxPolygonShape(loops)];
         Assert.Equal(index.NumShapeIds(), 2);
 
         // Verify that the move constructor moves the id.
@@ -225,11 +221,11 @@ public class S2LaxPolygonShapeTests
     {
         // Test S2Point[][] constructor.  Make sure that the loops are
         // oriented so that the interior of the polygon is always on the left.
-        List<List<S2Point>> loops = new()
-        {
+        List<List<S2Point>> loops =
+        [
             ParsePointsOrDie("0:0, 0:3, 3:3"),  // CCW
             ParsePointsOrDie("1:1, 2:2, 1:2")   // CW
-        };
+        ];
         S2LaxPolygonShape shape = new(loops);
 
         Assert.Equal(loops.Count, shape.NumLoops);
@@ -288,7 +284,7 @@ public class S2LaxPolygonShapeTests
             var loop = S2Testing.MakeRegularPoints(
                 center, S1Angle.FromDegrees(0.1),
                 S2Testing.Random.Uniform(3));
-            loops.Add(loop.ToList());
+            loops.Add([.. loop]);
         }
         var shape = new S2LaxPolygonShape(loops);
 
@@ -315,7 +311,7 @@ public class S2LaxPolygonShapeTests
 
         // Now test all the edges in a random order in order to exercise the cases
         // involving prev_loop_.
-        List<(int, int, int)> edges=new();
+        List<(int, int, int)> edges=[];
         for (int i = 0, e = 0; i < loops.Count; ++i)
         {
             for (int j = 0; j < loops[i].Count; ++j, ++e)
@@ -364,8 +360,7 @@ public class S2LaxPolygonShapeTests
 
     private static void CompareS2LoopToShape(S2Loop loop, S2Shape shape)
     {
-        MutableS2ShapeIndex index = new();
-        index.Add(shape);
+        MutableS2ShapeIndex index = [shape];
         S2Cap cap = loop.GetCapBound();
         var query = index.MakeS2ContainsPointQuery();
         for (int iter = 0; iter < 100; ++iter)
@@ -381,9 +376,11 @@ public class S2LaxPolygonShapeTests
     {
         for (int iter = 0; iter < 100; ++iter)
         {
-            var fractal = new S2Testing.Fractal();
-            fractal.MaxLevel = (S2Testing.Random.Uniform(5));
-            fractal.FractalDimension = (1 + S2Testing.Random.RandDouble());
+            var fractal = new S2Testing.Fractal
+            {
+                MaxLevel = S2Testing.Random.Uniform(5),
+                FractalDimension = 1 + S2Testing.Random.RandDouble()
+            };
             S2Point center = S2Testing.RandomPoint();
             var loop = fractal.MakeLoop(
                 S2Testing.GetRandomFrameAt(center), S1Angle.FromDegrees(5));

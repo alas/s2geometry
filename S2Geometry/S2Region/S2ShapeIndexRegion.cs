@@ -1,7 +1,6 @@
-using System.Collections;
-using static S2Geometry.S2ShapeIndex;
-
 namespace S2Geometry;
+
+using static S2Geometry.S2ShapeIndex;
 
 public static partial class S2ShapeIndexX
 {
@@ -43,32 +42,21 @@ public static partial class S2ShapeIndexX
 //
 // This class is not thread-safe.  To use it in parallel, each thread should
 // construct its own instance (this is not expensive).
-public sealed class S2ShapeIndexRegion<TIndex> : IS2Region<S2ShapeIndexRegion<TIndex>> where TIndex : S2ShapeIndex
+public sealed class S2ShapeIndexRegion<TIndex>(TIndex index) : IS2Region<S2ShapeIndexRegion<TIndex>> where TIndex : S2ShapeIndex
 {
     #region Fields, Constants
 
     // This class is not thread-safe!
-    private readonly S2ContainsPointQuery<TIndex> contains_query_;
+    private readonly S2ContainsPointQuery<TIndex> contains_query_ = new(index);
 
     // Optimization: rather than declaring our own iterator, instead we reuse
     // the iterator declared by S2ContainsPointQuery.  (This improves benchmark
     // times significantly for classes that create a new S2ShapeIndexRegion
     // object on every call to Contains/MayIntersect(S2Cell).
-    private EnumeratorBase<S2ShapeIndexCell> iter_ => contains_query_.Iterator;
+    private EnumeratorBase<S2ShapeIndexCell> Iter => contains_query_.Iterator;
 
     #endregion
-
     #region Constructors
-
-    // Rather than calling this constructor, which requires specifying the
-    // S2ShapeIndex type explicitly, the preferred idiom is to call
-    // MakeS2ShapeIndexRegion() instead.  For example:
-    //
-    //   coverer.GetCovering(index.MakeS2ShapeIndexRegion(), &covering);
-    public S2ShapeIndexRegion(TIndex index)
-    {
-        contains_query_ = new S2ContainsPointQuery<TIndex>(index);
-    }
 
     #endregion
 
@@ -107,7 +95,7 @@ public sealed class S2ShapeIndexRegion<TIndex> : IS2Region<S2ShapeIndexRegion<TI
     // REQUIRES: iter_.id() contains "p".
     private bool Contains(S2ClippedShape clipped, S2Point p)
     {
-        return contains_query_.ShapeContains(iter_.Id, clipped, p);
+        return contains_query_.ShapeContains(Iter.Id, clipped, p);
     }
 
     // Returns true if any edge of the indexed shape "clipped" intersects the
@@ -191,36 +179,36 @@ public sealed class S2ShapeIndexRegion<TIndex> : IS2Region<S2ShapeIndexRegion<TI
         cell_ids = new List<S2CellId>().ReserveSpace(6);
 
         // Find the last S2CellId in the index.
-        iter_.Finish();
-        if (!iter_.MovePrevious()) return;  // Empty index.
+        Iter.Finish();
+        if (!Iter.MovePrevious()) return;  // Empty index.
 
-        var last_index_id = iter_.Id;
-        iter_.Reset();
-        if (iter_.Id != last_index_id)
+        var last_index_id = Iter.Id;
+        Iter.Reset();
+        if (Iter.Id != last_index_id)
         {
             // The index has at least two cells.  Choose an S2CellId level such that
             // the entire index can be spanned with at most 6 cells (if the index
             // spans multiple faces) or 4 cells (it the index spans a single face).
-            int level = iter_.Id.CommonAncestorLevel(last_index_id) + 1;
+            int level = Iter.Id.CommonAncestorLevel(last_index_id) + 1;
 
             // For each cell C at the chosen level, we compute the smallest S2Cell
             // that covers the S2ShapeIndex cells within C.
             var last_id = last_index_id.Parent(level);
-            for (var id = iter_.Id.Parent(level); id != last_id; id = id.Next())
+            for (var id = Iter.Id.Parent(level); id != last_id; id = id.Next())
             {
                 // If the cell C does not contain any index cells, then skip it.
-                if (id.RangeMax() < iter_.Id) continue;
+                if (id.RangeMax() < Iter.Id) continue;
 
                 // Find the range of index cells contained by C and then shrink C so
                 // that it just covers those cells.
-                var first = iter_.Id;
-                iter_.Seek(id.RangeMax().Next());
-                iter_.MovePrevious();
-                CoverRange(first, iter_.Id, cell_ids);
-                iter_.MoveNext();
+                var first = Iter.Id;
+                Iter.Seek(id.RangeMax().Next());
+                Iter.MovePrevious();
+                CoverRange(first, Iter.Id, cell_ids);
+                Iter.MoveNext();
             }
         }
-        CoverRange(iter_.Id, last_index_id, cell_ids);
+        CoverRange(Iter.Id, last_index_id, cell_ids);
     }
 
     // Returns true if "target" is contained by any single shape.  If the cell
@@ -338,7 +326,7 @@ public sealed class S2ShapeIndexRegion<TIndex> : IS2Region<S2ShapeIndexRegion<TI
                     // it contains the center of all cells, and it has no edges in any cell.
                     // It is easier to keep track of whether a shape does *not* contain the
                     // target cell because boolean values default to false.
-                    Dictionary<int, bool> shape_not_contains = new();
+                    Dictionary<int, bool> shape_not_contains = [];
                     for (var max = target.Id.RangeMax();
                         !iter_.Done() && iter_.Id <= max; iter_.MoveNext())
                     {
@@ -354,7 +342,7 @@ public sealed class S2ShapeIndexRegion<TIndex> : IS2Region<S2ShapeIndexRegion<TI
                     // C++17 in opensource.
                     foreach (var (shape_id, not_contains) in shape_not_contains)
                     {
-                        if (!visitor(Index().Shape(shape_id), !not_contains)) return false;
+                        if (!visitor(Index().Shape(shape_id)!, !not_contains)) return false;
                     }
                     return true;
                 }
@@ -383,7 +371,7 @@ public sealed class S2ShapeIndexRegion<TIndex> : IS2Region<S2ShapeIndexRegion<TI
                                 contains = true;
                             }
                         }
-                        if (!visitor(Index().Shape(clipped.ShapeId), contains)) return false;
+                        if (!visitor(Index().Shape(clipped.ShapeId)!, contains)) return false;
                     }
                     return true;
                 }
@@ -398,9 +386,9 @@ public sealed class S2ShapeIndexRegion<TIndex> : IS2Region<S2ShapeIndexRegion<TI
     // this method (if you need more flexibility, see S2BooleanOperation).
     public bool Contains(S2Point p)
     {
-        if (iter_.Locate(p))
+        if (Iter.Locate(p))
         {
-            var cell = iter_.Cell;
+            var cell = Iter.Cell;
             for (int s = 0; s < cell.NumClipped(); ++s)
             {
                 if (Contains(cell.Clipped(s), p))

@@ -130,7 +130,7 @@ public class S2PolylineLayer : Layer
 
         if (options_.Validate)
         {
-            polyline_.s2debug_override_ = S2Debug.DISABLE;
+            polyline_.S2DebugOverride = S2Debug.DISABLE;
         }
     }
 

@@ -26,8 +26,7 @@ public class S2ShapeIndexRegionTests
         var id = S2CellIdUtils.FromDebugString("3/0123012301230123012301230123");
 
         // Add a polygon that is slightly smaller than the cell being tested.
-        MutableS2ShapeIndex index = new();
-        index.Add(NewPaddedCell(id, -kPadding));
+        MutableS2ShapeIndex index = [NewPaddedCell(id, -kPadding)];
         S2Cap cell_bound = new S2Cell(id).GetCapBound();
         S2Cap index_bound = index.MakeS2ShapeIndexRegion().GetCapBound();
         Assert.True(index_bound.Contains(cell_bound));
@@ -43,8 +42,7 @@ public class S2ShapeIndexRegionTests
         var id = S2CellIdUtils.FromDebugString("3/0123012301230123012301230123");
 
         // Add a polygon that is slightly smaller than the cell being tested.
-        MutableS2ShapeIndex index = new();
-        index.Add(NewPaddedCell(id, -kPadding));
+        MutableS2ShapeIndex index = [NewPaddedCell(id, -kPadding)];
         S2LatLngRect cell_bound = new S2Cell(id).GetRectBound();
         S2LatLngRect index_bound = index.MakeS2ShapeIndexRegion().GetRectBound();
         Assert.Equal(index_bound, cell_bound);
@@ -54,7 +52,7 @@ public class S2ShapeIndexRegionTests
     internal void Test_S2ShapeIndexRegion_GetCellUnionBoundMultipleFaces()
     {
         var ids = new List<S2CellId> { MakeCellId("3/00123"), MakeCellId("2/11200013") };
-        MutableS2ShapeIndex index = new();
+        MutableS2ShapeIndex index = [];
         foreach (var id in ids) index.Add(NewPaddedCell(id, -kPadding));
         var covering = new List<S2CellId>();
         index.MakeS2ShapeIndexRegion().GetCellUnionBound(covering);
@@ -70,16 +68,16 @@ public class S2ShapeIndexRegionTests
         // We expect GetCellUnionBound to compute the smallest cell that bounds the
         // pair on each face.
         S2CellId[] input =
-        {
+        [
             MakeCellId("5/010"), MakeCellId("5/0211030"),
             MakeCellId("5/110230123"), MakeCellId("5/11023021133"),
             MakeCellId("5/311020003003030303"), MakeCellId("5/311020023"),
-        };
+        ];
         S2CellId[] expected =
-        {
+        [
             MakeCellId("5/0"), MakeCellId("5/110230"), MakeCellId("5/3110200")
-        };
-        MutableS2ShapeIndex index = new();
+        ];
+        MutableS2ShapeIndex index = [];
         foreach (var id in input)
         {
             // Add each shape 3 times to ensure that the S2ShapeIndex subdivides.
@@ -88,7 +86,7 @@ public class S2ShapeIndexRegionTests
                 index.Add(NewPaddedCell(id, -kPadding));
             }
         }
-        List<S2CellId> actual = new();
+        List<S2CellId> actual = [];
         index.MakeS2ShapeIndexRegion().GetCellUnionBound(actual);
         Assert.Equal(expected, actual);
     }
@@ -101,8 +99,7 @@ public class S2ShapeIndexRegionTests
         var id = S2CellIdUtils.FromDebugString("3/0123012301230123012301230123");
 
         // Add a polygon that is slightly smaller than the cell being tested.
-        MutableS2ShapeIndex index = new();
-        index.Add(NewPaddedCell(id, -kPadding));
+        MutableS2ShapeIndex index = [NewPaddedCell(id, -kPadding)];
         Assert.False(index.MakeS2ShapeIndexRegion().Contains(new S2Cell(id)));
 
         // Add a second polygon that is slightly larger than the cell being tested.
@@ -123,8 +120,7 @@ public class S2ShapeIndexRegionTests
         var target = S2CellIdUtils.FromDebugString("3/0123012301230123012301230123");
 
         // Add a polygon that is slightly smaller than the cell being tested.
-        MutableS2ShapeIndex index = new();
-        index.Add(NewPaddedCell(target, -kPadding));
+        MutableS2ShapeIndex index = [NewPaddedCell(target, -kPadding)];
         var region = index.MakeS2ShapeIndexRegion();
 
         // Check that the index intersects the cell itself, but not any of the
@@ -144,12 +140,11 @@ public class S2ShapeIndexRegionTests
         var target = S2CellIdUtils.FromDebugString("3/0123012301230123012301230123");
 
         // Adds a polygon that exactly follows a cell boundary.
-        MutableS2ShapeIndex index = new();
-        index.Add(NewPaddedCell(target, 0.0));
+        MutableS2ShapeIndex index = [NewPaddedCell(target, 0.0)];
         var region = index.MakeS2ShapeIndexRegion();
 
         // Check that the index intersects the cell and all of its neighbors.
-        List<S2CellId> ids = new(){ target };
+        List<S2CellId> ids = [target];
         target.AppendAllNeighbors(target.Level(), ids);
         foreach (S2CellId id in ids)
         {
@@ -173,8 +168,10 @@ public class S2ShapeIndexRegionTests
             // individual shapes.
             for (int s = 0; s < index_.NumShapeIds(); ++s)
             {
-                var shape_index = new MutableS2ShapeIndex();
-                shape_index.Add(new S2WrappedShape(index_.Shape(s)));
+                var shape_index = new MutableS2ShapeIndex
+                {
+                    new S2WrappedShape(index_.Shape(s))
+                };
                 shape_indexes_.Add(shape_index);
             }
         }
@@ -190,7 +187,7 @@ public class S2ShapeIndexRegionTests
 
         private void TestCell(S2Cell target) {
             // Indicates whether each shape that intersects "target" also contains it.
-            Dictionary<int, bool> shape_contains = new();
+            Dictionary<int, bool> shape_contains = [];
             Assert.True(region_.VisitIntersectingShapes(
                 target, (S2Shape shape, bool contains_target) => {
                     // Verify that each shape is visited at most once.
@@ -237,25 +234,24 @@ public class S2ShapeIndexRegionTests
         private readonly S2ShapeIndex index_;
         private readonly S2ShapeIndex.Enumerator iter_;
         private readonly S2ShapeIndexRegion<S2ShapeIndex> region_;
-        private readonly List<MutableS2ShapeIndex> shape_indexes_ = new();
+        private readonly List<MutableS2ShapeIndex> shape_indexes_ = [];
     }
 
     [Fact]
     internal void Test_VisitIntersectingShapes_Points()
     {
-        List<S2Point> vertices = new();
+        List<S2Point> vertices = [];
         for (int i = 0; i < 100; ++i)
         {
             vertices.Add(S2Testing.RandomPoint());
         }
-        MutableS2ShapeIndex index = new();
-        index.Add(new S2PointVectorShape(vertices.ToArray()));
+        MutableS2ShapeIndex index = [new S2PointVectorShape([.. vertices])];
         new VisitIntersectingShapesTest(index).Run();
     }
 
     [Fact]
     internal void Test_VisitIntersectingShapes_Polylines() {
-        MutableS2ShapeIndex index = new();
+        MutableS2ShapeIndex index = [];
         S2Cap center_cap=new(new S2Point(1, 0, 0), S1Angle.FromRadians(0.5));
         for (int i = 0; i < 50; ++i)
         {
@@ -263,7 +259,7 @@ public class S2ShapeIndexRegionTests
             S2Point[] vertices;
             if (S2Testing.Random.OneIn(10))
             {
-                vertices = new[]{ center, center};  // Try a few degenerate polylines.
+                vertices = [center, center];  // Try a few degenerate polylines.
             }
             else
             {
@@ -278,7 +274,7 @@ public class S2ShapeIndexRegionTests
 
     [Fact]
     internal void Test_VisitIntersectingShapes_Polygons() {
-        MutableS2ShapeIndex index = new();
+        MutableS2ShapeIndex index = [];
         S2Cap center_cap = new(new(1, 0, 0), S1Angle.FromRadians(0.5));
         S2Testing.Fractal fractal = new();
         for (int i = 0; i < 10; ++i)

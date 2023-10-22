@@ -10,7 +10,7 @@ public static partial class S2ShapeUtil
     public static List<S2Point> ShapeToS2Points(S2Shape multipoint)
     {
         MyDebug.Assert(multipoint.Dimension() == 0);
-        List<S2Point> points = new();
+        List<S2Point> points = [];
         points.Capacity = multipoint.NumEdges();
         for (int i = 0; i < multipoint.NumEdges(); ++i)
         {
@@ -28,8 +28,7 @@ public static partial class S2ShapeUtil
     {
         MyDebug.Assert(line.Dimension() == 1);
         MyDebug.Assert(line.NumChains() == 1);
-        S2Point[] vertices;
-        S2.GetChainVertices(line, 0, out vertices);
+        S2.GetChainVertices(line, 0, out S2Point[] vertices);
         return new S2Polyline(vertices);
     }
 
@@ -39,10 +38,10 @@ public static partial class S2ShapeUtil
     {
         if (poly.IsFull())
         {
-            return new S2Polygon(S2Loop.kFull);
+            return new S2Polygon(S2Loop.KFull);
         }
         MyDebug.Assert(poly.Dimension() == 2);
-        List<S2Loop> loops = new();
+        List<S2Loop> loops = [];
         for (int i = 0; i < poly.NumChains(); ++i)
         {
             S2.GetChainVertices(poly, i, out var vertices);

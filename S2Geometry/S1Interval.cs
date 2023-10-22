@@ -448,10 +448,10 @@ public readonly record struct S1Interval
 
         // The purpose of the last test below is to verify that moving the endpoints
         // does not invert the interval, e.g. [-1e20, 1e20] vs. [1e20, -1e20].
-        return (
+        return 
             Math.Abs(Math.IEEERemainder(y.Lo - Lo, S2.M_2_PI)) <= maxError &&
             Math.Abs(Math.IEEERemainder(y.Hi - Hi, S2.M_2_PI)) <= maxError &&
-            Math.Abs(GetLength() - y.GetLength()) <= 2 * maxError);
+            Math.Abs(GetLength() - y.GetLength()) <= 2 * maxError;
     }
 
     // Return true if the interval (which is closed) contains the point 'p'.
@@ -478,7 +478,7 @@ public readonly record struct S1Interval
         if (d >= 0) return d;
         // We want to ensure that if b == Pi and a == (-Pi + eps),
         // the return result is approximately 2*Pi and not zero.
-        return (b + Math.PI) - (a - Math.PI);
+        return b + Math.PI - (a - Math.PI);
     }
 
     #endregion

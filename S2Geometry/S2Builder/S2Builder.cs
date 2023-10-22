@@ -249,9 +249,9 @@ public partial class S2Builder
         // only true when intersection_tolerance() is non-zero (which causes
         // edge_snap_radius() to exceed snap_radius() by S2::kIntersectionError) and
         // snap_radius() is very small (at most S2::kIntersectionError / 1.19).
-        check_all_site_crossings_ = (Options_.MaxEdgeDeviation() >
+        check_all_site_crossings_ = Options_.MaxEdgeDeviation() >
                                      Options_.EdgeSnapRadius() +
-                                     snap_function.MinEdgeVertexSeparation());
+                                     snap_function.MinEdgeVertexSeparation();
         if (Options_.IntersectionTolerance <= S1Angle.Zero)
         {
             MyDebug.Assert(!check_all_site_crossings_);
@@ -340,7 +340,7 @@ public partial class S2Builder
     // Adds the given edge to the current layer.
     public void AddEdge(S2Point v0, S2Point v1)
     {
-        MyDebug.Assert(layers_.Any(), "Call StartLayer before adding any edges");
+        MyDebug.Assert(layers_.Count!=0, "Call StartLayer before adding any edges");
         if (v0 == v1 && (layer_options_.Last().DegenerateEdges_ ==
                          GraphOptions.DegenerateEdges.DISCARD))
         {
@@ -354,7 +354,7 @@ public partial class S2Builder
         // If there are any labels, then attach them to this input edge.
         if (label_set_modified_)
         {
-            if (!label_set_ids_.Any())
+            if (label_set_ids_.Count==0)
             {
                 // Populate the missing entries with empty label sets.
                 label_set_ids_.Fill(label_set_id_, input_edges_.Count - 1);
@@ -363,7 +363,7 @@ public partial class S2Builder
             label_set_ids_.Add(label_set_id_);
             label_set_modified_ = false;
         }
-        else if (label_set_ids_.Any())
+        else if (label_set_ids_.Count!=0)
         {
             label_set_ids_.Add(label_set_id_);
         }
@@ -689,7 +689,7 @@ public partial class S2Builder
         // to do anything more sophisticated, either use a ValueLexicon, or sort the
         // vertices once they have all been added, remove duplicates, and update the
         // edges.
-        if (!input_vertices_.Any() || v != input_vertices_.Last())
+        if (input_vertices_.Count==0 || v != input_vertices_.Last())
         {
             if (!tracker_.AddSpace(input_vertices_, 1)) return -1;
             input_vertices_.Add(v);
@@ -699,7 +699,7 @@ public partial class S2Builder
 
     private void ChooseSites()
     {
-        if (!tracker_.Ok() || !input_vertices_.Any()) return;
+        if (!tracker_.Ok() || input_vertices_.Count==0) return;
 
         // Note that although we always create an S2ShapeIndex, often it is not
         // actually built (because this happens lazily).  Therefore we only test
@@ -716,7 +716,7 @@ public partial class S2Builder
 
         if (snapping_requested_)
         {
-            S2PointIndex<int> site_index = new();
+            S2PointIndex<int> site_index = [];
             try
             {
                 AddForcedSites(site_index);
@@ -847,7 +847,7 @@ public partial class S2Builder
 
         // We need to build a list of intersections and add them afterwards so that
         // we don't reallocate vertices_ during the VisitCrossings() call.
-        List<S2Point> new_vertices = new();
+        List<S2Point> new_vertices = [];
         try
         {
             S2ShapeUtil.EdgePairs.VisitCrossingEdgePairs(input_edge_index, CrossingType.INTERIOR,
@@ -857,7 +857,7 @@ public partial class S2Builder
                     new_vertices.Add(S2.GetIntersection(a.V0, a.V1, b.V0, b.V1, null));
                     return true;  // Continue visiting.
                 });
-            if (!new_vertices.Any())
+            if (new_vertices.Count==0)
                 return;
 
             snapping_needed_ = true;
@@ -887,10 +887,12 @@ public partial class S2Builder
     private void ChooseInitialSites(S2PointIndex<int> site_index)
     {
         // Prepare to find all points whose distance is <= min_site_separation_ca_.
-        S2ClosestPointQuery<int>.Options? options = new();
-        options.ConservativeMaxDistance = min_site_separation_ca_;
+        S2ClosestPointQuery<int>.Options? options = new()
+        {
+            ConservativeMaxDistance = min_site_separation_ca_
+        };
         S2ClosestPointQuery<int> site_query = new(site_index, options);
-        List<S2ClosestPointQueryBase<S1ChordAngle, int>.Result> results = new();
+        List<S2ClosestPointQueryBase<S1ChordAngle, int>.Result> results = [];
 
         // Apply the snap_function() to each input vertex, then check whether any
         // existing site is closer than min_vertex_separation().  If not, then add a
@@ -923,7 +925,7 @@ public partial class S2Builder
 
                 if (site_snap_radius_ca_ == S1ChordAngle.Zero)
                 {
-                    add_site = !sites_.Any() || site != sites_.Last();
+                    add_site = sites_.Count==0 || site != sites_.Last();
                 }
                 else
                 {
@@ -984,8 +986,10 @@ public partial class S2Builder
         //
         // Memory used by S2ClosestPointQuery is not tracked, but it is temporary,
         // typically insignificant, and does not affect the high water mark.
-        S2ClosestPointQuery<int>.Options? options = new();
-        options.ConservativeMaxDistance = edge_site_query_radius_ca_;
+        S2ClosestPointQuery<int>.Options? options = new()
+        {
+            ConservativeMaxDistance = edge_site_query_radius_ca_
+        };
         var site_query = new S2ClosestPointQuery<int>(site_index, options);
         var results = new List<S2ClosestPointQueryBase<S1ChordAngle, int>.Result>();
         if (!tracker_.AddSpaceExact(edge_sites_, input_edges_.Count)) return;
@@ -1003,7 +1007,7 @@ public partial class S2Builder
             var sites = edge_sites_[e];
             if (sites is null)
             {
-                sites = new();
+                sites = [];
                 edge_sites_[e] = sites;
             }
             sites.Capacity = Math.Max(results.Count, sites.Count);
@@ -1070,11 +1074,11 @@ public partial class S2Builder
         //edges_to_resnap.set_empty_key(-1);
         //edges_to_resnap.set_deleted_key(-2);
 
-        List<SiteId> chain = new();  // Temporary storage.
+        List<SiteId> chain = [];  // Temporary storage.
         int num_edges_after_snapping = 0;
 
         // CheckEdge() defines the body of the loops below.
-        var CheckEdge = (InputEdgeId e) =>
+        bool CheckEdge(InputEdgeId e)
         {
             if (!tracker_.Ok()) return false;
             SnapEdge(e, chain);
@@ -1082,7 +1086,7 @@ public partial class S2Builder
             num_edges_after_snapping += chain.Count;
             MaybeAddExtraSites(e, chain, input_edge_index, edges_to_resnap);
             return true;
-        };
+        }
 
         // The first pass is different because we snap every edge.  In the following
         // passes we only snap edges that are near the extra sites that were added.
@@ -1093,7 +1097,7 @@ public partial class S2Builder
         }
         MyDebug.WriteLine($"Pass 0: edges snapped={input_edges_.Count}, output edges={num_edges_after_snapping}, sites={sites_.Count}");
 
-        for (int num_passes = 1; edges_to_resnap.Any(); ++num_passes)
+        for (int num_passes = 1; edges_to_resnap.Count!=0; ++num_passes)
         {
             var edges_to_snap = edges_to_resnap;
             edges_to_resnap.Clear();
@@ -1117,7 +1121,7 @@ public partial class S2Builder
         if (!tracker_.TallyTemp(chain.Count * Marshal.SizeOf(chain[0]))) return;
 
         // If the input includes NaN vertices, snapping can produce an empty chain.
-        if (!chain.Any()) return;
+        if (chain.Count==0) return;
 
         // The snapped edge chain is always a subsequence of the nearby sites
         // (edge_sites_), so we walk through the two arrays in parallel looking for
@@ -1249,15 +1253,17 @@ public partial class S2Builder
         MutableS2ShapeIndex input_edge_index,
         Dictionary<InputEdgeId, InputEdgeId> edges_to_resnap)
     {
-        if (sites_.Any()) MyDebug.Assert(new_site != sites_.Last());
+        if (sites_.Count!=0) MyDebug.Assert(new_site != sites_.Last());
         if (!tracker_.AddSpace(sites_, 1)) return;
         var new_site_id = sites_.Count;
         sites_.Add(new_site);
 
         // Find all edges whose distance is <= edge_site_query_radius_ca_.
-        S2ClosestEdgeQuery.Options? options = new();
-        options.ConservativeMaxDistance = edge_site_query_radius_ca_;
-        options.IncludeInteriors = (false);
+        S2ClosestEdgeQuery.Options? options = new()
+        {
+            ConservativeMaxDistance = edge_site_query_radius_ca_,
+            IncludeInteriors = false
+        };
 
         if (!input_edge_index.IsFresh()) input_edge_index.ForceBuild();
         if (!tracker_.Ok()) return;
@@ -1386,7 +1392,7 @@ public partial class S2Builder
             // Check whether the new site C excludes the previous site B.  If so,
             // repeat with the previous site, and so on.
             var add_site_c = true;
-            for (; chain.Any(); chain.RemoveAt(chain.Count - 1))
+            for (; chain.Count!=0; chain.RemoveAt(chain.Count - 1))
             {
                 var b = sites_[chain.Last()];
 
@@ -1438,7 +1444,7 @@ public partial class S2Builder
                 chain.Add(site_id);
             }
         }
-        MyDebug.Assert(chain.Any());
+        MyDebug.Assert(chain.Count!=0);
 
         WriteS2Polyline(edge, chain);
     }
@@ -1463,7 +1469,7 @@ public partial class S2Builder
         var layer_edges = new List<List<OutputEdge>>();
         var layer_input_edge_ids = new List<List<int>>();
         var input_edge_id_set_lexicon = new IdSetLexicon();
-        List<List<S2Point>> layer_vertices = new();
+        List<List<S2Point>> layer_vertices = [];
         BuildLayerEdges(layer_edges, layer_input_edge_ids, input_edge_id_set_lexicon);
 
         try
@@ -1493,7 +1499,7 @@ public partial class S2Builder
                     try
                     {
                         layer_vertices.Capacity = layers_.Count;
-                        List<VertexId> filter_tmp = new();  // Temporary used by FilterVertices.
+                        List<VertexId> filter_tmp = [];  // Temporary used by FilterVertices.
                         for (var i = 0; i < layers_.Count; ++i)
                         {
                             layer_vertices[i] = Graph.FilterVertices(sites_, layer_edges[i], filter_tmp);
@@ -1511,7 +1517,7 @@ public partial class S2Builder
 
             for (var i = 0; i < layers_.Count; ++i)
             {
-                var vertices = (!layer_vertices.Any() ? sites_ : layer_vertices[i]);
+                var vertices = layer_vertices.Count==0 ? sites_ : layer_vertices[i];
                 var graph = new Graph(layer_options_[i], vertices, layer_edges[i],
                 layer_input_edge_ids[i], input_edge_id_set_lexicon,
                 label_set_ids_, label_set_lexicon_,
@@ -1527,7 +1533,7 @@ public partial class S2Builder
             {
                 tracker_.Untally(layer_edges[i]);
                 tracker_.Untally(layer_input_edge_ids[i]);
-                if (layer_vertices.Any()) tracker_.Untally(layer_vertices[i]);
+                if (layer_vertices.Count!=0) tracker_.Untally(layer_vertices[i]);
             }
         }
     }
@@ -1544,12 +1550,12 @@ public partial class S2Builder
         // If so, we build a map from each site to the set of input vertices that
         // snapped to that site.  (Note that site_vertices is relatively small and
         // that its memory tracking is deferred until TallySimplifyEdgeChains.)
-        List<List<int>> site_vertices = new();
+        List<List<int>> site_vertices = [];
         var simplify = snapping_needed_ && Options_.SimplifyEdgeChains;
         if (simplify) site_vertices.Capacity = sites_.Count;
 
-        while (layer_edges.Count < layers_.Count) layer_edges.Add(new());
-        while (layer_input_edge_ids.Count < layers_.Count) layer_input_edge_ids.Add(new List<int>());
+        while (layer_edges.Count < layers_.Count) layer_edges.Add([]);
+        while (layer_input_edge_ids.Count < layers_.Count) layer_input_edge_ids.Add([]);
         for (var i = 0; i < layers_.Count; ++i)
         {
             AddSnappedEdges(layer_begins_[i], layer_begins_[i + 1], layer_options_[i],
@@ -1636,13 +1642,13 @@ public partial class S2Builder
     // vertices that snapped to a particular site.
     private static void MaybeAddInputVertex(int v, int id, List<List<int>> site_vertices)
     {
-        if (!site_vertices.Any()) return;
+        if (site_vertices.Count==0) return;
 
         // Optimization: check if we just added this vertex.  This is worthwhile
         // because the input edges usually form a continuous chain, i.e. the
         // destination of one edge is the same as the source of the next edge.
         var vertices = site_vertices[id];
-        if (!vertices.Any() || vertices.Last() != v)
+        if (vertices.Count==0 || vertices.Last() != v)
         {
             // Memory tracking is deferred until SimplifyEdgeChains.
             vertices.Add(v);
@@ -1667,13 +1673,13 @@ public partial class S2Builder
     // Simplifies edge chains, updating its input/output arguments as necessary.
     private void SimplifyEdgeChains(List<List<int>> site_vertices, List<List<OutputEdge>> layer_edges, List<List<int>> layer_input_edge_ids, IdSetLexicon input_edge_id_set_lexicon)
     {
-        if (!layers_.Any()) return;
+        if (layers_.Count==0) return;
         if (!tracker_.TallySimplifyEdgeChains(site_vertices, layer_edges)) return;
 
         // Merge the edges from all layers (in order to build a single graph).
-        List<OutputEdge> merged_edges = new();
-        List<int> merged_input_edge_ids = new();
-        List<int> merged_edge_layers = new();
+        List<OutputEdge> merged_edges = [];
+        List<int> merged_input_edge_ids = [];
+        List<int> merged_edge_layers = [];
         MergeLayerEdges(layer_edges, layer_input_edge_ids,
                         merged_edges, merged_input_edge_ids, merged_edge_layers);
 
@@ -1700,7 +1706,7 @@ public partial class S2Builder
     // any duplicate edges within each layer will still be sorted by int.
     private static void MergeLayerEdges(List<List<OutputEdge>> layer_edges, List<List<int>> layer_input_edge_ids, List<OutputEdge> edges, List<int> input_edge_ids, List<int> edge_layers)
     {
-        List<LayerEdgeId> order = new();
+        List<LayerEdgeId> order = [];
         for (var i = 0; i < layer_edges.Count; ++i)
         {
             for (var e = 0; e < layer_edges[i].Count; ++e)
@@ -1806,22 +1812,22 @@ public partial class S2Builder
     // time label_set_id_ was computed.
     private bool label_set_modified_;
 
-    private List<S2Point> input_vertices_ = new();
-    private readonly List<InputEdge> input_edges_ = new();
+    private List<S2Point> input_vertices_ = [];
+    private readonly List<InputEdge> input_edges_ = [];
 
-    private readonly List<Layer> layers_ = new();
-    private readonly List<GraphOptions> layer_options_ = new();
-    private readonly List<int> layer_begins_ = new();
-    private readonly List<IsFullPolygonPredicate> layer_is_full_polygon_predicates_ = new();
+    private readonly List<Layer> layers_ = [];
+    private readonly List<GraphOptions> layer_options_ = [];
+    private readonly List<int> layer_begins_ = [];
+    private readonly List<IsFullPolygonPredicate> layer_is_full_polygon_predicates_ = [];
 
     // Each input edge has "label set id" (an int) representing the set of
     // labels attached to that edge.  This vector is populated only if at least
     // one label is used.
-    private readonly List<int> label_set_ids_ = new();
+    private readonly List<int> label_set_ids_ = [];
     private readonly IdSetLexicon label_set_lexicon_ = new();
 
     // The current set of labels (represented as a stack).
-    private readonly List<int> label_set_ = new();
+    private readonly List<int> label_set_ = [];
 
     // The LabelSetId corresponding to the current label set, computed on demand
     // (by adding it to label_set_lexicon()).
@@ -1834,7 +1840,7 @@ public partial class S2Builder
     private int num_forced_sites_;
 
     // The set of snapped vertex locations ("sites").
-    private readonly List<S2Point> sites_ = new();
+    private readonly List<S2Point> sites_ = [];
 
     // A map from each input edge to the set of sites "nearby" that edge,
     // defined as the set of sites that are candidates for snapping and/or
@@ -1846,7 +1852,7 @@ public partial class S2Builder
     // simplification was requested, in which case instead the sites are
     // filtered by removing the ones that each edge was snapped to, leaving only
     // the "sites to avoid" (needed for simplification).
-    private readonly List<List<int>> edge_sites_ = new();
+    private readonly List<List<int>> edge_sites_ = [];
 
     // An object to track the memory usage of this class.
     private readonly MemoryTracker tracker_ = new();
@@ -2134,16 +2140,10 @@ public partial class S2Builder
 
     // An S2Shape used to represent the entire collection of S2Builder input edges.
     // Vertices are specified as indices into a vertex vector to save space.
-    public sealed class VertexIdEdgeVectorShape : S2Shape
+    public sealed class VertexIdEdgeVectorShape(List<InputEdge> edges, List<S2Point> vertices) : S2Shape
     {
-        private readonly List<InputEdge> edges_;
-        private readonly List<S2Point> vertices_;
-
-        // Requires that "edges" isant for the lifetime of this object.
-        public VertexIdEdgeVectorShape(List<InputEdge> edges, List<S2Point> vertices)
-        {
-            edges_ = edges; vertices_ = vertices;
-        }
+        private readonly List<InputEdge> edges_ = edges;
+        private readonly List<S2Point> vertices_ = vertices;
 
         public S2Point Vertex0(int e) => Vertex(edges_[e].Item1);
         public S2Point Vertex1(int e) => Vertex(edges_[e].Item2);
@@ -2277,14 +2277,8 @@ public partial class S2Builder
         // would be no suitable replacement for the edge BB (since the input edge that
         // mapped to BB can't be replaced by any of the edges AA, AC, or CC without
         // moving further than snap_radius).
-        public class InteriorVertexMatcher
+        public class InteriorVertexMatcher(int v0)
         {
-            // Checks whether "v0" can be an interior vertex of an edge chain.
-            public InteriorVertexMatcher(int v0)
-            {
-                v0_ = v0; v1_ = -1; v2_ = -1; n0_ = 0; n1_ = 0; n2_ = 0; excess_out_ = 0;
-                too_many_endpoints_ = false;
-            }
 
             // Starts analyzing the edges of a new layer.
             public void StartLayer()
@@ -2334,16 +2328,16 @@ public partial class S2Builder
                 // and (2) the total number of edges (incoming and outgoing) to "v1" and
                 // "v2" are equal.  We also check the condition on degenerate edges that
                 // is documented above.
-                return (!too_many_endpoints_ && excess_out_ == 0 && n1_ == n2_ &&
-                        (n0_ == 0 || n1_ > 0));
+                return !too_many_endpoints_ && excess_out_ == 0 && n1_ == n2_ &&
+                        (n0_ == 0 || n1_ > 0);
             }
 
-            private readonly int v0_;
-            private int v1_;
-            private int v2_;
-            private int n0_, n1_, n2_;
-            private int excess_out_;           // outdegree(v0) - indegree(v0)
-            private bool too_many_endpoints_;  // Have we seen more than two adjacent vertices?
+            private readonly int v0_ = v0;
+            private int v1_ = -1;
+            private int v2_ = -1;
+            private int n0_ = 0, n1_ = 0, n2_ = 0;
+            private int excess_out_ = 0;           // outdegree(v0) - indegree(v0)
+            private bool too_many_endpoints_ = false;  // Have we seen more than two adjacent vertices?
         }
 
         // Copies the given edge to the output and marks it as used.
@@ -2392,10 +2386,10 @@ public partial class S2Builder
             }
             return true;
         }
-        private class GraphEdgeComp : IComparer<int>
+        private class GraphEdgeComp(List<int> edge_layers) : IComparer<int>
         {
-            private readonly List<int> edge_layers_;
-            public GraphEdgeComp(List<int> edge_layers) { edge_layers_ = edge_layers; }
+            private readonly List<int> edge_layers_ = edge_layers;
+
             public int Compare(int x, int y)
             {
                 return edge_layers_[x].CompareTo(edge_layers_[y]);
@@ -2641,7 +2635,7 @@ public partial class S2Builder
                 }
                 MyDebug.Assert(merged_input_ids.Count == j);
             }
-            if (degenerate_ids.Any())
+            if (degenerate_ids.Count!=0)
             {
                 degenerate_ids.Sort();
                 AssignDegenerateEdges(degenerate_ids, merged_input_ids);
@@ -2696,7 +2690,7 @@ public partial class S2Builder
             var order = new List<int>(merged_ids.Count);
             for (var i = 0; i < merged_ids.Count; ++i)
             {
-                if (merged_ids[i].Any()) order.Add(i);
+                if (merged_ids[i].Count!=0) order.Add(i);
             }
             order.Sort((int i, int j) => merged_ids[i][0].CompareTo(merged_ids[j][0]));
 
@@ -2719,10 +2713,9 @@ public partial class S2Builder
             }
         }
 
-        private class MergedIdsComp : IComparer<int>
+        private class MergedIdsComp(List<List<int>> merged_input_ids) : IComparer<int>
         {
-            private readonly List<List<int>> merged_input_ids_;
-            public MergedIdsComp(List<List<int>> merged_input_ids) { merged_input_ids_ = merged_input_ids; }
+            private readonly List<List<int>> merged_input_ids_ = merged_input_ids;
 
             public int Compare(int x, int y)
             {
@@ -2753,14 +2746,14 @@ public partial class S2Builder
         private readonly List<bool> used_;
 
         // Temporary objects declared here to avoid repeated allocation.
-        private readonly List<int> tmp_vertices_ = new();
+        private readonly List<int> tmp_vertices_ = [];
 
-        private readonly Dictionary<VertexId, VertexId> tmp_vertex_set_ = new();
+        private readonly Dictionary<VertexId, VertexId> tmp_vertex_set_ = [];
 
         // The output edges after simplification.
-        private readonly List<OutputEdge> new_edges_ = new();
-        private readonly List<int> new_input_edge_ids_ = new();
-        private readonly List<int> new_edge_layers_ = new();
+        private readonly List<OutputEdge> new_edges_ = [];
+        private readonly List<int> new_input_edge_ids_ = [];
+        private readonly List<int> new_edge_layers_ = [];
     }
 
     // This class is only needed by S2Builder.Layer implementations.  A layer is
@@ -2962,12 +2955,10 @@ public partial class S2Builder
         public enum SiblingPairs : byte { DISCARD, DISCARD_EXCESS, KEEP, REQUIRE, CREATE }
     }
 
-    private class SiteIdsComp : IComparer<SiteId>
+    private class SiteIdsComp(S2Point x, List<S2Point> sites) : IComparer<SiteId>
     {
-        private readonly S2Point X;
-        private readonly List<S2Point> Sites;
-
-        public SiteIdsComp(S2Point x, List<S2Point> sites) { X = x; Sites = sites; }
+        private readonly S2Point X = x;
+        private readonly List<S2Point> Sites = sites;
 
         public int Compare(SiteId i, SiteId j)
         {
@@ -3116,8 +3107,8 @@ public partial class S2Builder
             foreach (var edges in layer_edges) {
                 max_layer_edges = Math.Max(max_layer_edges, edges.Count);
             }
-            filter_vertices_bytes_ = (num_sites * kTempPerSite +
-                                      max_layer_edges * kTempPerEdge);
+            filter_vertices_bytes_ = num_sites * kTempPerSite +
+                                      max_layer_edges * kTempPerEdge;
             return Tally(filter_vertices_bytes_);
         }
         public bool DoneFilterVertices()

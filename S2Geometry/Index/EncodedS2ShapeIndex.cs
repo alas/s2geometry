@@ -149,7 +149,7 @@ public sealed class EncodedS2ShapeIndex : S2ShapeIndex, IDisposable
         Cells = cells;
         EncodedCells = encodedCells;
         Shapes = new();
-        CellCache = new();
+        CellCache = [];
     }
 
     public static (bool, EncodedS2ShapeIndex?) Factory(Decoder decoder, ShapeFactory shape_factory)
@@ -187,7 +187,7 @@ public sealed class EncodedS2ShapeIndex : S2ShapeIndex, IDisposable
         // cells_ = make_unique<S2ShapeIndexCell*>[](cell_ids_.size());
         // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
         //                                NO NO NO
-        var cells = new Lazy<S2ShapeIndexCell>[cellIds.Count];
+        var cells = new Lazy<S2ShapeIndexCell>[cellIds!.Count];
 
         var (success2, shape) = EncodedStringVector.Init(decoder);
         if (success2)
@@ -281,7 +281,7 @@ public sealed class EncodedS2ShapeIndex : S2ShapeIndex, IDisposable
     {
         // This method is called when a shape has not been decoded yet.
         var shape = ShapeFactory_[id];
-        if (shape is not null) shape.SetId(id);
+        shape?.SetId(id);
         return Shapes[id];
     }
 

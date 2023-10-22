@@ -5,7 +5,7 @@ using static MutableS2ShapeIndex;
 public class MutableS2ShapeIndexTests
 {
     // This test harness owns a MutableS2ShapeIndex for convenience.
-    private readonly MutableS2ShapeIndex index_ = new();
+    private readonly MutableS2ShapeIndex index_ = [];
 
     [Fact]
     internal void Test_MutableS2ShapeIndexTest_SpaceUsed()
@@ -202,13 +202,13 @@ public class MutableS2ShapeIndexTests
             new S2Point(-1, -1, -1).Normalize(), S1Angle.FromRadians(Math.PI - 0.001), 10)));
 
         // A shape with no edges and no interior.
-        index_.Add(new S2Loop.Shape(S2Loop.kEmpty));
+        index_.Add(new S2Loop.Shape(S2Loop.KEmpty));
 
         // A shape with no edges that covers the entire sphere.
-        index_.Add(new S2Loop.Shape(S2Loop.kFull));
+        index_.Add(new S2Loop.Shape(S2Loop.KFull));
 
-        List<S2Shape> released = new();
-        List<int> added = new();
+        List<S2Shape> released = [];
+        List<int> added = [];
         added.Iota(0, index_.NumShapeIds());
         QuadraticValidate(index_);
         TestEncodeDecode(index_);
@@ -218,13 +218,13 @@ public class MutableS2ShapeIndexTests
             int num_updates = 1 + S2Testing.Random.Skewed(5);
             for (int n = 0; n < num_updates; ++n)
             {
-                if (S2Testing.Random.OneIn(2) && added.Any())
+                if (S2Testing.Random.OneIn(2) && added.Count!=0)
                 {
                     int i = S2Testing.Random.Uniform(added.Count);
                     released.Add(index_.Release(added[i]));
                     added.RemoveAt(i);
                 }
-                else if (released.Any())
+                else if (released.Count!=0)
                 {
                     int i = S2Testing.Random.Uniform(released.Count);
                     var shape = released[i];
@@ -262,13 +262,13 @@ public class MutableS2ShapeIndexTests
         // interior could cause shapes that don't have an interior to suddenly
         // acquire one.  This would cause extra S2ShapeIndex cells to be created
         // that are outside the bounds of the given geometry.
-        List<S2Polyline> polylines = new()
-        {
+        List<S2Polyline> polylines =
+        [
             MakePolylineOrDie("0:0, 2:1, 0:2, 2:3, 0:4, 2:5, 0:6"),
             MakePolylineOrDie("1:0, 3:1, 1:2, 3:3, 1:4, 3:5, 1:6"),
             MakePolylineOrDie("2:0, 4:1, 2:2, 4:3, 2:4, 4:5, 2:6"),
-        };
-        MutableS2ShapeIndex index = new();
+        ];
+        MutableS2ShapeIndex index = [];
         foreach (var polyline in polylines)
         {
             index.Add(new S2Polyline.OwningShape(polyline));
@@ -304,7 +304,7 @@ public class MutableS2ShapeIndexTests
         // size when FLAGS_s2shape_index_min_short_edge_fraction is set to zero.
         const int kNumEdges = 100;  // Validation is quadratic
         int edges_per_cluster = options.MaxEdgesPerCell + 1;
-        int num_clusters = (kNumEdges / 2) / edges_per_cluster;
+        int num_clusters = kNumEdges / 2 / edges_per_cluster;
 
         // Create the long edges.
         S2Point a = new(1, 0, 0), b = new(0, 1, 0);
@@ -355,7 +355,7 @@ public class MutableS2ShapeIndexTests
         {
             index_.Add(new S2EdgeVectorShape(a, b));
         }
-        index_.Add(new S2LaxPolygonShape(new List<List<S2Point>>()));
+        index_.Add(new S2LaxPolygonShape([]));
 
         // Count the number of index cells at each level.
         var counts = new int[S2.kMaxCellLevel + 1];
@@ -379,10 +379,12 @@ public class MutableS2ShapeIndexTests
     [Fact]
     internal void Test_MutableS2ShapeIndex_ShapeIdSwaps()
     {
-        MutableS2ShapeIndex index = new();
-        index.Add(MakeLaxPolylineOrDie("1:1, 2:2"));
-        index.Add(MakeLaxPolylineOrDie("3:3, 4:4"));
-        index.Add(MakeLaxPolylineOrDie("5:5, 6:6"));
+        MutableS2ShapeIndex index =
+        [
+            MakeLaxPolylineOrDie("1:1, 2:2"),
+            MakeLaxPolylineOrDie("3:3, 4:4"),
+            MakeLaxPolylineOrDie("5:5, 6:6"),
+        ];
 
         var a = (S2LaxPolylineShape)index.Shape(1)!;
         var b = (S2LaxPolylineShape)index.Shape(2)!;
@@ -408,15 +410,15 @@ public class MutableS2ShapeIndexTests
     [Fact]
     internal void Test_MutableS2ShapeIndexTest_RemoveFullPolygonBatch()
     {
-        TestBatchGenerator(0, Array.Empty<int>(), 100 /*bytes*/, 7,
-            new List<BatchDescriptor> { new(new(7, 0), new(7, 0), 0) });
+        TestBatchGenerator(0, [], 100 /*bytes*/, 7,
+            [new(new(7, 0), new(7, 0), 0)]);
     }
 
     [Fact]
     internal void Test_MutableS2ShapeIndexTest_AddFullPolygonBatch()
     {
-        TestBatchGenerator(0, new[] { 0 }, 100 /*bytes*/, 7,
-            new List<BatchDescriptor> { new(new(7, 0), new(8, 0), 0) });
+        TestBatchGenerator(0, [0], 100 /*bytes*/, 7,
+            [new(new(7, 0), new(8, 0), 0)]);
     }
 
     [Fact]
@@ -424,27 +426,27 @@ public class MutableS2ShapeIndexTests
     {
         // Test removing more edges than would normally fit in a batch.  For good
         // measure we also add two full polygons in the same batch.
-        TestBatchGenerator(1000, new[] { 0, 0 }, 100 /*bytes*/, 7,
-            new List<BatchDescriptor> { new(new(7, 0), new(9, 0), 1000) });
+        TestBatchGenerator(1000, [0, 0], 100 /*bytes*/, 7,
+            [new(new(7, 0), new(9, 0), 1000)]);
     }
 
     [Fact]
     internal void Test_MutableS2ShapeIndexTest_RemoveAndAddEdgesInOneBatch()
     {
         // Test removing and adding edges in one batch.
-        TestBatchGenerator(3, new[] { 4, 5 }, 10000 /*bytes*/, 7,
-            new List<BatchDescriptor> { new(new(7, 0), new(9, 0), 12) });
+        TestBatchGenerator(3, [4, 5], 10000 /*bytes*/, 7,
+            [new(new(7, 0), new(9, 0), 12)]);
     }
 
     [Fact]
     internal void Test_MutableS2ShapeIndexTest_RemoveAndAddEdgesInTwoBatches()
     {
         // Test removing many edges and then adding a few.
-        TestBatchGenerator(1000, new[] { 3 }, 1000 /*bytes*/, 7,
-            new List<BatchDescriptor> {
+        TestBatchGenerator(1000, [3], 1000 /*bytes*/, 7,
+            [
                 new(new(7, 0), new(7, 0), 1000),
                 new(new(7, 0), new(8, 0), 3)
-            });
+            ]);
     }
 
     [Fact]
@@ -452,19 +454,19 @@ public class MutableS2ShapeIndexTests
     {
         // Like the above, but also add two full polygons such that one polygon is
         // processed in each batch.
-        TestBatchGenerator(1000, new[] { 0, 3, 0 }, 1000 /*bytes*/, 7,
-            new List<BatchDescriptor>  {
+        TestBatchGenerator(1000, [0, 3, 0], 1000 /*bytes*/, 7,
+            [
                 new(new(7, 0), new(8, 0), 1000),
                 new(new(8, 0), new(10, 0), 3)
-            });
+            ]);
     }
 
     [Fact]
     internal void Test_MutableS2ShapeIndexTest_SeveralShapesInOneBatch()
     {
         // Test adding several shapes in one batch.
-        TestBatchGenerator(0, new[] { 3, 4, 5 }, 10000 /*bytes*/, 7,
-            new List<BatchDescriptor> { new(new(7, 0), new(10, 0), 12) });
+        TestBatchGenerator(0, [3, 4, 5], 10000 /*bytes*/, 7,
+            [new(new(7, 0), new(10, 0), 12)]);
     }
 
     [Fact]
@@ -472,12 +474,12 @@ public class MutableS2ShapeIndexTests
     {
         // Test adding several small shapes that must be split into batches.
         // 10000 bytes ~= temporary space to process 48 edges.
-        TestBatchGenerator(0, new[] { 20, 20, 20, 20, 20 }, 10000 /*bytes*/, 7,
-            new List<BatchDescriptor>   {
+        TestBatchGenerator(0, [20, 20, 20, 20, 20], 10000 /*bytes*/, 7,
+            [
                 new(new(7, 0), new(9, 0), 40),
                 new(new(9, 0), new(11, 0), 40),
                 new(new(11, 0), new(12, 0), 20)
-            });
+            ]);
     }
 
     [Fact]
@@ -486,12 +488,12 @@ public class MutableS2ShapeIndexTests
         // Test adding a small shape followed by a large shape that won't fit in the
         // same batch as the small shape, but will fit in its own separate batch.
         // 10000 bytes ~= temporary space to process 48 edges.
-        TestBatchGenerator(0, new[] { 20, 40, 20 }, 10000 /*bytes*/, 7,
-            new List<BatchDescriptor>   {
+        TestBatchGenerator(0, [20, 40, 20], 10000 /*bytes*/, 7,
+            [
                 new(new(7, 0), new(8, 0), 20),
                 new(new(8, 0), new(9, 0), 40),
                 new(new(9, 0), new(10, 0), 20)
-        });
+        ]);
     }
 
     [Fact]
@@ -506,12 +508,12 @@ public class MutableS2ShapeIndexTests
         // Note that we need a separate batch for the full polygon at the end, even
         // though it has no edges, because partial shapes must always be the last
         // shape in their batch.
-        TestBatchGenerator(0, new[] { 20, 60, 0 }, 10000 /*bytes*/, 7,
-            new List<BatchDescriptor>  {
+        TestBatchGenerator(0, [20, 60, 0], 10000 /*bytes*/, 7,
+            [
                 new(new(7, 0), new(8, 21), 41),
                 new(new(8, 21), new(9, 0), 39),
                 new(new(9, 0), new(10, 0), 0)
-            });
+            ]);
     }
 
     [Fact]
@@ -520,12 +522,12 @@ public class MutableS2ShapeIndexTests
         // Test a batch that consists of removing some edges and then adding a
         // partial shape.  We also check that the small shape at the end is put into
         // its own batch, since partial shapes must be the last shape in their batch.
-        TestBatchGenerator(20, new[] { 60, 5 }, 10000 /*bytes*/, 7,
-            new List<BatchDescriptor>  {
+        TestBatchGenerator(20, [60, 5], 10000 /*bytes*/, 7,
+            [
                 new(new(7, 0), new(7, 21), 41),
                 new(new(7, 21), new(8, 0), 39),
                 new(new(8, 0), new(9, 0), 5)
-            });
+            ]);
     }
 
     [Fact]
@@ -536,8 +538,8 @@ public class MutableS2ShapeIndexTests
         // 55, 53, 51, 49, 48, 46.  The first 8 batches are as full as possible,
         // while the last two batches have the same amount of remaining space
         // relative to their ideal size.  There is also a small batch at the end.
-        TestBatchGenerator(0, new[] { 20, 500, 5 }, 10000 /*bytes*/, 7,
-            new List<BatchDescriptor> {
+        TestBatchGenerator(0, [20, 500, 5], 10000 /*bytes*/, 7,
+            [
                 new(new(7, 0), new(8, 43), 63),
                 new(new(8, 43), new(8, 104), 61),
                 new(new(8, 104), new(8, 163), 59),
@@ -549,7 +551,7 @@ public class MutableS2ShapeIndexTests
                 new(new(8, 428), new(8, 465), 37),
                 new(new(8, 465), new(9, 0), 35),
                 new(new(9, 0), new(10, 0), 5)
-            });
+            ]);
     }
 
     // Verifies that that every cell of the index contains the correct edges, and
@@ -689,7 +691,7 @@ public class MutableS2ShapeIndexTests
         Encoder encoder = new();
         index.Encode(encoder);
         var decoder = encoder.GetDecoder();
-        MutableS2ShapeIndex index2 = new();
+        MutableS2ShapeIndex index2 = [];
         Assert.True(index2.Init(decoder, new S2ShapeUtilCoding.WrappedShapeFactory(index)));
         S2ShapeUtil_Testing.ExpectEqual(index, index2);
     }
@@ -728,7 +730,7 @@ public class MutableS2ShapeIndexTests
         Assert.False(it.MovePrevious());
         it.Finish();
         Assert.True(it.Done());
-        List<S2CellId> ids = new();
+        List<S2CellId> ids = [];
         MutableS2ShapeIndex.Enumerator it2 = new(index);
         S2CellId min_cellid = S2CellId.Begin(S2.kMaxCellLevel);
         for (it.Reset(); !it.Done(); it.MoveNext())
@@ -743,7 +745,7 @@ public class MutableS2ShapeIndexTests
                 it2.Seek(skipped_id);
                 Assert.Equal(cellid, it2.Id);
             }
-            if (ids.Any())
+            if (ids.Count!=0)
             {
                 it2 = it;
                 Assert.True(it2.MovePrevious());
@@ -807,6 +809,6 @@ public class MutableS2ShapeIndexTests
             }
         }
 
-        protected MutableS2ShapeIndex index_ = new();
+        protected MutableS2ShapeIndex index_ = [];
     }
 }

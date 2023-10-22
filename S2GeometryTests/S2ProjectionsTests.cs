@@ -5,7 +5,7 @@ public class S2ProjectionsTests
     [Fact]
     internal void Test_PlateCarreeProjection_Interpolate()
     {
-        PlateCarreeProjection proj = new(180);
+        _ = new PlateCarreeProjection(180);
 
         // Test that coordinates and/or arguments are not accidentally reversed.
         Assert.Equal(new R2Point(1.5, 6),

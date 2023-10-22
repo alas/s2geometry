@@ -111,11 +111,11 @@ public class S2LaxPolygonShape : S2Shape, IInitEncoder<S2LaxPolygonShape>
             var loop = polygon.Loop(i);
             if (loop.IsFull())
             {
-                spans.Add(new List<S2Point>());
+                spans.Add([]);
             }
             else
             {
-                spans.Add(loop.CloneVertices().ToList());
+                spans.Add([.. loop.CloneVertices()]);
             }
         }
         Init(spans);
@@ -149,7 +149,7 @@ public class S2LaxPolygonShape : S2Shape, IInitEncoder<S2LaxPolygonShape>
             // Note that even absl::make_unique_for_overwrite<> and c++20's
             // std::make_unique_for_overwrite<T[]> default-construct all elements when
             // T is a class type.
-            vertices_ = loops[0].ToArray();
+            vertices_ = [.. loops[0]];
         }
         else
         {
@@ -201,7 +201,7 @@ public class S2LaxPolygonShape : S2Shape, IInitEncoder<S2LaxPolygonShape>
     // Returns the vertex from loop "i" at index "j".
     // REQUIRES: 0 <= i < num_loops()
     // REQUIRES: 0 <= j < num_loop_vertices(i)
-    public IEnumerable<S2Point> LoopVertices(int i, int j, int n)
+    public IEnumerable<S2Point> LoopVertices(int i, int j)
     {
         MyDebug.Assert(i < NumLoops);
         MyDebug.Assert(j < NumLoopVertices(i));
@@ -392,8 +392,8 @@ public class EncodedS2LaxPolygonShape : S2Shape, IInitEncoder<EncodedS2LaxPolygo
     // there are many loops.
     private int prev_loop_ = 0;
 
-    public EncodedS2PointVector vertices_ { private get; init; }
-    public EncodedUIntVector<UInt32>? loop_starts_ { private get; init; }
+    public required EncodedS2PointVector Vertices { private get; init; }
+    public EncodedUIntVector<UInt32>? LoopStarts { private get; init; }
 
     // Constructs an uninitialized object; requires Init() to be called.
     public EncodedS2LaxPolygonShape() { }
@@ -421,8 +421,8 @@ public class EncodedS2LaxPolygonShape : S2Shape, IInitEncoder<EncodedS2LaxPolygo
         EncodedS2LaxPolygonShape shape = new()
         {
             NumLoops = (int)num_loops,
-            loop_starts_ = loop_starts_,
-            vertices_ = v,
+            LoopStarts = loop_starts_,
+            Vertices = v!,
         };
         return (true, shape);
     }
@@ -440,10 +440,10 @@ public class EncodedS2LaxPolygonShape : S2Shape, IInitEncoder<EncodedS2LaxPolygo
         encoder.Ensure(1 + Encoder.kVarintMax32);
         encoder.Put8(S2LaxPolygonShape.kCurrentEncodingVersionNumber);
         encoder.PutVarInt32(NumLoops);
-        vertices_.Encode(encoder);
+        Vertices.Encode(encoder);
         if (NumLoops > 1)
         {
-            loop_starts_.Encode(encoder);
+            LoopStarts.Encode(encoder);
         }
     }
 
@@ -454,11 +454,11 @@ public class EncodedS2LaxPolygonShape : S2Shape, IInitEncoder<EncodedS2LaxPolygo
         {
             if (NumLoops <= 1)
             {
-                return vertices_.Count();
+                return Vertices.Count();
             }
             else
             {
-                return (int)loop_starts_[NumLoops];
+                return (int)LoopStarts[NumLoops];
             }
         }
     }
@@ -467,11 +467,11 @@ public class EncodedS2LaxPolygonShape : S2Shape, IInitEncoder<EncodedS2LaxPolygo
         MyDebug.Assert(i < NumLoops);
         if (NumLoops == 1)
         {
-            return vertices_.Count();
+            return Vertices.Count();
         }
         else
         {
-            return (int)(loop_starts_[i + 1] - loop_starts_[i]);
+            return (int)(LoopStarts[i + 1] - LoopStarts[i]);
         }
     }
     public S2Point LoopVertex(int i, int j)
@@ -480,11 +480,11 @@ public class EncodedS2LaxPolygonShape : S2Shape, IInitEncoder<EncodedS2LaxPolygo
         MyDebug.Assert(j < NumLoopVertices(i));
         if (NumLoops == 1)
         {
-            return vertices_[j];
+            return Vertices[j];
         }
         else
         {
-            return vertices_[(int)loop_starts_[i] + j];
+            return Vertices[(int)LoopStarts[i] + j];
         }
     }
 
@@ -500,9 +500,9 @@ public class EncodedS2LaxPolygonShape : S2Shape, IInitEncoder<EncodedS2LaxPolygo
         int e1 = e + 1;
         if (NumLoops == 1)
         {
-            if (e1 == vertices_.Count()) { e1 = 0; }
+            if (e1 == Vertices.Count()) { e1 = 0; }
 
-            return new Edge(vertices_[e], vertices_[e1]);
+            return new Edge(Vertices[e], Vertices[e1]);
         }
         else
         {
@@ -522,12 +522,12 @@ public class EncodedS2LaxPolygonShape : S2Shape, IInitEncoder<EncodedS2LaxPolygo
         MyDebug.Assert(i < NumLoops);
         if (NumLoops == 1)
         {
-            return new Chain(0, vertices_.Count());
+            return new Chain(0, Vertices.Count());
         }
         else
         {
-            int start = (int)loop_starts_[i];
-            return new Chain(start, (int)(loop_starts_[i + 1] - start));
+            int start = (int)LoopStarts[i];
+            return new Chain(start, (int)(LoopStarts[i + 1] - start));
         }
     }
     public sealed override Edge ChainEdge(int i, int j) => ChainEdgeInternal(i, j);
@@ -539,12 +539,12 @@ public class EncodedS2LaxPolygonShape : S2Shape, IInitEncoder<EncodedS2LaxPolygo
         int k = (j + 1 == n) ? 0 : j + 1;
         if (NumLoops == 1)
         {
-            return new Edge(vertices_[j], vertices_[k]);
+            return new Edge(Vertices[j], Vertices[k]);
         }
         else
         {
-            int start = (int)loop_starts_[i];
-            return new Edge(vertices_[start + j], vertices_[start + k]);
+            int start = (int)LoopStarts[i];
+            return new Edge(Vertices[start + j], Vertices[start + k]);
         }
     }
     public sealed override ChainPosition GetChainPosition(int e) => GetChainPositionInternal(e);
@@ -557,33 +557,33 @@ public class EncodedS2LaxPolygonShape : S2Shape, IInitEncoder<EncodedS2LaxPolygo
         }
         const int kMaxLinearSearchLoops = 12;  // From benchmarks.
         int i = prev_loop_;//.load(std::memory_order_relaxed);
-        if (i == 0 && e < loop_starts_[1])
+        if (i == 0 && e < LoopStarts[1])
         {
             return new ChainPosition(0, e);  // Optimization for first loop.
         }
 
-        if (e >= loop_starts_[i] && e < loop_starts_[i + 1])
+        if (e >= LoopStarts[i] && e < LoopStarts[i + 1])
         {
             // This edge belongs to the same loop as the previous call.
         }
         else
         {
-            if (e == loop_starts_[i + 1])
+            if (e == LoopStarts[i + 1])
             {
                 // This is the edge immediately following the previous loop.
-                do { ++i; } while (e == loop_starts_[i + 1]);
+                do { ++i; } while (e == LoopStarts[i + 1]);
             }
             else if (NumLoops <= kMaxLinearSearchLoops)
             {
-                for (i = 0; loop_starts_[i + 1] <= e; ++i) { }
+                for (i = 0; LoopStarts[i + 1] <= e; ++i) { }
             }
             else
             {
-                i = loop_starts_.LowerBound((uint)(e + 1)) - 1;
+                i = LoopStarts.LowerBound((uint)(e + 1)) - 1;
             }
             prev_loop_ = i; //.store(i, std::memory_order_relaxed);
         }
-        return new ChainPosition(i, e - (int)loop_starts_[i]);
+        return new ChainPosition(i, e - (int)LoopStarts[i]);
     }
 
     public override TypeTag GetTypeTag() => S2LaxPolygonShape.kTypeTag;

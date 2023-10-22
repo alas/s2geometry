@@ -15,7 +15,7 @@
 
 namespace S2Geometry;
 
-using S2DatumStrategy = Func<S2Shape, System.Int32>;
+using S2DatumStrategy = Func<S2Shape, int>;
 
 // `S2ShapeNestingQuery` defines a query to determine the relationships between
 // chains in a shape.  Chains are either shells or holes.  Shells have no parent
@@ -48,16 +48,10 @@ using S2DatumStrategy = Func<S2Shape, System.Int32>;
 //   The query currently doesn't handle any sort of degeneracy in the underlying
 //   geometry.
 //
-public class S2ShapeNestingQuery
+public class S2ShapeNestingQuery(S2ShapeIndex index, S2ShapeNestingQuery.Options? options = null)
 {
-    public S2ShapeIndex Index { get; set; }
-    public Options Options_ { get; set; }
-
-    public S2ShapeNestingQuery(S2ShapeIndex index, Options? options = null)
-    {
-        Index = index;
-        Options_ = options ?? new();
-    }
+    public S2ShapeIndex Index { get; set; } = index;
+    public Options Options_ { get; set; } = options ?? new();
 
     // Evaluates the relationships between chains in a shape.  This determines
     // which chains are shells, and which are holes associated with a parent
@@ -74,7 +68,7 @@ public class S2ShapeNestingQuery
         var shape = Index.Shape(shape_id);
         if (shape is null || shape.NumChains() == 0)
         {
-            return new();
+            return [];
         }
         MyDebug.Assert(shape.Dimension() == 2);
 
@@ -83,7 +77,7 @@ public class S2ShapeNestingQuery
         // A single chain is always a shell, with no holes.
         if (num_chains == 1)
         {
-            return new() { ChainRelation.MakeShell() };
+            return [ChainRelation.MakeShell()];
         }
 
         // Sets to track possible parents and possible children for each chain.
@@ -104,7 +98,7 @@ public class S2ShapeNestingQuery
         var start_point = vertices[1];
 
         S2CrossingEdgeQuery crossing_query = new(Index);
-        List<S2ShapeUtil.ShapeEdge> edges=new();
+        List<S2ShapeUtil.ShapeEdge> edges=[];
         for (int chain = 0; chain < num_chains; ++chain)
         {
             if (chain == datum_shell)
@@ -192,8 +186,7 @@ public class S2ShapeNestingQuery
                 continue;
             }
 
-            int parent_chain;
-            parents[current_chain].FindFirstSetBit(out parent_chain);
+            parents[current_chain].FindFirstSetBit(out int parent_chain);
 
             int next_chain = current_chain;
             int child = 0;
@@ -281,7 +274,7 @@ public class S2ShapeNestingQuery
         int closest_idx = 0;
         for (int i = 0; i < num_points; ++i)
         {
-            int idx = (i * step) % chain_len;
+            int idx = i * step % chain_len;
             S2Point point = shape.ChainEdge(chain, idx).V0;
             double dist2 = (target - point).Norm2();
             if (dist2 < min_dist2)
@@ -370,7 +363,7 @@ public class S2ShapeNestingQuery
         public static ChainRelation MakeShell(List<Int32>? holes = null)
         {
             ChainRelation relation = new();
-            holes ??= new();
+            holes ??= [];
             foreach (var chain in holes)
             {
                 relation.AddHole(chain);

@@ -25,22 +25,15 @@ namespace S2Geometry;
 
 using ShapeEdge = S2ShapeUtil.ShapeEdge;
 
-public class S2CrossingEdgeQuery
+// REQUIRES: "index" is not modified after this method is called.
+public class S2CrossingEdgeQuery(S2ShapeIndex index)
 {
     // For small loops it is faster to use brute force.  The threshold below was
     // determined using the benchmarks in the unit test.
     private const int kMaxBruteForceEdges = 27;
 
-    // REQUIRES: "index" is not modified after this method is called.
-    public S2CrossingEdgeQuery(S2ShapeIndex index)
-    {
-        Index = index;
-    }
+    public S2ShapeIndex Index { get; } = index;
 
-    // Default constructor; requires Init() to be called.
-    public S2CrossingEdgeQuery() { }
-
-    public S2ShapeIndex Index { get; }
     // Returns all edges that intersect the given query edge (a0,a1) and that
     // have the given CrossingType (ALL or INTERIOR).  Edges are sorted and
     // unique.
@@ -376,21 +369,21 @@ public class S2CrossingEdgeQuery
             if (edge_bound[1].Hi < center[1])
             {
                 // Edge is entirely contained in the two lower children.
-                return (VisitCells(new S2PaddedCell(pcell, 0, 0), child_bounds[0]) &&
-                        VisitCells(new S2PaddedCell(pcell, 1, 0), child_bounds[1]));
+                return VisitCells(new S2PaddedCell(pcell, 0, 0), child_bounds[0]) &&
+                        VisitCells(new S2PaddedCell(pcell, 1, 0), child_bounds[1]);
             }
             else if (edge_bound[1].Lo >= center[1])
             {
                 // Edge is entirely contained in the two upper children.
-                return (VisitCells(new S2PaddedCell(pcell, 0, 1), child_bounds[0]) &&
-                        VisitCells(new S2PaddedCell(pcell, 1, 1), child_bounds[1]));
+                return VisitCells(new S2PaddedCell(pcell, 0, 1), child_bounds[0]) &&
+                        VisitCells(new S2PaddedCell(pcell, 1, 1), child_bounds[1]);
             }
             else
             {
                 // The edge bound spans all four children.  The edge itself intersects
                 // at most three children (since no padding is being used).
-                return (ClipVAxis(child_bounds[0], center[1], 0, pcell) &&
-                        ClipVAxis(child_bounds[1], center[1], 1, pcell));
+                return ClipVAxis(child_bounds[0], center[1], 0, pcell) &&
+                        ClipVAxis(child_bounds[1], center[1], 1, pcell);
             }
         }
     }
@@ -416,8 +409,8 @@ public class S2CrossingEdgeQuery
             // The edge intersects both children.
             var child_bounds = new R2Rect[2];
             SplitVBound(edge_bound, center, child_bounds);
-            return (VisitCells(new S2PaddedCell(pcell, i, 0), child_bounds[0]) &&
-                    VisitCells(new S2PaddedCell(pcell, i, 1), child_bounds[1]));
+            return VisitCells(new S2PaddedCell(pcell, i, 0), child_bounds[0]) &&
+                    VisitCells(new S2PaddedCell(pcell, i, 1), child_bounds[1]);
         }
     }
 
@@ -458,8 +451,8 @@ public class S2CrossingEdgeQuery
         MyDebug.Assert(!child_bounds[0].IsEmpty());
         MyDebug.Assert(edge_bound.Contains(child_bounds[0]));
 
-        arr1 = new double[2] { edge_bound[0][0], edge_bound[0][1] };
-        arr2 = new double[2] { edge_bound[1][0], edge_bound[1][1] };
+        arr1 = [edge_bound[0][0], edge_bound[0][1]];
+        arr2 = [edge_bound[1][0], edge_bound[1][1]];
         arr1[u_end] = u;
         arr2[v_end] = v;
         child_bounds[1] = new R2Rect(new R1Interval(arr1), new R1Interval(arr2));
@@ -470,11 +463,11 @@ public class S2CrossingEdgeQuery
     //////////// Temporary storage used while processing a query ///////////
 
     private R2Point a0_, a1_;
-    private S2ShapeIndex.Enumerator Enumerator;
+    private readonly S2ShapeIndex.Enumerator Enumerator;
     private CellVisitor visitor_;
 
     // Avoids repeated allocation when methods are called many times.
-    private readonly List<Edge> tmp_candidates_ = new();
+    private readonly List<Edge> tmp_candidates_ = [];
 }
 
 // A parameter that controls the reporting of edge intersections.

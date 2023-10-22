@@ -59,12 +59,14 @@ public static partial class S2ShapeUtil
         {
             if (edges[i] < rev_edges[i])
             {  // edges[i] is unmatched
-                MyDebug.Assert(GetReferencePointAtVertex(shape, edges[i].V0, out result));
+                var assert = GetReferencePointAtVertex(shape, edges[i].V0, out result);
+                MyDebug.Assert(assert);
                 return result;
             }
             if (rev_edges[i] < edges[i])
             {  // rev_edges[i] is unmatched
-                MyDebug.Assert(GetReferencePointAtVertex(shape, rev_edges[i].V0, out result));
+                var assert = GetReferencePointAtVertex(shape, rev_edges[i].V0, out result);
+                MyDebug.Assert(assert);
                 return result;
             }
         }

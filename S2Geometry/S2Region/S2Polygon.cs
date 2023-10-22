@@ -79,7 +79,7 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
     //   S1ChordAngle distance = query.GetDistance(out target);
     //
     // The index contains a single S2Polygon.Shape object.
-    public MutableS2ShapeIndex Index { get; } = new MutableS2ShapeIndex();
+    public MutableS2ShapeIndex Index { get; } = [];
 
     // Total number of vertices in all loops.
     // TODO(ericv): Change to num_edges() for consistency with the S2Shape API.
@@ -102,7 +102,7 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
     // This setting is preserved across calls to Init() and Decode().
     public S2Debug S2DebugOverride { get; set; }
 
-    private readonly List<S2Loop> loops_ = new();
+    private readonly List<S2Loop> loops_ = [];
 
     // True if InitOriented() was called and the given loops had inconsistent
     // orientations (i.e., it is not possible to construct a polygon such that
@@ -263,7 +263,7 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
         //    necessary if the polygon requires at least one non-normalized loop to
         //    represent it.
 
-        SortedSet<S2Loop> contained_origin = new();
+        SortedSet<S2Loop> contained_origin = [];
         foreach (var loop in loops_)
         {
             if (loop.ContainsOrigin)
@@ -426,7 +426,7 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
     }
 
     // Return true if this is the empty polygon (consisting of no loops).
-    public bool IsEmpty() => !loops_.Any();
+    public bool IsEmpty() => loops_.Count==0;
 
     // Return true if this is the full polygon (consisting of a single loop that
     // encompasses the entire sphere).
@@ -441,7 +441,7 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
     // by its descendants.  This hierarchy can be traversed using the methods
     // GetParent, GetLastDescendant(), and S2Loop.depth.
     public S2Loop Loop(int k) { return loops_[k]; }
-    public List<S2Loop> Loops() { return loops_.ToList(); }
+    public List<S2Loop> Loops() { return [.. loops_]; }
 
     // Return the index of the parent of loop k, or -1 if it has no parent.
     public int GetParent(int k)
@@ -1008,7 +1008,7 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
         // The empty and full polygons are handled specially.
         if (IsEmpty())
         {
-            loops_.Add(S2Loop.kFull);
+            loops_.Add(S2Loop.KFull);
         }
         else if (IsFull())
         {
@@ -1108,7 +1108,7 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
     public bool ApproxContains(S2Polyline b, S1Angle tolerance)
     {
         var difference = ApproxSubtractFromPolyline(b, tolerance);
-        return !difference.Any();
+        return difference.Count==0;
     }
 
     // Return true if this polygon intersects the given polyline.  This method
@@ -1127,7 +1127,7 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
     public bool ApproxDisjoint(S2Polyline b, S1Angle tolerance)
     {
         var intersection = ApproxIntersectWithPolyline(b, tolerance);
-        return !intersection.Any();
+        return intersection.Count==0;
     }
 
     // Intersect this polygon with the polyline "in" and return the resulting
@@ -1219,7 +1219,7 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
             // faster than recomputing.
         }
 
-        if (!queue.Any())
+        if (queue.Count==0)
             return new S2Polygon();
         else
             return queue.First().Item2;
@@ -1486,7 +1486,7 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
     {
         var loop_stack = new List<S2Loop> { S2Loop.NullLoop() };
         var depth = -1;
-        while (loop_stack.Any())
+        while (loop_stack.Count!=0)
         {
             var loop = loop_stack.First();
             loop_stack.RemoveAt(0);
@@ -1586,10 +1586,10 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
             PolylineType_ = S2Builder.Graph.PolylineType.WALK,
         };
         S2BooleanOperation op = new(op_type, new S2PolylineVectorLayer(result, layer_options), options);
-        MutableS2ShapeIndex a_index = new()
-        {
+        MutableS2ShapeIndex a_index =
+        [
             new S2Polyline.Shape(a)
-        };
+        ];
         if (!op.Build(a_index, Index, out var error))
         {
             throw new ApplicationException("Polyline " + op_type + " operation failed: " + error);
@@ -1658,7 +1658,7 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
         {
             throw new ApplicationException("InitToSimplifiedInCell failed: " + error);
         }
-        return polylines.ToArray();
+        return [.. polylines];
     }
 
     // Internal implementation of intersect/subtract polyline functions above.
@@ -2214,11 +2214,9 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
     // Like Shape, except that the S2Polygon is automatically deleted when this
     // object is deleted by the S2ShapeIndex.  This is useful when an S2Polygon
     // is constructed solely for the purpose of indexing it.
-    public class OwningShape : Shape, IInitEncoder<OwningShape>
+    public class OwningShape(S2Polygon polygon) : Shape(polygon), IInitEncoder<OwningShape>
     {
-        public S2Polygon OwnedPolygon { get; set; }
-
-        public OwningShape(S2Polygon polygon) : base(polygon) => OwnedPolygon = polygon;
+        public S2Polygon OwnedPolygon { get; set; } = polygon;
 
         public static (bool, OwningShape?) Init(Decoder decoder)
         {

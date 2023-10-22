@@ -218,7 +218,7 @@ public static partial class S2
             double old_sum = sum;
             angle += compensation;
             sum += angle;
-            compensation = (old_sum - sum) + angle;
+            compensation = old_sum - sum + angle;
         }
         const double kMaxCurvature = S2.M_2_PI - 4 * S2.DoubleEpsilon;
         sum += compensation;
@@ -486,7 +486,7 @@ public static partial class S2
         foreach (var v in loop)
         {
             // Remove duplicate vertices.
-            if (!vertices.Any() || v != vertices.Last())
+            if (vertices.Count==0 || v != vertices.Last())
             {
                 var len = vertices.Count;
                 // Remove edge pairs of the form ABA.
@@ -501,7 +501,7 @@ public static partial class S2
             }
         }
         // Check whether the loop was completely degenerate.
-        if (vertices.Count < 3) return new();
+        if (vertices.Count < 3) return [];
 
         // Otherwise some portion of the loop is guaranteed to be non-degenerate.
         // However there may still be some degenerate portions to remove.

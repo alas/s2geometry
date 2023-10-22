@@ -57,9 +57,9 @@ public readonly record struct Vector3<T>(T X, T Y, T Z) : IComparable<Vector3<T>
     {
         var temp = new T[][]
         {
-            new T[] { T.Zero, T.Zero, T.One },
-            new T[] { T.One,  T.Zero, T.Zero },
-            new T[] { T.Zero, T.One,  T.Zero },
+            [T.Zero, T.Zero, T.One],
+            [T.One,  T.Zero, T.Zero],
+            [T.Zero, T.One,  T.Zero],
         };
 
         return CrossProd(new Vector3<T>(temp[LargestAbsComponent()])).Normalize();

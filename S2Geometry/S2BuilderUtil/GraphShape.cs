@@ -3,10 +3,8 @@ namespace S2Geometry.S2BuilderUtil;
 using Graph = S2Builder.Graph;
 
 // An S2Shape representing the edges in an S2Builder.Graph.
-public sealed class GraphShape : S2Shape
+public sealed class GraphShape(Graph g) : S2Shape
 {
-    public GraphShape(Graph g) => g_ = g;
-
     public override int NumEdges() => g_.NumEdges;
 
     public override Edge GetEdge(int e)
@@ -25,5 +23,5 @@ public sealed class GraphShape : S2Shape
     }
     public override ChainPosition GetChainPosition(int e) => new(e, 0);
 
-    private readonly Graph g_;
+    private readonly Graph g_ = g;
 }

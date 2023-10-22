@@ -4,7 +4,7 @@ public static class ParseUtils
 {
     public static bool DictionaryParse(string encoded_str, out List<(string, string)> items)
     {
-        items = new();
+        items = [];
         if (string.IsNullOrEmpty(encoded_str)) return true;
 
         var entries = (

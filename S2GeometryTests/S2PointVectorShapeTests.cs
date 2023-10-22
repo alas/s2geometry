@@ -5,7 +5,7 @@ public class S2PointVectorShapeTests
     [Fact]
     internal void Test_S2PointVectorShape_Empty()
     {
-        S2Point[] points = Array.Empty<S2Point>();
+        S2Point[] points = [];
         S2PointVectorShape shape = new(points);
         Assert.Equal(0, shape.NumEdges());
         Assert.Equal(0, shape.NumChains());
@@ -48,14 +48,14 @@ public class S2PointVectorShapeTests
     {
         // Construct a shape to use as the correct answer and a second identical shape
         // to be moved.
-        List<S2Point> points=new();
+        List<S2Point> points=[];
         const int kNumPoints = 100;
         for (int i = 0; i < kNumPoints; ++i)
         {
             points.Add(S2Testing.RandomPoint());
         }
-        S2PointVectorShape correct=new(points.ToArray());
-        S2PointVectorShape to_move=new(points.ToArray());
+        S2PointVectorShape correct=new([.. points]);
+        S2PointVectorShape to_move=new([.. points]);
 
         // Test the move constructor.
         S2PointVectorShape move1=to_move;

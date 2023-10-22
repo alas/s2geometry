@@ -121,12 +121,12 @@ public static class MathM
     private const decimal SmallestNonZeroDec = 0.0000000000000000000000000001m;
 
     // This table is required for the Round function which can specify the number of digits to round to
-    private static readonly decimal[] roundPower10Decimal = new decimal[]
-    {
+    private static readonly decimal[] roundPower10Decimal =
+    [
         1E0m,  1E1m,  1E2m,  1E3m,  1E4m,  1E5m,  1E6m,  1E7m,  1E8m,  1E9m,
         1E10m, 1E11m, 1E12m, 1E13m, 1E14m, 1E15m, 1E16m, 1E17m, 1E18m, 1E19m,
         1E20m, 1E21m, 1E22m, 1E23m, 1E24m, 1E25m, 1E26m, 1E27m, 1E28m,
-    };
+    ];
 
     /// <summary>
     /// Returns the absolute value of a <see cref="decimal"/> floating-point number.
@@ -203,7 +203,7 @@ public static class MathM
 #if !NET20 && !NET35 && !NET40
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-    public static decimal Acosh(decimal m) { throw null; }
+    public static decimal Acosh(decimal m) { throw new NotImplementedException(); }
 
     /// <summary>
     /// Returns the angle whose sine is the specified number.
@@ -254,7 +254,7 @@ public static class MathM
 #if !NET20 && !NET35 && !NET40
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-    public static decimal Asinh(decimal m) { throw null; }
+    public static decimal Asinh(decimal m) { throw new NotImplementedException(); }
 
     /// <summary>
     /// Returns the angle whose tangent is the specified number.
@@ -297,7 +297,7 @@ public static class MathM
 
         var result = 0m;
         var doubleIteration = 0; // current iteration * 2
-        var y = (m * m) / (1 + (m * m));
+        var y = m * m / (1 + (m * m));
         var nextAdd = 0m;
 
         while (true)
@@ -385,7 +385,7 @@ public static class MathM
 #if !NET20 && !NET35 && !NET40
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-    public static decimal Atanh(decimal m) { throw null; }
+    public static decimal Atanh(decimal m) { throw new NotImplementedException(); }
 
     /// <summary>
     /// Returns the cube root of a specified number.
@@ -395,7 +395,7 @@ public static class MathM
 #if !NET20 && !NET35 && !NET40
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-    public static decimal Cbrt(decimal m) { throw null; }
+    public static decimal Cbrt(decimal m) { throw new NotImplementedException(); }
 
     /// <summary>
     /// Returns the smallest integral value that is greater than or equal
@@ -481,7 +481,7 @@ public static class MathM
     /// </summary>
     /// <param name="m"></param>
     /// <returns></returns>
-    public static decimal Cosh(decimal m) { throw null; }
+    public static decimal Cosh(decimal m) { throw new NotImplementedException(); }
 
     /// <summary>
     /// Returns <see cref="E">e</see> raised to the specified power.
@@ -585,7 +585,7 @@ public static class MathM
 #if !NET20 && !NET35 && !NET40
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-    public static decimal IEEERemainder(decimal x, decimal y) { throw null; }
+    public static decimal IEEERemainder(decimal x, decimal y) { throw new NotImplementedException(); }
 
     /// <summary>
     /// Returns the natural (base e) logarithm of a specified number.
@@ -640,7 +640,6 @@ public static class MathM
 
         decimal iteration = 0;
         decimal exponent = 0m;
-        decimal nextAdd = 0m;
         decimal result = 0m;
 
         y = (m - 1) / (m + 1);
@@ -657,7 +656,7 @@ public static class MathM
                 exponent *= ySquared;
             }
 
-            nextAdd = exponent / ((2 * iteration) + 1);
+            var nextAdd = exponent / ((2 * iteration) + 1);
 
             if (nextAdd == 0)
             {
@@ -700,12 +699,12 @@ public static class MathM
         // }
 
         // Substituting null for double.NaN
-        if (newBase == 1)
-        {
-            double y = 13.0d / 0.0d;
-            // throw new InvalidOperationException("Logarithm for base 1 is undefined.");
-            // return null;
-        }
+        //if (newBase == 1)
+        //{
+        //    //double y = 13.0d / 0.0d;
+        //    // throw new InvalidOperationException("Logarithm for base 1 is undefined.");
+        //    // return null;
+        //}
 
         // if ((a != 1) && ((newBase == 0) || double.IsPositiveInfinity(newBase)))
         if ((m != 1) && (newBase == 0))
@@ -1053,11 +1052,12 @@ public static class MathM
         //
         // Since decimal.Sign() is inaccessable, perform the comparison
         // the old fashioned way.
-        if (m == null)
-        {
-            throw new ArithmeticException(SR.Arithmetic_Null);
-        }
-        else if (m < 0)
+        //if (m == null)
+        //{
+        //    throw new ArithmeticException(SR.Arithmetic_Null);
+        //}
+        //else 
+        if (m < 0)
         {
             return -1;
         }
@@ -1146,7 +1146,7 @@ public static class MathM
 #if !NET20 && !NET35 && !NET40
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-    public static decimal Sinh(decimal m) { throw null; }
+    public static decimal Sinh(decimal m) { throw new NotImplementedException(); }
 
     /// <summary>
     /// Returns the square root of a given number.
@@ -1234,7 +1234,7 @@ public static class MathM
 #if !NET20 && !NET35 && !NET40
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-    public static decimal Tanh(decimal m) { throw null; }
+    public static decimal Tanh(decimal m) { throw new NotImplementedException(); }
 
     /// <summary>
     /// Calculates the integral part of a specified <see cref="decimal"/> number.

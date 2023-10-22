@@ -11,7 +11,7 @@ public class S2ShapeUtilConversionTests
     internal void Test_S2ShapeConversionUtilTest_PointVectorShapeToPoints()
     {
         var points = ParsePointsOrDie("11:11, 10:0, 5:5");
-        S2PointVectorShape point_vector = new(points.ToArray());
+        S2PointVectorShape point_vector = new([.. points]);
         var extract = ShapeToS2Points(point_vector);
         // TODO(user,b/205813109): Use gmock ASSERT_THAT.
         Assert.Equal(extract.Count, 3);
@@ -77,7 +77,7 @@ public class S2ShapeUtilConversionTests
         // a polygon with one shell and one hole
         Loop shell = new(ParsePointsOrDie("0:0, 0:10, 10:10, 10:0"));
         Loop hole = new(ParsePointsOrDie("4:4, 6:4, 6:6, 4:6"));
-        List<Loop> loops = new() { shell, hole };
+        List<Loop> loops = [shell, hole];
 
         VerifyShapeToS2Polygon(loops, 2, 8);
     }
@@ -88,7 +88,7 @@ public class S2ShapeUtilConversionTests
         // a polygon with multiple shells
         Loop shell1 = new(ParsePointsOrDie("0:0, 0:2, 2:2, 2:0"));
         Loop shell2 = new(ParsePointsOrDie("0:4, 0:6, 3:6"));
-        List<Loop> loops = new() { shell1, shell2 };
+        List<Loop> loops = [shell1, shell2];
 
         VerifyShapeToS2Polygon(loops, 2, 7);
     }
@@ -100,7 +100,7 @@ public class S2ShapeUtilConversionTests
         Loop shell = new(ParsePointsOrDie("0:0, 0:10, 10:10, 10:0"));
         Loop hole1 = new(ParsePointsOrDie("1:1, 3:3, 1:3"));
         Loop hole2 = new(ParsePointsOrDie("2:6, 4:7, 2:8"));
-        List<Loop> loops = new() { shell, hole1, hole2 };
+        List<Loop> loops = [shell, hole1, hole2];
 
         VerifyShapeToS2Polygon(loops, 3, 10);
     }
@@ -114,8 +114,8 @@ public class S2ShapeUtilConversionTests
         var q2 = kFull.CloneVertices();
         Loop q3 = new(q2);
         // verify that a full polygon is converted correctly
-        Loop loop1 = new(S2Loop.kFull.CloneVertices());
-        List<Loop> loops = new() { loop1 };
+        Loop loop1 = new(S2Loop.KFull.CloneVertices());
+        List<Loop> loops = [loop1];
 
         var lax_polygon = MakeLaxPolygonOrDie("full");
         var polygon = ShapeToS2Polygon(lax_polygon);

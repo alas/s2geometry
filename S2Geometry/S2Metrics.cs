@@ -25,19 +25,14 @@ namespace S2Geometry;
 
 public static partial class S2
 {
-    public abstract class Metric
+    public abstract class Metric(double deriv, int dim)
     {
-        public Metric(double deriv, int dim)
-        {
-            Deriv = deriv;
-            Dim = dim;
-        }
 
         // The "deriv" value of a metric is a derivative, and must be multiplied by
         // a length or area in (s,t)-space to get a useful value.
-        public double Deriv { get; private set; }
+        public double Deriv { get; private set; } = deriv;
 
-        public int Dim { get; private set; }
+        public int Dim { get; private set; } = dim;
 
         // Return the value of a metric for cells at the given level. The value is
         // either a length or an area on the unit sphere, depending on the
@@ -91,14 +86,12 @@ public static partial class S2
         }
     }
 
-    public sealed class LengthMetric : Metric
+    public sealed class LengthMetric(double deriv) : Metric(deriv, 1)
     {
-        public LengthMetric(double deriv) : base(deriv, 1) { }
     }
 
-    public sealed class AreaMetric : Metric
+    public sealed class AreaMetric(double deriv) : Metric(deriv, 2)
     {
-        public AreaMetric(double deriv) : base(deriv, 2) { }
     }
 
     // Each cell is bounded by four planes passing through its four edges and

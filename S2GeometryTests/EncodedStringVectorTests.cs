@@ -4,27 +4,27 @@ public class EncodedStringVectorTests
 {
     [Fact]
     internal void Test_EncodedStringVectorTest_Empty() =>
-        TestEncodedStringVector(Array.Empty<string>(), 1);
+        TestEncodedStringVector([], 1);
 
     [Fact]
     internal void Test_EncodedStringVectorTest_EmptyString() =>
-        TestEncodedStringVector(new[] { "" }, 2);
+        TestEncodedStringVector([""], 2);
 
     [Fact]
     internal void Test_EncodedStringVectorTest_RepeatedEmptyStrings() =>
-        TestEncodedStringVector(new[] { "", "", "" }, 4);
+        TestEncodedStringVector(["", "", ""], 4);
 
     [Fact]
     internal void Test_EncodedStringVectorTest_OneString() =>
-        TestEncodedStringVector(new[] { "apples" }, 8);
+        TestEncodedStringVector(["apples"], 8);
 
     [Fact]
     internal void Test_EncodedStringVectorTest_TwoStrings() =>
-        TestEncodedStringVector(new[] { "fuji", "mutsu" }, 12);
+        TestEncodedStringVector(["fuji", "mutsu"], 12);
 
     [Fact]
     internal void Test_EncodedStringVectorTest_TwoBigStrings() =>
-        TestEncodedStringVector(new[] { new string('x', 10000), new string('y', 100000) }, 110007);
+        TestEncodedStringVector([new string('x', 10000), new string('y', 100000)], 110007);
 
     private static void TestEncodedStringVector(string[] input, int expected_bytes)
     {

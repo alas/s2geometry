@@ -18,7 +18,7 @@ public class S2ClosestPointQueryTests
 
     [Fact]
     internal void Test_S2ClosestPointQuery_NoPoints() {
-        TestIndex index=new();
+        TestIndex index=[];
         TestQuery query = new(index);
         TestQuery.PointTarget target = new(new S2Point(1, 0, 0));
         var results = query.FindClosestPoints(target);
@@ -29,7 +29,7 @@ public class S2ClosestPointQueryTests
     internal void Test_S2ClosestPointQuery_ManyDuplicatePoints() {
         const int kNumPoints = 10000;
         S2Point kTestPoint=new(1, 0, 0);
-        TestIndex index=new();
+        TestIndex index=[];
         for (int i = 0; i < kNumPoints; ++i) {
             index.Add(kTestPoint, i);
         }
@@ -43,13 +43,13 @@ public class S2ClosestPointQueryTests
     internal void Test_S2ClosestPointQuery_EmptyTargetOptimized() {
         // Ensure that the optimized algorithm handles empty targets when a distance
         // limit is specified.
-        TestIndex index=new();
+        TestIndex index=[];
         for (int i = 0; i < 1000; ++i) {
             index.Add(S2Testing.RandomPoint(), i);
         }
         TestQuery query=new(index);
         query.Options_.MaxDistance = new S1ChordAngle(S1Angle.FromRadians(1e-5));
-        MutableS2ShapeIndex target_index=new();
+        MutableS2ShapeIndex target_index=[];
         TestQuery.ShapeIndexTarget target=new(target_index);
         Assert.Empty(query.FindClosestPoints(target));
     }
@@ -114,10 +114,10 @@ public class S2ClosestPointQueryTests
         public void AddPoints(S2Cap index_cap, int num_points, TestIndex index) {
             S2Testing.Fractal fractal = new();
             fractal.SetLevelForApproxMaxEdges(num_points);
-            fractal.FractalDimension = (1.5);
-            var loop = (
+            fractal.FractalDimension = 1.5;
+            var loop = 
                 fractal.MakeLoop(S2Testing.GetRandomFrameAt(index_cap.Center),
-                                 index_cap.RadiusAngle()));
+                                 index_cap.RadiusAngle());
             for (int i = 0; i < loop.NumVertices; ++i) {
                 index.Add(loop.Vertex(i), i);
             }
@@ -166,10 +166,10 @@ public class S2ClosestPointQueryTests
     }
 
     private static void TestFindClosestPoints(Target target, TestQuery query) {
-        List<(S1ChordAngle, int)> expected = new(), actual = new();
-        query.Options_.UseBruteForce = (true);
+        List<(S1ChordAngle, int)> expected = [], actual = [];
+        query.Options_.UseBruteForce = true;
         GetClosestPoints(target, query, expected);
-        query.Options_.UseBruteForce = (false);
+        query.Options_.UseBruteForce = false;
         GetClosestPoints(target, query, actual);
         Assert.True(S2TestingCheckDistance<int, S1ChordAngle>.CheckDistanceResults(expected, actual,
                                          query.Options_.MaxResults,
@@ -177,7 +177,7 @@ public class S2ClosestPointQueryTests
                                          query.Options_.MaxError,
                                          _logger.WriteLine));
 
-        if (!expected.Any()) return;
+        if (expected.Count==0) return;
 
         // Note that when options.max_error() > 0, expected[0].distance may not be
         // the minimum distance.  It is never larger by more than max_error(), but
@@ -198,12 +198,12 @@ public class S2ClosestPointQueryTests
     private static void TestWithIndexFactory(IPointIndexFactory factory,
         int num_indexes, int num_points, int num_queries) {
         // Build a set of S2PointIndexes containing the desired geometry.
-        List<S2Cap> index_caps = new();
-        List<TestIndex> indexes = new();
+        List<S2Cap> index_caps = [];
+        List<TestIndex> indexes = [];
         for (int i = 0; i < num_indexes; ++i) {
             S2Testing.Random.Reset(S2Testing.Random.RandomSeed + i);
             index_caps.Add(new S2Cap(S2Testing.RandomPoint(), kTestCapRadius));
-            indexes.Add(new TestIndex());
+            indexes.Add([]);
             factory.AddPoints(index_caps.Last(), num_points, indexes.Last());
         }
         for (int i = 0; i < num_queries; ++i) {
@@ -220,7 +220,7 @@ public class S2ClosestPointQueryTests
             // Occasionally we don't set any limit on the number of result points.
             // (This may return all points if we also don't set a distance limit.)
             if (!S2Testing.Random.OneIn(5)) {
-                query.Options_.MaxResults = (1 + S2Testing.Random.Uniform(10));
+                query.Options_.MaxResults = 1 + S2Testing.Random.Uniform(10);
             }
             // We set a distance limit 2/3 of the time.
             if (!S2Testing.Random.OneIn(3)) {
@@ -238,7 +238,7 @@ public class S2ClosestPointQueryTests
                 new S2LatLng(S2Testing.Random.RandDouble() * kTestCapRadius,
                          S2Testing.Random.RandDouble() * kTestCapRadius));
             if (S2Testing.Random.OneIn(5)) {
-                query.Options_.Region = (filter_rect);
+                query.Options_.Region = filter_rect;
             }
             int target_type = S2Testing.Random.Uniform(4);
             if (target_type == 0) {
@@ -264,7 +264,7 @@ public class S2ClosestPointQueryTests
                 TestFindClosestPoints(target, query);
             } else {
                 Assert.Equal(3, target_type);
-                MutableS2ShapeIndex target_index=new();
+                MutableS2ShapeIndex target_index=[];
                 new FractalLoopShapeIndexFactory().AddEdges(index_cap, 100, target_index);
                 TestQuery.ShapeIndexTarget target = new(target_index)
                 {

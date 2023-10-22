@@ -298,7 +298,7 @@ Assert.Equal(("\r\n" + w_d).NoCR(), expected_output.NoCR());
     internal void Test_S2PolylineAlignmentDeathTest_ExactLengthZeroInputA() {
         var a = MakePolylineOrDie("");
         var b = MakePolylineOrDie("0:0, 1:1, 2:2");
-        WarpPath correct_path = new();
+        WarpPath correct_path = [];
         Assert.Throws<Exception>(() => VerifyPath(a, b, correct_path));
     }
 
@@ -306,7 +306,7 @@ Assert.Equal(("\r\n" + w_d).NoCR(), expected_output.NoCR());
     internal void Test_S2PolylineAlignmentDeathTest_ExactLengthZeroInputB() {
         var a = MakePolylineOrDie("0:0, 1:1, 2:2");
         var b = MakePolylineOrDie("");
-        WarpPath correct_path = new();
+        WarpPath correct_path = [];
         Assert.Throws<Exception>(() => VerifyPath(a, b, correct_path));
     }
 
@@ -366,15 +366,15 @@ Assert.Equal(("\r\n" + w_d).NoCR(), expected_output.NoCR());
     // Tests for GetMedoidPolyline
     [Fact]
     internal void Test_S2PolylineAlignmentDeathTest_MedoidPolylineNoPolylines() {
-        S2Polyline[] polylines = Array.Empty<S2Polyline>();
+        S2Polyline[] polylines = [];
         var default_opts = new S2PolylineAlignment.MedoidOptions();
         Assert.Throws<Exception>(() => S2PolylineAlignment.GetMedoidPolyline(polylines, default_opts));
     }
 
     [Fact]
     internal void Test_S2PolylineAlignmentTest_MedoidPolylineOnePolyline() {
-        S2Polyline[] polylines = new S2Polyline[]{
-        MakePolylineOrDie("5:0, 5:1, 5:2") };
+        S2Polyline[] polylines = [
+        MakePolylineOrDie("5:0, 5:1, 5:2") ];
         var default_opts = new S2PolylineAlignment.MedoidOptions();
         var medoid = S2PolylineAlignment.GetMedoidPolyline(polylines, default_opts);
         Assert.Equal(0, medoid);
@@ -442,22 +442,22 @@ Assert.Equal(("\r\n" + w_d).NoCR(), expected_output.NoCR());
         var polylines = GenPolylines(num_polylines, num_vertices, perturb);
 
         // clang-format off
-        double[] exact_costs = {
+        double[] exact_costs = [
   S2PolylineAlignment.GetExactVertexAlignmentCost(polylines[0], polylines[1]) +
   S2PolylineAlignment.GetExactVertexAlignmentCost(polylines[0], polylines[2]),
   S2PolylineAlignment.GetExactVertexAlignmentCost(polylines[1], polylines[0]) +
   S2PolylineAlignment.GetExactVertexAlignmentCost(polylines[1], polylines[2]),
   S2PolylineAlignment.GetExactVertexAlignmentCost(polylines[2], polylines[0]) +
   S2PolylineAlignment.GetExactVertexAlignmentCost(polylines[2], polylines[1])
-};
-        double[] approx_costs = {
+];
+        double[] approx_costs = [
   S2PolylineAlignment.GetApproxVertexAlignment(polylines[0], polylines[1]).AlignmentCost +
   S2PolylineAlignment.GetApproxVertexAlignment(polylines[0], polylines[2]).AlignmentCost,
   S2PolylineAlignment.GetApproxVertexAlignment(polylines[1], polylines[0]).AlignmentCost +
   S2PolylineAlignment.GetApproxVertexAlignment(polylines[1], polylines[2]).AlignmentCost,
   S2PolylineAlignment.GetApproxVertexAlignment(polylines[2], polylines[0]).AlignmentCost +
   S2PolylineAlignment.GetApproxVertexAlignment(polylines[2], polylines[1]).AlignmentCost
-};
+];
         // clang-format on
 
         int exact_medoid_index = exact_costs.IndexOfMin();
@@ -471,7 +471,7 @@ Assert.Equal(("\r\n" + w_d).NoCR(), expected_output.NoCR());
         var exact_medoid = S2PolylineAlignment.GetMedoidPolyline(polylines, options);
         Assert.Equal(exact_medoid, exact_medoid_index);
 
-        options.Approx = (true);
+        options.Approx = true;
         var approx_medoid = S2PolylineAlignment.GetMedoidPolyline(polylines, options);
         Assert.Equal(approx_medoid, approx_medoid_index);
     }
@@ -497,11 +497,11 @@ Assert.Equal(("\r\n" + w_d).NoCR(), expected_output.NoCR());
 
     [Fact]
     internal void Test_S2PolylineAlignmentTest_ConsensusPolylineTwoPolylines() {
-        S2Polyline[] polylines = new S2Polyline[] 
-        {
+        S2Polyline[] polylines =
+        [
             MakePolylineOrDie("3:0, 3:1, 3:2"),
             MakePolylineOrDie("1:0, 1:1, 1:2"),
-        };
+        ];
 
         var default_opts = new S2PolylineAlignment.ConsensusOptions();
         var result = S2PolylineAlignment.GetConsensusPolyline(polylines, default_opts);

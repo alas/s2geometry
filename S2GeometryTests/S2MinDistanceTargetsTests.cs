@@ -67,7 +67,7 @@ public class S2MinDistanceTargetsTests
     [Fact]
     internal void Test_CellUnionTarget_UpdateMinDistanceToEdgeWhenEqual() {
         var target = new S2MinDistanceCellUnionTarget(new S2CellUnion(
-            new List<S2CellId>{new S2CellId(MakePointOrDie("0:1"))}));
+            new List<S2CellId>{new(MakePointOrDie("0:1"))}));
         var dist = S1ChordAngle.Infinity;
         var edge = ParsePointsOrDie("0:-1, 0:1");
         Assert.True(target.UpdateMinDistance(edge[0], edge[1], ref dist));
@@ -78,7 +78,7 @@ public class S2MinDistanceTargetsTests
     internal void Test_CellUnionTarget_UpdateMinDistanceToCellWhenEqual()
     {
         var target = new S2MinDistanceCellUnionTarget(new S2CellUnion(
-            new List<S2CellId>{new S2CellId(MakePointOrDie("0:1"))}));
+            new List<S2CellId>{new(MakePointOrDie("0:1"))}));
         var dist = S1ChordAngle.Infinity;
         var cell = new S2Cell(new S2CellId(MakePointOrDie("0:0")));
         Assert.True(target.UpdateMinDistance(cell, ref dist));
@@ -112,8 +112,8 @@ public class S2MinDistanceTargetsTests
             "1:1 # 1:1, 2:2 # 0:0, 0:3, 3:0 | 6:6, 6:9, 9:6 | 0:0, 0:4, 4:0");
         var target = new S2MinDistancePointTarget(MakePointOrDie("1:1"));
         Assert.True(IsSubsetOfSize(GetContainingShapes(target, index, 1),
-                                   new int[]{ 2, 4 }, 1));
-        Assert.Equal((new int[]{ 2, 4}), GetContainingShapes(target, index, 5));
+                                   [2, 4], 1));
+        Assert.Equal([2, 4], GetContainingShapes(target, index, 5));
     }
 
     [Fact]
@@ -123,8 +123,8 @@ public class S2MinDistanceTargetsTests
             "1:1 # 1:1, 2:2 # 0:0, 0:3, 3:0 | 6:6, 6:9, 9:6 | 0:0, 0:4, 4:0");
         var target = new S2MinDistanceEdgeTarget(MakePointOrDie("1:2"), MakePointOrDie("2:1"));
         Assert.True(IsSubsetOfSize(GetContainingShapes(target, index, 1),
-                                   new int[]{ 2, 4}, 1));
-        Assert.Equal((new int[]{ 2, 4}), GetContainingShapes(target, index, 5));
+                                   [2, 4], 1));
+        Assert.Equal([2, 4], GetContainingShapes(target, index, 5));
     }
 
     [Fact]
@@ -135,8 +135,8 @@ public class S2MinDistanceTargetsTests
         var cellid1 = new S2CellId(MakePointOrDie("1:1"));
         var target1 = new S2MinDistanceCellTarget(new S2Cell(cellid1));
         Assert.True(IsSubsetOfSize(GetContainingShapes(target1, index, 1),
-                                   new int[]{ 2, 4}, 1));
-        Assert.Equal(new int[]{ 2, 4}, GetContainingShapes(target1, index, 5));
+                                   [2, 4], 1));
+        Assert.Equal([2, 4], GetContainingShapes(target1, index, 5));
 
         // For a larger cell that properly contains one or more index cells, all
         // shapes that intersect the first such cell in S2CellId order are returned.
@@ -144,7 +144,7 @@ public class S2MinDistanceTargetsTests
         // (whose shape_ids are 2 and 4).
         var cellid2 = cellid1.Parent(5);
         var target2 = new S2MinDistanceCellTarget(new S2Cell(cellid2));
-        Assert.Equal(new int[]{ 2, 4}, GetContainingShapes(target2, index, 5));
+        Assert.Equal([2, 4], GetContainingShapes(target2, index, 5));
     }
 
     [Fact]
@@ -158,8 +158,8 @@ public class S2MinDistanceTargetsTests
         var target1 = new S2MinDistanceCellUnionTarget(new S2CellUnion(
             new List<S2CellId>{ cellid1, cellid2}));
         Assert.True(IsSubsetOfSize(GetContainingShapes(target1, index, 1),
-                                   new int[]{ 2, 3, 4}, 1));
-        Assert.Equal((new int[]{ 2, 3, 4}), GetContainingShapes(target1, index, 5));
+                                   [2, 3, 4], 1));
+        Assert.Equal([2, 3, 4], GetContainingShapes(target1, index, 5));
     }
 
     [Fact]
@@ -179,7 +179,7 @@ public class S2MinDistanceTargetsTests
         var target = new S2MinDistanceShapeIndexTarget(target_index);
         // These are the shape_ids of the 1st, 2nd, and 4th polygons of "index"
         // (noting that the 4 points are represented by one S2PointVectorShape).
-        Assert.Equal((new int[]{ 5, 6, 8}), GetContainingShapes(target, index, 5));
+        Assert.Equal([5, 6, 8], GetContainingShapes(target, index, 5));
     }
 
     [Fact]
@@ -193,19 +193,19 @@ public class S2MinDistanceTargetsTests
         // Check only the full polygon is returned for a point target.
         var point_index = MakeIndexOrDie("1:1 # #");
         var point_target = new S2MinDistanceShapeIndexTarget(point_index);
-        Assert.Equal((new int[]{ 1}), GetContainingShapes(point_target, index, 5));
+        Assert.Equal([1], GetContainingShapes(point_target, index, 5));
 
         // Check only the full polygon is returned for a full polygon target.
         var full_polygon_index = MakeIndexOrDie("# # full");
         var full_target = new S2MinDistanceShapeIndexTarget(full_polygon_index);
-        Assert.Equal((new int[]{ 1}), GetContainingShapes(full_target, index, 5));
+        Assert.Equal([1], GetContainingShapes(full_target, index, 5));
 
         // Check that nothing is returned for an empty polygon target.  (An empty
         // polygon has no connected components and does not intersect anything, so
         // according to the API of GetContainingShapes nothing should be returned.)
         var empty_polygon_index = MakeIndexOrDie("# # empty");
         var empty_target = new S2MinDistanceShapeIndexTarget(empty_polygon_index);
-        Assert.Equal((new int[]{ }), GetContainingShapes(empty_target, index, 5));
+        Assert.Equal([], GetContainingShapes(empty_target, index, 5));
     }
 
     private int[] GetContainingShapes(S2MinDistanceTarget target, S2ShapeIndex index, int max_shapes)
@@ -216,7 +216,7 @@ public class S2MinDistanceTargetsTests
                 shape_ids.Add(containing_shape.Id);
                 return shape_ids.Count < max_shapes;
             });
-        return shape_ids.ToArray();
+        return [.. shape_ids];
     }
 
     // Given two sorted vectors "x" and "y", returns true if x is a subset of y

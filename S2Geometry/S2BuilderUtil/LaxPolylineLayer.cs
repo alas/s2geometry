@@ -51,7 +51,7 @@ public class LaxPolylineLayer : S2Builder.Layer
     // Layer interface:
     public override S2Builder.GraphOptions GraphOptions_()
     {
-        return new S2Builder.GraphOptions(options_.edge_type_, DegenerateEdges.KEEP,
+        return new S2Builder.GraphOptions(options_.EdgeType_, DegenerateEdges.KEEP,
                             DuplicateEdges.KEEP, SiblingPairs.KEEP);
     }
 
@@ -72,7 +72,7 @@ public class LaxPolylineLayer : S2Builder.Layer
             return;
         }
         var edge_polyline = edge_polylines[0];
-        List<S2Point> vertices = new();  // Temporary storage for vertices.
+        List<S2Point> vertices = [];  // Temporary storage for vertices.
         vertices.Capacity = edge_polyline.Count;
         vertices.Add(g.Vertex(g.GetEdge(edge_polyline[0]).ShapeId));
         foreach (EdgeId e in edge_polyline)
@@ -81,8 +81,8 @@ public class LaxPolylineLayer : S2Builder.Layer
         }
         if (label_set_ids_ is not null)
         {
-            S2Builder.Graph.LabelFetcher fetcher = new(g, options_.edge_type_);
-            List<Label> labels = new();  // Temporary storage for labels.
+            S2Builder.Graph.LabelFetcher fetcher = new(g, options_.EdgeType_);
+            List<Label> labels = [];  // Temporary storage for labels.
             label_set_ids_.Capacity = edge_polyline.Count;
             foreach (EdgeId e in edge_polyline)
             {
@@ -103,13 +103,13 @@ public class LaxPolylineLayer : S2Builder.Layer
         // Constructor that uses the default options (listed below).
         public Options()
         {
-            edge_type_ = S2Builder.EdgeType.DIRECTED;
+            EdgeType_ = S2Builder.EdgeType.DIRECTED;
         }
 
         // Constructor that specifies the edge type.
         public Options(S2Builder.EdgeType edge_type)
         {
-            edge_type_ = edge_type;
+            EdgeType_ = edge_type;
         }
 
         // Indicates whether the input edges provided to S2Builder are directed or
@@ -117,7 +117,7 @@ public class LaxPolylineLayer : S2Builder.Layer
         // ambiguity.
         //
         // DEFAULT: S2Builder::EdgeType::DIRECTED
-        public S2Builder.EdgeType edge_type_ { get; set; }
+        public S2Builder.EdgeType EdgeType_ { get; set; }
     }
 
     // Like LaxPolylineLayer, but adds the polyline to a MutableS2ShapeIndex (if

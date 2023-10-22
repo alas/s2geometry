@@ -132,14 +132,14 @@ public class S2TextFormatTests
     [Fact]
     internal void Test_EmptyLoop()
     {
-        var empty = S2Loop.kEmpty;
+        var empty = S2Loop.KEmpty;
         Assert.Equal("empty", empty.ToDebugString());
     }
 
     [Fact]
     internal void Test_FullLoop()
     {
-        var full = S2Loop.kFull;
+        var full = S2Loop.KFull;
         Assert.Equal("full", full.ToDebugString());
     }
 
@@ -167,7 +167,7 @@ public class S2TextFormatTests
     [Fact]
     internal void Test_FullPolygon()
     {
-        var full = new S2Polygon(S2Loop.kFull);
+        var full = new S2Polygon(S2Loop.KFull);
         Assert.Equal("full", full.ToDebugString());
     }
 
@@ -373,8 +373,7 @@ public class S2TextFormatTests
     internal void Test_SafeMakeLoop_Empty()
     {
         // Verify that "empty" creates an empty loop.
-        S2Loop? loop;
-        Assert.True(MakeLoop("empty", out loop));
+        Assert.True(MakeLoop("empty", out S2Loop? loop));
         Assert.True(loop!.IsEmpty());
     }
 
@@ -382,8 +381,7 @@ public class S2TextFormatTests
     internal void Test_SafeMakeLoop_Full()
     {
         // Verify that "full" creates a full loop.
-        S2Loop? loop;
-        Assert.True(MakeLoop("full", out loop));
+        Assert.True(MakeLoop("full", out S2Loop? loop));
         Assert.True(loop!.IsFull());
     }
 
@@ -463,12 +461,12 @@ public class S2TextFormatTests
     internal void Test_MakeVerbatimPolygon_ValidInput()
     {
         Assert.True(MakeVerbatimPolygon("-20:150, -20:151, -19:150", out var polygon));
-        var vertices = new[]
+        var vertices = new double[][]
         {
-                new [] {-20, 150 },
-                new [] {-20, 151 },
-                new [] {-19, 150 },
-            }.Select(t => S2LatLng.FromDegrees(t[0], t[1]).ToPoint());
+            [-20, 150],
+            [-20, 151],
+            [-19, 150],
+        }.Select(t => S2LatLng.FromDegrees(t[0], t[1]).ToPoint());
         var expected = new S2Polygon(new S2Loop(vertices));
         Assert.Equal(polygon, expected);
     }

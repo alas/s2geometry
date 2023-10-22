@@ -210,8 +210,8 @@ public class ClosedSetNormalizer
     // returning a sentinel value once all edges are exhausted.
     private Edge AdvanceIncoming(Graph g, List<Int32> in_edges, ref int i)
     {
-        return ((in_edges[++i] == in_edges.Count) ? sentinel_ :
-            Graph.Reverse(g.GetEdge(in_edges[i])));
+        return (in_edges[++i] == in_edges.Count) ? sentinel_ :
+            Graph.Reverse(g.GetEdge(in_edges[i]));
     }
     private void NormalizeEdges(List<Graph> g, out S2Error error)
     {
@@ -314,7 +314,7 @@ public class ClosedSetNormalizer
     private readonly Edge sentinel_;
     // is_suppressed_[i] is true if vertex[i] belongs to a non-degenerate edge,
     // and therefore should be suppressed from the output graph for points.
-    private readonly List<bool> is_suppressed_ = new();
+    private readonly List<bool> is_suppressed_ = [];
 
     // A vector of incoming polygon edges sorted in lexicographic order.  This
     // is used to suppress directed polyline edges that match a polygon edge in
@@ -322,7 +322,7 @@ public class ClosedSetNormalizer
     private List<Int32> in_edges2_;
 
     // Output data.
-    private readonly List<Graph> new_graphs_ = new();
+    private readonly List<Graph> new_graphs_ = [];
     private readonly List<Edge>[] new_edges_ = new List<Edge>[3];
     private readonly List<Int32>[] new_input_edge_ids_ = new List<Int32>[3];
     private IdSetLexicon new_input_edge_id_set_lexicon_;
@@ -363,33 +363,28 @@ public class NormalizeClosedSetImpl
     {
         output_layers_ = output_layers;
         normalizer_ =
-            new ClosedSetNormalizer(options, new List<GraphOptions>
-            {
+            new ClosedSetNormalizer(options,
+            [
                 output_layers_[0].GraphOptions_(),
                 output_layers_[1].GraphOptions_(),
                 output_layers_[2].GraphOptions_(),
-            });
-        graphs_ = new List<Graph>() { new(), new(), new() }; graphs_left_ = 3;
+            ]);
+        graphs_ = [new(), new(), new()]; graphs_left_ = 3;
         MyDebug.Assert(3 == output_layers_.Count);
     }
 
-    private class DimensionLayer : Layer
+    private class DimensionLayer(int dimension, GraphOptions graph_options, NormalizeClosedSetImpl impl) : Layer
     {
-        public DimensionLayer(int dimension, GraphOptions graph_options, NormalizeClosedSetImpl impl)
-        {
-            dimension_ = dimension; graph_options_ = graph_options; impl_ = impl;
-        }
-
         public override GraphOptions GraphOptions_() { return graph_options_; }
-        private readonly GraphOptions graph_options_;
+        private readonly GraphOptions graph_options_ = graph_options;
 
         public override void Build(Graph g, out S2Error error)
         {
             impl_.Build(dimension_, g, out error);
         }
 
-        private readonly int dimension_;
-        private readonly NormalizeClosedSetImpl impl_;
+        private readonly int dimension_ = dimension;
+        private readonly NormalizeClosedSetImpl impl_ = impl;
     }
 
     private void Build(int dimension, Graph g, out S2Error error)

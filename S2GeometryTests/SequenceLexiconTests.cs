@@ -18,11 +18,11 @@ public class SequenceLexiconTests
         Assert.Equal(3, lex.Add(new Seq { 5, 0, -3 }));
         Assert.Equal(0, lex.Add(new Seq { }));
         Assert.Equal(5, lex.Count());
-        Assert.Equal(new Seq { }, lex.Sequence(0));
-        Assert.Equal(new Seq { 5 }, lex.Sequence(1));
-        Assert.Equal(new Seq { 5, 5 }, lex.Sequence(2));
-        Assert.Equal(new Seq { 5, 0, -3 }, lex.Sequence(3));
-        Assert.Equal(new Seq { 0x7fffffffffffffff }, lex.Sequence(4));
+        Assert.Equal([], lex.Sequence(0));
+        Assert.Equal([5], lex.Sequence(1));
+        Assert.Equal([5, 5], lex.Sequence(2));
+        Assert.Equal([5, 0, -3], lex.Sequence(3));
+        Assert.Equal([0x7fffffffffffffff], lex.Sequence(4));
     }
 
     [Fact]
@@ -43,8 +43,8 @@ public class SequenceLexiconTests
         Assert.Equal(0, original.Add(new Seq { 1, 2 }));
         var lex = original;
         Assert.Equal(1, lex.Add(new Seq { 3, 4 }));
-        ExpectSequence(new Seq { 1, 2 }, lex.Sequence(0));
-        ExpectSequence(new Seq { 3, 4 }, lex.Sequence(1));
+        ExpectSequence([1, 2], lex.Sequence(0));
+        ExpectSequence([3, 4], lex.Sequence(1));
     }
 
     [Fact]
@@ -54,8 +54,8 @@ public class SequenceLexiconTests
         Assert.Equal(0, original.Add(new Seq { 1, 2}));
         var lex = original;
         Assert.Equal(1, lex.Add(new Seq { 3, 4}));
-        ExpectSequence(new Seq { 1, 2}, lex.Sequence(0));
-        ExpectSequence(new Seq { 3, 4}, lex.Sequence(1));
+        ExpectSequence([1, 2], lex.Sequence(0));
+        ExpectSequence([3, 4], lex.Sequence(1));
     }
 
     [Fact]
@@ -68,8 +68,8 @@ public class SequenceLexiconTests
         Assert.Equal(1, lex.Add(new Seq { 5, 6}));
         lex = original;
         Assert.Equal(1, lex.Add(new Seq { 7, 8}));
-        ExpectSequence(new Seq { 1, 2}, lex.Sequence(0));
-        ExpectSequence(new Seq { 7, 8}, lex.Sequence(1));
+        ExpectSequence([1, 2], lex.Sequence(0));
+        ExpectSequence([7, 8], lex.Sequence(1));
     }
 
     [Fact]
@@ -82,8 +82,8 @@ public class SequenceLexiconTests
         Assert.Equal(1, lex.Add(new Seq { 5, 6}));
         lex = original;
         Assert.Equal(1, lex.Add(new Seq { 7, 8}));
-        ExpectSequence(new Seq { 1, 2}, lex.Sequence(0));
-        ExpectSequence(new Seq { 7, 8}, lex.Sequence(1));
+        ExpectSequence([1, 2], lex.Sequence(0));
+        ExpectSequence([7, 8], lex.Sequence(1));
     }
 
     private static void ExpectSequence<T>(List<T> expected, List<T> actual) {

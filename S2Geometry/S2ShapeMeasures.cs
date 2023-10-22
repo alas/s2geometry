@@ -180,6 +180,6 @@ public static partial class S2
             verts.Add(edge.V1);
         }
 
-        vertices = verts.ToArray();
+        vertices = [.. verts];
     }
 }

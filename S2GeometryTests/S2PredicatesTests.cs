@@ -5,7 +5,7 @@ using System.Text;
 public class S2PredicatesTests
 {
     private const int consistency_iters = 5000; // Number of iterations for precision consistency tests
-    private static readonly string[] kPrecisionNames = new[] { "double", "double", "exact", "symbolic" };
+    private static readonly string[] kPrecisionNames = ["double", "double", "exact", "symbolic"];
 
     // If `sizeof(long double) == sizeof(double)`, then we will never do
     // calculations with `long double` and instead fall back to exact.
@@ -899,8 +899,8 @@ public class S2PredicatesTests
             if (ld_result != UNCERTAIN) Assert.Equal(exact_result, ld_result);
             if (dbl_result != UNCERTAIN) Assert.Equal(ld_result, dbl_result);
 
-            Precision actual_prec = (dbl_result != UNCERTAIN ? Precision.DOUBLE :
-                                     ld_result != UNCERTAIN ? Precision.LONG_DOUBLE : Precision.EXACT);
+            Precision actual_prec = dbl_result != UNCERTAIN ? Precision.DOUBLE :
+                                     ld_result != UNCERTAIN ? Precision.LONG_DOUBLE : Precision.EXACT;
             Assert.Equal(expected_prec, actual_prec);
         }
         // Make sure that the top-level function returns the expected result.
@@ -935,8 +935,8 @@ public class S2PredicatesTests
             x0.ToLD(), x1.ToLD(), a.ToLD(), b.ToLD(), c.ToLD(), abc_sign);
         int exact_sign = S2Pred.ExactEdgeCircumcenterSign_Test(
             x0.ToExact(), x1.ToExact(), a.ToExact(), b.ToExact(), c.ToExact(), abc_sign);
-        int actual_sign = (exact_sign != 0 ? exact_sign :
-                           S2Pred.SymbolicEdgeCircumcenterSign_Test(x0, x1, a, b, c));
+        int actual_sign = exact_sign != 0 ? exact_sign :
+                           S2Pred.SymbolicEdgeCircumcenterSign_Test(x0, x1, a, b, c);
 
         // Check that the signs are correct (if non-zero), and also that if dbl_sign
         // is non-zero then so is ld_sign, etc.
@@ -945,9 +945,9 @@ public class S2PredicatesTests
         if (ld_sign != 0) Assert.Equal(exact_sign, ld_sign);
         if (dbl_sign != 0) Assert.Equal(ld_sign, dbl_sign);
 
-        Precision actual_prec = ((dbl_sign != 0) ? Precision.DOUBLE :
+        Precision actual_prec = (dbl_sign != 0) ? Precision.DOUBLE :
                                  (ld_sign != 0) ? Precision.LONG_DOUBLE :
-                                 (exact_sign != 0) ? Precision.EXACT : Precision.SYMBOLIC);
+                                 (exact_sign != 0) ? Precision.EXACT : Precision.SYMBOLIC;
         Assert.Equal(expected_prec, actual_prec);
 
         // Make sure that the top-level function returns the expected result.
@@ -990,7 +990,7 @@ public class S2PredicatesTests
         if (ld_sign != 0) Assert.Equal(exact_sign, ld_sign);
         if (dbl_sign != 0) Assert.Equal(ld_sign, dbl_sign);
 
-        Precision actual_prec = ((dbl_sign != 0) ? Precision.DOUBLE : (ld_sign != 0) ? Precision.LONG_DOUBLE : Precision.EXACT);
+        Precision actual_prec = (dbl_sign != 0) ? Precision.DOUBLE : (ld_sign != 0) ? Precision.LONG_DOUBLE : Precision.EXACT;
         Assert.Equal(expected_prec, actual_prec);
 
         // Make sure that the top-level function returns the expected result.
@@ -1028,7 +1028,7 @@ public class S2PredicatesTests
         if (ld_sign != 0) Assert.Equal(exact_sign, ld_sign);
         if (dbl_sign != 0) Assert.Equal(ld_sign, dbl_sign);
 
-        Precision actual_prec = ((dbl_sign != 0) ? Precision.DOUBLE : (ld_sign != 0) ? Precision.LONG_DOUBLE : Precision.EXACT);
+        Precision actual_prec = (dbl_sign != 0) ? Precision.DOUBLE : (ld_sign != 0) ? Precision.LONG_DOUBLE : Precision.EXACT;
         Assert.Equal(expected_prec, actual_prec);
 
         // Make sure that the top-level function returns the expected result.
@@ -1069,7 +1069,7 @@ public class S2PredicatesTests
         if (ld_sign != 0) Assert.Equal(exact_sign, ld_sign);
         if (dbl_sign != 0) Assert.Equal(ld_sign, dbl_sign);
 
-        Precision actual_prec = ((dbl_sign != 0) ? Precision.DOUBLE : (ld_sign != 0) ? Precision.LONG_DOUBLE : Precision.EXACT);
+        Precision actual_prec = (dbl_sign != 0) ? Precision.DOUBLE : (ld_sign != 0) ? Precision.LONG_DOUBLE : Precision.EXACT;
         Assert.Equal(expected_prec, actual_prec);
 
         // Make sure that the top-level function returns the expected result.
@@ -1136,8 +1136,8 @@ public class S2PredicatesTests
     // that ldexp is notexpr in C++11.
     private static double EpsilonForDigits(int digits)
     {
-        return (digits < 64 ? (1.0 / (1UL << digits))
-            : (EpsilonForDigits(digits - 63) / (1UL << 63)));
+        return digits < 64 ? (1.0 / (1UL << digits))
+            : (EpsilonForDigits(digits - 63) / (1UL << 63));
     }
 
     // Verifies that CompareDistances(x, a, b) == expected_sign, and furthermore
@@ -1154,7 +1154,7 @@ public class S2PredicatesTests
         int dbl_sign = triage(x, a, b);
         int ld_sign = triage(x.ToLD(), a.ToLD(), b.ToLD());
         int exact_sign = S2Pred.ExactCompareDistances_Test(x.ToExact(), a.ToExact(), b.ToExact());
-        int actual_sign = (exact_sign != 0 ? exact_sign : S2Pred.SymbolicCompareDistances_Test(x, a, b));
+        int actual_sign = exact_sign != 0 ? exact_sign : S2Pred.SymbolicCompareDistances_Test(x, a, b);
 
         // Check that the signs are correct (if non-zero), and also that if dbl_sign
         // is non-zero then so is ld_sign, etc.
@@ -1163,9 +1163,9 @@ public class S2PredicatesTests
         if (ld_sign != 0) Assert.Equal(exact_sign, ld_sign);
         if (dbl_sign != 0) Assert.Equal(ld_sign, dbl_sign);
 
-        Precision actual_prec = ((dbl_sign != 0) ? Precision.DOUBLE :
+        Precision actual_prec = (dbl_sign != 0) ? Precision.DOUBLE :
                                  (ld_sign != 0) ? Precision.LONG_DOUBLE :
-                                 (exact_sign != 0) ? Precision.EXACT : Precision.SYMBOLIC);
+                                 (exact_sign != 0) ? Precision.EXACT : Precision.SYMBOLIC;
         Assert.Equal(expected_prec, actual_prec);
 
         // Make sure that the top-level function returns the expected result.
@@ -1208,7 +1208,7 @@ public class S2PredicatesTests
     {
         a = a.Normalize();
         b = b.Normalize();
-        List<S2Point> points = new(){ a, b };
+        List<S2Point> points = [a, b];
         while (points.Count < n)
         {
             AddDegeneracy(points);
@@ -1368,7 +1368,7 @@ public class S2PredicatesTests
         for (; ; )
         {
             S2Point delta = 1e-15 * S2Testing.Random.RandDouble() * dir;
-            if ((a + delta) != a && (a + delta) - a == a - (a - delta) &&
+            if ((a + delta) != a && a + delta - a == a - (a - delta) &&
                 (a + delta).IsUnitLength() && (a - delta).IsUnitLength())
             {
                 points.Add(a + delta);

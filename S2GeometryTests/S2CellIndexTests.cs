@@ -5,7 +5,7 @@ using LabelledCell = S2CellIndex.LabelledCell;
 public class S2CellIndexTests
 {
     private readonly S2CellIndex _index = new();
-    private readonly List<LabelledCell> contents_ = new();
+    private readonly List<LabelledCell> contents_ = [];
     
     [Fact]
     internal void Test_S2CellIndexTest_Empty()
@@ -99,28 +99,28 @@ public class S2CellIndexTests
         QuadraticValidate();
 
         var contents = new S2CellIndex.ContentsEnumerator(_index);
-        ExpectContents("1/123", contents, Array.Empty<(string, int)>());
-        ExpectContents("2/100123", contents, new[] { ("2/1", 1), ("2/1", 2), ("2/10", 3), ("2/100", 4) });
+        ExpectContents("1/123", contents, []);
+        ExpectContents("2/100123", contents, [("2/1", 1), ("2/1", 2), ("2/10", 3), ("2/100", 4)]);
         // Check that a second call with the same key yields no additional results.
-        ExpectContents("2/100123", contents, Array.Empty<(string, int)>());
+        ExpectContents("2/100123", contents, []);
         // Check that seeking to a different branch yields only the new values.
-        ExpectContents("2/10232", contents, new[] { ("2/102", 5), ("2/1023", 6) });
+        ExpectContents("2/10232", contents, [("2/102", 5), ("2/1023", 6)]);
         // Seek to a node with a different root.
-        ExpectContents("2/313", contents, new[] { ("2/31", 7), ("2/313", 8) });
+        ExpectContents("2/313", contents, [("2/31", 7), ("2/313", 8)]);
         // Seek to a descendant of the previous node.
-        ExpectContents("2/3132333", contents, new[] { ("2/3132", 9) });
+        ExpectContents("2/3132333", contents, [("2/3132", 9)]);
         // Seek to an ancestor of the previous node.
-        ExpectContents("2/213", contents, Array.Empty<(string, int)>());
+        ExpectContents("2/213", contents, []);
         // A few more tests of incremental reporting.
-        ExpectContents("3/1232", contents, new (string, int)[] { ("3/1", 10), ("3/12", 11) });
-        ExpectContents("3/133210", contents, new[] { ("3/13", 12) });
-        ExpectContents("3/133210", contents, Array.Empty<(string, int)>());
-        ExpectContents("5/0", contents, Array.Empty<(string, int)>());
+        ExpectContents("3/1232", contents, [("3/1", 10), ("3/12", 11)]);
+        ExpectContents("3/133210", contents, [("3/13", 12)]);
+        ExpectContents("3/133210", contents, []);
+        ExpectContents("5/0", contents, []);
 
         // Now try moving backwards, which is expected to yield values that were
         // already reported above.
-        ExpectContents("3/13221", contents, new[] { ("3/1", 10), ("3/13", 12) });
-        ExpectContents("2/31112", contents, new[] { ("2/31", 7) });
+        ExpectContents("3/13221", contents, [("3/1", 10), ("3/13", 12)]);
+        ExpectContents("2/31112", contents, [("2/31", 7)]);
     }
 
     [Fact]
@@ -134,8 +134,8 @@ public class S2CellIndexTests
         Add("2/00", 3);
         Add("2/0232", 4);
         Build();
-        TestIntersection(MakeCellUnion(new[] { "1/010", "1/3"}));
-        TestIntersection(MakeCellUnion(new[] { "2/010", "2/011", "2/02"}));
+        TestIntersection(MakeCellUnion(["1/010", "1/3"]));
+        TestIntersection(MakeCellUnion(["2/010", "2/011", "2/02"]));
     }
 
     [Fact]
@@ -341,7 +341,7 @@ public class S2CellIndexTests
             min_cell_id = range.GetLimitId();
 
             // Build a list of expected (cell_id, label) pairs for this range.
-            List<LabelledCell> expected = new();
+            List<LabelledCell> expected = [];
             foreach (var x in contents_)
             {
                 if (x.CellId.RangeMin() <= rn.StartId &&
@@ -357,7 +357,7 @@ public class S2CellIndexTests
                                     x.CellId.RangeMax() >= rn.StartId);
                 }
             }
-            List<LabelledCell> actual = new();
+            List<LabelledCell> actual = [];
             var contents = new S2CellIndex.ContentsEnumerator(_index);
             contents.StartUnion(rn);
             while (contents.MoveNext())
@@ -373,9 +373,9 @@ public class S2CellIndexTests
     // correct results for the given target.
     private void TestIntersection(S2CellUnion target)
     {
-        List<LabelledCell> expected = new();
-        List<LabelledCell> actual = new();
-        LabelSet expected_labels = new();
+        List<LabelledCell> expected = [];
+        List<LabelledCell> actual = [];
+        LabelSet expected_labels = [];
         foreach (var it in _index.GetCellEnumerable())
         {
             if (target.Intersects(it.CellId))
@@ -392,7 +392,7 @@ public class S2CellIndexTests
             });
         ExpectEqual(expected, actual);
         var actual_labels = _index.GetIntersectingLabels(target);
-        Assert.Equal(expected_labels, actual_labels.ToList());
+        Assert.Equal(expected_labels, [.. actual_labels]);
     }
 
     // Given an S2CellId "target_str" in human-readable form, expects that the

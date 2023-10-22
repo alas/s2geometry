@@ -4,16 +4,10 @@ using static S2BooleanOperation;
 using static S2Builder.GraphOptions;
 using Loops = List<List<S2Point>>;
 
-public class S2BooleanOperationTests
+public class S2BooleanOperationTests(ITestOutputHelper logger)
 {
-    private readonly ITestOutputHelper _logger;
-    private readonly DegeneracyCoverageTest dct;
-
-    public S2BooleanOperationTests(ITestOutputHelper logger)
-    {
-        _logger = logger;
-        dct = new DegeneracyCoverageTest(logger);
-    }
+    private readonly ITestOutputHelper _logger = logger;
+    private readonly DegeneracyCoverageTest dct = new(logger);
 
     // The polygon used in the polyline/polygon vertex tests below.
     private const string kVertexTestPolygonStr = "0:0, 0:1, 0:2, 0:3, 0:4, 0:5, 5:5, 5:4, 5:3, 5:2, 5:1, 5:0";
@@ -68,9 +62,9 @@ public class S2BooleanOperationTests
         var b = "# #";
         options.PolylineModel_ = PolylineModel.OPEN;
         ExpectResult(OpType.UNION, options, a, b, a);
-        options.PolylineModel_ = (PolylineModel.SEMI_OPEN);
+        options.PolylineModel_ = PolylineModel.SEMI_OPEN;
         ExpectResult(OpType.UNION, options, a, b, a);
-        options.PolylineModel_ = (PolylineModel.CLOSED);
+        options.PolylineModel_ = PolylineModel.CLOSED;
         ExpectResult(OpType.UNION, options, a, b, a);
     }
 
@@ -82,11 +76,11 @@ public class S2BooleanOperationTests
         Options options = new();
         var a = "# # 0:0, 0:5, 5:5, 5:0; 1:1; 2:2, 3:3; 6:6; 7:7, 8:8";
         var b = "# #";
-        options.PolygonModel_ = (PolygonModel.OPEN);
+        options.PolygonModel_ = PolygonModel.OPEN;
         ExpectResult(OpType.UNION, options, a, b, a);
-        options.PolygonModel_ = (PolygonModel.SEMI_OPEN);
+        options.PolygonModel_ = PolygonModel.SEMI_OPEN;
         ExpectResult(OpType.UNION, options, a, b, a);
-        options.PolygonModel_ = (PolygonModel.CLOSED);
+        options.PolygonModel_ = PolygonModel.CLOSED;
         ExpectResult(OpType.UNION, options, a, b, a);
     }
 
@@ -120,8 +114,10 @@ public class S2BooleanOperationTests
         //
         // This test uses Options.polyline_loops_have_boundaries() == true, which
         // means that the loop "4:0, 5:0, 4:0" does not contain the vertex "4:0".
-        Options options = new();
-        options.PolylineModel_ = (PolylineModel.OPEN);
+        Options options = new()
+        {
+            PolylineModel_ = PolylineModel.OPEN
+        };
         var a = "0:0 | 1:0 | 2:0 | 3:0 | 4:0 | 5:0 # #";
         var b = "# 0:0, 1:0, 2:0 | 3:0, 3:0 | 4:0, 5:0, 4:0 #";
         ExpectResult(OpType.UNION, options, a, b,
@@ -141,9 +137,11 @@ public class S2BooleanOperationTests
     {
         // With Options.polyline_loops_have_boundaries() == false, the loop
         // "4:0, 5:0, 4:0" has two vertices, both of which are contained.
-        Options options = new();
-        options.PolylineModel_ = (PolylineModel.OPEN);
-        options.PolylineLoopsHaveBoundaries = (false);
+        Options options = new()
+        {
+            PolylineModel_ = PolylineModel.OPEN,
+            PolylineLoopsHaveBoundaries = false
+        };
         var a = "0:0 | 1:0 | 2:0 | 3:0 | 4:0 | 5:0 # #";
         var b = "# 0:0, 1:0, 2:0 | 3:0, 3:0 | 4:0, 5:0, 4:0 #";
         ExpectResult(OpType.UNION, options, a, b,
@@ -166,11 +164,13 @@ public class S2BooleanOperationTests
         // polyline "3:0, 3:0" do not intersect.
         //
         // The result does not depend on Options.polyline_loops_have_boundaries().
-        Options options = new();
-        options.PolylineModel_ = (PolylineModel.SEMI_OPEN);
+        Options options = new()
+        {
+            PolylineModel_ = PolylineModel.SEMI_OPEN
+        };
         foreach (bool bool_value in new[] { false, true })
         {
-            options.PolylineLoopsHaveBoundaries = (bool_value);
+            options.PolylineLoopsHaveBoundaries = bool_value;
             var a = "0:0 | 1:0 | 2:0 | 3:0 | 4:0 | 5:0 # #";
             var b = "# 0:0, 1:0, 2:0 | 3:0, 3:0 | 4:0, 5:0, 4:0 #";
             ExpectResult(OpType.UNION, options, a, b,
@@ -194,11 +194,13 @@ public class S2BooleanOperationTests
         // difference includes only the polyline objects.
         //
         // The result does not depend on Options.polyline_loops_have_boundaries().
-        Options options = new();
-        options.PolylineModel_ = (PolylineModel.CLOSED);
+        Options options = new()
+        {
+            PolylineModel_ = PolylineModel.CLOSED
+        };
         foreach (bool bool_value in new[] { false, true })
         {
-            options.PolylineLoopsHaveBoundaries = (bool_value);
+            options.PolylineLoopsHaveBoundaries = bool_value;
             var a = "0:0 | 1:0 | 2:0 | 3:0 | 4:0 | 5:0 # #";
             var b = "# 0:0, 1:0, 2:0 | 3:0, 3:0 | 4:0, 5:0, 4:0 #";
             ExpectResult(OpType.UNION, options, a, b,
@@ -232,8 +234,10 @@ public class S2BooleanOperationTests
     [Fact]
     internal void Test_S2BooleanOperation_PointOpenPolygonVertex()
     {
-        Options options = new();
-        options.PolygonModel_ = (PolygonModel.OPEN);
+        Options options = new()
+        {
+            PolygonModel_ = PolygonModel.OPEN
+        };
         // See notes about the two vertices below.
         var a = "0:1 | 1:0 # #";
         var b = "# # 0:0, 0:1, 1:0";
@@ -250,8 +254,10 @@ public class S2BooleanOperationTests
     [Fact]
     internal void Test_S2BooleanOperation_PointSemiOpenPolygonVertex()
     {
-        Options options = new();
-        options.PolygonModel_ = (PolygonModel.SEMI_OPEN);
+        Options options = new()
+        {
+            PolygonModel_ = PolygonModel.SEMI_OPEN
+        };
         // The two vertices are chosen such that the polygon contains one vertex but
         // not the other under PolygonModel::SEMI_OPEN.  (The same vertices are used
         // for all three PolygonModel options.)
@@ -273,8 +279,10 @@ public class S2BooleanOperationTests
     [Fact]
     internal void Test_S2BooleanOperation_PointClosedPolygonVertex()
     {
-        Options options = new();
-        options.PolygonModel_ = (PolygonModel.CLOSED);
+        Options options = new()
+        {
+            PolygonModel_ = PolygonModel.CLOSED
+        };
         // See notes about the two vertices above.
         var a = "0:1 | 1:0 # #";
         var b = "# # 0:0, 0:1, 1:0";
@@ -295,8 +303,10 @@ public class S2BooleanOperationTests
         // first/last and middle vertices of two polyline loops.
         //
         // Degenerate polylines are tested in PolylineEdgePolylineEdgeOverlap below.
-        Options options = new();
-        options.PolylineModel_ = (PolylineModel.OPEN);
+        Options options = new()
+        {
+            PolylineModel_ = PolylineModel.OPEN
+        };
         var a = "# 0:0, 0:1, 0:2 | 0:3, 0:4, 0:3 #";
         var b = "# 0:0, 1:0 | -1:1, 0:1, 1:1 | -1:2, 0:2 " +
                  "| 1:3, 0:3, 1:3 | 0:4, 1:4, 0:4 #";
@@ -326,9 +336,11 @@ public class S2BooleanOperationTests
     {
         // With Options.polyline_loops_have_boundaries() == false, the 3 polyline
         // loops each have two vertices, both of which are contained.
-        Options options = new();
-        options.PolylineModel_ = (PolylineModel.OPEN);
-        options.PolylineLoopsHaveBoundaries = (false);
+        Options options = new()
+        {
+            PolylineModel_ = PolylineModel.OPEN,
+            PolylineLoopsHaveBoundaries = false
+        };
         var a = "# 0:0, 0:1, 0:2 | 0:3, 0:4, 0:3 #";
         var b = "# 0:0, 1:0 | -1:1, 0:1, 1:1 | -1:2, 0:2 " +
                  "| 1:3, 0:3, 1:3 | 0:4, 1:4, 0:4 #";
@@ -354,11 +366,13 @@ public class S2BooleanOperationTests
     internal void Test_S2BooleanOperation_PolylineVertexSemiOpenPolylineVertex()
     {
         // The result does not depend on Options.polyline_loops_have_boundaries().
-        Options options = new();
-        options.PolylineModel_ = (PolylineModel.SEMI_OPEN);
+        Options options = new()
+        {
+            PolylineModel_ = PolylineModel.SEMI_OPEN
+        };
         foreach (bool bool_value in new[] { false, true })
         {
-            options.PolylineLoopsHaveBoundaries = (bool_value);
+            options.PolylineLoopsHaveBoundaries = bool_value;
             var a = "# 0:0, 0:1, 0:2 | 0:3, 0:4, 0:3 #";
             var b = "# 0:0, 1:0 | -1:1, 0:1, 1:1 | -1:2, 0:2 " +
                      "| 1:3, 0:3, 1:3 | 0:4, 1:4, 0:4 #";
@@ -379,8 +393,10 @@ public class S2BooleanOperationTests
     [Fact]
     internal void Test_S2BooleanOperation_PolylineVertexClosedPolylineVertex()
     {
-        Options options = new();
-        options.PolylineModel_ = (PolylineModel.CLOSED);
+        Options options = new()
+        {
+            PolylineModel_ = PolylineModel.CLOSED
+        };
         var a = "# 0:0, 0:1, 0:2 | 0:3, 0:4, 0:3 #";
         var b = "# 0:0, 1:0 | -1:1, 0:1, 1:1 | -1:2, 0:2 " +
                  "| 1:3, 0:3, 1:3 | 0:4, 1:4, 0:4 #";
@@ -406,9 +422,11 @@ public class S2BooleanOperationTests
     [Fact]
     internal void Test_S2BooleanOperation_PolylineVertexClosedPolylineVertexLoopBoundariesFalse()
     {
-        Options options = new();
-        options.PolylineModel_ = (PolylineModel.CLOSED);
-        options.PolylineLoopsHaveBoundaries = (false);
+        Options options = new()
+        {
+            PolylineModel_ = PolylineModel.CLOSED,
+            PolylineLoopsHaveBoundaries = false
+        };
         var a = "# 0:0, 0:1, 0:2 | 0:3, 0:4, 0:3 #";
         var b = "# 0:0, 1:0 | -1:1, 0:1, 1:1 | -1:2, 0:2 " +
                  "| 1:3, 0:3, 1:3 | 0:4, 1:4, 0:4 #";
@@ -453,15 +471,17 @@ public class S2BooleanOperationTests
     [Fact]
     internal void Test_S2BooleanOperation_PolylineVertexOpenPolygonVertex()
     {
-        Options options = new();
-        options.PolygonModel_ = (PolygonModel.OPEN);
+        Options options = new()
+        {
+            PolygonModel_ = PolygonModel.OPEN
+        };
 
         // Define some constants to reduce code duplication.
         // Test all combinations of polylines that start or end on a polygon vertex,
         // where the polygon vertex is open or closed using semi-open boundaries,
         // and where the incident edge is inside or outside the polygon.
-        var a = ("# 1:1, 0:1 | 0:2, 1:2 | -1:3, 0:3 | 0:4, -1:4 " +
-                "| 6:1, 5:1 | 5:2, 6:2 | 4:3, 5:3 | 5:4, 4:4 #");
+        var a = "# 1:1, 0:1 | 0:2, 1:2 | -1:3, 0:3 | 0:4, -1:4 " +
+                "| 6:1, 5:1 | 5:2, 6:2 | 4:3, 5:3 | 5:4, 4:4 #";
         var b = "# # " + kVertexTestPolygonStr;
 
         string kDifferenceResult =
@@ -487,11 +507,13 @@ public class S2BooleanOperationTests
             "7:0, 5:1 | 7:1, 5:2 | 7:2, 5:3 | 7:3, 5:4 # " +
             kVertexTestPolygonStr;
 
-        Options options = new();
-        options.PolygonModel_ = (PolygonModel.OPEN);
-        var a = ("# 1:1, 0:1 | 0:2, 1:2 | -1:3, 0:3 | 0:4, -1:4 " +
-                  "| 6:1, 5:1 | 5:2, 6:2 | 4:3, 5:3 | 5:4, 4:4 #");
-        var b = ("# " + kTestGeometrySuffix);
+        Options options = new()
+        {
+            PolygonModel_ = PolygonModel.OPEN
+        };
+        var a = "# 1:1, 0:1 | 0:2, 1:2 | -1:3, 0:3 | 0:4, -1:4 " +
+                  "| 6:1, 5:1 | 5:2, 6:2 | 4:3, 5:3 | 5:4, 4:4 #";
+        var b = "# " + kTestGeometrySuffix;
 
         string kDifferencePrefix =
             "# -1:3, 0:3 | 0:4, -1:4 | 6:1, 5:1 | 5:2, 6:2";
@@ -512,16 +534,18 @@ public class S2BooleanOperationTests
     [Fact]
     internal void Test_S2BooleanOperation_PolylineVertexSemiOpenPolygonVertex()
     {
-        Options options = new();
-        options.PolygonModel_ = (PolygonModel.SEMI_OPEN);
+        Options options = new()
+        {
+            PolygonModel_ = PolygonModel.SEMI_OPEN
+        };
         // Test all combinations of polylines that start or end on a polygon vertex,
         // where the polygon vertex is open or closed using semi-open boundaries,
         // and where the incident edge is inside or outside the polygon.
         //
         // The vertices at latitude 0 used below are all closed while the vertices
         // at latitude 5 are all open (see TestSemiOpenPolygonVerticesContained).
-        var a = ("# 1:1, 0:1 | 0:2, 1:2 | -1:3, 0:3 | 0:4, -1:4 " +
-                  "| 6:1, 5:1 | 5:2, 6:2 | 4:3, 5:3 | 5:4, 4:4 #");
+        var a = "# 1:1, 0:1 | 0:2, 1:2 | -1:3, 0:3 | 0:4, -1:4 " +
+                  "| 6:1, 5:1 | 5:2, 6:2 | 4:3, 5:3 | 5:4, 4:4 #";
         var b = "# # " + kVertexTestPolygonStr;
         string kDifferenceResult =
             "# -1:3, 0:3 | 0:4, -1:4 | 6:1, 5:1 | 5:2, 6:2 | 5:3, 5:3 | 5:4, 5:4 #";
@@ -538,13 +562,15 @@ public class S2BooleanOperationTests
     [Fact]
     internal void Test_S2BooleanOperation_PolylineVertexClosedPolygonVertex()
     {
-        Options options = new();
-        options.PolygonModel_ = (PolygonModel.CLOSED);
+        Options options = new()
+        {
+            PolygonModel_ = PolygonModel.CLOSED
+        };
         // Test all combinations of polylines that start or end on a polygon vertex,
         // where the polygon vertex is open or closed using semi-open boundaries,
         // and where the incident edge is inside or outside the polygon.
-        var a = ("# 1:1, 0:1 | 0:2, 1:2 | -1:3, 0:3 | 0:4, -1:4 " +
-                  "| 6:1, 5:1 | 5:2, 6:2 | 4:3, 5:3 | 5:4, 4:4 #");
+        var a = "# 1:1, 0:1 | 0:2, 1:2 | -1:3, 0:3 | 0:4, -1:4 " +
+                  "| 6:1, 5:1 | 5:2, 6:2 | 4:3, 5:3 | 5:4, 4:4 #";
         var b = "# # " + kVertexTestPolygonStr;
         string kDifferenceResult =
             "# -1:3, 0:3 | 0:4, -1:4 | 6:1, 5:1 | 5:2, 6:2 #";
@@ -581,8 +607,10 @@ public class S2BooleanOperationTests
         // The PolylineModel does not affect this calculation.  In particular the
         // intersection of a degenerate polyline edge with itself is non-empty, even
         // though the edge contains no points in the OPEN and SEMI_OPEN models.
-        Options options = new();
-        options.PolygonModel_ = (PolygonModel.OPEN);
+        Options options = new()
+        {
+            PolygonModel_ = PolygonModel.OPEN
+        };
         // Test edges in the same and reverse directions, and degenerate edges.
         var a = "# 0:0, 1:0, 2:0, 2:5 | 3:0, 3:0 | 6:0, 5:0, 4:0 #";
         var b = "# 0:0, 1:0, 2:0 | 3:0, 3:0 | 4:0, 5:0 #";
@@ -607,8 +635,10 @@ public class S2BooleanOperationTests
         // This tests not only what happens when degenerate polylines intersect loop
         // endpoints, but also what happens when polylines intersect a degenerate
         // and non-degenerate edge that overlap each other.
-        Options options = new();
-        options.PolylineModel_ = PolylineModel.OPEN;
+        Options options = new()
+        {
+            PolylineModel_ = PolylineModel.OPEN
+        };
         var a = "# 0:0, 0:1, 1:0, 0:0 | 2:2, 2:3, 3:2, 2:2 #";
         var b = "# 0:0, 0:0 | 0:0, 0:1 | 2:2, 2:2 | 2:2, 3:2 #";
         ExpectResult(OpType.UNION, options, a, b,
@@ -629,8 +659,10 @@ public class S2BooleanOperationTests
         // intersected with {AA, AB} is {AA, AB, AB} but ABCA intersected with {AA,
         // AC} is {AA, AA, AC, CA} since the chain ABCA contains its start vertex
         // but not its end vertex.
-        Options options = new();
-        options.PolylineModel_ = PolylineModel.SEMI_OPEN;
+        Options options = new()
+        {
+            PolylineModel_ = PolylineModel.SEMI_OPEN
+        };
         var a = "# 0:0, 0:1, 1:0, 0:0 | 2:2, 2:3, 3:2, 2:2 #";
         var b = "# 0:0, 0:0 | 0:0, 0:1 | 2:2, 2:2 | 2:2, 3:2 #";
         ExpectResult(OpType.UNION, options, a, b,
@@ -651,8 +683,10 @@ public class S2BooleanOperationTests
         // Like the test above but with CLOSED boundaries.  In this case ABCA
         // intersected with {AA, AB} is {AA, AA, AB, AB} since the chain ABCA
         // contains both its start vertex and end vertex.
-        Options options = new();
-        options.PolylineModel_ = (PolylineModel.CLOSED);
+        Options options = new()
+        {
+            PolylineModel_ = PolylineModel.CLOSED
+        };
         var a = "# 0:0, 0:1, 1:0, 0:0 | 2:2, 2:3, 3:2, 2:2 #";
         var b = "# 0:0, 0:0 | 0:0, 0:1 | 2:2, 2:2 | 2:2, 3:2 #";
         ExpectResult(OpType.UNION, options, a, b,
@@ -680,9 +714,11 @@ public class S2BooleanOperationTests
         };
         foreach (var polyline_model in polyline_models)
         {
-            Options options = new();
-            options.PolylineModel_ = polyline_model;
-            options.PolylineLoopsHaveBoundaries = false;
+            Options options = new()
+            {
+                PolylineModel_ = polyline_model,
+                PolylineLoopsHaveBoundaries = false
+            };
             var a = "# 0:0, 0:1, 1:0, 0:0 | 2:2, 2:3, 3:2, 2:2 #";
             var b = "# 0:0, 0:0 | 0:0, 0:1 | 2:2, 2:2 | 2:2, 3:2 #";
             ExpectResult(OpType.UNION, options, a, b,
@@ -701,8 +737,10 @@ public class S2BooleanOperationTests
     [Fact]
     internal void Test_S2BooleanOperation_PolylineEdgeOpenPolygonEdgeOverlap()
     {
-        Options options = new();
-        options.PolygonModel_ = PolygonModel.OPEN;
+        Options options = new()
+        {
+            PolygonModel_ = PolygonModel.OPEN
+        };
         // A polygon and two polyline edges that coincide with the polygon boundary,
         // one in the same direction and one in the reverse direction.
         var a = "# 1:1, 1:3, 3:3 | 3:3, 1:3 # ";
@@ -725,8 +763,10 @@ public class S2BooleanOperationTests
         Assert.True(polygon.Contains(MakePointOrDie("1:3")));
         Assert.False(polygon.Contains(MakePointOrDie("3:3")));
         Assert.False(polygon.Contains(MakePointOrDie("3:1")));
-        Options options = new();
-        options.PolygonModel_ = (PolygonModel.SEMI_OPEN);
+        Options options = new()
+        {
+            PolygonModel_ = PolygonModel.SEMI_OPEN
+        };
         var a = "# 1:1, 1:3, 3:3 | 3:3, 1:3 # ";
         var b = "# # 1:1, 1:3, 3:3, 3:1";
         ExpectResult(OpType.UNION, options, a, b,
@@ -742,8 +782,10 @@ public class S2BooleanOperationTests
     [Fact]
     internal void Test_S2BooleanOperation_PolylineEdgeClosedPolygonEdgeOverlap()
     {
-        Options options = new();
-        options.PolygonModel_ = PolygonModel.CLOSED;
+        Options options = new()
+        {
+            PolygonModel_ = PolygonModel.CLOSED
+        };
         var a = "# 1:1, 1:3, 3:3 | 3:3, 1:3 # ";
         var b = "# # 1:1, 1:3, 3:3, 3:1";
         ExpectResult(OpType.UNION, options, a, b,
@@ -763,9 +805,11 @@ public class S2BooleanOperationTests
         // a0_matches_polygon and a1_matches_polygon correctly even when (a0, a1)
         // itself is a polygon edge (or its sibling).  (It requires degenerate
         // polygon geometry to demonstrate this.)
-        Options options = new();
-        options.PolylineModel_ = (PolylineModel.CLOSED);
-        options.PolygonModel_ = (PolygonModel.CLOSED);
+        Options options = new()
+        {
+            PolylineModel_ = PolylineModel.CLOSED,
+            PolygonModel_ = PolygonModel.CLOSED
+        };
         var a = "# 0:0, 1:1 # ";
         var b = "# # 0:0, 1:1";
         ExpectResult(OpType.UNION, options, a, b, "# # 0:0, 1:1");
@@ -828,8 +872,10 @@ public class S2BooleanOperationTests
     [Fact]
     internal void Test_S2BooleanOperation_PolygonVertexOpenPolygonVertex()
     {
-        Options options = new();
-        options.PolygonModel_ = PolygonModel.OPEN;
+        Options options = new()
+        {
+            PolygonModel_ = PolygonModel.OPEN
+        };
         var a = "# # 0:0, 0:5, 1:5, 0:0, 2:5, 3:5";
         var b = "# # 0:0, 5:3, 5:2";
         ExpectResult(OpType.UNION, options, a, b,
@@ -845,8 +891,10 @@ public class S2BooleanOperationTests
     [Fact]
     internal void Test_S2BooleanOperation_PolygonVertexSemiOpenPolygonVertex()
     {
-        Options options = new();
-        options.PolygonModel_ = PolygonModel.SEMI_OPEN;
+        Options options = new()
+        {
+            PolygonModel_ = PolygonModel.SEMI_OPEN
+        };
         var a = "# # 0:0, 0:5, 1:5, 0:0, 2:5, 3:5";
         var b = "# # 0:0, 5:3, 5:2";
         ExpectResult(OpType.UNION, options, a, b,
@@ -862,8 +910,10 @@ public class S2BooleanOperationTests
     [Fact]
     internal void Test_S2BooleanOperation_PolygonVertexClosedPolygonVertex()
     {
-        Options options = new();
-        options.PolygonModel_ = PolygonModel.CLOSED;
+        Options options = new()
+        {
+            PolygonModel_ = PolygonModel.CLOSED
+        };
         var a = "# # 0:0, 0:5, 1:5, 0:0, 2:5, 3:5";
         var b = "# # 0:0, 5:3, 5:2";
         ExpectResult(OpType.UNION, options, a, b,
@@ -899,12 +949,14 @@ public class S2BooleanOperationTests
     [Fact]
     internal void Test_S2BooleanOperation_PolygonEdgeOpenPolygonEdgeOverlap()
     {
-        Options options = new();
-        // One shape is a rectangle, the other consists of one triangle inside the
-        // rectangle and one triangle outside the rectangle, where each triangle
-        // shares one edge with the rectangle.  This implies that the edges are in
-        // the same direction in one case and opposite directions in the other case.
-        options.PolygonModel_ = PolygonModel.OPEN;
+        Options options = new()
+        {
+            // One shape is a rectangle, the other consists of one triangle inside the
+            // rectangle and one triangle outside the rectangle, where each triangle
+            // shares one edge with the rectangle.  This implies that the edges are in
+            // the same direction in one case and opposite directions in the other case.
+            PolygonModel_ = PolygonModel.OPEN
+        };
         var a = "# # 0:0, 0:4, 2:4, 2:0";
         var b = "# # 0:0, 1:1, 2:0; 0:4, 1:5, 2:4";
         ExpectResult(OpType.UNION, options, a, b,
@@ -920,8 +972,10 @@ public class S2BooleanOperationTests
     [Fact]
     internal void Test_S2BooleanOperation_PolygonEdgeSemiOpenPolygonEdgeOverlap()
     {
-        Options options = new();
-        options.PolygonModel_ = (PolygonModel.SEMI_OPEN);
+        Options options = new()
+        {
+            PolygonModel_ = PolygonModel.SEMI_OPEN
+        };
         var a = "# # 0:0, 0:4, 2:4, 2:0";
         var b = "# # 0:0, 1:1, 2:0; 0:4, 1:5, 2:4";
         ExpectResult(OpType.UNION, options, a, b,
@@ -940,8 +994,10 @@ public class S2BooleanOperationTests
     [Fact]
     internal void Test_S2BooleanOperation_PolygonEdgeClosedPolygonEdgeOverlap()
     {
-        Options options = new();
-        options.PolygonModel_ = (PolygonModel.CLOSED);
+        Options options = new()
+        {
+            PolygonModel_ = PolygonModel.CLOSED
+        };
         var a = "# # 0:0, 0:4, 2:4, 2:0";
         var b = "# # 0:0, 1:1, 2:0; 0:4, 1:5, 2:4";
         ExpectResult(OpType.UNION, options, a, b,
@@ -1018,15 +1074,15 @@ public class S2BooleanOperationTests
             var symmetric = op_type != OpType.DIFFERENCE;
 
             // Possible values for Options.polyline_model().
-            List<PolylineModel> kPolylineModels = new()
-            {
+            List<PolylineModel> kPolylineModels =
+            [
                 PolylineModel.OPEN,
                 PolylineModel.SEMI_OPEN,
                 PolylineModel.CLOSED
-            };
+            ];
 
             // Possible values for Options.polyline_loops_have_boundaries().
-            List<bool> kPolylineLoopOptions = new() { true, false };
+            List<bool> kPolylineLoopOptions = [true, false];
 
             // The set of characters representing polyline inputs.
             const string kLineChars = "Pud";
@@ -1037,8 +1093,10 @@ public class S2BooleanOperationTests
             //  - polyline model (if either input is a polyline)
             //  - whether a closed polyline loop is considered to have a boundary
             //    (if either input is a degenerate polyline)
-            Options options = new();
-            options.PolygonModel_ = polygon_model;
+            Options options = new()
+            {
+                PolygonModel_ = polygon_model
+            };
             for (int i = 0; i < kInputChars.Length; ++i)
             {
                 char ch0 = kInputChars[i];
@@ -1198,7 +1256,7 @@ public class S2BooleanOperationTests
                 }
                 else if (ch == 'p')
                 {  // Point
-                    index.Add(new S2PointVectorShape(new S2Point[] { a }));
+                    index.Add(new S2PointVectorShape([a]));
                 }
                 else if (ch == 'P')
                 {  // Polyline consisting only of the point A
@@ -1218,22 +1276,22 @@ public class S2BooleanOperationTests
                 }
                 else if (ch == 's')
                 {  // Point shell
-                    index.Add(new S2LaxPolygonShape(new Loops() { new() { a } }));
+                    index.Add(new S2LaxPolygonShape([new() { a }]));
                 }
                 else if (ch == 'S')
                 {  // Sibling pair shell
-                    index.Add(new S2LaxPolygonShape(new Loops() { new() { a, b } }));
+                    index.Add(new S2LaxPolygonShape([new() { a, b }]));
                 }
                 else if (ch == 'U')
                 {  // Upwards polygon edge
-                    int i2 = index.Add(new S2LaxPolygonShape(new Loops() { new() { a, b, -c } }));
+                    int i2 = index.Add(new S2LaxPolygonShape([new() { a, b, -c }]));
                     // Some test results require that the U polygon contains A but not B.
                     Assert.True(index.Shape(i2).ContainsBruteForce(a));
                     Assert.True(!index.Shape(i2).ContainsBruteForce(b));
                 }
                 else if (ch == 'D')
                 {  // Downwards polygon edge
-                    int i2 = index.Add(new S2LaxPolygonShape(new Loops() { new() { b, a, c } }));
+                    int i2 = index.Add(new S2LaxPolygonShape([new() { b, a, c }]));
                     // Some test cases require that the D polygon excludes both A and B.
                     Assert.True(!index.Shape(i2).ContainsBruteForce(a));
                     Assert.True(!index.Shape(i2).ContainsBruteForce(b));
@@ -1243,11 +1301,11 @@ public class S2BooleanOperationTests
                     ch = chars[++i];
                     if (ch == 'U')
                     {
-                        index.Add(new S2LaxPolygonShape(new Loops() { new() { -c, b, a } }));
+                        index.Add(new S2LaxPolygonShape([new() { -c, b, a }]));
                     }
                     else if (ch == 'D')
                     {
-                        index.Add(new S2LaxPolygonShape(new Loops { new() { c, a, b } }));
+                        index.Add(new S2LaxPolygonShape([new() { c, a, b }]));
                     }
                     else
                     {
@@ -1256,19 +1314,19 @@ public class S2BooleanOperationTests
                 }
                 else if (ch == 'Q')
                 {  // Union of 'U' and 'D' shapes
-                    index.Add(new S2LaxPolygonShape(new Loops() { new() { a, c, b, -c } }));
+                    index.Add(new S2LaxPolygonShape([new() { a, c, b, -c }]));
                 }
                 else if (ch == 'H')
                 {  // Sibling pair hole
-                    index.Add(new S2LaxPolygonShape(new Loops() { new() { a, b }, new() { } }));
+                    index.Add(new S2LaxPolygonShape([new() { a, b }, new() { }]));
                 }
                 else if (ch == 'h')
                 {  // Point hole
-                    index.Add(new S2LaxPolygonShape(new Loops() { new() { a }, new() { } }));
+                    index.Add(new S2LaxPolygonShape([new() { a }, new() { }]));
                 }
                 else if (ch == '*')
                 {  // Full sphere
-                    index.Add(new S2LaxPolygonShape(new Loops() { new() { } }));
+                    index.Add(new S2LaxPolygonShape([new() { }]));
                 }
                 else
                 {
@@ -1300,8 +1358,8 @@ public class S2BooleanOperationTests
     [Fact]
     internal void Test_DegeneracyCoverageTest_OpenIntersection()
     {
-        List<string> rules = new()
-        {
+        List<string> rules =
+        [
             //    .     p     P     u     d     s     S     U     D     H     h     *
             // |-----------------------------------------------------------------------
             ". |  .",
@@ -1316,15 +1374,15 @@ public class S2BooleanOperationTests
             "H |  .     .     .     .     .     .     .     U     D     H",
             "h |  .     .     .     u     d     .     S     U     D     H     h",
             "* |  .     p     P     u     d     s     S     U     D     H     h     *",
-        };
+        ];
         dct.Run(OpType.INTERSECTION, PolygonModel.OPEN, rules);
     }
 
     [Fact]
     internal void Test_DegeneracyCoverageTest_SemiOpenIntersection()
     {
-        List<string> rules = new()
-        {
+        List<string> rules =
+        [
             //    .     p     P     u     d     s     S     U     D     H     h     *
             // |-----------------------------------------------------------------------
             ". |  .",
@@ -1339,15 +1397,15 @@ public class S2BooleanOperationTests
             "H |  .    p<.   P<.    u     d    s<.    .     U     D     H",
             "h |  .     p     P     u     d     .     S     U     D     H     h",
             "* |  .     p     P     u     d     s     S     U     D     H     h     *",
-        };
+        ];
         dct.Run(OpType.INTERSECTION, PolygonModel.SEMI_OPEN, rules);
     }
 
     [Fact]
     internal void Test_DegeneracyCoverageTest_ClosedIntersection()
     {
-        List<string> rules = new()
-        {
+        List<string> rules =
+        [
             //    .     p     P     u     d     s     S     U     D     H     h     *
             // |-----------------------------------------------------------------------
             ". |  .",
@@ -1362,15 +1420,15 @@ public class S2BooleanOperationTests
             "H |  .     p     P     u     d     s     S     U     D     H",
             "h |  .     p     P     u     d     s     S     U     D     H     h",
             "* |  .     p     P     u     d     s     S     U     D     H     h     *",
-        };
+        ];
         dct.Run(OpType.INTERSECTION, PolygonModel.CLOSED, rules);
     }
 
     [Fact]
     internal void Test_DegeneracyCoverageTest_OpenUnion()
     {
-        List<string> rules = new()
-        {
+        List<string> rules =
+        [
             //    .     p     P     u     d     s     S     U     D     H     h     *
             // |-----------------------------------------------------------------------
             ". |  .",
@@ -1385,7 +1443,7 @@ public class S2BooleanOperationTests
             "H |  H    pH    PH    uH    dH     H     H     H     H     H",
             "h |  h    ph    Ph   Ph>h  Ph>h    h     h     h     h     h     h",
             "* |  *     *     *     *     *     *     *     *     *     *     *     *",
-        };
+        ];
         dct.Run(OpType.UNION, PolygonModel.OPEN, rules);
     }
 
@@ -1400,8 +1458,8 @@ public class S2BooleanOperationTests
         // vertex and (2) encoding the full set of possibilites for all 12 cases
         // (i.e., the 3 polyline models and whether U contains A and/or B) would be
         // unwieldy.
-        List<string> rules = new()
-        {
+        List<string> rules =
+        [
             //    .     p     P     u     d     s     S     U     D     H     h     *
             // |-----------------------------------------------------------------------
             ". |  .",
@@ -1416,15 +1474,15 @@ public class S2BooleanOperationTests
             "H |  H   H<pH  H<PH    H     H     H     *     *     *     H",
             "h |  h     h     h     h     h     *    *>h   *>h   *>h   *>h    h",
             "* |  *     *     *     *     *     *     *     *     *     *     *     *",
-        };
+        ];
         dct.Run(OpType.UNION, PolygonModel.SEMI_OPEN, rules);
     }
 
     [Fact]
     internal void Test_DegeneracyCoverageTest_ClosedUnion()
     {
-        List<string> rules = new()
-        {
+        List<string> rules =
+        [
             //    .     p     P     u     d     s     S     U     D     H     h     *
             // |-----------------------------------------------------------------------
             ". |  .",
@@ -1439,15 +1497,15 @@ public class S2BooleanOperationTests
             "H |  H     H     H     H     H     H     *     *     *     H",
             "h |  h     h     h     h     h     *     *     *     *     *     h",
             "* |  *     *     *     *     *     *     *     *     *     *     *     *",
-        };
+        ];
         dct.Run(OpType.UNION, PolygonModel.CLOSED, rules);
     }
 
     [Fact]
     internal void Test_DegeneracyCoverageTest_OpenDifference()
     {
-        List<string> rules = new()
-        {
+        List<string> rules =
+        [
             //    .     p     P     u     d     s     S     U     D     H     h     *
             // |-----------------------------------------------------------------------
             ". |  .     .     .     .     .     .     .     .     .     .     .     .",
@@ -1462,7 +1520,7 @@ public class S2BooleanOperationTests
             "H |  H     H     H     H     H     H     H    ~U    ~D     .     .     .",
             "h |  h     h     h     h     h     h     H    ~U    ~D     S     .     .",
             "* |  *     *     *     *     *     h     H    ~U    ~D     S     s     .",
-        };
+        ];
         dct.Run(OpType.DIFFERENCE, PolygonModel.OPEN, rules);
     }
 
@@ -1470,8 +1528,8 @@ public class S2BooleanOperationTests
     internal void Test_DegeneracyCoverageTest_SemiOpenDifference()
     {
         // See SemiOpenUnion notes regarding (u,U) and (d,D).
-        List<string> rules = new()
-        {
+        List<string> rules =
+        [
             //    .     p     P     u     d     s     S     U     D     H     h     *
             // |-----------------------------------------------------------------------
             ". |  .     .     .     .     .     .     .     .     .     .     .     .",
@@ -1486,15 +1544,15 @@ public class S2BooleanOperationTests
             "H |  H     H     H     H     H     H     H    ~U    ~D     .    s<.    .",
             "h |  h     h     h     h     h     h     H    ~U    ~D     S     .     .",
             "* |  *     *     *     *     *     h     H    ~U    ~D     S     s     .",
-        };
+        ];
         dct.Run(OpType.DIFFERENCE, PolygonModel.SEMI_OPEN, rules);
     }
 
     [Fact]
     internal void Test_DegeneracyCoverageTest_ClosedDifference()
     {
-        List<string> rules = new()
-        {
+        List<string> rules =
+        [
             //    .     p     P     u     d     s     S     U     D     H     h     *
             // |-----------------------------------------------------------------------
             ". |  .     .     .     .     .     .     .     .     .     .     .     .",
@@ -1509,15 +1567,15 @@ public class S2BooleanOperationTests
             "H |  H     H     H     H     H     H     H    ~U    ~D     .     .     .",
             "h |  h     h     h     h     h     h     H    ~U    ~D     S     .     .",
             "* |  *     *     *     *     *     h     H    ~U    ~D     S     s     .",
-        };
+        ];
         dct.Run(OpType.DIFFERENCE, PolygonModel.CLOSED, rules);
     }
 
     [Fact]
     internal void Test_DegeneracyCoverageTest_OpenSymmetricDifference()
     {
-        List<string> rules = new()
-        {
+        List<string> rules =
+        [
             //    .     p     P     u     d     s     S     U     D     H     h     *
             // |-----------------------------------------------------------------------
             ". |  .",
@@ -1532,7 +1590,7 @@ public class S2BooleanOperationTests
             "H |  H    Hp    HP    Hu    Hd     H     H    ~U    ~D     .",
             "h |  h    hp    hP   hP>h  hP>h    h     H    ~U    ~D     S     .",
             "* |  *     *     *     *     *     h     H    ~U    ~D     S     s     .",
-        };
+        ];
         dct.Run(OpType.SYMMETRIC_DIFFERENCE, PolygonModel.OPEN, rules);
     }
 
@@ -1540,8 +1598,8 @@ public class S2BooleanOperationTests
     internal void Test_DegeneracyCoverageTest_SemiOpenSymmetricDifference()
     {
         // See SemiOpenUnion notes regarding (U,u) and (D,d).
-        List<string> rules = new()
-        {
+        List<string> rules =
+        [
             //    .     p     P     u     d     s     S     U     D     H     h     *
             // |-----------------------------------------------------------------------
             ". |  .",
@@ -1556,7 +1614,7 @@ public class S2BooleanOperationTests
             "H |  H     H     H     H     H     H     H    ~U    ~D     .",
             "h |  h     h     h     h     h     h     H    ~U    ~D     S     .",
             "* |  *     *     *     *     *     h     H    ~U    ~D     S     s     .",
-        };
+        ];
         dct.Run(OpType.SYMMETRIC_DIFFERENCE, PolygonModel.SEMI_OPEN, rules);
     }
 
@@ -1567,8 +1625,8 @@ public class S2BooleanOperationTests
         // shared boundary is present on both sides and therefore these edges should
         // not be contained by the result, however this is not possible under the
         // CLOSED model.  The indicated results are the best approximation.
-        List<string> rules = new()
-        {
+        List<string> rules =
+        [
             //    .     p     P     u     d     s     S     U     D     H     h     *
             // |-----------------------------------------------------------------------
             ". |  .",
@@ -1583,7 +1641,7 @@ public class S2BooleanOperationTests
             "H |  H     H     H     H     H     H     H    ~U    ~D     .",
             "h |  h     h     h     h     h     h     H    ~U    ~D     S     .",
             "* |  *     *     *     *     *     h     H    ~U    ~D     S     s     .",
-        };
+        ];
         dct.Run(OpType.SYMMETRIC_DIFFERENCE, PolygonModel.CLOSED, rules);
     }
 
@@ -1777,8 +1835,7 @@ public class S2BooleanOperationTests
                           Loops b_loops,
                           S1Angle snap_radius, S2LaxPolygonShape result)
     {
-        MutableS2ShapeIndex a = new(), b = new();
-        a.Add(new S2LaxPolygonShape(a_loops));
+        MutableS2ShapeIndex a = [new S2LaxPolygonShape(a_loops)], b = [];
         b.Add(new S2LaxPolygonShape(b_loops));
         S2BooleanOperation op = new(OpType.UNION,
                               new LaxPolygonLayer(result),
@@ -1800,8 +1857,8 @@ public class S2BooleanOperationTests
         // triangle BCD is CCW.  Since BCD is to the right of BD, this means that
         // the first edge has not yet crossed the second at vertex B, leaving C or D
         // as the possible crossing vertices.
-        Loops a_loops = new()
-        {
+        Loops a_loops =
+        [
             new()
             {
                 new(-0.38306437985388492, -0.74921955334206214, 0.54030708099846292),
@@ -1809,9 +1866,9 @@ public class S2BooleanOperationTests
                 new(-0.38306437985529124, -0.74921955334136414, 0.54030708099843361),
                 new(-0.38306437985389635, -0.74921955334208379, 0.54030708099842473),
             },
-        };
-        Loops b_loops = new()
-        {
+        ];
+        Loops b_loops =
+        [
             new()
             {
                 new(-0.38306437985390962, -0.74921955334210588, 0.54030708099838465),
@@ -1819,7 +1876,7 @@ public class S2BooleanOperationTests
                 new(-0.38306437985527941, -0.74921955334134405, 0.54030708099847014),
                 new(-0.38306437985391095, -0.74921955334210777, 0.54030708099838098),
             },
-        };
+        ];
         S2LaxPolygonShape result = new();
         ComputeTestUnion(a_loops, b_loops, S2.kIntersectionMergeRadiusS1Angle,
                          result);
@@ -1832,8 +1889,8 @@ public class S2BooleanOperationTests
         // by GetCrossedVertexIndex() are not ordered correctly along the edge being
         // crossed.  This is handled by adding extra edges to the output in order to
         // link up the crossings in the correct order.
-        Loops a_loops = new()
-        {
+        Loops a_loops =
+        [
             new()
             {
                 new(-0.3837392878495085, -0.7477800800281974, 0.5418201831546835),
@@ -1855,9 +1912,9 @@ public class S2BooleanOperationTests
                 new(-0.38373928783578648, -0.74778008004093421, 0.54182018314682368),
                 new(-0.383739287835765, -0.74778008004092666, 0.54182018314684921),
             },
-        };
-        Loops b_loops = new()
-        {
+        ];
+        Loops b_loops =
+        [
             new()
             {
                 new(-0.38373923813692823, -0.7477800632164362, 0.54182024156551456),
@@ -1874,7 +1931,7 @@ public class S2BooleanOperationTests
                 new(-0.38373857650312843, -0.74777983961840766, 0.54182101875399913),
                 new(-0.38373857652422921, -0.74777983959867744, 0.54182101876628486),
             },
-        };
+        ];
         S2LaxPolygonShape result = new();
         ComputeTestUnion(a_loops, b_loops, S2.kIntersectionMergeRadiusS1Angle,
                          result);
@@ -1891,24 +1948,24 @@ public class S2BooleanOperationTests
         // that there were floating-point underflows when computing the angles between
         // them.  This was fixed by implementing the long-standing TODO of making
         // S2.RobustCrossProd() actually robust.
-        Loops a_loops = new()
-        {
+        Loops a_loops =
+        [
             new()
             {
                 new(1, 0, 2.4678234835261742e-72),
                 new(0.99984769515639127, 0.017452406437283512, 1.8530922845942552e-27),
                 new(0.99740259703611311, 0.069881849826437858, 0.017452406437283512),
             },
-        };
-        Loops b_loops = new()
-        {
+        ];
+        Loops b_loops =
+        [
             new()
             {
                 new(0.99999999999999989, 2.4674476220564615e-72, 2.4678234835261742e-72),
                 new(0.99999999999999989, 2.8837981406657438e-169, 2.4678234835261742e-72),
                 new(1, 2.8837981406657432e-169, 2.4678234835261742e-72),
             },
-        };
+        ];
         S2LaxPolygonShape result = new();
         ComputeTestUnion(a_loops, b_loops, S1Angle.Zero, result);
     }
@@ -1936,16 +1993,16 @@ public class S2BooleanOperationTests
         // S2LatLng coordinates are not accurate enough to reproduce this example.
         var a_loops = new Loops{new List<S2Point>{
   // 51.5131559470858:-0.130381523356724
-  new S2Point(0.62233331065911901, -0.0014161759526823048, 0.78275107466533156),
+  new(0.62233331065911901, -0.0014161759526823048, 0.78275107466533156),
   // 51.5131892038956:-0.130404244210776
-  new S2Point(0.6223328557578689, -0.0014164217071954736, 0.78275143589379825),
+  new(0.6223328557578689, -0.0014164217071954736, 0.78275143589379825),
   MakePointOrDie("51.51317:-0.1306")
 }};
         var b_loops = new Loops{new List<S2Point>{
   // 51.5131559705551:-0.13038153939079
-  new S2Point(0.62233331033809591, -0.001416176126110953, 0.78275107492024998),
+  new(0.62233331033809591, -0.001416176126110953, 0.78275107492024998),
   // 51.5131559705551:-0.130381539390786
-  new S2Point(0.62233331033809591, -0.0014161761261109063, 0.78275107492025009),
+  new(0.62233331033809591, -0.0014161761261109063, 0.78275107492025009),
   MakePointOrDie("51.52:-0.12"),
   MakePointOrDie("51.52:-0.14")
 }};
@@ -2159,8 +2216,8 @@ ExpectPolygon(OpType.SYMMETRIC_DIFFERENCE, k6FaceShell1Minus, k6FaceHole1,kFull)
         // Determining this requires knowing that loop (9, 2, 7, 8) is clockwise
         // (the "special case" in GetCrossedVertexIndex).  The code previously didn't
         // have quite the correct test to decide when this was necessary.
-        Loops a_loops = new()
-        {
+        Loops a_loops =
+        [
             new()
             {
                 new(0.99984769515639127, 0, 0.017452406437283512),
@@ -2168,9 +2225,9 @@ ExpectPolygon(OpType.SYMMETRIC_DIFFERENCE, k6FaceShell1Minus, k6FaceHole1,kFull)
                 new(0.99847743863945992, 0.052327985223313139, 0.017452406437283512),
                 new(0.99802119662406841, 0.034851668155187324, 0.052335956242943835),
             },
-        };
-        Loops b_loops = new()
-        {
+        ];
+        Loops b_loops =
+        [
             new()
             {
                 new(0.99802119662406841, 0.034851668155187324, 0.052335956242943835),
@@ -2192,7 +2249,7 @@ ExpectPolygon(OpType.SYMMETRIC_DIFFERENCE, k6FaceShell1Minus, k6FaceHole1,kFull)
                 new(0.99984769515639127, 0, 0.017452406437284504),
                 new(0.99984769515639127, 0, 0.017452406437283512),
             },
-        };
+        ];
         S2LaxPolygonShape result = new();
         ComputeTestUnion(a_loops, b_loops, S1Angle.Zero, result);
     }
@@ -2202,8 +2259,8 @@ ExpectPolygon(OpType.SYMMETRIC_DIFFERENCE, k6FaceShell1Minus, k6FaceHole1,kFull)
     {
         // This is another test of the code in GetCrossedVertexIndex() that checks
         // whether the B subchain contains an interior vertex of the A edge.
-        Loops a_loops = new()
-        {
+        Loops a_loops =
+        [
             new()
             {
                 new(0.99870488823558456, 0.026138065586168355, 0.043650289137205818),
@@ -2233,9 +2290,9 @@ ExpectPolygon(OpType.SYMMETRIC_DIFFERENCE, k6FaceShell1Minus, k6FaceHole1,kFull)
                 new(0.99619692339885657, 0.06966087492121549, 0.052335956242943835),
                 new(0.99513403437078507, 0.069586550480032719, 0.069756473744125302),
             },
-        };
-        Loops b_loops = new()
-        {
+        ];
+        Loops b_loops =
+        [
             new()
             {
                 new(0.99802200429988497, 0.034828499898458924, 0.052335977377554299),
@@ -2264,7 +2321,7 @@ ExpectPolygon(OpType.SYMMETRIC_DIFFERENCE, k6FaceShell1Minus, k6FaceHole1,kFull)
                 new(0.99619692339885679, 0.052208468483931986, 0.069756473744125302),
                 new(0.99619692339885668, 0.052208468483931979, 0.069756473744125289),
             },
-        };
+        ];
         S2LaxPolygonShape result = new();
         ComputeTestUnion(a_loops, b_loops, S1Angle.Zero, result);
     }
@@ -2308,7 +2365,7 @@ ExpectPolygon(OpType.SYMMETRIC_DIFFERENCE, k6FaceShell1Minus, k6FaceHole1,kFull)
         Options options, S2ShapeIndex a, S2ShapeIndex b,
         S2ShapeIndex expected)
     {
-        List<Layer> layers = new();
+        List<Layer> layers = [];
         for (int dim = 0; dim < 3; ++dim)
         {
             // Since all S2Builder polygon layers require DISCARD or DISCARD_EXCESS
@@ -2339,8 +2396,10 @@ ExpectPolygon(OpType.SYMMETRIC_DIFFERENCE, k6FaceShell1Minus, k6FaceHole1,kFull)
     // intersection points to a fixed precision in degrees (e.g., 2 decimals).
     private static Options RoundToE(int exp)
     {
-        Options options = new();
-        options.SnapFunction_ = new IntLatLngSnapFunction(exp);
+        Options options = new()
+        {
+            SnapFunction_ = new IntLatLngSnapFunction(exp)
+        };
         return options;
     }
 
@@ -2364,7 +2423,7 @@ ExpectPolygon(OpType.SYMMETRIC_DIFFERENCE, k6FaceShell1Minus, k6FaceHole1,kFull)
         ExpectResult(OpType.SYMMETRIC_DIFFERENCE, options, a, b,
             "# 0:2, 4:2, 2:0, 2:4, 2:5 | 0:4, 2:4, 5:4, 3:6, 3:3 #");
 
-        options.split_all_crossing_polyline_edges_ = true;
+        options.SplitAllCrossingPolylineEdges = true;
         ExpectResult(OpType.UNION, options, a, b,
             "# 0:2, 2:2, 4:2, 2:0, 2:2, 2:4, 2:5 " +
             "| 0:4, 2:4, 3:4, 5:4, 3:6, 3:4, 3:3 #");
@@ -2383,20 +2442,20 @@ ExpectPolygon(OpType.SYMMETRIC_DIFFERENCE, k6FaceShell1Minus, k6FaceHole1,kFull)
     private static void TestMeridianSplitting(string input_str, string expected_str)
     {
         var input = MakeIndexOrDie(input_str);
-        MutableS2ShapeIndex meridian = new();
+        MutableS2ShapeIndex meridian = [];
         var loops = new Loops {
     new List<S2Point>{
-        new S2Point(0, 0, -1), new S2Point(-1, 0, 0),
-                new S2Point(0, 0, 1), new S2Point(-1, 0, 0)}
+        new(0, 0, -1), new(-1, 0, 0),
+                new(0, 0, 1), new(-1, 0, 0)}
     };
         meridian.Add(new S2LaxPolygonShape(loops));
-        MutableS2ShapeIndex output = new();
+        MutableS2ShapeIndex output = [];
         var layers = new Layer[3];
         layers[0] = new IndexedS2PointVectorLayer(output);
         // TODO(ericv): Implement s2builderutil.IndexedS2LaxPolylineVectorLayer.
         layers[1] = new IndexedS2PolylineVectorLayer(output);
         layers[2] = new IndexedLaxPolygonLayer(output);
-        S2BooleanOperation op = new(OpType.DIFFERENCE, layers.ToList());
+        S2BooleanOperation op = new(OpType.DIFFERENCE, [.. layers]);
         Assert.True(op.Build(input, meridian, out _));
         Assert.Equal(expected_str, output.ToDebugString());
     }
@@ -2408,8 +2467,10 @@ ExpectPolygon(OpType.SYMMETRIC_DIFFERENCE, k6FaceShell1Minus, k6FaceHole1,kFull)
     {
         var a = MakeIndexOrDie("# # " + a_str);
         var b = MakeIndexOrDie("# # " + b_str);
-        LaxPolygonLayer.Options polygon_options = new();
-        polygon_options.DegenerateBoundaries_ = (LaxPolygonLayer.Options.DegenerateBoundaries.DISCARD);
+        LaxPolygonLayer.Options polygon_options = new()
+        {
+            DegenerateBoundaries_ = LaxPolygonLayer.Options.DegenerateBoundaries.DISCARD
+        };
         S2LaxPolygonShape output = new();
         S2BooleanOperation op = new(op_type,
           new LaxPolygonLayer(output, polygon_options),

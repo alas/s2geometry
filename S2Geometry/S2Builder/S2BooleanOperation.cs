@@ -241,6 +241,7 @@
 namespace S2Geometry;
 
 using System.Runtime.InteropServices;
+using Microsoft.Extensions.Configuration;
 using S2BuilderUtil;
 using static S2Builder;
 using static S2Builder.GraphOptions;
@@ -280,7 +281,7 @@ public class S2BooleanOperation
         Options_ = options ?? new Options();
         OpType_ = op_type;
         result_empty_ = null;
-        layers_ = new List<Layer>() { layer };
+        layers_ = [layer];
     }
 
     // Specifies that the output boundary edges should be sent to three
@@ -315,7 +316,7 @@ public class S2BooleanOperation
     {
         Options_ = options ?? new Options();
         OpType_ = op_type;
-        result_empty_ = result_empty;
+        layers_ = []; result_empty_ = result_empty;
     }
 
     // Executes the given operation.  Returns true on success, and otherwise
@@ -325,7 +326,8 @@ public class S2BooleanOperation
     {
         regions_[0] = a;
         regions_[1] = b;
-        return new Impl(this).Build(out error);
+        _ = new Impl(this, out error, out bool success);
+        return success;
     }
 
     // Convenience method that returns true if the result of the given operation
@@ -420,11 +422,11 @@ public class S2BooleanOperation
             PolygonModel_ = options.PolygonModel_;
             PolylineModel_ = options.PolylineModel_;
             PolylineLoopsHaveBoundaries = options.PolylineLoopsHaveBoundaries;
-            split_all_crossing_polyline_edges_ = options.split_all_crossing_polyline_edges_;
+            SplitAllCrossingPolylineEdges = options.SplitAllCrossingPolylineEdges;
             Precision = options.Precision;
             ConservativeOutput = options.ConservativeOutput;
             SourceIdLexicon_ = options.SourceIdLexicon_;
-            memory_tracker_ = options.memory_tracker_;
+            MemoryTracker = options.MemoryTracker;
         }
 
         // Specifies the function to be used for snap rounding.
@@ -482,7 +484,7 @@ public class S2BooleanOperation
         // self-intersecting input polylines to be modified as little as possible.
         //
         // DEFAULT: false
-        public bool split_all_crossing_polyline_edges_ { get; set; } = false;
+        public bool SplitAllCrossingPolylineEdges { get; set; } = false;
 
         // Specifies whether the operation should use the exact input geometry
         // (Precision.EXACT), or whether the two input regions should be snapped
@@ -550,7 +552,7 @@ public class S2BooleanOperation
         //    purpose of preventing clients from running out of memory.
         //
         // DEFAULT: nullptr (memory tracking disabled)
-        public S2MemoryTracker? memory_tracker_ { get; set; } = null;
+        public S2MemoryTracker? MemoryTracker { get; set; } = null;
 
         // If specified, then each output edge will be labelled with one or more
         // SourceIds indicating which input edge(s) it corresponds to.  This
@@ -574,61 +576,60 @@ public class S2BooleanOperation
 
     private class Impl
     {
-        public Impl(S2BooleanOperation op)
+        public Impl(S2BooleanOperation op, out S2Error error, out bool success)
         {
-            op_ = op;
-            index_crossings_first_region_id_ = -1;
-            tracker_ = new(op.Options_.memory_tracker_);
-        }
+            tracker_ = new(op.Options_.MemoryTracker!);
+            // This wrapper ensures that memory tracking errors are reported.
 
-        public void DoBuild(out S2Error error)
-        {
+            #region DoBuild(out error);
+
             if (!tracker_.Ok())
             {
                 error = S2Error.OK;
-                return;
             }
-            builder_options_ = new(op_.Options_.SnapFunction_)
+            else
             {
-                IntersectionTolerance = S2.kIntersectionErrorS1Angle,
-                MemoryTracker = tracker_.Tracker,
-            };
-            if (op_.Options_.split_all_crossing_polyline_edges_)
-            {
-                builder_options_.SplitCrossingEdges = true;
+                var builderOptions = new S2Builder.Options(op.Options_.SnapFunction_)
+                {
+                    IntersectionTolerance = S2.kIntersectionErrorS1Angle,
+                    MemoryTracker = tracker_.Tracker,
+                };
+                if (op.Options_.SplitAllCrossingPolylineEdges)
+                {
+                    builderOptions.SplitCrossingEdges = true;
+                }
+                // TODO(ericv): Ideally idempotent() should be true, but existing clients
+                // expect vertices closer than the full "snap_radius" to be snapped.
+                builderOptions.Idempotent = false;
+
+                error = S2Error.OK;
+                if (IsBooleanOutput(op))
+                {
+                    // BuildOpType() returns true if and only if the result has no edges.
+                    /*var g = new Graph();*/  // Unused by IsFullPolygonResult() implementation.
+                    op.result_empty_(BuildOpType(op.OpType_, op, null) && !IsFullPolygonResult(/*g,*/ out error, op, builderOptions));
+                }
+                else
+                {
+                    var builder = new S2Builder(builderOptions);
+                    builder.StartLayer(new EdgeClippingLayer(
+                        op.layers_, input_dimensions_, input_crossings_, tracker_));
+
+                    // Add a predicate that decides whether a result with no polygon edges should
+                    // be interpreted as the empty polygon or the full polygon.
+                    builder.AddIsFullPolygonPredicate((Graph g, out S2Error error) => IsFullPolygonResult(/*g,*/ out error, op, builderOptions));
+                    BuildOpType(op.OpType_, op, builder);
+
+                    // Release memory that is no longer needed.
+                    if (tracker_.Clear(index_crossings_))
+                        builder.Build(out error);
+                }
             }
-            // TODO(ericv): Ideally idempotent() should be true, but existing clients
-            // expect vertices closer than the full "snap_radius" to be snapped.
-            builder_options_.Idempotent = false;
 
-            error = S2Error.OK;
-            if (IsBooleanOutput())
-            {
-                // BuildOpType() returns true if and only if the result has no edges.
-                /*var g = new Graph();*/  // Unused by IsFullPolygonResult() implementation.
-                op_.result_empty_(BuildOpType(op_.OpType_) && !IsFullPolygonResult(/*g,*/ out error));
-                return;
-            }
-            builder_ = new S2Builder(builder_options_);
-            builder_.StartLayer(new EdgeClippingLayer(
-                op_.layers_, input_dimensions_, input_crossings_, tracker_));
+            #endregion
 
-            // Add a predicate that decides whether a result with no polygon edges should
-            // be interpreted as the empty polygon or the full polygon.
-            builder_.AddIsFullPolygonPredicate((Graph g, out S2Error error) => IsFullPolygonResult(/*g,*/ out error));
-            BuildOpType(op_.OpType_);
-
-            // Release memory that is no longer needed.
-            if (!tracker_.Clear(index_crossings_)) return;
-            builder_.Build(out error);
-        }
-
-        public bool Build(out S2Error error)
-        {
-            // This wrapper ensures that memory tracking errors are reported.
-            DoBuild(out error);
             if (!tracker_.Ok()) error = tracker_.Error();
-            return error.IsOk();
+            success = error.IsOk();
         }
 
         // An IndexCrossing represents a pair of intersecting S2ShapeIndex edges
@@ -669,9 +670,8 @@ public class S2BooleanOperation
             public static bool operator >=(IndexCrossing x, IndexCrossing y) => x.CompareTo(y) >= 0;
         }
 
-        public class MemoryTracker : S2MemoryTracker.Client
+        public class MemoryTracker(S2MemoryTracker tracker) : S2MemoryTracker.Client(tracker)
         {
-            public MemoryTracker(S2MemoryTracker tracker) : base(tracker) { }
 
             // Used to track memory used by CrossingProcessor.source_id_map_.  (The
             // type is a template parameter so that SourceIdMap can be private.)
@@ -700,27 +700,11 @@ public class S2BooleanOperation
         // region that cross a specific edge of the other region.  It outputs the
         // appropriate edges to an S2Builder, and outputs other information required
         // by GraphEdgeClipper to the given vectors.
-        private class CrossingProcessor
+        private class CrossingProcessor(PolygonModel polygon_model, PolylineModel polyline_model,
+            bool polyline_loops_have_boundaries, S2Builder? builder,
+            List<sbyte> input_dimensions, InputEdgeCrossings input_crossings,
+            MemoryTracker tracker)
         {
-            // Prepares to build output for the given polygon and polyline boundary
-            // models.  Edges are emitted to "builder", while other auxiliary data is
-            // appended to the given vectors.
-            //
-            // If a predicate is being evaluated (i.e., we do not need to construct the
-            // actual result), then "builder" and the various output vectors should all
-            // be null.
-            public CrossingProcessor(PolygonModel polygon_model, PolylineModel polyline_model,
-                bool polyline_loops_have_boundaries, S2Builder builder,
-                List<sbyte> input_dimensions, InputEdgeCrossings input_crossings,
-                MemoryTracker tracker)
-            {
-                polygon_model_ = polygon_model; polyline_model_ = polyline_model;
-                polyline_loops_have_boundaries_ = polyline_loops_have_boundaries;
-                builder_ = builder; input_dimensions_ = input_dimensions;
-                input_crossings_ = input_crossings; tracker_ = tracker;
-                prev_inside_ = false;
-            }
-
             private bool IsDegenerate(ShapeEdgeId a_id)
             {
                 return is_degenerate_hole_.ContainsKey(a_id);
@@ -828,74 +812,56 @@ public class S2BooleanOperation
             // PointCrossingResult describes the relationship between a point from region A
             // and a set of crossing edges from region B.  For example, "matches_polygon"
             // indicates whether a polygon vertex from region B matches the given point.
-            private struct PointCrossingResult
+            private struct PointCrossingResult(bool matches_point, bool matches_polyline, bool matches_polygon)
             {
                 public static readonly PointCrossingResult Zero = new(false, false, false);
-                public PointCrossingResult(bool matches_point, bool matches_polyline, bool matches_polygon)
-                {
-                    MatchesPoint = matches_point; MatchesPolyline = matches_polyline; MatchesPolygon = matches_polygon;
-                }
+
                 // Note that "matches_polyline" is true only if the point matches a polyline
                 // vertex of B *and* the polyline contains that vertex, whereas
                 // "matches_polygon" is true if the point matches any polygon vertex.
-                public bool MatchesPoint;     // Matches point.
-                public bool MatchesPolyline;  // Matches contained polyline vertex.
-                public bool MatchesPolygon;   // Matches polygon vertex.
+                public bool MatchesPoint = matches_point;     // Matches point.
+                public bool MatchesPolyline = matches_polyline;  // Matches contained polyline vertex.
+                public bool MatchesPolygon = matches_polygon;   // Matches polygon vertex.
             }
             // EdgeCrossingResult describes the relationship between an edge (a0, a1) from
             // region A and a set of crossing edges from region B.  For example,
             // "matches_polygon" indicates whether (a0, a1) matches a polygon edge from
             // region B.
-            private struct EdgeCrossingResult
+            private struct EdgeCrossingResult(bool matches_polyline, bool a0MatchesPolyline, bool a1MatchesPolyline, bool a0_matches_polygon, bool a1_matches_polygon, ShapeEdgeId polygon_match_id, ShapeEdgeId sibling_match_id, ShapeEdgeId a0_loop_match_id, int a0_crossings, int a1_crossings, int interior_crossings)
             {
                 // These fields indicate that (a0, a1) exactly matches an edge of B.
-                public bool matches_polyline = false;  // Matches polyline edge (either direction).
+                public bool matches_polyline = matches_polyline;  // Matches polyline edge (either direction).
 
                 // These fields indicate that a B polyline contains the degenerate polyline
                 // (a0, a0) or (a1, a1).  (This is identical to whether the B polyline
                 // contains the point a0 or a1 except when the B polyline is degenerate,
                 // since a degenerate polyline VV contains itself in all boundary models but
                 // contains the point V only in the CLOSED polyline model.)
-                public bool A0MatchesPolyline = false;  // B polyline contains (a0, a0)
-                public bool A1MatchesPolyline = false;  // B polyline contains (a1, a1)
+                public bool A0MatchesPolyline = a0MatchesPolyline;  // B polyline contains (a0, a0)
+                public bool A1MatchesPolyline = a1MatchesPolyline;  // B polyline contains (a1, a1)
 
                 // These fields indicate that a vertex of (a0, a1) matches a polygon vertex
                 // of B.  (Unlike with polylines, the polygon may not contain that vertex.)
-                public bool a0_matches_polygon = false;   // a0 matches polygon vertex.
-                public bool a1_matches_polygon = false;   // a1 matches polygon vertex.
+                public bool a0_matches_polygon = a0_matches_polygon;   // a0 matches polygon vertex.
+                public bool a1_matches_polygon = a1_matches_polygon;   // a1 matches polygon vertex.
 
                 // When a0 != a1, the first two fields identify any B polygon edge that
                 // exactly matches (a0, a1) or the sibling edge (a1, a0).  The third field
                 // identifies any B polygon edge that exactly matches (a0, a0).
-                public ShapeEdgeId polygon_match_id;  // B polygon edge that matches (a0, a1).
-                public ShapeEdgeId sibling_match_id;  // B polygon edge that matches (a1, a0).
-                public ShapeEdgeId a0_loop_match_id;  // B polygon edge that matches (a0, a0).
+                public ShapeEdgeId polygon_match_id = polygon_match_id;  // B polygon edge that matches (a0, a1).
+                public ShapeEdgeId sibling_match_id = sibling_match_id;  // B polygon edge that matches (a1, a0).
+                public ShapeEdgeId a0_loop_match_id = a0_loop_match_id;  // B polygon edge that matches (a0, a0).
 
                 // Convenience functions to test whether a matching edge was found.
-                public bool matches_polygon() { return polygon_match_id.EdgeId >= 0; }
-                public bool matches_sibling() { return sibling_match_id.EdgeId >= 0; }
-                public bool loop_matches_a0() { return a0_loop_match_id.EdgeId >= 0; }
+                public readonly bool MatchesPolygon() => polygon_match_id.EdgeId >= 0;
+                public readonly bool MatchesSibling() => sibling_match_id.EdgeId >= 0;
+                public readonly bool LoopMatchesA0() => a0_loop_match_id.EdgeId >= 0;
 
                 // These fields count the number of edge crossings at a0, a1, and the
                 // interior of (a0, a1).
-                public int a0_crossings = 0;        // Count of polygon crossings at a0.
-                public int a1_crossings = 0;        // Count of polygon crossings at a1.
-                public int interior_crossings = 0;  // Count of polygon crossings in edge interior.
-
-                public EdgeCrossingResult(bool matches_polyline, bool a0MatchesPolyline, bool a1MatchesPolyline, bool a0_matches_polygon, bool a1_matches_polygon, ShapeEdgeId polygon_match_id, ShapeEdgeId sibling_match_id, ShapeEdgeId a0_loop_match_id, int a0_crossings, int a1_crossings, int interior_crossings)
-                {
-                    this.matches_polyline = matches_polyline;
-                    A0MatchesPolyline = a0MatchesPolyline;
-                    A1MatchesPolyline = a1MatchesPolyline;
-                    this.a0_matches_polygon = a0_matches_polygon;
-                    this.a1_matches_polygon = a1_matches_polygon;
-                    this.polygon_match_id = polygon_match_id;
-                    this.sibling_match_id = sibling_match_id;
-                    this.a0_loop_match_id = a0_loop_match_id;
-                    this.a0_crossings = a0_crossings;
-                    this.a1_crossings = a1_crossings;
-                    this.interior_crossings = interior_crossings;
-                }
+                public int a0_crossings = a0_crossings;        // Count of polygon crossings at a0.
+                public int a1_crossings = a1_crossings;        // Count of polygon crossings at a1.
+                public int interior_crossings = interior_crossings;  // Count of polygon crossings in edge interior.
             }
 
             private InputEdgeId InputEdgeId() => input_dimensions_.Count;
@@ -914,15 +880,15 @@ public class S2BooleanOperation
             // the possibility that the chain forms a loop).
             private bool IsChainLastVertexIsolated(Edge a_id)
             {
-                return (a_id.EdgeId == chain_limit_ - 1 && !chain_v0_emitted_ &&
-                        v0_emitted_max_edge_id_ <= a_id.EdgeId);
+                return a_id.EdgeId == chain_limit_ - 1 && !chain_v0_emitted_ &&
+                        v0_emitted_max_edge_id_ <= a_id.EdgeId;
             }
 
             // Returns true if the given polyline edge contains "v0", taking into
             // account the specified PolylineModel.
             private bool PolylineContainsV0(int edge_id, int chain_start)
             {
-                return (polyline_model_ != PolylineModel.OPEN || edge_id > chain_start);
+                return polyline_model_ != PolylineModel.OPEN || edge_id > chain_start;
             }
 
             private void AddCrossing((SourceId, bool) crossing)
@@ -1013,7 +979,7 @@ public class S2BooleanOperation
                 bool contained = Inside ^ invert_b_;
                 if (r.MatchesPolygon && polygon_model_ != PolygonModel.SEMI_OPEN)
                 {
-                    contained = (polygon_model_ == PolygonModel.CLOSED);
+                    contained = polygon_model_ == PolygonModel.CLOSED;
                 }
                 if (r.MatchesPolyline) contained = true;
 
@@ -1044,7 +1010,7 @@ public class S2BooleanOperation
 
                 // Test whether the entire polyline edge should be emitted (or not emitted)
                 // because it matches a polyline or polygon edge.
-                bool is_degenerate = (a.V0 == a.V1);
+                bool is_degenerate = a.V0 == a.V1;
                 Inside ^= (r.a0_crossings & 1) != 0;
                 if (Inside != IsPolylineEdgeInside(r, is_degenerate))
                 {
@@ -1139,7 +1105,7 @@ public class S2BooleanOperation
                 // The following flag indicates that we are in the second pass described
                 // above, i.e. that we are emitting any necessary edges that were ignored by
                 // the first pass.
-                bool emit_shared = (a_region_id_ == 1);
+                bool emit_shared = a_region_id_ == 1;
 
                 // Degeneracies such as isolated vertices and sibling pairs can only be
                 // created by intersecting CLOSED polygons or unioning OPEN polygons.
@@ -1154,8 +1120,8 @@ public class S2BooleanOperation
                 // only used internally to implement symmetric difference, and in that
                 // situation the preserved degeneracy is always removed from the final
                 // result because it overlaps other geometry.
-                bool keep_degen_a = (polygon_model_ == PolygonModel.OPEN && invert_b_);
-                bool keep_degen_b = (polygon_model_ == PolygonModel.OPEN && invert_a_);
+                bool keep_degen_a = polygon_model_ == PolygonModel.OPEN && invert_b_;
+                bool keep_degen_b = polygon_model_ == PolygonModel.OPEN && invert_a_;
 
                 var r = ProcessEdgeCrossings(a_id, a, it);
                 MyDebug.Assert(!r.matches_polyline);
@@ -1166,13 +1132,13 @@ public class S2BooleanOperation
                     (r.sibling_match_id, r.polygon_match_id) = (r.polygon_match_id, r.sibling_match_id);
                 }
 
-                bool is_point = (a.V0 == a.V1);
+                bool is_point = a.V0 == a.V1;
                 if (!emit_shared)
                 {
                     // Remember the shell/hole status of degenerate B edges that are incident
                     // to any edge of A.  (We don't need to do this for vertex a1 since it is
                     // the same as vertex a0 of the following A loop edge.)
-                    if (r.loop_matches_a0())
+                    if (r.LoopMatchesA0())
                     {
                         is_degenerate_hole_[r.a0_loop_match_id] = Inside;
                         if (is_point) return true;
@@ -1193,10 +1159,10 @@ public class S2BooleanOperation
                 if (!emit_shared)
                 {
                     // Defer processing A edges that match or are siblings to an edge of B.
-                    if (r.matches_polygon() || r.matches_sibling())
+                    if (r.MatchesPolygon() || r.MatchesSibling())
                     {
                         // For sibling pairs, also remember their shell/hole status.
-                        if (r.matches_polygon() && r.matches_sibling())
+                        if (r.MatchesPolygon() && r.MatchesSibling())
                         {
                             is_degenerate_hole_[r.polygon_match_id] = Inside;
                             is_degenerate_hole_[r.sibling_match_id] = Inside;
@@ -1208,7 +1174,7 @@ public class S2BooleanOperation
                 }
 
                 // Remember whether the B geometry represents a sibling pair hole.
-                bool is_b_hole = r.matches_polygon() && r.matches_sibling() && Inside;
+                bool is_b_hole = r.MatchesPolygon() && r.MatchesSibling() && Inside;
 
                 // At this point, "inside_" indicates whether the initial part of the A edge
                 // is contained by the B geometry using semi-open rules.  The following code
@@ -1219,7 +1185,7 @@ public class S2BooleanOperation
                 bool semi_open_inside = Inside;
                 if (is_point)
                 {
-                    if (r.loop_matches_a0())
+                    if (r.LoopMatchesA0())
                     {
                         // Both sides are point loops.  The edge is kept only:
                         //  - for closed intersection, open union, and open difference;
@@ -1238,7 +1204,7 @@ public class S2BooleanOperation
                         }
                     }
                 }
-                else if (r.matches_polygon())
+                else if (r.MatchesPolygon())
                 {
                     if (IsDegenerate(a_id))
                     {
@@ -1248,17 +1214,17 @@ public class S2BooleanOperation
                         //  - if the B geometry is also a sibling pair and A and B are both
                         //    holes or both shells.
                         Inside = create_degen || keep_degen_a ||
-                                  (!r.matches_sibling() || Inside) == is_degenerate_hole_[a_id];
+                                  (!r.MatchesSibling() || Inside) == is_degenerate_hole_[a_id];
                     }
                     else
                     {
                         // Matching edges are kept unless the B geometry is a sibling pair, in
                         // which case it is kept only for closed intersection, open union, and
                         // open difference.
-                        if (!r.matches_sibling() || create_degen || keep_degen_b) Inside = true;
+                        if (!r.MatchesSibling() || create_degen || keep_degen_b) Inside = true;
                     }
                 }
-                else if (r.matches_sibling())
+                else if (r.MatchesSibling())
                 {
                     if (IsDegenerate(a_id))
                     {
@@ -1290,7 +1256,7 @@ public class S2BooleanOperation
                 // during S2Builder.Graph creation by DegenerateEdges.DISCARD or
                 // DISCARD_EXCESS (which are necessary in any case due to snapping).
                 if (emit_shared && r.a0_matches_polygon && !Inside &&
-                    (create_degen || (keep_degen_b && r.loop_matches_a0())))
+                    (create_degen || (keep_degen_b && r.LoopMatchesA0())))
                 {
                     if (!AddPointEdge(a.V0, 2)) return false;
                 }
@@ -1303,7 +1269,7 @@ public class S2BooleanOperation
                 //    that edge as well); and
                 //  - the B geometry is not a sibling pair hole (since then only one edge
                 //    should be emitted).
-                if (r.matches_sibling() && (create_degen || keep_degen_b) &&
+                if (r.MatchesSibling() && (create_degen || keep_degen_b) &&
                     !IsDegenerate(a_id) && !is_b_hole)
                 {
                     S2Shape.Edge sibling = new(a.V1, a.V0);
@@ -1479,7 +1445,7 @@ public class S2BooleanOperation
                 }
                 else if (matches_polygon && polygon_model_ != PolygonModel.SEMI_OPEN)
                 {
-                    contained = (polygon_model_ == PolygonModel.CLOSED);
+                    contained = polygon_model_ == PolygonModel.CLOSED;
                 }
                 // Finally, invert the result if the opposite region should be inverted.
                 return contained ^ invert_b_;
@@ -1508,24 +1474,24 @@ public class S2BooleanOperation
                     // 2 points are considered to be a strict superset of dimension 1 points.
                     if (polygon_model_ != PolygonModel.SEMI_OPEN && r.a0_matches_polygon)
                     {
-                        contained = (polygon_model_ == PolygonModel.CLOSED);
+                        contained = polygon_model_ == PolygonModel.CLOSED;
                     }
                     // Note that r.a0_matches_polyline is true if and only if some B polyline
                     // contains the degenerate polyline (a0, a0).
                     if (r.A0MatchesPolyline && !is_union_) contained = true;
                 }
-                else if (r.matches_polygon())
+                else if (r.MatchesPolygon())
                 {
                     // In the SEMI_OPEN model, polygon sibling pairs cancel each other and
                     // have no effect on point or edge containment.
-                    if (!(polygon_model_ == PolygonModel.SEMI_OPEN && r.matches_sibling()))
+                    if (!(polygon_model_ == PolygonModel.SEMI_OPEN && r.MatchesSibling()))
                     {
-                        contained = (polygon_model_ != PolygonModel.OPEN);
+                        contained = polygon_model_ != PolygonModel.OPEN;
                     }
                 }
-                else if (r.matches_sibling())
+                else if (r.MatchesSibling())
                 {
-                    contained = (polygon_model_ == PolygonModel.CLOSED);
+                    contained = polygon_model_ == PolygonModel.CLOSED;
                 }
                 // Finally, invert the result if the opposite region should be inverted.
                 return contained ^ invert_b_;
@@ -1574,9 +1540,9 @@ public class S2BooleanOperation
 
             // Constructor parameters:
 
-            private readonly PolygonModel polygon_model_;
-            private readonly PolylineModel polyline_model_;
-            private readonly bool polyline_loops_have_boundaries_;
+            private readonly PolygonModel polygon_model_ = polygon_model;
+            private readonly PolylineModel polyline_model_ = polyline_model;
+            private readonly bool polyline_loops_have_boundaries_ = polyline_loops_have_boundaries;
 
             // The output of the CrossingProcessor consists of a subset of the input
             // edges that are emitted to "builder_", and some auxiliary information
@@ -1584,10 +1550,10 @@ public class S2BooleanOperation
             // edges belong to the output.  The auxiliary information consists of the
             // dimension of each input edge, and set of input edges from the other
             // region that cross each input input edge.
-            private readonly S2Builder? builder_;  // (null if boolean output was requested)
-            private readonly List<sbyte> input_dimensions_;
-            private readonly InputEdgeCrossings input_crossings_;
-            private readonly MemoryTracker tracker_;
+            private readonly S2Builder? builder_ = builder;  // (null if boolean output was requested)
+            private readonly List<sbyte> input_dimensions_ = input_dimensions;
+            private readonly InputEdgeCrossings input_crossings_ = input_crossings;
+            private readonly MemoryTracker tracker_ = tracker;
 
             // Fields set by StartBoundary:
 
@@ -1627,7 +1593,7 @@ public class S2BooleanOperation
             // are sorted lexicographically by their eventual InputEdgeIds except for
             // GraphEdgeClipper state modifications, which are sorted by the first
             // InputEdgeId only.
-            private readonly SourceEdgeCrossings source_edge_crossings_ = new();
+            private readonly SourceEdgeCrossings source_edge_crossings_ = [];
 
             // A set of edges that cross the current edge being processed by
             // ProcessEdge() but that have not yet been associated with a particular
@@ -1636,24 +1602,24 @@ public class S2BooleanOperation
             // and up to two more to represent an isolated start and/or end vertex.  The
             // crossing edges must be associated with the S2Builder edge that represents
             // the edge interior, and they are stored here until that edge is created.
-            private readonly List<SourceEdgeCrossing> pending_source_edge_crossings_ = new();
+            private readonly List<SourceEdgeCrossing> pending_source_edge_crossings_ = [];
 
             // A map that translates from SourceId (the (region_id, shape_id, edge_id)
             // triple that identifies an S2ShapeIndex edge) to InputEdgeId (the
             // sequentially increasing numbers assigned to input edges by S2Builder).
-            private readonly SourceIdMap source_id_map_ = new();
+            private readonly SourceIdMap source_id_map_ = [];
 
             // For each edge in region B that defines a degenerate loop (either a point
             // loop or a sibling pair), indicates whether that loop represents a shell
             // or a hole.  This information is used during the second pass of
             // AddBoundaryPair() to determine the output for degenerate edges.
-            private readonly Dictionary<ShapeEdgeId, bool> is_degenerate_hole_ = new();
+            private readonly Dictionary<ShapeEdgeId, bool> is_degenerate_hole_ = [];
 
             // The value of that "inside_" would have just before the end of the
             // previous edge added to S2Builder.  This value is used to determine
             // whether the GraphEdgeClipper state needs to be updated when jumping from
             // one edge chain to another.
-            private bool prev_inside_;
+            private bool prev_inside_ = false;
 
             // The maximum edge id of any edge in the current chain whose v0 vertex has
             // already been emitted.  This is used to determine when an isolated vertex
@@ -1743,7 +1709,7 @@ public class S2BooleanOperation
                 if (AId() != kSentinel && BId().ShapeId != b_shape_id_)
                 {
                     b_shape_id_ = BId().ShapeId;
-                    b_shape_ = b_index_.Shape(b_shape_id_);
+                    b_shape_ = b_index_.Shape(b_shape_id_)!;
                     b_dimension_ = b_shape_.Dimension();
                     b_info_ = (-1, -1, -1);  // Computed on demand.
                 }
@@ -1759,7 +1725,7 @@ public class S2BooleanOperation
             private int index_;
         }
 
-        private bool IsBooleanOutput() => op_.result_empty_ is not null;
+        private static bool IsBooleanOutput(S2BooleanOperation op) => op.result_empty_ is not null;
 
         // All of the methods below support "early exit" in the case of boolean
         // results by returning "false" as soon as the result is known to be
@@ -1782,11 +1748,11 @@ public class S2BooleanOperation
         //
         // Supports "early exit" in the case of boolean results by returning false
         // as soon as the result is known to be non-empty.
-        private bool AddBoundary(int a_region_id, bool invert_a, bool invert_b, bool invert_result, List<Edge> a_chain_starts, CrossingProcessor cp)
+        private bool AddBoundary(int a_region_id, bool invert_a, bool invert_b, bool invert_result, List<Edge> a_chain_starts, CrossingProcessor cp, S2BooleanOperation op, S2Builder? builder)
         {
-            var a_index = op_.regions_[a_region_id];
-            var b_index = op_.regions_[1 - a_region_id];
-            if (!GetIndexCrossings(a_region_id)) return false;
+            var a_index = op.regions_[a_region_id];
+            var b_index = op.regions_[1 - a_region_id];
+            if (!GetIndexCrossings(a_region_id, op, builder)) return false;
             cp.StartBoundary(a_region_id, invert_a, invert_b, invert_result);
 
             // Walk the boundary of region A and build a list of all edge crossings.
@@ -1797,7 +1763,7 @@ public class S2BooleanOperation
             while (next_id != kSentinel)
             {
                 int a_shape_id = next_id.ShapeId;
-                var a_shape = a_index.Shape(a_shape_id);
+                var a_shape = a_index.Shape(a_shape_id)!;
                 cp.StartShape(a_shape);
                 while (next_id.ShapeId == a_shape_id)
                 {
@@ -1847,12 +1813,12 @@ public class S2BooleanOperation
         // This method supports "early exit" in the case where a boolean predicate is
         // being evaluated and the algorithm discovers that the result region will be
         // non-empty.
-        private bool GetChainStarts(int a_region_id, bool invert_a, bool invert_b, bool invert_result, CrossingProcessor cp, List<Edge> chain_starts)
+        private bool GetChainStarts(int a_region_id, bool invert_a, bool invert_b, bool invert_result, CrossingProcessor cp, List<Edge> chain_starts, S2BooleanOperation op, S2Builder? builder)
         {
-            var a_index = op_.regions_[a_region_id];
-            var b_index = op_.regions_[1 - a_region_id];
+            var a_index = op.regions_[a_region_id];
+            var b_index = op.regions_[1 - a_region_id];
 
-            if (IsBooleanOutput())
+            if (IsBooleanOutput(op))
             {
                 // If boolean output is requested, then we use the CrossingProcessor to
                 // determine whether the first edge of each chain will be emitted to the
@@ -1867,7 +1833,7 @@ public class S2BooleanOperation
             // may discover that the result region is non-empty and terminate the entire
             // operation early.
             bool b_has_interior = HasInterior(b_index);
-            if (b_has_interior || invert_b || IsBooleanOutput())
+            if (b_has_interior || invert_b || IsBooleanOutput(op))
             {
                 var query = b_index.MakeS2ContainsPointQuery();
                 int num_shape_ids = a_index.NumShapeIds();
@@ -1881,7 +1847,7 @@ public class S2BooleanOperation
                     // output (they can only remove edges from region B).
                     if (invert_a != invert_result && a_shape.Dimension() < 2) continue;
 
-                    if (IsBooleanOutput()) cp.StartShape(a_shape);
+                    if (IsBooleanOutput(op)) cp.StartShape(a_shape);
                     int num_chains = a_shape.NumChains();
                     for (int chain_id = 0; chain_id < num_chains; ++chain_id)
                     {
@@ -1894,10 +1860,10 @@ public class S2BooleanOperation
                             if (!tracker_.AddSpace(chain_starts, 1)) return false;
                             chain_starts.Add(new(shape_id, chain.Start));
                         }
-                        if (IsBooleanOutput())
+                        if (IsBooleanOutput(op))
                         {
                             cp.StartChain(chain_id, chain, inside);
-                            if (!ProcessIncidentEdges(a, query, cp)) return false;
+                            if (!ProcessIncidentEdges(a, query, cp, builder)) return false;
                         }
                     }
                 }
@@ -1906,13 +1872,13 @@ public class S2BooleanOperation
             chain_starts.Add(kSentinel);
             return true;
         }
-        private bool ProcessIncidentEdges(ShapeEdge a, S2ContainsPointQuery<S2ShapeIndex> query, CrossingProcessor cp)
+        private bool ProcessIncidentEdges(ShapeEdge a, S2ContainsPointQuery<S2ShapeIndex> query, CrossingProcessor cp, S2Builder? builder)
         {
             tmp_crossings_.Clear();
-            query.VisitIncidentEdges(a.V0, (ShapeEdge b) => AddIndexCrossing(a, b, false /*is_interior*/, tmp_crossings_));
+            query.VisitIncidentEdges(a.V0, (ShapeEdge b) => AddIndexCrossing(a, b, false /*is_interior*/, tmp_crossings_, builder));
             // Fast path for the common case where there are no incident edges.  We
             // return false (terminating early) if the first chain edge will be emitted.
-            if (!tmp_crossings_.Any())
+            if (tmp_crossings_.Count==0)
             {
                 return !cp.Inside;
             }
@@ -1940,7 +1906,7 @@ public class S2BooleanOperation
             }
             return false;
         }
-        private bool AddIndexCrossing(ShapeEdge a, ShapeEdge b, bool is_interior, List<IndexCrossing> crossings)
+        private bool AddIndexCrossing(ShapeEdge a, ShapeEdge b, bool is_interior, List<IndexCrossing> crossings, S2Builder? builder)
         {
             if (!tracker_.AddSpace(crossings, 1)) return false;
             var isInteriorCrossing = false;
@@ -1953,7 +1919,7 @@ public class S2BooleanOperation
                 {
                     leftToRight = true;
                 }
-                builder_.AddIntersection(
+                builder.AddIntersection(
                     S2.GetIntersection(a.V0, a.V1, b.V0, b.V1, null));
             }
             else
@@ -1974,7 +1940,7 @@ public class S2BooleanOperation
         //
         // Supports "early exit" in the case of boolean results by returning false
         // as soon as the result is known to be non-empty.
-        private bool GetIndexCrossings(int region_id)
+        private bool GetIndexCrossings(int region_id, S2BooleanOperation op, S2Builder? builder)
         {
             if (region_id == index_crossings_first_region_id_) return true;
             if (index_crossings_first_region_id_ < 0)
@@ -1983,14 +1949,14 @@ public class S2BooleanOperation
                 // TODO(ericv): This would be more efficient if VisitCrossingEdgePairs()
                 // returned the sign (+1 or -1) of the interior crossing, i.e.
                 // "int interior_crossing_sign" rather than "bool is_interior".
-                if (!S2ShapeUtil.EdgePairs.VisitCrossingEdgePairs(op_.regions_[0], op_.regions_[1], CrossingType.ALL,
+                if (!S2ShapeUtil.EdgePairs.VisitCrossingEdgePairs(op.regions_[0], op.regions_[1], CrossingType.ALL,
                     (ShapeEdge a, ShapeEdge b, bool is_interior) =>
                     {
                         // For all supported operations (union, intersection, and
                         // difference), if the input edges have an interior crossing
                         // then the output is guaranteed to have at least one edge.
-                        if (is_interior && IsBooleanOutput()) return false;
-                        return AddIndexCrossing(a, b, is_interior, index_crossings_);
+                        if (is_interior && IsBooleanOutput(op)) return false;
+                        return AddIndexCrossing(a, b, is_interior, index_crossings_, builder);
                     }))
                 {
                     return false;
@@ -2023,33 +1989,33 @@ public class S2BooleanOperation
         }
         // Supports "early exit" in the case of boolean results by returning false
         // as soon as the result is known to be non-empty.
-        private bool AddBoundaryPair(bool invert_a, bool invert_b, bool invert_result, CrossingProcessor cp)
+        private bool AddBoundaryPair(bool invert_a, bool invert_b, bool invert_result, CrossingProcessor cp, S2BooleanOperation op, S2Builder? builder)
         {
             // Optimization: if the operation is DIFFERENCE or SYMMETRIC_DIFFERENCE,
             // it is worthwhile checking whether the two regions are identical (in which
             // case the output is empty).
-            var type = op_.OpType_;
+            var type = op.OpType_;
             if (type == OpType.DIFFERENCE || type == OpType.SYMMETRIC_DIFFERENCE)
             {
-                if (AreRegionsIdentical()) return true;
+                if (AreRegionsIdentical(op)) return true;
             }
-            else if (IsBooleanOutput())
+            else if (IsBooleanOutput(op))
             {
                 // TODO(ericv): When boolean output is requested there are other quick
                 // checks that could be done here, such as checking whether a full cell from
                 // one S2ShapeIndex intersects a non-empty cell of the other S2ShapeIndex.
             }
-            List<Edge> a_starts = new(), b_starts = new();
+            List<Edge> a_starts = [], b_starts = [];
             try
             {
-                if (!GetChainStarts(0, invert_a, invert_b, invert_result, cp, a_starts) ||
-                    !GetChainStarts(1, invert_b, invert_a, invert_result, cp, b_starts) ||
-                    !AddBoundary(0, invert_a, invert_b, invert_result, a_starts, cp) ||
-                    !AddBoundary(1, invert_b, invert_a, invert_result, b_starts, cp))
+                if (!GetChainStarts(0, invert_a, invert_b, invert_result, cp, a_starts, op, builder) ||
+                    !GetChainStarts(1, invert_b, invert_a, invert_result, cp, b_starts, op, builder) ||
+                    !AddBoundary(0, invert_a, invert_b, invert_result, a_starts, cp, op, builder) ||
+                    !AddBoundary(1, invert_b, invert_a, invert_result, b_starts, cp, op, builder))
                 {
                     return false;
                 }
-                if (!IsBooleanOutput()) cp.DoneBoundaryPair();
+                if (!IsBooleanOutput(op)) cp.DoneBoundaryPair();
                 return tracker_.Ok();
             }
             finally
@@ -2060,10 +2026,10 @@ public class S2BooleanOperation
         }
         // When subtracting regions, we can save a lot of work by detecting the
         // relatively common case where the two regions are identical.
-        private bool AreRegionsIdentical()
+        private static bool AreRegionsIdentical(S2BooleanOperation op)
         {
-            var a = op_.regions_[0];
-            var b = op_.regions_[1];
+            var a = op.regions_[0];
+            var b = op.regions_[1];
             if (a == b) return true;
 
             // If the regions are not identical, we would like to detect that fact as
@@ -2123,17 +2089,17 @@ public class S2BooleanOperation
         }
         // Supports "early exit" in the case of boolean results by returning false
         // as soon as the result is known to be non-empty.
-        private bool BuildOpType(OpType op_type)
+        private bool BuildOpType(OpType op_type, S2BooleanOperation op, S2Builder? builder)
         {
             // CrossingProcessor does the real work of emitting the output edges.
-            var cp = new CrossingProcessor(op_.Options_.PolygonModel_,
-                                 op_.Options_.PolylineModel_,
-                                 op_.Options_.PolylineLoopsHaveBoundaries,
-                                 builder_, input_dimensions_, input_crossings_, tracker_);
+            var cp = new CrossingProcessor(op.Options_.PolygonModel_,
+                                 op.Options_.PolylineModel_,
+                                 op.Options_.PolylineLoopsHaveBoundaries,
+                                 builder, input_dimensions_, input_crossings_, tracker_);
             return op_type switch
             {
-                OpType.UNION => AddBoundaryPair(true, true, true, cp),    // A | B == ~(~A & ~B)
-                OpType.INTERSECTION => AddBoundaryPair(false, false, false, cp), // A & B
+                OpType.UNION => AddBoundaryPair(true, true, true, cp, op, builder),    // A | B == ~(~A & ~B)
+                OpType.INTERSECTION => AddBoundaryPair(false, false, false, cp, op, builder), // A & B
 
                 // A - B = A & ~B
                 //
@@ -2141,9 +2107,9 @@ public class S2BooleanOperation
                 // operation (-B + A) also produces correct results.  This can be tested
                 // by swapping op_->regions[0, 1] and calling AddBoundaryPair(true,
                 // false, false), which computes (~B & A).
-                OpType.DIFFERENCE => AddBoundaryPair(false, true, false, cp),
-                OpType.SYMMETRIC_DIFFERENCE => (AddBoundaryPair(false, true, false, cp) &&
-                                                AddBoundaryPair(true, false, false, cp)), // Compute the union of (A - B) and (B - A).
+                OpType.DIFFERENCE => AddBoundaryPair(false, true, false, cp, op, builder),
+                OpType.SYMMETRIC_DIFFERENCE => AddBoundaryPair(false, true, false, cp, op, builder) &&
+                                                AddBoundaryPair(true, false, false, cp, op, builder), // Compute the union of (A - B) and (B - A).
                 _ => throw new ApplicationException("Invalid S2BooleanOperation.OpType"),
             };
         }
@@ -2151,7 +2117,7 @@ public class S2BooleanOperation
         // pairs, the purpose of this function is to decide whether the polygon is empty
         // or full except for the degeneracies, i.e. whether the degeneracies represent
         // shells or holes.
-        private bool IsFullPolygonResult(/*S2Builder.Graph g,*/ out S2Error error)
+        private static bool IsFullPolygonResult(/*S2Builder.Graph g,*/ out S2Error error, S2BooleanOperation op, S2Builder.Options builderOptions)
         {
             error = S2Error.OK;
 
@@ -2182,9 +2148,9 @@ public class S2BooleanOperation
             // TODO(ericv): Implement a predicate that uses the results of edge snapping
             // directly, rather than computing areas.  This would not only be much faster
             // but would also allows all cases to be handled 100% robustly.
-            var a = op_.regions_[0];
-            var b = op_.regions_[1];
-            switch (op_.OpType_)
+            var a = op.regions_[0];
+            var b = op.regions_[1];
+            switch (op.OpType_)
             {
                 case OpType.UNION: return IsFullPolygonUnion(a, b);
 
@@ -2192,7 +2158,7 @@ public class S2BooleanOperation
 
                 case OpType.DIFFERENCE: return IsFullPolygonDifference(a, b);
 
-                case OpType.SYMMETRIC_DIFFERENCE: return IsFullPolygonSymmetricDifference(a, b);
+                case OpType.SYMMETRIC_DIFFERENCE: return IsFullPolygonSymmetricDifference(a, b, builderOptions);
 
                 default:
                     {
@@ -2262,7 +2228,7 @@ public class S2BooleanOperation
             double max_area = Math.Min(a_area, S2.M_4_PI - b_area);
             return min_area > S2.M_4_PI - max_area;
         }
-        private bool IsFullPolygonSymmetricDifference(S2ShapeIndex a, S2ShapeIndex b)
+        private static bool IsFullPolygonSymmetricDifference(S2ShapeIndex a, S2ShapeIndex b, S2Builder.Options builderOptions)
         {
             // See comments in IsFullPolygonResult().  By far the most common case is
             // that the result is empty.
@@ -2292,7 +2258,7 @@ public class S2BooleanOperation
             // To determine whether the result is ambiguous, we compute a rough estimate
             // of the maximum expected area error (including errors due to snapping),
             // using the worst-case error bound for a hemisphere defined by 4 vertices.
-            var edge_snap_radius = builder_options_.EdgeSnapRadius();
+            var edge_snap_radius = builderOptions.EdgeSnapRadius();
             double hemisphere_area_error = S2.M_2_PI * edge_snap_radius.Radians +
                                            40 * S2.DoubleEpsilon;  // GetCurvatureMaxError
 
@@ -2341,21 +2307,12 @@ public class S2BooleanOperation
         // A bit mask representing all six faces of the S2 cube.
         private const byte kAllFacesMask = 0x3f;
 
-        private readonly S2BooleanOperation op_;
-
-        // The S2Builder options used to construct the output.
-        S2Builder.Options builder_options_;
-
-        // The S2Builder used to construct the output.  Note that the S2Builder
-        // object is created only when is_boolean_output() is false.
-        private S2Builder builder_;
-
         // A vector specifying the dimension of each edge added to S2Builder.
-        private readonly List<sbyte> input_dimensions_ = new();
+        private readonly List<sbyte> input_dimensions_ = [];
 
         // The set of all input edge crossings, which is used by EdgeClippingLayer
         // to construct the clipped output polygon.
-        private readonly InputEdgeCrossings input_crossings_ = new();
+        private readonly InputEdgeCrossings input_crossings_ = [];
 
         // kSentinel is a sentinel value used to mark the end of vectors.
         private static readonly Edge kSentinel = new(int.MaxValue, 0);
@@ -2364,16 +2321,16 @@ public class S2BooleanOperation
         // regions (including edge pairs that share a common vertex).  The first
         // element of each pair is an edge from "index_crossings_first_region_id_",
         // while the second element of each pair is an edge from the other region.
-        private readonly List<IndexCrossing> index_crossings_ = new();
+        private readonly List<IndexCrossing> index_crossings_ = [];
 
         // Indicates that the first element of each crossing edge pair in
         // "index_crossings_" corresponds to an edge from the given region.
         // This field is negative if index_crossings_ has not been computed yet.
-        private int index_crossings_first_region_id_;
+        private int index_crossings_first_region_id_ = -1;
 
         // Temporary storage used in GetChainStarts(), declared here to avoid
         // repeatedly allocating memory.
-        private readonly List<IndexCrossing> tmp_crossings_ = new();
+        private readonly List<IndexCrossing> tmp_crossings_ = [];
 
         // An object to track the memory usage of this class.
         private readonly MemoryTracker tracker_;
@@ -2420,14 +2377,12 @@ public readonly record struct CrossingInputEdge(InputEdgeId InputId, bool LeftTo
 // chain, there will be two entries: an outgoing edge that treats its first
 // vertex as being shared, and an incoming edge that treats its second vertex
 // as being shared.
-public readonly struct CrossingGraphEdge
+public readonly struct CrossingGraphEdge(int id, int a_index, bool outgoing, int dst)
 {
-    public readonly int Id;
-    public readonly int AIndex;
-    public readonly bool Outgoing;
-    public readonly int Dst;
-    public CrossingGraphEdge(int id, int a_index, bool outgoing, int dst)
-    { Id = id; AIndex = a_index; Outgoing = outgoing; Dst = dst; }
+    public readonly int Id = id;
+    public readonly int AIndex = a_index;
+    public readonly bool Outgoing = outgoing;
+    public readonly int Dst = dst;
 }
 
 // Given a set of clipping instructions encoded as a set of InputEdgeCrossings,
@@ -2596,7 +2551,7 @@ public class GraphEdgeClipper
                 continue;
             }
             // Optimization for the case where there are no crossings.
-            if (!b_input_edges.Any())
+            if (b_input_edges.Count==0)
             {
                 // In general the caller only passes edges that are part of the output
                 // (i.e., we could Assert.True(inside) here).  The one exception is for
@@ -2709,7 +2664,7 @@ public class GraphEdgeClipper
             }
             // Multiplicities other than 0 or 1 can only occur in the edge interior.
             MyDebug.Assert(multiplicity == 0 || multiplicity == 1);
-            inside = (multiplicity != 0);
+            inside = multiplicity != 0;
 
             // Output any isolated polyline vertices.
             // TODO(ericv): Only do this if an output layer wants degenerate edges.
@@ -2772,7 +2727,7 @@ public class GraphEdgeClipper
     // are sorted in increasing order of (a_index, outgoing) tuple.
     private int GetCrossedVertexIndex(List<int> a, CrossingGraphEdgeVector b, bool left_to_right)
     {
-        if (!a.Any() || !b.Any())
+        if (a.Count==0 || !b.Any())
         {
             MyDebug.WriteLine(
                 $"GraphEdgeClipper.GetCrossedVertexIndex called with {a.Count} vertex ids and {b.Count} crossing graph edges.");
@@ -2997,19 +2952,12 @@ public class GraphEdgeClipper
 // correspond to clipped portions of input edges and removes them.  It
 // assembles the remaining edges into a new S2Builder.Graph and passes the
 // result to the given output layer for assembly.
-public class EdgeClippingLayer : Layer
+public class EdgeClippingLayer(
+    List<Layer> layers,
+    List<sbyte> input_dimensions,
+    InputEdgeCrossings input_crossings,
+    S2MemoryTracker.Client tracker) : Layer
 {
-    public EdgeClippingLayer(
-        List<Layer> layers,
-        List<sbyte> input_dimensions,
-        InputEdgeCrossings input_crossings,
-        S2MemoryTracker.Client tracker)
-    {
-        layers_ = layers;
-        input_dimensions_ = input_dimensions;
-        input_crossings_ = input_crossings;
-        tracker_ = tracker;
-    }
 
     // Layer interface:
     public override GraphOptions GraphOptions_()
@@ -3035,7 +2983,7 @@ public class EdgeClippingLayer : Layer
         // destruction.  There is also a temporary vector "indegree" in
         // GetInputEdgeChainOrder() but this does not affect peak memory usage.
         Int64 tmp_bytes = g.NumEdges * (sizeof(EdgeId) + sizeof(int)) +
-                          g.NumVertices * (2 * sizeof(EdgeId));
+                          g.NumVertices * 2 * sizeof(EdgeId);
         Int64 final_bytes = g.NumEdges * (Marshal.SizeOf(typeof(Edge)) +
                                              sizeof(InputEdgeIdSetId));
 
@@ -3082,8 +3030,8 @@ public class EdgeClippingLayer : Layer
             // The Graph objects must be valid until the last Build() call completes,
             // so we store all of the graph data in arrays with 3 elements.
             MyDebug.Assert(3 == layers_.Count);
-            List<Edge>[] layer_edges = { new List<Edge>(), new List<Edge>(), new List<Edge>(), };
-            List<EdgeId>[] layer_input_edge_ids = { new List<EdgeId>(), new List<EdgeId>(), new List<EdgeId>(), };
+            List<Edge>[] layer_edges = [[], [], [],];
+            List<EdgeId>[] layer_input_edge_ids = [[], [], [],];
             // Separate the edges according to their dimension.
             for (int i = 0; i < new_edges.Count; ++i)
             {
@@ -3114,8 +3062,8 @@ public class EdgeClippingLayer : Layer
         }
     }
 
-    private readonly List<Layer> layers_;
-    private readonly List<sbyte> input_dimensions_;
-    private readonly InputEdgeCrossings input_crossings_;
-    private readonly S2MemoryTracker.Client tracker_;
+    private readonly List<Layer> layers_ = layers;
+    private readonly List<sbyte> input_dimensions_ = input_dimensions;
+    private readonly InputEdgeCrossings input_crossings_ = input_crossings;
+    private readonly S2MemoryTracker.Client tracker_ = tracker;
 }

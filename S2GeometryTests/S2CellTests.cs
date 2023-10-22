@@ -1,10 +1,8 @@
 namespace S2Geometry;
 
-public class S2CellTests
+public class S2CellTests(ITestOutputHelper logger)
 {
-    private readonly ITestOutputHelper _logger;
-
-    public S2CellTests(ITestOutputHelper logger) { _logger = logger; }
+    private readonly ITestOutputHelper _logger = logger;
 
     [Fact]
     internal void Test_S2Cell_TestFaces()
@@ -223,13 +221,13 @@ public class S2CellTests
             // values.  kMaxSizeUV is the absolute value of the u- and v-coordinate
             // where the cell size at a given level is maximal.
             double kMaxSizeUV = 0.3964182625366691;
-            R2Point[] special_uv = {
+            R2Point[] special_uv = [
  new R2Point(S2.DoubleEpsilon, S2.DoubleEpsilon),  // Face center
  new R2Point(S2.DoubleEpsilon, 1),            // Edge midpoint
  new R2Point(1, 1),                      // Face corner
  new R2Point(kMaxSizeUV, kMaxSizeUV),    // Largest cell area
  new R2Point(S2.DoubleEpsilon, kMaxSizeUV),   // Longest edge/diagonal
-};
+];
             bool force_subdivide = false;
             foreach (R2Point uv in special_uv)
             {
@@ -263,9 +261,9 @@ public class S2CellTests
         // For AverageArea(), the areas themselves are not very accurate, but
         // the average area of a parent is exactly 4 times the area of a child.
 
-        Assert.True(Math.Abs(Math.Log(exact_area / cell.ExactArea())) <= Math.Abs(Math.Log((1 + 1e-6))));
-        Assert.True(Math.Abs(Math.Log((approx_area / cell.ApproxArea()))) <= Math.Abs(Math.Log((1.03))));
-        Assert.True(Math.Abs(Math.Log((average_area / cell.AverageArea()))) <= Math.Abs(Math.Log((1 + 1e-15))));
+        Assert.True(Math.Abs(Math.Log(exact_area / cell.ExactArea())) <= Math.Abs(Math.Log(1 + 1e-6)));
+        Assert.True(Math.Abs(Math.Log(approx_area / cell.ApproxArea())) <= Math.Abs(Math.Log(1.03)));
+        Assert.True(Math.Abs(Math.Log(average_area / cell.AverageArea())) <= Math.Abs(Math.Log(1 + 1e-15)));
     }
 
     private void CheckMinMaxAvg(
@@ -709,12 +707,12 @@ Level   Ratio  Ratio Aspect  Ratio Aspect    Min    Max    Min    Max
         S2Cell orig_cell = new(S2LatLng.FromDegrees(40.7406264, -74.0029963));
         Encoder encoder = new();
         orig_cell.Encode(encoder);
-
-        S2Cell decoded_cell = new(S2LatLng.FromDegrees(51.494987, -0.146585));
+        _ = new
+        S2Cell(S2LatLng.FromDegrees(51.494987, -0.146585));
         var decoder = encoder.GetDecoder();
         var (success, decoded_cellTmp) = S2Cell.Decode(decoder);
         Assert.True(success);
-        decoded_cell = decoded_cellTmp;
+        S2Cell decoded_cell = decoded_cellTmp;
 
         Assert.Equal(orig_cell, decoded_cell);
         Assert.Equal(orig_cell.Face, decoded_cell.Face);

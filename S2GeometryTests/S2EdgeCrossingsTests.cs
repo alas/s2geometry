@@ -4,15 +4,13 @@ using static S2.Internal;
 
 // CrossingSign, VertexCrossing, and EdgeOrVertexCrossing are tested in
 // S2EdgeCrosserTests.
-public class S2EdgeCrossingsTests
+public class S2EdgeCrossingsTests(ITestOutputHelper logger)
 {
     // The approximate maximum error in GetDistance() for small distances.
     private static readonly S1Angle kGetDistanceAbsError = S1Angle.FromRadians(3 * S2.DoubleEpsilon);
-    private readonly ITestOutputHelper _logger;
+    private readonly ITestOutputHelper _logger = logger;
     internal enum Precision { DOUBLE, LONG_DOUBLE, EXACT, SYMBOLIC, NUM_PRECISIONS }
-    private static readonly string[] kPrecisionNames = new[] { "double", "long double", "exact", "symbolic" };
-
-    public S2EdgeCrossingsTests(ITestOutputHelper logger) { _logger = logger; }
+    private static readonly string[] kPrecisionNames = ["double", "long double", "exact", "symbolic"];
 
     // A helper class that keeps track of how often each precision was used and
     // generates a string for logging purposes.
@@ -97,11 +95,9 @@ public class S2EdgeCrossingsTests
             Assert.Equal(S2.RobustCrossProd(b, a).Normalize(), -result);
         }
 
-        S2Point tmp_result_ld;
-        bool have_ld = GetStableCrossProd(a.ToLD(), b.ToLD(), out tmp_result_ld);
+        bool have_ld = GetStableCrossProd(a.ToLD(), b.ToLD(), out S2Point tmp_result_ld);
 
-        S2Point result_dbl;
-        bool have_dbl = GetStableCrossProd(a, b, out result_dbl);
+        bool have_dbl = GetStableCrossProd(a, b, out S2Point result_dbl);
         if (have_dbl)
         {
             result_dbl = result_dbl.Normalize();
@@ -520,7 +516,7 @@ public class S2EdgeCrossingsTests
     private static S2Point GetIntersectionExact(S2Point a0, S2Point a1, S2Point b0, S2Point b1)
     {
         S2Point x = S2.Internal.GetIntersectionExact(a0, a1, b0, b1);
-        if (x.DotProd((a0 + a1) + (b0 + b1)) < 0) x = -x;
+        if (x.DotProd(a0 + a1 + (b0 + b1)) < 0) x = -x;
         return x;
     }
 

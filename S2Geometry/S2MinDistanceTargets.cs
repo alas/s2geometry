@@ -23,12 +23,8 @@ global using S2MinDistanceTarget = S2Geometry.S2DistanceTarget<S2Geometry.S1Chor
 namespace S2Geometry;
 
 // An S2DistanceTarget subtype for computing the minimum distance to a point.
-public class S2MinDistancePointTarget : S2MinDistanceTarget
+public class S2MinDistancePointTarget(S2Point point) : S2MinDistanceTarget
 {
-    public S2MinDistancePointTarget(S2Point point)
-    {
-        point_ = point;
-    }
     public sealed override S2Cap GetCapBound()
     {
         return new S2Cap(point_, S2MinDistance.Zero);
@@ -51,22 +47,18 @@ public class S2MinDistancePointTarget : S2MinDistanceTarget
             point_, (S2Shape shape) => visitor(shape, point_));
     }
 
-    private readonly S2Point point_;
+    private readonly S2Point point_ = point;
 }
 
 // An S2DistanceTarget subtype for computing the minimum distance to a edge.
-public class S2MinDistanceEdgeTarget : S2MinDistanceTarget
+public class S2MinDistanceEdgeTarget(S2Point a, S2Point b) : S2MinDistanceTarget
 {
-    public S2MinDistanceEdgeTarget(S2Point a, S2Point b)
-    {
-        a_ = a; b_ = b;
-    }
     public sealed override S2Cap GetCapBound()
     {
         // The following computes a radius equal to half the edge length in an
         // efficient and numerically stable way.
         double d2 = new S2MinDistance(a_, b_).Length2;
-        double r2 = (0.5 * d2) / (1 + Math.Sqrt(1 - 0.25 * d2));
+        double r2 = 0.5 * d2 / (1 + Math.Sqrt(1 - 0.25 * d2));
         return new S2Cap((a_ + b_).Normalize(), S2MinDistance.FromLength2(r2));
     }
     public sealed override bool UpdateMinDistance(S2Point p, ref S2MinDistance min_dist)
@@ -91,18 +83,14 @@ public class S2MinDistanceEdgeTarget : S2MinDistanceTarget
         return target.VisitContainingShapes(index, visitor);
     }
 
-    private readonly S2Point a_;
-    private readonly S2Point b_;
+    private readonly S2Point a_ = a;
+    private readonly S2Point b_ = b;
 }
 
 // An S2DistanceTarget subtype for computing the minimum distance to an S2Cell
 // (including the interior of the cell).
-public class S2MinDistanceCellTarget : S2MinDistanceTarget
+public class S2MinDistanceCellTarget(S2Cell cell) : S2MinDistanceTarget
 {
-    public S2MinDistanceCellTarget(S2Cell cell)
-    {
-        cell_ = cell;
-    }
     public sealed override S2Cap GetCapBound()
     {
         return cell_.GetCapBound();
@@ -133,7 +121,7 @@ public class S2MinDistanceCellTarget : S2MinDistanceTarget
         return target.VisitContainingShapes(index, visitor);
     }
 
-    private readonly S2Cell cell_;
+    private readonly S2Cell cell_ = cell;
 }
 
 // An S2DistanceTarget subtype for computing the minimum distance to an
@@ -159,7 +147,7 @@ public class S2MinDistanceCellUnionTarget : S2MinDistanceTarget
 
     // Note that set_max_error() should not be called directly by clients; it is
     // used internally by the S2Closest*Query implementations.
-    internal override S2MinDistance MaxError { set => query_.Options_.MaxError = (value); }
+    internal override S2MinDistance MaxError { set => query_.Options_.MaxError = value; }
 
     public sealed override S2Cap GetCapBound()
     {
@@ -195,7 +183,7 @@ public class S2MinDistanceCellUnionTarget : S2MinDistanceTarget
 
     private bool UpdateMinDistance(S2MinDistanceTarget target, ref S2MinDistance min_dist)
     {
-        query_.Options_.MaxDistance = (min_dist);
+        query_.Options_.MaxDistance = min_dist;
         var r = query_.FindClosestCell(target);
         if (r.IsEmpty()) return false;
         min_dist = r.Distance;
@@ -241,13 +229,8 @@ public class S2MinDistanceCellUnionTarget : S2MinDistanceTarget
 //         ... do something with "target_point" ...
 //         return false;  // Terminate search
 //       }));
-public class S2MinDistanceShapeIndexTarget : S2MinDistanceTarget
+public class S2MinDistanceShapeIndexTarget(S2ShapeIndex index) : S2MinDistanceTarget
 {
-    public S2MinDistanceShapeIndexTarget(S2ShapeIndex index)
-    {
-        index_ = index;
-        query_ = new S2ClosestEdgeQuery(index);
-    }
 
     // Specifies that distance will be measured to the boundary and interior
     // of polygons in the S2ShapeIndex rather than to polygon boundaries only.
@@ -263,7 +246,7 @@ public class S2MinDistanceShapeIndexTarget : S2MinDistanceTarget
 
     // Note that set_max_error() should not be called directly by clients; it is
     // used internally by the S2Closest*Query implementations.
-    internal override S2MinDistance MaxError { set => query_.Options_.MaxError = (value); }
+    internal override S2MinDistance MaxError { set => query_.Options_.MaxError = value; }
 
     public sealed override S2Cap GetCapBound()
     {
@@ -328,13 +311,13 @@ public class S2MinDistanceShapeIndexTarget : S2MinDistanceTarget
 
     private bool UpdateMinDistance(S2MinDistanceTarget target, ref S2MinDistance min_dist)
     {
-        query_.Options_.MaxDistance = (min_dist);
+        query_.Options_.MaxDistance = min_dist;
         var r = query_.FindClosestEdge(target);
         if (r.IsEmpty()) return false;
         min_dist = r.Distance;
         return true;
     }
 
-    private readonly S2ShapeIndex index_;
-    private readonly S2ClosestEdgeQuery query_;
+    private readonly S2ShapeIndex index_ = index;
+    private readonly S2ClosestEdgeQuery query_ = new(index);
 }

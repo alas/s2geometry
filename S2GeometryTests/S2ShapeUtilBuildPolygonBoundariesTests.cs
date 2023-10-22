@@ -5,8 +5,8 @@ public class S2ShapeUtilBuildPolygonBoundariesTests
     [Fact]
     internal void Test_BuildPolygonBoundaries_NoComponents()
     {
-        List<List<S2Shape>> faces = new();
-        List<List<S2Shape>> components = new();
+        List<List<S2Shape>> faces = [];
+        List<List<S2Shape>> components = [];
         S2ShapeUtil.BuildPolygonBoundaries(components, faces);
         Assert.Empty(faces);
     }
@@ -17,7 +17,7 @@ public class S2ShapeUtilBuildPolygonBoundariesTests
         var a0 = BuildTestLaxLoop("0:0, 1:0, 0:1");  // Outer face
         var a1 = BuildTestLaxLoop("0:0, 0:1, 1:0");
         var faces = new List<List<S2Shape>>();
-        var components = new List<List<S2Shape>> { new List<S2Shape> { a0, a1 } };
+        var components = new List<List<S2Shape>> { new() { a0, a1 } };
         S2ShapeUtil.BuildPolygonBoundaries(components, faces);
         Assert.Equal(2, faces.Count);
     }
@@ -29,7 +29,7 @@ public class S2ShapeUtilBuildPolygonBoundariesTests
         var a1 = BuildTestLaxLoop("0:0, 0:1, 1:0");
         var a2 = BuildTestLaxLoop("1:0, 0:1, 1:1");
         var faces = new List<List<S2Shape>>();
-        var components = new List<List<S2Shape>> { new List<S2Shape> { a0, a1, a2 } };
+        var components = new List<List<S2Shape>> { new() { a0, a1, a2 } };
         S2ShapeUtil.BuildPolygonBoundaries(components, faces);
         Assert.Equal(3, faces.Count);
     }
@@ -42,10 +42,10 @@ public class S2ShapeUtilBuildPolygonBoundariesTests
         var b0 = BuildTestLaxLoop("1:1, 2:0, 0:2");  // Outer face
         var b1 = BuildTestLaxLoop("1:1, 0:2, 2:0");
         var faces = new List<List<S2Shape>>();
-        var components = new List<List<S2Shape>> { new List<S2Shape> { a0, a1 }, new List<S2Shape> { b0, b1 } };
+        var components = new List<List<S2Shape>> { new() { a0, a1 }, new() { b0, b1 } };
         S2ShapeUtil.BuildPolygonBoundaries(components, faces);
         Assert.Equal(3, faces.Count);
-        Assert.Equal((new S2Shape[] { b0, a1 }), faces[0]);
+        Assert.Equal(new S2Shape[] { b0, a1 }, faces[0]);
     }
 
     [Fact]
@@ -56,10 +56,10 @@ public class S2ShapeUtilBuildPolygonBoundariesTests
         var b0 = BuildTestLaxLoop("0:2, 1:2, 0:3");  // Outer face
         var b1 = BuildTestLaxLoop("0:2, 0:3, 1:2");
         var faces = new List<List<S2Shape>>();
-        var components = new List<List<S2Shape>> { new List<S2Shape> { a0, a1 }, new List<S2Shape> { b0, b1 } };
+        var components = new List<List<S2Shape>> { new() { a0, a1 }, new() { b0, b1 } };
         S2ShapeUtil.BuildPolygonBoundaries(components, faces);
         Assert.Equal(3, faces.Count);
-        Assert.Equal((new S2Shape[] { a0, b0 }), faces[2]);
+        Assert.Equal(new S2Shape[] { a0, b0 }, faces[2]);
     }
 
     [Fact]
@@ -67,7 +67,7 @@ public class S2ShapeUtilBuildPolygonBoundariesTests
     {
         var a0 = BuildTestLaxLoop("0:0, 1:0, 0:0");
         var faces = new List<List<S2Shape>>();
-        var components = new List<List<S2Shape>> { new List<S2Shape> { a0 } };
+        var components = new List<List<S2Shape>> { new() { a0 } };
         S2ShapeUtil.BuildPolygonBoundaries(components, faces);
         Assert.Single(faces);
     }
@@ -78,7 +78,7 @@ public class S2ShapeUtilBuildPolygonBoundariesTests
         var a0 = BuildTestLaxLoop("0:0, 1:0, 0:0");
         var b0 = BuildTestLaxLoop("2:0, 3:0, 2:0");
         var faces = new List<List<S2Shape>>();
-        var components = new List<List<S2Shape>> { new List<S2Shape> { a0, b0 } };
+        var components = new List<List<S2Shape>> { new() { a0, b0 } };
         S2ShapeUtil.BuildPolygonBoundaries(components, faces);
         Assert.Single(faces);
         Assert.Equal(2, faces[0].Count);
@@ -117,32 +117,32 @@ public class S2ShapeUtilBuildPolygonBoundariesTests
         var a4_d0 = BuildTestLaxLoop("30:45, 40:45, 30:45");
         var components = new List<List<S2Shape>>
             {
-                new List<S2Shape>{a0, a1, a2, a3, a4},
-                new List<S2Shape>{b0},
-                new List<S2Shape>{a1_a0, a1_a1, a1_a2, a1_a3},
-                new List<S2Shape>{a1_b0, a1_b1},
-                new List<S2Shape>{a1_c0},
-                new List<S2Shape>{a1_a2_a0, a1_a2_a1},
-                new List<S2Shape>{a1_a3_a0},
-                new List<S2Shape>{a3_a0, a3_a1},
-                new List<S2Shape>{a4_a0},
-                new List<S2Shape>{a4_b0},
-                new List<S2Shape>{a4_c0},
-                new List<S2Shape>{a4_d0}
+                new() {a0, a1, a2, a3, a4},
+                new() {b0},
+                new() {a1_a0, a1_a1, a1_a2, a1_a3},
+                new() {a1_b0, a1_b1},
+                new() {a1_c0},
+                new() {a1_a2_a0, a1_a2_a1},
+                new() {a1_a3_a0},
+                new() {a3_a0, a3_a1},
+                new() {a4_a0},
+                new() {a4_b0},
+                new() {a4_c0},
+                new() {a4_d0}
             };
         var expected_faces = new List<List<S2Shape>>
             {
-                new List<S2Shape>{a0, b0},
-                new List<S2Shape>{a1, a1_a0, a1_b0, a1_c0},
-                new List<S2Shape>{a1_a1},
-                new List<S2Shape>{a1_a2, a1_a2_a0},
-                new List<S2Shape>{a1_a2_a1},
-                new List<S2Shape>{a1_a3, a1_a3_a0},
-                new List<S2Shape>{a1_b1},
-                new List<S2Shape>{a2},
-                new List<S2Shape>{a3, a3_a0},
-                new List<S2Shape>{a3_a1},
-                new List<S2Shape>{a4, a4_a0, a4_b0, a4_c0, a4_d0}
+                new() {a0, b0},
+                new() {a1, a1_a0, a1_b0, a1_c0},
+                new() {a1_a1},
+                new() {a1_a2, a1_a2_a0},
+                new() {a1_a2_a1},
+                new() {a1_a3, a1_a3_a0},
+                new() {a1_b1},
+                new() {a2},
+                new() {a3, a3_a0},
+                new() {a3_a1},
+                new() {a4, a4_a0, a4_b0, a4_c0, a4_d0}
             };
         var faces = new List<List<S2Shape>>();
         S2ShapeUtil.BuildPolygonBoundaries(components, faces);
@@ -164,6 +164,6 @@ public class S2ShapeUtilBuildPolygonBoundariesTests
     private static S2LaxLoopShape BuildTestLaxLoop(string vertex_str)
     {
         var vertices = ParsePointsOrDie(vertex_str);
-        return new S2LaxLoopShape(vertices.ToArray());
+        return new S2LaxLoopShape([.. vertices]);
     }
 }

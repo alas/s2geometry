@@ -34,7 +34,7 @@ internal class EncodedUIntVectorTesting
     {
         Assert.True(bytes_per_value <= sizeof(UInt16));
         UInt16 limit_value = (UInt16)(~0 >> (8 * (sizeof(UInt16) - bytes_per_value)));
-        List<UInt16> values = new();
+        List<UInt16> values = [];
         for (int i = 0; i + 1 < num_values; ++i)
         {
             values.Add((UInt16)(limit_value * ((double)i / (num_values - 1))));
@@ -43,7 +43,7 @@ internal class EncodedUIntVectorTesting
         // precision when T == UInt64.
         values.Add(limit_value);
         Assert.True(values.IsSorted());
-        return values.ToArray();
+        return [.. values];
     }
 
     internal static EncodedUIntVector<UInt16> MakeEncodedVector_16(UInt16[] values, Encoder encoder)
@@ -87,7 +87,7 @@ internal class EncodedUIntVectorTesting
     {
         Assert.True(bytes_per_value <= sizeof(UInt32));
         UInt32 limit_value = (UInt32)(~0 >> (8 * (sizeof(UInt32) - bytes_per_value)));
-        List<UInt32> values = new();
+        List<UInt32> values = [];
         for (int i = 0; i + 1 < num_values; ++i)
         {
             values.Add((UInt32)(limit_value * ((double)i / (num_values - 1))));
@@ -96,7 +96,7 @@ internal class EncodedUIntVectorTesting
         // precision when T == UInt64.
         values.Add(limit_value);
         Assert.True(values.IsSorted());
-        return values.ToArray();
+        return [.. values];
     }
 
     internal static EncodedUIntVector<UInt32> MakeEncodedVector_32(UInt32[] values, Encoder encoder)
@@ -140,7 +140,7 @@ internal class EncodedUIntVectorTesting
     {
         Assert.True(bytes_per_value <= sizeof(UInt64));
         UInt64 limit_value = (UInt64)(~0 >> (8 * (sizeof(UInt64) - bytes_per_value)));
-        List<UInt64> values = new();
+        List<UInt64> values = [];
         for (int i = 0; i + 1 < num_values; ++i)
         {
             values.Add((UInt64)(limit_value * ((double)i / (num_values - 1))));
@@ -149,7 +149,7 @@ internal class EncodedUIntVectorTesting
         // precision when T == UInt64.
         values.Add(limit_value);
         Assert.True(values.IsSorted());
-        return values.ToArray();
+        return [.. values];
     }
 
     internal static EncodedUIntVector<UInt64> MakeEncodedVector_64(UInt64[] values, Encoder encoder)

@@ -20,49 +20,49 @@ public class S2PolylineSimplifierTests
     [Fact]
     internal void Test_S2PolylineSimplifier_NoConstraints() {
         // Noraints, dst == src.
-        CheckSimplify("0:1", "0:1", "", "", Array.Empty<bool>(), 0, true);
+        CheckSimplify("0:1", "0:1", "", "", [], 0, true);
 
         // Noraints, dst != src.
-        CheckSimplify("0:1", "1:0", "", "", Array.Empty<bool>(), 0, true);
+        CheckSimplify("0:1", "1:0", "", "", [], 0, true);
 
         // Noraints, (src, dst) longer than 90 degrees (not supported).
-        CheckSimplify("0:0", "0:91", "", "", Array.Empty<bool>(), 0, false);
+        CheckSimplify("0:0", "0:91", "", "", [], 0, false);
     }
 
     [Fact]
     internal void Test_S2PolylineSimplifier_TargetOnePoint() {
         // Three points on a straight line.  In theory zero tolerance should work,
         // but in practice there are floating point errors.
-        CheckSimplify("0:0", "0:2", "0:1", "", Array.Empty<bool>(), 1e-10, true);
+        CheckSimplify("0:0", "0:2", "0:1", "", [], 1e-10, true);
 
         // Three points where the middle point is too far away.
-        CheckSimplify("0:0", "0:2", "1:1", "", Array.Empty<bool>(), 0.9, false);
+        CheckSimplify("0:0", "0:2", "1:1", "", [], 0.9, false);
 
         // A target disc that contains the source vertex.
-        CheckSimplify("0:0", "0:2", "0:0.1", "", Array.Empty<bool>(), 1.0, true);
+        CheckSimplify("0:0", "0:2", "0:0.1", "", [], 1.0, true);
 
         // A target disc that contains the destination vertex.
-        CheckSimplify("0:0", "0:2", "0:2.1", "", Array.Empty<bool>(), 1.0, true);
+        CheckSimplify("0:0", "0:2", "0:2.1", "", [], 1.0, true);
     }
 
     [Fact]
     internal void Test_S2PolylineSimplifier_AvoidOnePoint() {
         // Three points on a straight line, attempting to avoid the middle point.
-        CheckSimplify("0:0", "0:2", "", "0:1", new[] { true}, 1e-10, false);
+        CheckSimplify("0:0", "0:2", "", "0:1", [true], 1e-10, false);
 
         // Three points where the middle point can be successfully avoided.
-        CheckSimplify("0:0", "0:2", "", "1:1", new[] { true}, 0.9, true);
+        CheckSimplify("0:0", "0:2", "", "1:1", [true], 0.9, true);
 
         // Three points where the middle point is on the left, but where the client
         // requires the point to be on the right of the edge.
-        CheckSimplify("0:0", "0:2", "", "1:1", new[] { false}, 1e-10, false);
+        CheckSimplify("0:0", "0:2", "", "1:1", [false], 1e-10, false);
 
         // Check cases where the point to be avoided is behind the source vertex.
         // In this situation "disc_on_left" should not affect the result.
-        CheckSimplify("0:0", "0:2", "", "1:-1", new[] { false}, 1.4, true);
-        CheckSimplify("0:0", "0:2", "", "1:-1", new[] { true}, 1.4, true);
-        CheckSimplify("0:0", "0:2", "", "-1:-1", new[] { false}, 1.4, true);
-        CheckSimplify("0:0", "0:2", "", "-1:-1", new[] { true}, 1.4, true);
+        CheckSimplify("0:0", "0:2", "", "1:-1", [false], 1.4, true);
+        CheckSimplify("0:0", "0:2", "", "1:-1", [true], 1.4, true);
+        CheckSimplify("0:0", "0:2", "", "-1:-1", [false], 1.4, true);
+        CheckSimplify("0:0", "0:2", "", "-1:-1", [true], 1.4, true);
     }
 
     [Fact]
@@ -80,11 +80,11 @@ public class S2PolylineSimplifierTests
         foreach (var dst in new[] { "0:2", "1.732:-1", "-1.732:-1"})
         {
             CheckSimplify("0:0", dst, "", "0.01:2, 1.732:-1.01, -1.732:-0.99",
-                new[] { true, true, true}, 0.00001, true);
+                [true, true, true], 0.00001, true);
 
             // Also test that directions prohibited by "disc_on_left" are avoided.
             CheckSimplify("0:0", dst, "", "0.01:2, 1.732:-1.01, -1.732:-0.99",
-                new[] { false, false, false}, 0.00001, false);
+                [false, false, false], 0.00001, false);
         }
     }
 
@@ -94,15 +94,15 @@ public class S2PolylineSimplifierTests
         // 0.7 degrees, and avoid several points that are separated from the
         // proposed edge by about 1.4 degrees.
         CheckSimplify("0:0", "10:10", "2:3, 4:3, 7:8",
-                      "4:2, 7:5, 7:9", new[]{ true, true, false}, 1.0, true);
+                      "4:2, 7:5, 7:9", [true, true, false], 1.0, true);
 
         // The same example, but one point to be targeted is 1.4 degrees away.
         CheckSimplify("0:0", "10:10", "2:3, 4:6, 7:8",
-                      "4:2, 7:5, 7:9", new[]{ true, true, false}, 1.0, false);
+                      "4:2, 7:5, 7:9", [true, true, false], 1.0, false);
 
         // The same example, but one point to be avoided is 0.7 degrees away.
         CheckSimplify("0:0", "10:10", "2:3, 4:3, 7:8",
-                      "4:2, 6:5, 7:9", new[]{ true, true, false}, 1.0, false);
+                      "4:2, 6:5, 7:9", [true, true, false], 1.0, false);
     }
 
     [Fact]
@@ -146,7 +146,7 @@ public class S2PolylineSimplifierTests
                 // it otherwise, *unless* we want targeting to fail for this disc, in
                 // which case these actions are reversed.
                 bool avoid = S2Testing.Random.OneIn(2);
-                bool grow_radius = (avoid == (i == bad_disc));
+                bool grow_radius = avoid == (i == bad_disc);
                 var radius = new S1ChordAngle(grow_radius ? r + kMaxError : r - kMaxError);
                 if (avoid) {
                     simplifier.AvoidDisc(x, radius, on_left);

@@ -264,7 +264,7 @@ public static partial class S2ShapeUtil
                         }
                         bi.MoveNext();
                     } while (bi.Id <= ai.RangeMax);
-                    if (b_cells_.Any())
+                    if (b_cells_.Count!=0)
                     {
                         // Test all the edge crossings directly.
                         GetShapeEdges(a_index_, ai.Enumerator.Current, a_shape_edges_);
@@ -384,7 +384,7 @@ public static partial class S2ShapeUtil
 
             // Temporary data declared here to avoid repeated memory allocations.
             private readonly S2CrossingEdgeQuery b_query_;
-            private readonly List<S2ShapeIndexCell> b_cells_ = new();
+            private readonly List<S2ShapeIndexCell> b_cells_ = [];
             private readonly ShapeEdgeVector a_shape_edges_ = new();
             private readonly ShapeEdgeVector b_shape_edges_ = new();
         }

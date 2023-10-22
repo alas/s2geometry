@@ -240,6 +240,6 @@ public class IndexedS2PolylineVectorLayer : Layer
     }
 
     private readonly MutableS2ShapeIndex index_;
-    private readonly List<S2Polyline> polylines_ = new();
+    private readonly List<S2Polyline> polylines_ = [];
     private readonly S2PolylineVectorLayer layer_;
 }

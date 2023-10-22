@@ -30,7 +30,7 @@ public class S2ShapeUtilCodingTests
         Assert.True(FastEncodeTaggedShapes(index, encoder));
         index.Encode(encoder);
         var decoder = encoder.GetDecoder();
-        MutableS2ShapeIndex decoded_index = new();
+        MutableS2ShapeIndex decoded_index = [];
         Assert.True(decoded_index.Init(decoder, FullDecodeShapeFactory(decoder)));
         Assert.Equal(index.ToDebugString(), decoded_index.ToDebugString());
     }
@@ -60,7 +60,7 @@ public class S2ShapeUtilCodingTests
             "0E1B24292B3213000009030002130000110300092B00010001000000010D000002230410"+      
             "04020400020113082106110A4113000111030101");
         Decoder decoder=new(bytes, 0, bytes.Length);
-        MutableS2ShapeIndex decoded_index=new();
+        MutableS2ShapeIndex decoded_index=[];
         Assert.True(decoded_index.Init(decoder, FullDecodeShapeFactory(decoder)));
         Assert.Equal(S2TextFormat.ToDebugString(index),
             S2TextFormat.ToDebugString(decoded_index));
@@ -73,7 +73,7 @@ public class S2ShapeUtilCodingTests
 
         // Make an encoded shape.
         Assert.True(S2ShapeUtilCoding.FastEncodeShape(
-            new S2PointVectorShape(ParsePointsOrDie("0:0, 0:1").ToArray()),
+            new S2PointVectorShape([.. ParsePointsOrDie("0:0, 0:1")]),
             encoder));
         var decoder = encoder.GetDecoder();
         var (success, encoded_shape) = EncodedS2PointVectorShape.Init(decoder);

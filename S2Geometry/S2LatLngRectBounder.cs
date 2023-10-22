@@ -368,7 +368,7 @@ public class S2LatLngRectBounder
                     // and multiply each have a relative error of 0.5 * DBL_EPSILON which
                     // we round up to a total of 4 * DBL_EPSILON.
                     var lat_budget_z = 0.5 * (a_ - b).Norm() * Math.Sin(max_lat);
-                    const double folded = (1 + 4 * S2.DoubleEpsilon);
+                    const double folded = 1 + 4 * S2.DoubleEpsilon;
                     var lat_budget = 2 * Math.Asin(Math.Min(folded * lat_budget_z, 1.0));
                     var max_delta = 0.5 * (lat_budget - lat_ab.GetLength()) + S2.DoubleEpsilon;
 

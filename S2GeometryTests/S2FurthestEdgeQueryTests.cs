@@ -62,9 +62,8 @@ public class S2FurthestEdgeQueryTests
         // the distance to the target exactly equals the chosen limit.
         var p0 = MakePointOrDie("23:12");
         S2Point p1 = MakePointOrDie("47:11");
-        S2Point[] index_points = { p0 };
-        MutableS2ShapeIndex index = new();
-        index.Add(new S2PointVectorShape(index_points));
+        S2Point[] index_points = [p0];
+        MutableS2ShapeIndex index = [new S2PointVectorShape(index_points)];
         S2FurthestEdgeQuery query = new(index);
 
         // Start with antipodal points and a maximum (180 degrees) distance.
@@ -98,9 +97,8 @@ public class S2FurthestEdgeQueryTests
         Assert.True(S2Pred.CompareDistance(p0, p1, limit) > 0);
 
         // Verify that IsConservativeDistanceGreaterOrEqual() still returns "p1".
-        S2Point[] index_points = { p0 };
-        MutableS2ShapeIndex index = new();
-        index.Add(new S2PointVectorShape(index_points));
+        S2Point[] index_points = [p0];
+        MutableS2ShapeIndex index = [new S2PointVectorShape(index_points)];
         S2FurthestEdgeQuery query = new(index);
         S2FurthestEdgeQuery.PointTarget target1 = new(p1);
         Assert.False(query.IsDistanceGreater(target1, limit));
@@ -134,7 +132,7 @@ public class S2FurthestEdgeQueryTests
 
         // Next check that with include_interiors set to false, the distance is less
         // than 180 for the same target and index.
-        query.Options_.IncludeInteriors = (false);
+        query.Options_.IncludeInteriors = false;
         results = query.FindFurthestEdges(target);
         Assert.True(results.Count > 0);
         Assert.True(results[0].Distance <= S1ChordAngle.Straight);
@@ -175,7 +173,7 @@ public class S2FurthestEdgeQueryTests
         // points are contained within a polygon.
         var index = MakeIndexOrDie("2:2 | 4:4 | 1:11 | 3:12 # #");
         S2FurthestEdgeQuery query = new(index);
-        query.Options_.UseBruteForce = (false);
+        query.Options_.UseBruteForce = false;
         var target_index = MakeIndexOrDie(
             "# 0:0, 0:5, 5:5, 5:0 # 0:10, 0:15, 5:15, 5:10");
         S2FurthestEdgeQuery.ShapeIndexTarget target = new(target_index)
@@ -202,8 +200,7 @@ public class S2FurthestEdgeQueryTests
         var antipodal_points = (
             from p in ParsePointsOrDie("2:2, 3:3, 1:11, 3:13")
             select -p).ToArray();
-        MutableS2ShapeIndex index = new();
-        index.Add(new S2PointVectorShape(antipodal_points));
+        MutableS2ShapeIndex index = [new S2PointVectorShape(antipodal_points)];
 
         S2FurthestEdgeQuery query = new(index);
         query.Options_.MinDistance = new(S1Angle.FromDegrees(179));
@@ -236,15 +233,15 @@ public class S2FurthestEdgeQueryTests
         };
 
         S2FurthestEdgeQuery empty_query = new(empty_polygon_index);
-        empty_query.Options_.IncludeInteriors = (true);
+        empty_query.Options_.IncludeInteriors = true;
         Assert.Equal(S1ChordAngle.Negative, empty_query.GetDistance(target));
 
         S2FurthestEdgeQuery point_query = new(point_index);
-        point_query.Options_.IncludeInteriors = (true);
+        point_query.Options_.IncludeInteriors = true;
         Assert.Equal(S1ChordAngle.Negative, point_query.GetDistance(target));
 
         S2FurthestEdgeQuery full_query = new(full_polygon_index);
-        full_query.Options_.IncludeInteriors = (true);
+        full_query.Options_.IncludeInteriors = true;
         Assert.Equal(S1ChordAngle.Negative, full_query.GetDistance(target));
     }
 
@@ -261,15 +258,15 @@ public class S2FurthestEdgeQueryTests
         };
 
         S2FurthestEdgeQuery empty_query = new(empty_polygon_index);
-        empty_query.Options_.IncludeInteriors = (true);
+        empty_query.Options_.IncludeInteriors = true;
         Assert.Equal(S1ChordAngle.Negative, empty_query.GetDistance(target));
 
         S2FurthestEdgeQuery point_query = new(point_index);
-        point_query.Options_.IncludeInteriors = (true);
+        point_query.Options_.IncludeInteriors = true;
         Assert.Equal(S1ChordAngle.Straight, point_query.GetDistance(target));
 
         S2FurthestEdgeQuery full_query = new(full_polygon_index);
-        full_query.Options_.IncludeInteriors = (true);
+        full_query.Options_.IncludeInteriors = true;
         Assert.Equal(S1ChordAngle.Straight, full_query.GetDistance(target));
     }
 
@@ -290,15 +287,15 @@ public class S2FurthestEdgeQueryTests
         };
 
         S2FurthestEdgeQuery empty_query = new(empty_polygon_index);
-        empty_query.Options_.IncludeInteriors = (true);
+        empty_query.Options_.IncludeInteriors = true;
         Assert.Equal(S1ChordAngle.Negative, empty_query.GetDistance(target));
 
         S2FurthestEdgeQuery point_query = new(point_index);
-        point_query.Options_.IncludeInteriors = (true);
+        point_query.Options_.IncludeInteriors = true;
         Assert.Equal(S1ChordAngle.Straight, point_query.GetDistance(target));
 
         S2FurthestEdgeQuery full_query = new(full_polygon_index);
-        full_query.Options_.IncludeInteriors = (true);
+        full_query.Options_.IncludeInteriors = true;
         Assert.Equal(S1ChordAngle.Straight, full_query.GetDistance(target));
     }
 
@@ -420,7 +417,7 @@ public class S2FurthestEdgeQueryTests
             max_error,
             _logger.WriteLine));
 
-        if (!expected.Any())
+        if (expected.Count==0)
         {
             return;
         }
@@ -449,13 +446,13 @@ public class S2FurthestEdgeQueryTests
                              int num_queries)
     {
         // Build a set of MutableS2ShapeIndexes containing the desired geometry.
-        List<S2Cap> index_caps = new();
-        List<MutableS2ShapeIndex> indexes = new();
+        List<S2Cap> index_caps = [];
+        List<MutableS2ShapeIndex> indexes = [];
         for (int i = 0; i < num_indexes; ++i)
         {
             S2Testing.Random.Reset(S2Testing.Random.RandomSeed + i);
             index_caps.Add(new S2Cap(S2Testing.RandomPoint(), kTestCapRadius));
-            indexes.Add(new MutableS2ShapeIndex());
+            indexes.Add([]);
             factory.AddEdges(index_caps.Last(), num_edges, indexes.Last());
         }
 
@@ -478,7 +475,7 @@ public class S2FurthestEdgeQueryTests
             // (This may return all edges if we also don't set a distance limit.)
             if (!S2Testing.Random.OneIn(5))
             {
-                query.Options_.MaxResults = (1 + S2Testing.Random.Uniform(10));
+                query.Options_.MaxResults = 1 + S2Testing.Random.Uniform(10);
             }
             // We set a distance limit 2/3 of the time.
             if (!S2Testing.Random.OneIn(3))
@@ -492,7 +489,7 @@ public class S2FurthestEdgeQueryTests
                 query.Options_.MaxError = new(S1Angle.FromRadians(
                     Math.Pow(1e-4, S2Testing.Random.RandDouble()) * query_radius.Radians));
             }
-            query.Options_.IncludeInteriors = (S2Testing.Random.OneIn(2));
+            query.Options_.IncludeInteriors = S2Testing.Random.OneIn(2);
             int target_type = S2Testing.Random.Uniform(4);
             if (target_type == 0)
             {

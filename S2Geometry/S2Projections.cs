@@ -91,22 +91,8 @@ public abstract class Projection
 // Note that (x, y) coordinates are backwards compared to the usual (latitude,
 // longitude) ordering, in order to match the usual convention for graphs in
 // which "x" is horizontal and "y" is vertical.
-public sealed class PlateCarreeProjection : Projection
+public sealed class PlateCarreeProjection(double x_scale = Math.PI) : Projection
 {
-    // Constructs the plate carree projection where the x coordinates
-    // (longitude) span [-x_scale, x_scale] and the y coordinates (latitude)
-    // span [-x_scale/2, x_scale/2].  For example if x_scale==180 then the x
-    // range is [-180, 180] and the y range is [-90, 90].
-    //
-    // By default coordinates are expressed in radians, i.e. the x range is
-    // [-Pi, Pi] and the y range is [-Pi/2, Pi/2].
-    public PlateCarreeProjection(double x_scale = Math.PI)
-    {
-        x_wrap_ = 2 * x_scale;
-        to_radians_ = Math.PI / x_scale;
-        from_radians_ = x_scale / Math.PI;
-    }
-
     public override R2Point Project(S2Point p)
     {
         return FromLatLng(new S2LatLng(p));
@@ -134,9 +120,9 @@ public sealed class PlateCarreeProjection : Projection
         return new R2Point(x_wrap_, 0);
     }
 
-    private readonly double x_wrap_;
-    private readonly double to_radians_;    // Multiplier to convert coordinates to radians.
-    private readonly double from_radians_;  // Multiplier to convert coordinates from radians.
+    private readonly double x_wrap_ = 2 * x_scale;
+    private readonly double to_radians_ = Math.PI / x_scale;    // Multiplier to convert coordinates to radians.
+    private readonly double from_radians_ = x_scale / Math.PI;  // Multiplier to convert coordinates from radians.
 };
 
 // MercatorProjection defines the spherical Mercator projection.  Google Maps
@@ -153,18 +139,8 @@ public sealed class PlateCarreeProjection : Projection
 // infinite "y" values.  (Note that this will cause problems if you tessellate
 // a Mercator edge where one endpoint is a pole.  If you need to do this, clip
 // the edge first so that the "y" coordinate is no more than about 5 * max_x.)
-public sealed class MercatorProjection : Projection
+public sealed class MercatorProjection(double max_x) : Projection
 {
-    // Constructs a Mercator projection where "x" corresponds to longitude in
-    // the range [-max_x, max_x] , and "y" corresponds to latitude and can be
-    // any real number.  The horizontal and vertical scales are equal locally.
-    public MercatorProjection(double max_x)
-    {
-        x_wrap_ = 2 * max_x;
-        to_radians_ = Math.PI / max_x;
-        from_radians_ = max_x / Math.PI;
-    }
-
     public override R2Point Project(S2Point p)
     {
         return FromLatLng(new S2LatLng(p));
@@ -198,8 +174,8 @@ public sealed class MercatorProjection : Projection
         return new R2Point(x_wrap_, 0);
     }
 
-    private readonly double x_wrap_;
-    private readonly double to_radians_;    // Multiplier to convert coordinates to radians.
-    private readonly double from_radians_;  // Multiplier to convert coordinates from radians.
+    private readonly double x_wrap_ = 2 * max_x;
+    private readonly double to_radians_ = Math.PI / max_x;    // Multiplier to convert coordinates to radians.
+    private readonly double from_radians_ = max_x / Math.PI;  // Multiplier to convert coordinates from radians.
 }
 

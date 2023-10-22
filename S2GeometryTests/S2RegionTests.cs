@@ -152,12 +152,12 @@ public class S2RegionTests
         S2CellUnion cu_empty = new();
         S2CellUnion cu_face1 = new(new List<S2CellId>{ S2CellId.FromFace(1)});
         // Cell ids taken from S2CellUnion EncodeDecode test.
-        S2CellUnion cu_latlngs = S2CellUnion.FromNormalized(new List<S2CellId>
-            {
+        S2CellUnion cu_latlngs = S2CellUnion.FromNormalized(
+            [
                 new S2CellId(0x33),
                 new S2CellId(0x8e3748fab),
                 new S2CellId(0x91230abcdef83427),
-            });
+            ]);
 
         var cu = TestEncodeDecode(kEncodedCellUnionEmpty, cu_empty);
         Assert.Equal(cu_empty, cu);
@@ -189,10 +189,10 @@ public class S2RegionTests
 
         var loop_cross = MakeLoopOrDie(kCross1);
 
-        var loop = TestEncodeDecode(kEncodedLoopEmpty, S2Loop.kEmpty);
-        Assert.True(S2Loop.kEmpty == loop);
-        loop = TestEncodeDecode(kEncodedLoopFull, S2Loop.kFull);
-        Assert.True(S2Loop.kFull == loop);
+        var loop = TestEncodeDecode(kEncodedLoopEmpty, S2Loop.KEmpty);
+        Assert.True(S2Loop.KEmpty == loop);
+        loop = TestEncodeDecode(kEncodedLoopFull, S2Loop.KFull);
+        Assert.True(S2Loop.KFull == loop);
         loop = TestEncodeDecode(kEncodedLoopCross, loop_cross);
         Assert.True(loop_cross == loop);
     }
@@ -232,12 +232,12 @@ public class S2RegionTests
     {
         var vertices = Array.Empty<S2Point>();
         var polyline_empty = new S2Polyline(vertices);
-        var polyline_semi = new S2Polyline(new[]
-            {
+        var polyline_semi = new S2Polyline(
+            [
                 S2LatLng.FromDegrees(0, 0),
                 S2LatLng.FromDegrees(0, 90),
                 S2LatLng.FromDegrees(0, 180),
-            });
+            ]);
         var polyline_3segments = MakePolylineOrDie("0:0, 0:10, 10:20, 20:30");
 
         var polyline = TestEncodeDecode(kEncodedPolylineEmpty, polyline_empty);

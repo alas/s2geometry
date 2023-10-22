@@ -42,7 +42,7 @@ public class S2ConvexHullQuery
 {
     public S2ConvexHullQuery()
     {
-        bound_ = S2LatLngRect.Empty; points_ = new List<S2Point>();
+        bound_ = S2LatLngRect.Empty; points_ = [];
     }
 
     // Add a point to the input geometry.
@@ -136,7 +136,7 @@ public class S2ConvexHullQuery
         S2Cap cap = GetCapBound();
         if (cap.Height() >= 1 - 10 * S2Pred.DBL_ERR)
         {
-            return S2Loop.kFull;
+            return S2Loop.KFull;
         }
         // This code implements Andrew's monotone chain algorithm, which is a simple
         // variant of the Graham scan.  Rather than sorting by x-coordinate, instead
@@ -157,9 +157,9 @@ public class S2ConvexHullQuery
         // Special cases for fewer than 3 points.
         if (points_.Count < 3)
         {
-            if (!points_.Any())
+            if (points_.Count==0)
             {
-                return S2Loop.kEmpty;
+                return S2Loop.KEmpty;
             }
             else if (points_.Count == 1)
             {
@@ -196,7 +196,7 @@ public class S2ConvexHullQuery
     // such that the edge chain makes only left (CCW) turns.
     private void GetMonotoneChain(List<S2Point> output)
     {
-        MyDebug.Assert(!output.Any());
+        MyDebug.Assert(output.Count==0);
         foreach (S2Point p in points_)
         {
             // Remove any points that would cause the chain to make a clockwise turn.
@@ -207,7 +207,7 @@ public class S2ConvexHullQuery
             output.Add(p);
         }
     }
-    private S2Loop GetSinglePointLoop(S2Point p)
+    private static S2Loop GetSinglePointLoop(S2Point p)
     {
         // Construct a 3-vertex polygon consisting of "p" and two nearby vertices.
         // Note that Contains(p) may be false for the resulting loop (see comments
@@ -223,7 +223,7 @@ public class S2ConvexHullQuery
         vertices[2] = (p + kOffset * d1).Normalize();
         return new S2Loop(vertices);
     }
-    private S2Loop GetSingleEdgeLoop(S2Point a, S2Point b)
+    private static S2Loop GetSingleEdgeLoop(S2Point a, S2Point b)
     {
         // If the points are exactly antipodal we return the full loop.
         //
@@ -235,7 +235,7 @@ public class S2ConvexHullQuery
         // degenerate loop.  (Note that the S2Loop antipodal vertex restriction is
         // historical and now could easily be removed, however it would still have
         // the problem that the edge direction is not easily predictable.)
-        if (a == -b) return S2Loop.kFull;
+        if (a == -b) return S2Loop.KFull;
 
         // Construct a loop consisting of the two vertices and their midpoint.  We
         // use S2::Interpolate() to ensure that the midpoint is very close to
@@ -251,10 +251,10 @@ public class S2ConvexHullQuery
     }
 
     // A comparator for sorting points in CCW around a central point "center".
-    private class OrderedCcwAround : IComparer<S2Point>
+    private class OrderedCcwAround(S2Point center) : IComparer<S2Point>
     {
-        private readonly S2Point center_;
-        public OrderedCcwAround(S2Point center) { center_ = center; }
+        private readonly S2Point center_ = center;
+
         public int Compare(S2Point a, S2Point b)
         {
             // If X and Y are equal, this will return false (as desired).

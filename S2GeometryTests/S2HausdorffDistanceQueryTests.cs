@@ -66,16 +66,13 @@ public class S2HausdorffDistanceQueryTests
         var b0 = ParsePointsOrDie("1:0, 1:1, 3:2");
 
         // Setup the shape indexes.
-        MutableS2ShapeIndex empty_index = new();
+        MutableS2ShapeIndex empty_index = [];
 
         // Shape index a consists or 2 polylines, a0 and a1.
-        MutableS2ShapeIndex a = new();
-        a.Add(new S2LaxPolylineShape(a0));
-        a.Add(new S2LaxPolylineShape(a1));
+        MutableS2ShapeIndex a = [new S2LaxPolylineShape(a0), new S2LaxPolylineShape(a1)];
 
         // Shape index b consists or 1 polylines: b0.
-        MutableS2ShapeIndex b = new();
-        b.Add(new S2LaxPolylineShape(b0));
+        MutableS2ShapeIndex b = [new S2LaxPolylineShape(b0)];
 
         // Calculate expected distances.
         // Directed a to b HD is achieved at the vertex 2 of a1 and vertex 1 of b0.
@@ -135,11 +132,9 @@ public class S2HausdorffDistanceQueryTests
         // Points for the polint vector shape.
         var b_points = ParsePointsOrDie("-1:2, -0.5:0.5, -0.5:3.5");
 
-        MutableS2ShapeIndex a = new();
-        a.Add(new S2LaxPolylineShape(a_points));
+        MutableS2ShapeIndex a = [new S2LaxPolylineShape(a_points)];
 
-        MutableS2ShapeIndex b = new();
-        b.Add(new S2PointVectorShape(b_points.ToArray()));
+        MutableS2ShapeIndex b = [new S2PointVectorShape([.. b_points])];
 
         Options options = new();
         S2HausdorffDistanceQuery query = new() { Options_ = options };
@@ -181,12 +176,10 @@ public class S2HausdorffDistanceQueryTests
     {
         // The first polygon is a triangle. It's first two vertices are inside the
         // quadrangle b (defined below), and the last vertex is outside of b.
-        MutableS2ShapeIndex a = new();
-        a.Add(MakeLaxPolygonOrDie("1:1, 1:2, 3.5:1.5"));
+        MutableS2ShapeIndex a = [MakeLaxPolygonOrDie("1:1, 1:2, 3.5:1.5")];
 
         // The other polygon is a quadraangle.
-        MutableS2ShapeIndex b = new();
-        b.Add(MakeLaxPolygonOrDie("0:0, 0:3, 3:3, 3:0"));
+        MutableS2ShapeIndex b = [MakeLaxPolygonOrDie("0:0, 0:3, 3:3, 3:0")];
 
         // The first query does not include the interiors.
         Options options = new()

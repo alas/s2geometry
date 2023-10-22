@@ -5,7 +5,7 @@ public class S2RegionUnionTests
     [Fact]
     internal void Test_S2RegionUnionTest_Basic()
     {
-        S2RegionUnion ru_empty = new(new List<IS2Region>());
+        S2RegionUnion ru_empty = new([]);
         Assert.Equal(0, ru_empty.Count());
         Assert.Equal(S2Cap.Empty, ru_empty.GetCapBound());
         Assert.Equal(S2LatLngRect.Empty, ru_empty.GetRectBound());
@@ -38,7 +38,7 @@ public class S2RegionUnionTests
         // Check that we can Add() another region.
         var three_points = (S2RegionUnion)two_points.CustomClone();
         Assert.False(three_points.Contains(S2LatLng.FromDegrees(10, 10).ToPoint()));
-        three_points.Add(new S2RegionUnion(new List<IS2Region> { new S2PointRegion(S2LatLng.FromDegrees(10, 10).ToPoint()) }));
+        three_points.Add(new S2RegionUnion([new S2PointRegion(S2LatLng.FromDegrees(10, 10).ToPoint())]));
         Assert.True(three_points.Contains(S2LatLng.FromDegrees(10, 10).ToPoint()));
 
         var coverer = new S2RegionCoverer();

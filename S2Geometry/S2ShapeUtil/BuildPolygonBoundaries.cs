@@ -38,7 +38,7 @@ public static partial class S2ShapeUtil
     public static void BuildPolygonBoundaries(List<List<S2Shape>> components, List<List<S2Shape>> polygons)
     {
         polygons.Clear();
-        if (!components.Any()) return;
+        if (components.Count==0) return;
 
         // Since the loop boundaries do not cross, a loop nesting hierarchy can be
         // defined by choosing any point on the sphere as the "point at infinity".
@@ -96,7 +96,7 @@ public static partial class S2ShapeUtil
         }
         // Assign each outer loop to the component whose depth is one less.
         // Components at depth 0 become a single face.
-        Dictionary<ValueTuple<S2Shape?>, List<S2Shape>> children = new(); // btree_map
+        Dictionary<ValueTuple<S2Shape?>, List<S2Shape>> children = []; // btree_map
         for (int i = 0; i < outer_loops.Count; ++i)
         {
             S2Shape? ancestor = null;
@@ -114,7 +114,7 @@ public static partial class S2ShapeUtil
                 MyDebug.Assert(ancestor is not null);
             }
             ValueTuple<S2Shape?> notNullAncestor = new(ancestor!);
-            if (!children.ContainsKey(notNullAncestor)) children.Add(notNullAncestor, new List<S2Shape>());
+            if (!children.ContainsKey(notNullAncestor)) children.Add(notNullAncestor, []);
             children[notNullAncestor].Add(outer_loops[i]);
         }
         // There is one face per loop that is not an outer loop, plus one for the

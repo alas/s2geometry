@@ -19,8 +19,7 @@ public record class S2CellUnion : IS2Region<S2CellUnion>, IEnumerable<S2CellId>,
     #region Fields, Constants
 
     // Constructs a cell union for the whole sphere.
-    public static S2CellUnion WholeSphere() => new(new int[] { 0, 1, 2, 3, 4, 5 }
-        .Select(t => S2CellId.FromFace(t)).ToList());
+    public static S2CellUnion WholeSphere() => new(sourceArray.Select(t => S2CellId.FromFace(t)).ToList());
 
     #endregion
 
@@ -58,11 +57,6 @@ public record class S2CellUnion : IS2Region<S2CellUnion>, IEnumerable<S2CellId>,
     public S2CellUnion(UInt64[] cell_ids, bool checkValidity = true)
         : this(cell_ids.Select(t => new S2CellId(t)).ToList(), checkValidity) { }
 
-    // Internal constructor that does not check "cell_ids" for validity.
-    enum VerbatimFlag { VERBATIM };
-    private S2CellUnion(List<S2CellId> cell_ids, VerbatimFlag verbatim)
-        : this(cell_ids, false) { }
-
     #endregion
 
     #region Factories
@@ -76,7 +70,7 @@ public record class S2CellUnion : IS2Region<S2CellUnion>, IEnumerable<S2CellId>,
     // REQUIRES: "cell_ids" satisfies the requirements of IsNormalized().
     public static S2CellUnion FromNormalized(List<S2CellId> cell_ids)
     {
-        S2CellUnion result = new(cell_ids, VerbatimFlag.VERBATIM);
+        S2CellUnion result = new(cell_ids, false);
         MyDebug.Assert(result.IsNormalized());
         return result;
     }
@@ -93,7 +87,7 @@ public record class S2CellUnion : IS2Region<S2CellUnion>, IEnumerable<S2CellId>,
     // REQUIRES: "cell_ids" satisfies the requirements of IsValid.
     public static S2CellUnion FromVerbatim(List<S2CellId> cell_ids)
     {
-        S2CellUnion result = new(cell_ids, VerbatimFlag.VERBATIM);
+        S2CellUnion result = new(cell_ids, false);
 #if s2debug
         MyDebug.Assert(result.IsValid());
 #endif
@@ -102,7 +96,7 @@ public record class S2CellUnion : IS2Region<S2CellUnion>, IEnumerable<S2CellId>,
 
 #if s2debug
     public static S2CellUnion FromVerbatimNoCheck(List<S2CellId> cell_ids) =>
-        new(cell_ids, VerbatimFlag.VERBATIM);
+        new(cell_ids, false);
 #endif
 
     // Constructs a cell union that corresponds to a continuous range of cell
@@ -174,7 +168,7 @@ public record class S2CellUnion : IS2Region<S2CellUnion>, IEnumerable<S2CellId>,
         // vector's rvalue reference constructor does not necessarily leave
         // moved-from value in empty state, so swap instead.
         var tmp = CellIds;
-        CellIds = new List<S2CellId>();
+        CellIds = [];
         return tmp;
     }
 
@@ -184,7 +178,7 @@ public record class S2CellUnion : IS2Region<S2CellUnion>, IEnumerable<S2CellId>,
     // Vector-like methods for accessing the individual cell ids.
     public int Size() => CellIds.Count;
 
-    public bool IsEmpty() => !CellIds.Any();
+    public bool IsEmpty() => CellIds.Count==0;
 
     // Returns true if the cell union is valid, meaning that the S2CellIds are
     // valid, non-overlapping, and sorted in increasing order.
@@ -352,14 +346,14 @@ public record class S2CellUnion : IS2Region<S2CellUnion>, IEnumerable<S2CellId>,
             {
                 // Advance "i" to the first cell that might overlap *j.
                 ii = CellIds.GetLowerBound(j, ii + 1, CellIds.Count, new EntirelyPrecedes_Comparer());
-                i = CellIds[ii];
+                //i = CellIds[ii];
                 continue;
             }
             if (EntirelyPrecedes(j, i))
             {
                 // Advance "j" to the first cell that might overlap *i.
                 jj = y.CellIds.GetLowerBound(i, jj + 1, y.CellIds.Count, new EntirelyPrecedes_Comparer());
-                j = CellIds[jj];
+                //j = CellIds[jj];
                 continue;
             }
             // Neither cell is to the left of the other, so they must intersect.
@@ -497,7 +491,7 @@ public record class S2CellUnion : IS2Region<S2CellUnion>, IEnumerable<S2CellId>,
         foreach (S2CellId id in this)
         {
             int inverted_level = S2.kMaxCellLevel - id.Level();
-            num_leaves += (1UL << (inverted_level << 1));
+            num_leaves += 1UL << (inverted_level << 1);
         }
         return num_leaves;
     }
@@ -702,11 +696,11 @@ public record class S2CellUnion : IS2Region<S2CellUnion>, IEnumerable<S2CellId>,
         // children all agree with "mask".
         UInt64 mask = d.LowestOnBit() << 1;
         mask = ~(mask + (mask << 1));
-        UInt64 id_masked = (d.Id & mask);
-        return ((a.Id & mask) == id_masked &&
+        UInt64 id_masked = d.Id & mask;
+        return (a.Id & mask) == id_masked &&
                 (b.Id & mask) == id_masked &&
                 (c.Id & mask) == id_masked &&
-                !d.IsFace());
+                !d.IsFace();
     }
 
     private static void GetDifferenceInternal(S2CellId cell, S2CellUnion y, List<S2CellId> cell_ids)
@@ -742,7 +736,7 @@ public record class S2CellUnion : IS2Region<S2CellUnion>, IEnumerable<S2CellId>,
     {
         // Compute the approximate centroid of the region.  This won't produce the
         // bounding cap of minimal area, but it should be close enough.
-        if (!CellIds.Any()) return S2Cap.Empty;
+        if (CellIds.Count==0) return S2Cap.Empty;
 
         var centroid = new S2Point(0, 0, 0);
         foreach (S2CellId id in this)
@@ -838,7 +832,7 @@ public record class S2CellUnion : IS2Region<S2CellUnion>, IEnumerable<S2CellId>,
             return (false, null);
         }
 
-        List<S2CellId> temp_cell_ids = new();
+        List<S2CellId> temp_cell_ids = [];
         for (var i = 0; i < num_cells; i++)
         {
             var (success, id) = S2CellId.Decode(decoder);
@@ -851,6 +845,7 @@ public record class S2CellUnion : IS2Region<S2CellUnion>, IEnumerable<S2CellId>,
     }
 
     public const int Union_decode_max_num_cells = 1000000; // The maximum number of cells allowed by S2CellUnion.Decode
+    private static readonly int[] sourceArray = [0, 1, 2, 3, 4, 5];
 
     #endregion
 
@@ -902,7 +897,7 @@ public record class S2CellUnion : IS2Region<S2CellUnion>, IEnumerable<S2CellId>,
         output.AppendFormat("Size:{0} S2CellIds:", CellIds.Count);
         for (int i = 0, limit = Math.Min(kMaxCount, CellIds.Count); i < limit; ++i)
         {
-            if (i > 0) output.Append(",");
+            if (i > 0) output.Append(',');
             output.Append(CellId(i).ToToken());
         }
         if (CellIds.Count > kMaxCount) output.Append(",...");

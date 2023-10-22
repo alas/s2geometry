@@ -3,15 +3,13 @@ namespace S2Geometry;
 using DegenerateBoundaries = LaxPolygonLayer.Options.DegenerateBoundaries;
 using EdgeLabelMap = Dictionary<S2Shape.Edge, LabelSet>;
 
-public class S2BuilderUtil_LaxPolygonLayerTests
+public class S2BuilderUtil_LaxPolygonLayerTests(ITestOutputHelper logger)
 {
-    private readonly ITestOutputHelper _logger;
+    private readonly ITestOutputHelper _logger = logger;
 
-    private static readonly DegenerateBoundaries[] kAllDegenerateBoundaries = new[] {
+    private static readonly DegenerateBoundaries[] kAllDegenerateBoundaries = [
         DegenerateBoundaries.DISCARD, DegenerateBoundaries.DISCARD_HOLES,
-        DegenerateBoundaries.DISCARD_SHELLS, DegenerateBoundaries.KEEP};
-
-    public S2BuilderUtil_LaxPolygonLayerTests(ITestOutputHelper logger) { _logger = logger; }
+        DegenerateBoundaries.DISCARD_SHELLS, DegenerateBoundaries.KEEP];
 
     [Fact]
     internal void Test_LaxPolygonLayer_Empty()
@@ -49,9 +47,11 @@ public class S2BuilderUtil_LaxPolygonLayerTests
         {
             S2Builder builder = new(new Options());
             S2LaxPolygonShape output = new();
-            LaxPolygonLayer.Options options = new();
-            options.EdgeType = (EdgeType.DIRECTED);
-            options.DegenerateBoundaries_ = (degenerate_boundaries);
+            LaxPolygonLayer.Options options = new()
+            {
+                EdgeType = EdgeType.DIRECTED,
+                DegenerateBoundaries_ = degenerate_boundaries
+            };
             builder.StartLayer(new LaxPolygonLayer(output, options));
             var polygon = MakeLaxPolygonOrDie("0:0, 0:1, 1:1");
             builder.AddShape(polygon);
@@ -190,8 +190,10 @@ public class S2BuilderUtil_LaxPolygonLayerTests
         // degeneracies are not lost.
         S2Builder builder = new(new Options());
         S2LaxPolygonShape output = new();
-        LaxPolygonLayer.Options options = new();
-        options.DegenerateBoundaries_ = (DegenerateBoundaries.KEEP);
+        LaxPolygonLayer.Options options = new()
+        {
+            DegenerateBoundaries_ = DegenerateBoundaries.KEEP
+        };
         builder.StartLayer(new LaxPolygonLayer(output, options));
         builder.AddShape(MakeLaxPolygonOrDie("0:0, 0:5, 5:5, 5:0"));
         builder.AddPoint(MakePointOrDie("0:0"));
@@ -225,7 +227,7 @@ public class S2BuilderUtil_LaxPolygonLayerTests
     internal void Test_IndexedLaxPolygonLayer_AddsShape()
     {
         S2Builder builder = new(new Options());
-        MutableS2ShapeIndex index = new();
+        MutableS2ShapeIndex index = [];
         builder.StartLayer(new IndexedLaxPolygonLayer(index));
         string polygon_str = "0:0, 0:10, 10:0";
         builder.AddPolygon(MakePolygonOrDie(polygon_str));
@@ -239,7 +241,7 @@ public class S2BuilderUtil_LaxPolygonLayerTests
     internal void Test_IndexedLaxPolygonLayer_IgnoresEmptyShape()
     {
         S2Builder builder = new(new Options());
-        MutableS2ShapeIndex index = new();
+        MutableS2ShapeIndex index = [];
         builder.StartLayer(new IndexedLaxPolygonLayer(index));
         Assert.True(builder.Build(out _));
         Assert.Equal(0, index.NumShapeIds());
@@ -251,9 +253,11 @@ public class S2BuilderUtil_LaxPolygonLayerTests
         _logger.WriteLine(degenerate_boundaries.ToString());
         S2Builder builder = new(new Options());
         S2LaxPolygonShape output = new();
-        LaxPolygonLayer.Options options = new();
-        options.EdgeType = (edge_type);
-        options.DegenerateBoundaries_ = (degenerate_boundaries);
+        LaxPolygonLayer.Options options = new()
+        {
+            EdgeType = edge_type,
+            DegenerateBoundaries_ = degenerate_boundaries
+        };
         builder.StartLayer(new LaxPolygonLayer(output, options));
 
         var polygon = MakeLaxPolygonOrDie(input_str);
@@ -331,15 +335,17 @@ TestLaxPolygon(input_str, expected_str, EdgeType.UNDIRECTED,
     {
         S2Builder builder = new(new Options());
         S2LaxPolygonShape output = new();
-        LabelSetIds label_set_ids = new();
+        LabelSetIds label_set_ids = [];
         IdSetLexicon label_set_lexicon = new();
-        LaxPolygonLayer.Options options = new();
-        options.EdgeType = (edge_type);
-        options.DegenerateBoundaries_ = (degenerate_boundaries);
+        LaxPolygonLayer.Options options = new()
+        {
+            EdgeType = edge_type,
+            DegenerateBoundaries_ = degenerate_boundaries
+        };
         builder.StartLayer(new LaxPolygonLayer(
             output, label_set_ids, label_set_lexicon, options));
 
-        EdgeLabelMap edge_label_map = new();
+        EdgeLabelMap edge_label_map = [];
         AddShapeWithLabels(MakeLaxPolygonOrDie(input_str), edge_type,
                            builder, edge_label_map);
         Assert.True(builder.Build(out _));

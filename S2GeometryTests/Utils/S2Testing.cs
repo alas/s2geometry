@@ -368,7 +368,7 @@ internal static class S2Testing
     internal static S2CellId GetRandomCellId(int level)
     {
         var face = Random.Uniform(S2CellId.kNumFaces);
-        var pos = Random.Rand64() & ((1UL + S2CellId.kPosBits) - 1);
+        var pos = Random.Rand64() & (1UL + S2CellId.kPosBits - 1);
         return S2CellId.FromFacePosLevel(face, pos, level);
     }
 
@@ -592,13 +592,13 @@ internal static class S2Testing
         internal void SetLevelForApproxMinEdges(int min_edges)
         {
             // Map values in the range [3*(4**n)/2, 3*(4**n)*2) to level n.
-            MinLevel = ((int)Math.Round(0.5 * Math.Log2(min_edges / 3)));
+            MinLevel = (int)Math.Round(0.5 * Math.Log2(min_edges / 3));
         }
 
         internal void SetLevelForApproxMaxEdges(int max_edges)
         {
             // Map values in the range [3*(4**n)/2, 3*(4**n)*2) to level n.
-            MaxLevel = ((int)Math.Round(0.5 * Math.Log2(max_edges / 3)));
+            MaxLevel = (int)Math.Round(0.5 * Math.Log2(max_edges / 3));
         }
 
         // Return a lower bound on ratio (Rmin / R), where "R" is the radius
@@ -687,9 +687,9 @@ internal static class S2Testing
         // slightly compared to its nominal radius.
         internal S2Loop MakeLoop(S2PointS2Point frame, S1Angle nominal_radius)
         {
-            List<R2Point> r2vertices = new();
+            List<R2Point> r2vertices = [];
             GetR2Vertices(r2vertices);
-            List<S2Point> vertices = new();
+            List<S2Point> vertices = [];
             var r = nominal_radius.Radians;
             foreach (var v in r2vertices)
             {

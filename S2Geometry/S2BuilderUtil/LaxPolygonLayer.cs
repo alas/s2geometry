@@ -38,17 +38,10 @@ using static S2Builder.GraphOptions;
 
 public class LaxPolygonLayer : Layer
 {
-    public class Options
+    public class Options(EdgeType edge_type)
     {
         // Constructor that uses the default options (listed below).
         public Options() : this(EdgeType.DIRECTED) { }
-
-        // Constructor that specifies the edge type.
-        public Options(EdgeType edge_type)
-        {
-            EdgeType = edge_type;
-            DegenerateBoundaries_ = DegenerateBoundaries.KEEP;
-        }
 
         // Indicates whether the input edges provided to S2Builder are directed or
         // undirected.  Directed edges should be used whenever possible (see
@@ -61,7 +54,7 @@ public class LaxPolygonLayer : Layer
         // clockwise.  Note that S2Builder.AddPolygon() does this automatically.
         //
         // DEFAULT: S2Builder.EdgeType.DIRECTED
-        public EdgeType EdgeType { get; set; }
+        public EdgeType EdgeType { get; set; } = edge_type;
 
         // Specifies whether degenerate boundaries should be discarded or kept.
         // (A degenerate boundary consists of either a sibling edge pair or an
@@ -85,7 +78,7 @@ public class LaxPolygonLayer : Layer
         {
             DISCARD, DISCARD_HOLES, DISCARD_SHELLS, KEEP
         }
-        public DegenerateBoundaries DegenerateBoundaries_ { get; set; }
+        public DegenerateBoundaries DegenerateBoundaries_ { get; set; } = DegenerateBoundaries.KEEP;
     }
 
     // Specifies that a polygon should be constructed using the given options.
@@ -127,7 +120,7 @@ public class LaxPolygonLayer : Layer
     }
     public override void Build(Graph g, out S2Error error)
     {
-        if (label_set_ids_ is not null) label_set_ids_.Clear();
+        label_set_ids_?.Clear();
         if (g.Options.EdgeType_ == EdgeType.DIRECTED)
         {
             BuildDirected(g, out error);
@@ -162,7 +155,7 @@ public class LaxPolygonLayer : Layer
     {
         if (label_set_ids_ is null) return;
 
-        List<Int32> labels = new();  // Temporary storage for labels.
+        List<Int32> labels = [];  // Temporary storage for labels.
         Graph.LabelFetcher fetcher = new(g, options_.EdgeType);
         foreach (var edge_loop in edge_loops)
         {
@@ -206,18 +199,18 @@ public class LaxPolygonLayer : Layer
             // degenerate loops of the given type exist, and if so we construct a new
             // graph with those edges removed (overwriting "g").
             bool discard_holes =
-                (degenerate_boundaries == Options.DegenerateBoundaries.DISCARD_HOLES);
+                degenerate_boundaries == Options.DegenerateBoundaries.DISCARD_HOLES;
             var degeneracies = PolygonDegeneracy.FindPolygonDegeneracies(g, out error);
             if (!error.IsOk()) return;
             if (degeneracies.Count == g.NumEdges)
             {
-                if (!degeneracies.Any())
+                if (degeneracies.Count==0)
                 {
                     MaybeAddFullLoop(g, loops, out error);
                 }
                 else if (degeneracies[0].IsHole)
                 {
-                    loops.Add(new List<S2Point>());  // Full loop.
+                    loops.Add([]);  // Full loop.
                 }
             }
             var edges_to_discard = new List<Int32>();
@@ -228,7 +221,7 @@ public class LaxPolygonLayer : Layer
                     edges_to_discard.Add((int)degeneracy.EdgeId);
                 }
             }
-            if (edges_to_discard.Any())
+            if (edges_to_discard.Count!=0)
             {
                 // Construct a new graph that discards the unwanted edges.
                 edges_to_discard.Sort();
@@ -281,7 +274,7 @@ public class LaxPolygonLayer : Layer
     {
         if (g.IsFullPolygon(out error))
         {
-            loops.Add(new List<S2Point>());  // Full loop.
+            loops.Add([]);  // Full loop.
         }
     }
 

@@ -45,6 +45,6 @@ internal class PointCloudShapeIndexFactory : IShapeIndexFactory
         {
             points.Add(S2Testing.SamplePoint(index_cap));
         }
-        index.Add(new S2PointVectorShape(points.ToArray()));
+        index.Add(new S2PointVectorShape([.. points]));
     }
 }

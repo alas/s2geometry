@@ -33,8 +33,11 @@ public class S2ClosestCellQueryBase<Distance> where Distance : IEquatable<Distan
     // rather than processing its contents immediately.
     private const int kMinRangesToEnqueue = 6;
 
-    private Options options_;
+    private Options Options_ { get; set; }
     private S2DistanceTarget<Distance> target_;
+
+    // Return a reference to the underlying S2CellIndex.
+    public S2CellIndex Index { get; }
 
     // True if max_error() must be subtracted from priority queue cell distances
     // in order to ensure that such distances are measured conservatively.  This
@@ -45,7 +48,7 @@ public class S2ClosestCellQueryBase<Distance> where Distance : IEquatable<Distan
     // For the optimized algorithm we precompute the top-level S2CellIds that
     // will be added to the priority queue.  There can be at most 6 of these
     // cells.  Essentially this is just a covering of the indexed cells.
-    private readonly List<S2CellId> index_covering_ = new();
+    private readonly List<S2CellId> index_covering_ = [];
 
     // The distance beyond which we can safely ignore further candidate cells.
     // (Candidates that are exactly at the limit are ignored; this is more
@@ -71,8 +74,8 @@ public class S2ClosestCellQueryBase<Distance> where Distance : IEquatable<Distan
     // TODO(ericv): Check whether it would be faster to use avoid_duplicates_
     // when result_set_ is used so that we could use a priority queue instead.
     private Result result_singleton_;
-    private readonly List<Result> result_vector_ = new();
-    private readonly SortedSet<Result> result_set_ = new(); // absl.btree_set<Result>
+    private readonly List<Result> result_vector_ = [];
+    private readonly SortedSet<Result> result_set_ = []; // absl.btree_set<Result>
 
     // When the results are stored in a btree_set (see above), usually
     // duplicates can be removed simply by inserting candidate cells in the
@@ -92,11 +95,11 @@ public class S2ClosestCellQueryBase<Distance> where Distance : IEquatable<Distan
     // TODO(ericv): Check whether it is faster to avoid duplicates by default
     // (even when Options.max_results() == 1), rather than just when we need to.
     private bool avoid_duplicates_;
-    private readonly Dictionary<int, int> tested_cells_ = new();
+    private readonly Dictionary<int, int> tested_cells_ = [];
 
     // Priority queue of unprocessed S2CellIds, sorted
     // in increasing order of distance from the target.
-    private readonly SortedSet<ReverseKeyData<Distance, S2CellId>> queue_ = new();
+    private readonly SortedSet<ReverseKeyData<Distance, S2CellId>> queue_ = [];
 
     // The Target class represents the geometry to which the distance is
     // measured.  For example, there can be subtypes for measuring the distance
@@ -110,24 +113,14 @@ public class S2ClosestCellQueryBase<Distance> where Distance : IEquatable<Distan
     // Used to iterate over the contents of an S2CellIndex range.  It is defined
     // here to take advantage of the fact that when multiple ranges are visited
     // in increasing order, duplicates can automatically be eliminated.
-    private ContentsEnumerator contents_it_;
+    private readonly ContentsEnumerator contents_it_;
 
     // Temporaries, defined here to avoid multiple allocations / initializations.
-    private readonly List<S2CellId> max_distance_covering_ = new();
-    private readonly List<S2CellId> intersection_with_max_distance_ = new();
-
-    // Default constructor; requires Init() to be called.
-    public S2ClosestCellQueryBase() { }
+    private readonly List<S2CellId> max_distance_covering_ = [];
+    private readonly List<S2CellId> intersection_with_max_distance_ = [];
 
     // Convenience constructor that calls Init().
     public S2ClosestCellQueryBase(S2CellIndex index)
-    {
-        Init(index);
-    }
-
-    // Initializes the query.
-    // REQUIRES: ReInit() must be called if "index" is modified.
-    public void Init(S2CellIndex index)
     {
         Index = index;
         contents_it_ = new ContentsEnumerator(index);
@@ -140,9 +133,6 @@ public class S2ClosestCellQueryBase<Distance> where Distance : IEquatable<Distan
     {
         index_covering_.Clear();
     }
-
-    // Return a reference to the underlying S2CellIndex.
-    public S2CellIndex Index { get; private set; }
 
     // Returns the closest (cell_id, label) pairs to the given target that
     // satisfy the given options.  This method may be called multiple times.
@@ -191,18 +181,17 @@ public class S2ClosestCellQueryBase<Distance> where Distance : IEquatable<Distan
         return result_singleton_;
     }
 
-    private Options Options_() { return options_; }
     private void FindClosestCellsInternal(S2DistanceTarget<Distance> target, Options options)
     {
         target_ = target;
-        options_ = options;
+        Options_ = options;
 
         tested_cells_.Clear();
         contents_it_.Reset();
         distance_limit_ = options.MaxDistance;
         result_singleton_ = new Result();
-        MyDebug.Assert(!result_vector_.Any());
-        MyDebug.Assert(!result_set_.Any());
+        MyDebug.Assert(result_vector_.Count==0);
+        MyDebug.Assert(result_set_.Count==0);
         MyDebug.Assert(target.MaxBruteForceIndexSize >= 0);
         if (Equals(distance_limit_, Distance.Zero)) return;
 
@@ -263,7 +252,7 @@ public class S2ClosestCellQueryBase<Distance> where Distance : IEquatable<Distan
     private void FindClosestCellsOptimized()
     {
         InitQueue();
-        while (queue_.Any())
+        while (queue_.Count!=0)
         {
             // We need to copy the top entry before removing it, and we need to remove
             // it before adding any new entries to the queue.
@@ -291,7 +280,7 @@ public class S2ClosestCellQueryBase<Distance> where Distance : IEquatable<Distan
     }
     private void InitQueue()
     {
-        MyDebug.Assert(!queue_.Any());
+        MyDebug.Assert(queue_.Count==0);
 
         // Optimization: rather than starting with the entire index, see if we can
         // limit the search region to a small disc.  Then we can find a covering for
@@ -299,7 +288,7 @@ public class S2ClosestCellQueryBase<Distance> where Distance : IEquatable<Distan
         // save a lot of work when the search region is small.
         S2Cap cap = target_.GetCapBound();
         if (cap.IsEmpty()) return;  // Empty target.
-        if (Options_().MaxResults == 1)
+        if (Options_.MaxResults == 1)
         {
             // If the user is searching for just the closest cell, we can compute an
             // upper bound on search radius by seeking to the center of the target's
@@ -341,7 +330,7 @@ public class S2ClosestCellQueryBase<Distance> where Distance : IEquatable<Distan
         // that contain each covering cell by seeking to covering_cell.RangeMin,
         // (3) replacing each covering cell by the largest such cell (if any), and
         // (4) normalizing the result.
-        if (!index_covering_.Any()) InitCovering();
+        if (index_covering_.Count==0) InitCovering();
         var initial_cells = index_covering_;
         if (distance_limit_ < Distance.Infinity)
         {
@@ -442,17 +431,17 @@ public class S2ClosestCellQueryBase<Distance> where Distance : IEquatable<Distan
         Distance distance = distance_limit_;
         if (!target_.UpdateMinDistance(cell, ref distance)) return;
 
-        var region = Options_().Region;
+        var region = Options_.Region;
         if (region is not null && !region.MayIntersect(cell)) return;
 
         var result = new Result(distance, cell_id, label);
-        if (Options_().MaxResults == 1)
+        if (Options_.MaxResults == 1)
         {
             // Optimization for the common case where only the closest cell is wanted.
             result_singleton_ = result;
-            distance_limit_ = result.Distance - Options_().MaxError;
+            distance_limit_ = result.Distance - Options_.MaxError;
         }
-        else if (Options_().MaxResults == Options.kMaxMaxResults)
+        else if (Options_.MaxResults == Options.kMaxMaxResults)
         {
             result_vector_.Add(result);  // Sort/unique at end.
         }
@@ -463,13 +452,13 @@ public class S2ClosestCellQueryBase<Distance> where Distance : IEquatable<Distan
             // edge might in fact be a duplicate.
             result_set_.Add(result);
             int size = result_set_.Count;
-            if (size >= Options_().MaxResults)
+            if (size >= Options_.MaxResults)
             {
-                if (size > Options_().MaxResults)
+                if (size > Options_.MaxResults)
                 {
                     result_set_.Remove(result_set_.Last());
                 }
-                distance_limit_ = result_set_.Last().Distance - Options_().MaxError;
+                distance_limit_ = result_set_.Last().Distance - Options_.MaxError;
             }
         }
     }
@@ -500,12 +489,12 @@ public class S2ClosestCellQueryBase<Distance> where Distance : IEquatable<Distan
             var distance = distance_limit_;
             // We check "region_" second because it may be relatively expensive.
             if (target_.UpdateMinDistance(cell, ref distance) &&
-                (Options_().Region is null || Options_().Region.MayIntersect(cell)))
+                (Options_.Region is null || Options_.Region.MayIntersect(cell)))
             {
                 if (use_conservative_cell_distance_)
                 {
                     // Ensure that "distance" is a lower bound on distance to the cell.
-                    distance -= Options_().MaxError;
+                    distance -= Options_.MaxError;
                 }
                 queue_.Add(new ReverseKeyData<Distance, S2CellId>(distance, id));
             }

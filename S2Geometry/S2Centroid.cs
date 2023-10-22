@@ -38,7 +38,7 @@ public static class S2Centroid
     // intuitive "center" (see example above).
     public static S2Point PlanarCentroid(S2Point a, S2Point b, S2Point c)
     {
-        return (1.0 / 3) * (a + b + c);
+        return 1.0 / 3 * (a + b + c);
     }
 
     // Returns the true centroid of the spherical triangle ABC multiplied by the

@@ -25,7 +25,7 @@ public class S2ShapeMeasuresTests
         // S2EdgeVectorShape is the only standard S2Shape that can have more than
         // one edge chain of dimension 1.
         var p = ParsePointsOrDie("0:0, 1:0, 2:0, 3:0");
-        S2EdgeVectorShape shape = new(new List<(S2Point, S2Point)> { (p[0], p[1]), (p[0], p[2]), (p[0], p[3]) });
+        S2EdgeVectorShape shape = new([(p[0], p[1]), (p[0], p[2]), (p[0], p[3])]);
         Assert.Equal(S1Angle.FromDegrees(6), S2.GetLength(shape));
     }
 

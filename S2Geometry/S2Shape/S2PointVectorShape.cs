@@ -6,33 +6,27 @@
 
 namespace S2Geometry;
 
-public class S2PointVectorShape : S2Shape, IInitEncoder<S2PointVectorShape>, IEquatable<S2PointVectorShape>
+public class S2PointVectorShape(S2Point[] points) : S2Shape, IInitEncoder<S2PointVectorShape>, IEquatable<S2PointVectorShape>
 {
     #region Fields, Constants
 
     public const TypeTag kTypeTag = TypeTag.S2PointVectorShape;
 
-    private S2Point[] points_;
+    private readonly S2Point[] Points = points;
 
     #endregion
 
     #region Constructors
 
     // Constructs an empty point vector.
-    public S2PointVectorShape() { }
-
-    // Constructs an S2PointVectorShape from a vector of points.
-    public S2PointVectorShape(S2Point[] points)
-    {
-        points_ = points;
-    }
+    public S2PointVectorShape() : this([]) { }
 
     #endregion
 
     #region S2PointVectorShape
 
-    public int NumPoints => points_.Length;
-    public S2Point Point(int i) => points_[i];
+    public int NumPoints => Points.Length;
+    public S2Point Point(int i) => Points[i];
 
     #endregion
 
@@ -54,7 +48,7 @@ public class S2PointVectorShape : S2Shape, IInitEncoder<S2PointVectorShape>, IEq
     // REQUIRES: "encoder" uses the default constructor, so that its buffer
     //           can be enlarged as necessary by calling Ensure(int).
     public override void Encode(Encoder encoder, CodingHint hint = CodingHint.COMPACT) =>
-        EncodedS2PointVector.EncodeS2PointVector(points_, hint, encoder);
+        EncodedS2PointVector.EncodeS2PointVector(Points, hint, encoder);
 
     #endregion
 
@@ -64,13 +58,13 @@ public class S2PointVectorShape : S2Shape, IInitEncoder<S2PointVectorShape>, IEq
     public sealed override int NumEdges() => NumPoints;
 
     // Returns a point represented as a degenerate edge.
-    public sealed override Edge GetEdge(int e) => new(points_[e], points_[e]);
+    public sealed override Edge GetEdge(int e) => new(Points[e], Points[e]);
     public sealed override int Dimension() => 0;
     public sealed override ReferencePoint GetReferencePoint() => ReferencePoint.FromContained(false);
     public sealed override int NumChains() => NumPoints;
-    public sealed override Chain GetChain(int i) => new Chain(i, 1);
+    public sealed override Chain GetChain(int i) => new(i, 1);
     public sealed override Edge ChainEdge(int i, int j)
-    { MyDebug.Assert(j == 0); return new Edge(points_[i], points_[i]); }
+    { MyDebug.Assert(j == 0); return new Edge(Points[i], Points[i]); }
     public sealed override ChainPosition GetChainPosition(int e) => new(e, 0);
 
     // Define as enum so we don't have to declare storage.
@@ -85,10 +79,10 @@ public class S2PointVectorShape : S2Shape, IInitEncoder<S2PointVectorShape>, IEq
     public override bool Equals(object? other) => other is S2PointVectorShape shape && Equals(shape);
 
     public bool Equals(S2PointVectorShape? other) =>
-        other is not null && other.Id == Id && Enumerable.SequenceEqual(other.points_, points_);
+        other is not null && other.Id == Id && Enumerable.SequenceEqual(other.Points, Points);
 
     public override int GetHashCode() =>
-        HashCode.Combine(Id.GetHashCode(), points_.GetHashCode());
+        HashCode.Combine(Id.GetHashCode(), Points.GetHashCode());
 
     #endregion
 }
@@ -98,18 +92,11 @@ public class S2PointVectorShape : S2Shape, IInitEncoder<S2PointVectorShape>, IEq
 // very fast initialization and no additional memory use beyond the encoded
 // data.  The encoded data is not owned by this class; typically it points
 // into a large contiguous buffer that contains other encoded data as well.
-public class EncodedS2PointVectorShape : S2Shape, IInitEncoder<EncodedS2PointVectorShape>
+public class EncodedS2PointVectorShape(EncodedS2PointVector points) : S2Shape, IInitEncoder<EncodedS2PointVectorShape>
 {
     #region Fields, Constants
 
-    public EncodedS2PointVector points_ { private get; init; }
-
-    #endregion
-
-    #region Constructor
-
-    // Constructs an uninitialized object; requires Init() to be called.
-    public EncodedS2PointVectorShape(EncodedS2PointVector points) => points_ = points;
+    public EncodedS2PointVector Points { private get; init; } = points;
 
     #endregion
 
@@ -135,15 +122,15 @@ public class EncodedS2PointVectorShape : S2Shape, IInitEncoder<EncodedS2PointVec
     //           can be enlarged as necessary by calling Ensure(int).
     public override void Encode(Encoder encoder, CodingHint hint = CodingHint.COMPACT)
     {
-        points_.Encode(encoder);
+        Points.Encode(encoder);
     }
 
     #endregion
 
     #region EncodedS2PointVectorShape
 
-    public int NumPoints => points_.Count();
-    public S2Point Point(int i) => points_[i];
+    public int NumPoints => Points.Count();
+    public S2Point Point(int i) => Points[i];
 
     #endregion
 
@@ -151,13 +138,13 @@ public class EncodedS2PointVectorShape : S2Shape, IInitEncoder<EncodedS2PointVec
 
     public sealed override int NumEdges() => NumPoints;
 
-    public sealed override Edge GetEdge(int e) => new(points_[e], points_[e]);
+    public sealed override Edge GetEdge(int e) => new(Points[e], Points[e]);
     public sealed override int Dimension() => 0;
     public sealed override ReferencePoint GetReferencePoint() => ReferencePoint.FromContained(false);
     public sealed override int NumChains() => NumPoints;
-    public sealed override Chain GetChain(int i) => new Chain(i, 1);
+    public sealed override Chain GetChain(int i) => new(i, 1);
     public sealed override Edge ChainEdge(int i, int j)
-    { MyDebug.Assert(j == 0); return new Edge(points_[i], points_[i]); }
+    { MyDebug.Assert(j == 0); return new Edge(Points[i], Points[i]); }
     public sealed override ChainPosition GetChainPosition(int e) => new(e, 0);
     public override TypeTag GetTypeTag() => S2PointVectorShape.kTypeTag;
 

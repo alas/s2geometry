@@ -4,7 +4,7 @@ public class Bitmap64
 {
     private const int kIntBits = 8 * sizeof(ulong);
 
-    private int kLogIntBits { get; } = (int)Log2(kIntBits, 0);
+    private int KLogIntBits { get; } = (int)Log2(kIntBits, 0);
 
     // A value of type `Word` with all bits set to one. If `Word` !=
     // `ArithmeticWord`, i.e. `Word` gets promoted, then this is a `Word` with all
@@ -18,7 +18,7 @@ public class Bitmap64
     private const ulong kAllOnesWord = ~0UL;
 
 
-    private ulong[] Bits;
+    private readonly ulong[] Bits;
 
     private int Length { get; }
 
@@ -102,7 +102,7 @@ public class Bitmap64
                     trueBitsCount++;
                 }
 
-                bucket = bucket >> 1;
+                bucket >>= 1;
                 bitIndex++;
             }
         }
@@ -161,7 +161,7 @@ public class Bitmap64
         if (bit_index >= limit) return false;
 
         // From now on limit != 0, since if it was we would have returned false.
-        int int_index = bit_index >> kLogIntBits;
+        int int_index = bit_index >> KLogIntBits;
         var one_word = words[int_index];
         if (complement) one_word = ~one_word;
 
@@ -172,19 +172,19 @@ public class Bitmap64
         if ((one_word & (ulong)(1 << first_bit_offset)) != 0) return true;
 
         // First word is special - we need to mask off leading bits
-        one_word &= (kAllOnesWord << first_bit_offset);
+        one_word &= kAllOnesWord << first_bit_offset;
 
         // Loop through all but the last word.  Note that 'limit' is one
         // past the last bit we want to check, and we don't want to read
         // past the end of "words".  E.g. if size_ == kIntBits only words[0] is
         // valid, so we want to avoid reading words[1] when limit == kIntBits.
-        int last_int_index = (limit - 1) >> kLogIntBits;
+        int last_int_index = (limit - 1) >> KLogIntBits;
         while (int_index<last_int_index)
         {
             if (one_word != 0)
             {
                 bit_index_inout =
-                    (int_index << kLogIntBits) + BitsUtils.FindLSBSetNonZero64(one_word);
+                    (int_index << KLogIntBits) + BitsUtils.FindLSBSetNonZero64(one_word);
                 return true;
             }
             one_word = words[++int_index];
@@ -198,7 +198,7 @@ public class Bitmap64
         if (one_word != 0)
         {
             bit_index_inout =
-                (int_index << kLogIntBits) + BitsUtils.FindLSBSetNonZero64(one_word);
+                (int_index << KLogIntBits) + BitsUtils.FindLSBSetNonZero64(one_word);
             return true;
         }
         return false;

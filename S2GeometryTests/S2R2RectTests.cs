@@ -3,11 +3,9 @@
 
 namespace S2Geometry;
 
-public class S2R2RectTests
+public class S2R2RectTests(ITestOutputHelper testOutputHelper)
 {
-    private readonly ITestOutputHelper _logger;
-
-    public S2R2RectTests(ITestOutputHelper testOutputHelper) => _logger = testOutputHelper;
+    private readonly ITestOutputHelper _logger = testOutputHelper;
 
     [Fact]
     internal void Test_S2R2Rect_EmptyRectangles()

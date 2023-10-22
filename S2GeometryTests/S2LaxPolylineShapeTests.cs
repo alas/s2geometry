@@ -18,7 +18,7 @@ public class S2LaxPolylineShapeTests
     [Fact]
     internal void Test_S2LaxPolylineShape_OneVertex()
     {
-        S2Point[] vertices = { new S2Point(1, 0, 0) };
+        S2Point[] vertices = [new S2Point(1, 0, 0)];
         var shape = new S2LaxPolylineShape(vertices);
         Assert.Equal(0, shape.NumEdges());
         Assert.Equal(0, shape.NumChains());

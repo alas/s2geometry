@@ -63,7 +63,7 @@ public class S2ClosestEdgeQueryBase<Distance> where Distance : IEquatable<Distan
     //
     // The covering needs to be stored in a vector so that we can use
     // S2CellUnion.GetIntersection().
-    private readonly List<S2CellId> index_covering_ = new();
+    private readonly List<S2CellId> index_covering_ = [];
     private readonly Array6<S2ShapeIndexCell?> index_cells_ = new(() => new S2ShapeIndexCell());
 
     // The decision about whether to use the brute force algorithm is based on
@@ -98,8 +98,8 @@ public class S2ClosestEdgeQueryBase<Distance> where Distance : IEquatable<Distan
     // TODO(ericv): Check whether it would be faster to use avoid_duplicates_
     // when result_set_ is used so that we could use a priority queue instead.
     private Result result_singleton_;
-    private readonly List<Result> result_vector_ = new();
-    private readonly SortedSet<Result> result_set_ = new(); // absl.btree_set
+    private readonly List<Result> result_vector_ = [];
+    private readonly SortedSet<Result> result_set_ = []; // absl.btree_set
 
     // When the result edges are stored in a btree_set (see above), usually
     // duplicates can be removed simply by inserting candidate edges in the
@@ -119,14 +119,14 @@ public class S2ClosestEdgeQueryBase<Distance> where Distance : IEquatable<Distan
     // TODO(ericv): Check whether it is faster to avoid duplicates by default
     // (even when Options.max_results() == 1), rather than just when we need to.
     private bool avoid_duplicates_;
-    private readonly Dictionary<int, int> tested_edges_ = new(); // gtl.dense_hash_set
+    private readonly Dictionary<int, int> tested_edges_ = []; // gtl.dense_hash_set
 
-    private readonly SortedSet<QueueEntry> queue_ = new();
+    private readonly SortedSet<QueueEntry> queue_ = [];
 
     // Temporaries, defined here to avoid multiple allocations / initializations.
 
-    private readonly List<S2CellId> max_distance_covering_ = new();
-    private readonly List<S2CellId> initial_cells_ = new();
+    private readonly List<S2CellId> max_distance_covering_ = [];
+    private readonly List<S2CellId> initial_cells_ = [];
 
     #region Constructors
 
@@ -216,8 +216,8 @@ public class S2ClosestEdgeQueryBase<Distance> where Distance : IEquatable<Distan
         tested_edges_.Clear();
         distance_limit_ = options.MaxDistance;
         result_singleton_ = new Result();
-        MyDebug.Assert(!result_vector_.Any());
-        MyDebug.Assert(!result_set_.Any());
+        MyDebug.Assert(result_vector_.Count==0);
+        MyDebug.Assert(result_set_.Count==0);
         MyDebug.Assert(target.MaxBruteForceIndexSize >= 0);
         if (Equals(distance_limit_, Distance.Zero)) return;
 
@@ -293,7 +293,7 @@ public class S2ClosestEdgeQueryBase<Distance> where Distance : IEquatable<Distan
         {
             // If the target takes advantage of max_error() then we need to avoid
             // duplicate edges explicitly.  (Otherwise it happens automatically.)
-            avoid_duplicates_ = (target_uses_max_error && options.MaxResults > 1);
+            avoid_duplicates_ = target_uses_max_error && options.MaxResults > 1;
             FindClosestEdgesOptimized();
         }
     }
@@ -316,7 +316,7 @@ public class S2ClosestEdgeQueryBase<Distance> where Distance : IEquatable<Distan
         InitQueue();
         // Repeatedly find the closest S2Cell to "target" and either split it into
         // its four children or process all of its edges.
-        while (queue_.Any())
+        while (queue_.Count!=0)
         {
             // We need to copy the top entry before removing it, and we need to
             // remove it before adding any new entries to the queue.
@@ -340,7 +340,7 @@ public class S2ClosestEdgeQueryBase<Distance> where Distance : IEquatable<Distan
             // child back to the queue, we first check whether it is empty.  We do
             // this in two seek operations rather than four by seeking to the key
             // between children 0 and 1 and to the key between children 2 and 3.
-            S2CellId id = entry.Id;
+            S2CellId id = entry.Id!.Value;
             iter_.Seek(id.Child(1).RangeMin());
             if (!iter_.Done() && iter_.Id <= id.Child(1).RangeMax())
             {
@@ -364,8 +364,8 @@ public class S2ClosestEdgeQueryBase<Distance> where Distance : IEquatable<Distan
 
     private void InitQueue()
     {
-        MyDebug.Assert(!queue_.Any());
-        if (!index_covering_.Any())
+        MyDebug.Assert(queue_.Count==0);
+        if (index_covering_.Count==0)
         {
             // We delay iterator initialization until now to make queries on very
             // small indexes a bit faster (i.e., where brute force is used).
@@ -391,7 +391,7 @@ public class S2ClosestEdgeQueryBase<Distance> where Distance : IEquatable<Distan
             // Skip the rest of the algorithm if we found an intersecting edge.
             if (Equals(distance_limit_, Distance.Zero)) return;
         }
-        if (!index_covering_.Any()) InitCovering();
+        if (index_covering_.Count==0) InitCovering();
         if (Equals(distance_limit_, Distance.Infinity))
         {
             // Start with the precomputed index covering.
@@ -580,7 +580,7 @@ public class S2ClosestEdgeQueryBase<Distance> where Distance : IEquatable<Distan
             var shape = Index.Shape(clipped.ShapeId);
             for (int j = 0; j < clipped.NumEdges; ++j)
             {
-                MaybeAddResult(shape, clipped.Edges[j]);
+                MaybeAddResult(shape!, clipped.Edges[j]);
             }
         }
     }
@@ -727,12 +727,12 @@ public class S2ClosestEdgeQueryBase<Distance> where Distance : IEquatable<Distan
     // in increasing order of distance from the target.
     private readonly record struct QueueEntry(
                     Distance Distance,
-                    S2CellId Id,
+                    S2CellId? Id,
                     // If "id" belongs to the index, this field stores the corresponding
                     // S2ShapeIndexCell.  Otherwise "id" is a proper ancestor of one or more
                     // S2ShapeIndexCells and this field stores null.  The purpose of this
                     // field is to avoid an extra Seek() when the queue entry is processed.
-                    S2ShapeIndexCell IndexCell) : IComparable<QueueEntry>
+                    S2ShapeIndexCell? IndexCell) : IComparable<QueueEntry>
     {
         #region IEquatable
 

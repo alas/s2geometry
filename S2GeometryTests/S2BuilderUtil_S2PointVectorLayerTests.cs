@@ -5,9 +5,9 @@ public class S2BuilderUtil_S2PointVectorLayerTests
     [Fact]
     internal void Test_S2PointVectorLayer_MergeDuplicates() {
         S2Builder builder=new(new Options());
-        List<S2Point> output=new();
+        List<S2Point> output=[];
         IdSetLexicon label_set_lexicon = new();
-        LabelSet label_set_ids = new();
+        LabelSet label_set_ids = [];
         builder.StartLayer(new S2PointVectorLayer(
             output, label_set_ids, label_set_lexicon,
             new S2PointVectorLayer.Options(
@@ -25,7 +25,7 @@ public class S2BuilderUtil_S2PointVectorLayerTests
         AddPoint(MakePointOrDie("0:6"), builder);
         Assert.True(builder.Build(out _));
 
-        Int32[][] expected_labels = { new[]{ 1, 2 }, new[] { 1 }, new[] { 2 }, new[] { 2 }, Array.Empty<Int32>() };
+        Int32[][] expected_labels = [[1, 2], [1], [2], [2], []];
         string expected_points = "0:1, 0:2, 0:4, 0:5, 0:6";
 
         VerifyS2PointVectorLayerResults(label_set_ids, label_set_lexicon, output,
@@ -35,9 +35,9 @@ public class S2BuilderUtil_S2PointVectorLayerTests
     [Fact]
     internal void Test_S2PointVectorLayer_KeepDuplicates() {
         S2Builder builder = new(new Options());
-        List<S2Point> output = new();
+        List<S2Point> output = [];
         IdSetLexicon label_set_lexicon=new();
-        LabelSet label_set_ids = new();
+        LabelSet label_set_ids = [];
         builder.StartLayer(new S2PointVectorLayer(
             output, label_set_ids, label_set_lexicon,
             new S2PointVectorLayer.Options(
@@ -55,7 +55,7 @@ public class S2BuilderUtil_S2PointVectorLayerTests
         AddPoint(MakePointOrDie("0:6"), builder);
         Assert.True(builder.Build(out _));
 
-        Int32[][] expected_labels = { new[]{ 1 }, new[] { 2 }, new[] { 1 }, new[] { 2 }, new[] { 2 }, Array.Empty<int>(), Array.Empty<int>() };
+        Int32[][] expected_labels = [[1], [2], [1], [2], [2], [], []];
         string expected_points = "0:1, 0:1, 0:2, 0:4, 0:5, 0:5, 0:6";
 
         VerifyS2PointVectorLayerResults(label_set_ids, label_set_lexicon, output,
@@ -65,7 +65,7 @@ public class S2BuilderUtil_S2PointVectorLayerTests
     [Fact]
     internal void Test_S2PointVectorLayer_Error() {
         S2Builder builder=new(new Options());
-        List<S2Point> output=new();
+        List<S2Point> output=[];
         builder.StartLayer(new S2PointVectorLayer(
             output, new S2PointVectorLayer.Options(
                          GraphOptions.DuplicateEdges.KEEP)));
@@ -85,7 +85,7 @@ public class S2BuilderUtil_S2PointVectorLayerTests
     [Fact]
     internal void Test_IndexedS2PointVectorLayer_AddsShapes() {
         S2Builder builder=new(new Options());
-        MutableS2ShapeIndex index=new();
+        MutableS2ShapeIndex index=[];
         builder.StartLayer(new IndexedS2PointVectorLayer(index));
         string point0_str = "0:0";
         string point1_str = "2:2";
@@ -102,7 +102,7 @@ public class S2BuilderUtil_S2PointVectorLayerTests
     [Fact]
     internal void Test_IndexedS2PointVectorLayer_AddsEmptyShape() {
         S2Builder builder=new(new Options());
-        MutableS2ShapeIndex index=new();
+        MutableS2ShapeIndex index=[];
         builder.StartLayer(new IndexedS2PointVectorLayer(index));
         Assert.True(builder.Build(out _));
         Assert.Equal(0, index.NumShapeIds());

@@ -7,15 +7,17 @@ public class S2ClosestPointQueryBaseTests
     [Fact]
     internal void Test_S2ClosestPointQueryBase_MaxDistance()
     {
-        S2PointIndex<int> index = new();
+        S2PointIndex<int> index = [];
         var points = ParsePointsOrDie("0:0, 1:0, 2:0, 3:0");
         for (int i = 0; i < points.Count; ++i)
         {
             index.Add(points[i], i);
         }
         FurthestPointQuery<int> query = new(index);
-        FurthestPointQuery<int>.Options options = new();
-        options.MaxResults = 1;
+        FurthestPointQuery<int>.Options options = new()
+        {
+            MaxResults = 1
+        };
         FurthestPointTarget target = new(MakePointOrDie("4:0"));
         var results = query.FindClosestPoints(target, options);
         Assert.Single(results);

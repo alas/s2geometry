@@ -497,7 +497,7 @@ public readonly record struct S2CellId(UInt64 Id) : IComparable<S2CellId>, IDeco
         }
         // If steps is negative, then shifting it left has undefined behavior.
         // Cast to UInt64 for a 2's complement answer.
-        return new S2CellId(Id + ((UInt64)(steps) << step_shift));
+        return new S2CellId(Id + ((UInt64)steps << step_shift));
     }
 
     // Returns the number of steps that this cell is from Begin(Level). The
@@ -559,7 +559,7 @@ public readonly record struct S2CellId(UInt64 Id) : IComparable<S2CellId>, IDeco
                 if (steps > max_steps) steps -= step_wrap;
             }
         }
-        return new S2CellId(Id + ((UInt64)(steps) << step_shift));
+        return new S2CellId(Id + ((UInt64)steps << step_shift));
     }
 
     // Return the largest cell with the same RangeMin and such that
@@ -783,11 +783,11 @@ public readonly record struct S2CellId(UInt64 Id) : IComparable<S2CellId>, IDeco
             bool same_face;
             if (k < 0)
             {
-                same_face = (j + k >= 0);
+                same_face = j + k >= 0;
             }
             else if (k >= size)
             {
-                same_face = (j + k < kMaxSize);
+                same_face = j + k < kMaxSize;
             }
             else
             {
@@ -846,7 +846,7 @@ public readonly record struct S2CellId(UInt64 Id) : IComparable<S2CellId>, IDeco
             bits += ((j2 >> (k * kLookupBits)) & mask) << 2;
             bits = (ulong)LookupPos[bits];
             n |= (bits >> 2) << (k * 2 * kLookupBits);
-            bits &= (S2.kSwapMask | S2.kInvertMask);
+            bits &= S2.kSwapMask | S2.kInvertMask;
         }
 
         return new S2CellId(n * 2 + 1);
@@ -885,7 +885,7 @@ public readonly record struct S2CellId(UInt64 Id) : IComparable<S2CellId>, IDeco
             bits = LookupIj[bits];
             i += (bits >> (kLookupBits + 2)) << (k * kLookupBits);
             j += ((bits >> 2) & ((1 << kLookupBits) - 1)) << (k * kLookupBits);
-            bits &= (S2.kSwapMask | S2.kInvertMask);
+            bits &= S2.kSwapMask | S2.kInvertMask;
         }
 
         pi = i;

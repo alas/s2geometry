@@ -162,12 +162,12 @@ public class S2EdgeTessellator
     public S2EdgeTessellator(Projection projection, S1Angle tolerance)
     {
         proj_ = projection;
-        if (tolerance < kMinTolerance())
+        if (tolerance < KMinTolerance())
             throw new ArgumentException("Tolerance too small");
 
         // Rather than scaling the error estimate as described above, instead we scale
         // the tolerance.  See algorithm description at the top of this file.
-        scaled_tolerance_ = new S1ChordAngle(kScaleFactor * S1Angle.Max(tolerance, kMinTolerance()));
+        scaled_tolerance_ = new S1ChordAngle(kScaleFactor * S1Angle.Max(tolerance, KMinTolerance()));
     }
 
     // Converts the spherical geodesic edge AB to a chain of planar edges in the
@@ -186,7 +186,7 @@ public class S2EdgeTessellator
     public void AppendProjected(S2Point a, S2Point b, List<R2Point> vertices)
     {
         var pa = proj_.Project(a);
-        if (!vertices.Any())
+        if (vertices.Count==0)
         {
             vertices.Add(pa);
         }
@@ -216,7 +216,7 @@ public class S2EdgeTessellator
     {
         var pointA = proj_.Unproject(a);
         var pointB = proj_.Unproject(b);
-        if (!vertices.Any())
+        if (vertices.Count==0)
         {
             vertices.Add(pointA);
         }
@@ -234,7 +234,7 @@ public class S2EdgeTessellator
 
     // Returns the minimum supported tolerance (which corresponds to a distance
     // less than one micrometer on the Earth's surface).
-    public static S1Angle kMinTolerance()
+    public static S1Angle KMinTolerance()
     {
         // This distance is less than 1 micrometer on the Earth's surface, but is
         // still much larger than the expected projection and interpolation errors.

@@ -5,8 +5,8 @@ using PointData = TreeNode<int>;
 
 public class S2PointIndexTests
 {
-    private readonly Index index_ = new();
-    private readonly List<PointData> contents_ = new();
+    private readonly Index index_ = [];
+    private readonly List<PointData> contents_ = [];
 
     [Fact]
     internal void Test_S2PointIndexTest_NoPoints() => Verify();
@@ -90,7 +90,7 @@ public class S2PointIndexTests
             Assert.True(pos != -1);
             remaining.RemoveAt(pos);
         }
-        Assert.False(remaining.Any());
+        Assert.False(remaining.Count!=0);
     }
 
     private void VerifyEnumeratorMethods()

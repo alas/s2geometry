@@ -109,12 +109,12 @@ public class EncodedS2CellIdVectorTests
     [Fact]
     internal void Test_EncodedS2CellIdVector_MaxShiftRange()
     {
-        byte[] bytes = {
+        byte[] bytes = [
             (31 << 3)  // 31 -> add 29 to bytes[1].
             + 1,       // Number of encoded cell IDs.
             27,        // 27+29 is the maximum supported shift.
             1, 0       // Encoded cell ID. Not important.
-        };
+        ];
         Decoder decoder = new(bytes, 0, bytes.Length);
         var (success, _) = EncodedS2CellIdVector.Init(decoder);
         Assert.True(success);
@@ -123,12 +123,12 @@ public class EncodedS2CellIdVectorTests
     [Fact]
     internal void Test_EncodedS2CellIdVector_ShiftOutOfRange()
     {
-        byte[] bytes = {
+        byte[] bytes = [
             (31 << 3)  // 31 -> add 29 to bytes[1].
             + 1,       // Number of encoded cell IDs.
             28,        // 28+29 is greater than the maximum supported shift of 56.
             1, 0       // Encoded cell ID. Not important.
-        };
+        ];
         Decoder decoder = new(bytes, 0, bytes.Length);
         var (success, _) = EncodedS2CellIdVector.Init(decoder);
         Assert.False(success);
@@ -137,7 +137,7 @@ public class EncodedS2CellIdVectorTests
     [Fact]
     internal void Test_EncodedS2CellIdVector_SixFaceCells()
     {
-        List<S2CellId> ids = new();
+        List<S2CellId> ids = [];
         for (int face = 0; face < 6; ++face)
         {
             ids.Add(S2CellId.FromFace(face));
@@ -148,7 +148,7 @@ public class EncodedS2CellIdVectorTests
     [Fact]
     internal void Test_EncodedS2CellIdVector_FourLevel10Children()
     {
-        List<S2CellId> ids = new();
+        List<S2CellId> ids = [];
         var parent = MakeCellIdOrDie("3/012301230");
         for (var id = parent.ChildBegin();
              id != parent.ChildEnd(); id = id.Next())
@@ -164,10 +164,12 @@ public class EncodedS2CellIdVectorTests
         S2Testing.Fractal fractal = new();
         fractal.SetLevelForApproxMaxEdges(3 * 1024);
         S2Point center = MakePointOrDie("47.677:-122.206");
-        MutableS2ShapeIndex index = new();
-        index.Add(new S2Loop.Shape(
-            fractal.MakeLoop(S2.GetFrame(center), S1Angle.FromDegrees(1))));
-        List<S2CellId> ids = new();
+        MutableS2ShapeIndex index =
+        [
+            new S2Loop.Shape(
+                fractal.MakeLoop(S2.GetFrame(center), S1Angle.FromDegrees(1))),
+        ];
+        List<S2CellId> ids = [];
         for (MutableS2ShapeIndex.Enumerator it = new(index, S2ShapeIndex.InitialPosition.BEGIN);
             !it.Done(); it.MoveNext())
         {
@@ -180,8 +182,8 @@ public class EncodedS2CellIdVectorTests
     [Fact]
     internal void Test_EncodedS2CellIdVector_CoveringCells()
     {
-        List<UInt64> ids = new()
-        {
+        List<UInt64> ids =
+        [
             0x414a617f00000000, 0x414a61c000000000, 0x414a624000000000,
             0x414a63c000000000, 0x414a647000000000, 0x414a64c000000000,
             0x414a653000000000, 0x414a704000000000, 0x414a70c000000000,
@@ -215,7 +217,7 @@ public class EncodedS2CellIdVectorTests
             0x46ca9ac000000000, 0x46ca9bd500000000, 0x46ca9e4000000000,
             0x46ca9ec000000000, 0x46caf34000000000, 0x46caf4c000000000,
             0x46caf54000000000
-        };
+        ];
         Assert.Equal(97, ids.Count);
         TestEncodedS2CellIdVector(ids, 488);
     }
@@ -228,7 +230,7 @@ public class EncodedS2CellIdVectorTests
         var last = S2CellId.End(S2.kMaxCellLevel).Prev();
         Encoder encoder = new();
         var cell_ids = MakeEncodedS2CellIdVector(
-            new() { first, last }, encoder);
+            [first, last], encoder);
         Assert.Equal(0, cell_ids.LowerBound(S2CellId.None));
         Assert.Equal(0, cell_ids.LowerBound(first));
         Assert.Equal(1, cell_ids.LowerBound(first.Next()));
@@ -263,7 +265,7 @@ public class EncodedS2CellIdVectorTests
     // Like the above, but accepts a UInt64[] rather than a S2CellId[].
     private static void TestEncodedS2CellIdVector(List<UInt64> raw_expected, int expected_bytes)
     {
-        List<S2CellId> expected = new();
+        List<S2CellId> expected = [];
         foreach (UInt64 raw_id in raw_expected)
         {
             expected.Add(new(raw_id));

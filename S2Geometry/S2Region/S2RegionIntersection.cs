@@ -7,29 +7,23 @@ public sealed record class S2RegionIntersection : IS2Region<S2RegionIntersection
 {
     #region Fields, Constants
 
-    private IS2Region[] Regions;
+    private readonly IS2Region[] Regions;
 
     #endregion
 
     #region Constructors
 
-    // Creates an empty intersection that should be initialized by calling Init().
-    // Note: an intersection of no regions covers the entire sphere.
-    public S2RegionIntersection() { }
-
     // Create a region representing the intersection of the given regions.
-    public S2RegionIntersection(IS2Region[] regions) => Init(regions);
+    // Note: an intersection of no regions covers the entire sphere.
+    public S2RegionIntersection(IS2Region[] regions)
+    {
+        MyDebug.Assert(Regions.Length==0);
+        Regions = regions;
+    }
 
     #endregion
 
     #region S2RegionIntersection
-
-    // Initialize region by taking ownership of the given regions.
-    public void Init(IS2Region[] regions)
-    {
-        MyDebug.Assert(!Regions.Any());
-        Regions = regions;
-    }
 
     // Releases ownership of the regions of this intersection and returns them,
     // leaving this region empty.
@@ -96,7 +90,7 @@ public sealed record class S2RegionIntersection : IS2Region<S2RegionIntersection
 
     #region ICustomCloneable
 
-    public object CustomClone() => new S2RegionIntersection { Regions = Regions.DeepCustomClone() };
+    public object CustomClone() => new S2RegionIntersection(Regions.DeepCustomClone());
 
     #endregion
 

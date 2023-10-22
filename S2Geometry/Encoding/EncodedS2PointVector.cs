@@ -5,7 +5,7 @@
 // that contains other encoded data as well.
 //
 // This is one of several helper classes that allow complex data structures to
-// be initialized from an encoded format inant time and then decoded on
+// be initialized from an encoded format in constant time and then decoded on
 // demand.  This can be a big performance advantage when only a small part of
 // the data structure is actually used.
 
@@ -74,18 +74,12 @@ public class EncodedS2PointVector
     public int Count() => (int)size_;
 
     // Returns the element at the given index.
-    public S2Point this[int i]
+    public S2Point this[int i] => Format_ switch
     {
-        get
-        {
-            return Format_ switch
-            {
-                Format.UNCOMPRESSED => points[i],
-                Format.CELL_IDS => DecodeCellIdsFormat(i),
-                _ => throw new ApplicationException("Unrecognized format")
-            };
-        }
-    }
+        Format.UNCOMPRESSED => points![i],
+        Format.CELL_IDS => DecodeCellIdsFormat(i),
+        _ => throw new ApplicationException("Unrecognized format")
+    };
 
     // Decodes and returns the entire original vector.
     public S2Point[] Decode()
@@ -104,7 +98,7 @@ public class EncodedS2PointVector
         switch (Format_)
         {
             case Format.UNCOMPRESSED:
-                EncodeS2PointVectorFast(points, encoder);
+                EncodeS2PointVectorFast(points!, encoder);
                 break;
             case Format.CELL_IDS:
                 // This is a full decode/encode dance, and not at all efficient.
@@ -179,7 +173,7 @@ public class EncodedS2PointVector
         // not enough S2CellId-encodable points).
         //
         // The simplest approach would then be to take all the S2CellIds and
-        // right-shift them to remove all theant bits at the chosen level.
+        // right-shift them to remove all the constant bits at the chosen level.
         // This would give the best spatial locality and hence the smallest deltas.
         // However instead we give up some spatial locality and use the similar but
         // faster transformation described below.
@@ -215,7 +209,7 @@ public class EncodedS2PointVector
         // where "i" represents a block and "j" represents an entry in that block.
         //
         // The deltas for each block are encoded using a fixed number of 4-bit nibbles
-        // (1-16 nibbles per delta).  This allows any delta to be accessed inant
+        // (1-16 nibbles per delta).  This allows any delta to be accessed in constant
         // time.
         //
         // The "offset" for each block is a 64-bit value encoded in 0-8 bytes.  The
@@ -268,7 +262,7 @@ public class EncodedS2PointVector
         //
         // This is followed by an EncodedStringVector containing the encoded blocks.
         // Each block contains kBlockSize (8) values.  The total size of the
-        // EncodeS2PointVector is not stored explicity, but instead is calculated as
+        // EncodeS2PointVector is not stored explicitly, but instead is calculated as
         //
         //     num_values == kBlockSize * (num_blocks - 1) + last_block_size .
         //
@@ -370,7 +364,7 @@ public class EncodedS2PointVector
             int offset_bytes = code.OffsetBits >> 3;
             int delta_nibbles = code.DeltaBits >> 2;
             int overlap_nibbles = code.OverlapBits >> 2;
-            block.Ensure(1 + offset_bytes + (kBlockSize / 2) * delta_nibbles);
+            block.Ensure(1 + offset_bytes + kBlockSize / 2 * delta_nibbles);
             MyDebug.Assert(offset_bytes - overlap_nibbles <= 7);
             MyDebug.Assert(overlap_nibbles <= 1);
             MyDebug.Assert(delta_nibbles <= 16);
@@ -396,7 +390,7 @@ public class EncodedS2PointVector
             // Encode the offset.
             int offset_shift = code.DeltaBits - code.OverlapBits;
             offset &= ~BitMask(offset_shift);
-            MyDebug.Assert((offset == 0) == (offset_bytes == 0));
+            MyDebug.Assert(offset == 0 == (offset_bytes == 0));
             if (offset > 0)
             {
                 EncodedUIntVector<ulong>.EncodeUIntWithLength(offset >> offset_shift, offset_bytes, block);
@@ -505,25 +499,26 @@ public class EncodedS2PointVector
     }
     private S2Point DecodeCellIdsFormat(int i)
     {
+        MyDebug.Assert(Format_ == Format.CELL_IDS);
         // This function inverts the encodings documented above.
 
         // First we decode the block header.
-        var (bytearr, offsetbytearr) = blocks.GetStart(i >> kBlockShift);
-        byte header = bytearr[offsetbytearr++];
+        var (byteArray, offsetByteArray) = blocks!.GetStart(i >> kBlockShift);
+        byte header = byteArray[offsetByteArray++];
         int overlap_nibbles = (header >> 3) & 1;
         int offset_bytes = (header & 7) + overlap_nibbles;
         int delta_nibbles = (header >> 4) + 1;
 
         // Decode the offset for this block.
         int offset_shift = (delta_nibbles - overlap_nibbles) << 2;
-        UInt64 offset = EncodedUIntVector<ulong>.GetUIntWithLength(bytearr, offsetbytearr, offset_bytes) << offset_shift;
-        offsetbytearr += offset_bytes;
+        UInt64 offset = EncodedUIntVector<ulong>.GetUIntWithLength(byteArray, offsetByteArray, offset_bytes) << offset_shift;
+        offsetByteArray += offset_bytes;
 
         // Decode the delta for the requested value.
         int delta_nibble_offset = (i & (kBlockSize - 1)) * delta_nibbles;
         int delta_bytes = (delta_nibbles + 1) >> 1;
-        var delta_offset = offsetbytearr + (delta_nibble_offset >> 1);
-        UInt64 delta = EncodedUIntVector<ulong>.GetUIntWithLength(bytearr, delta_offset, delta_bytes);
+        var delta_offset = offsetByteArray + (delta_nibble_offset >> 1);
+        UInt64 delta = EncodedUIntVector<ulong>.GetUIntWithLength(byteArray, delta_offset, delta_bytes);
         delta >>= (delta_nibble_offset & 1) << 2;
         delta &= BitMask(delta_nibbles << 2);
 
@@ -533,10 +528,10 @@ public class EncodedS2PointVector
             if (delta < kBlockSize)
             {
                 int block_size = Math.Min(kBlockSize, (int)(size_ - (uint)(i & ~(kBlockSize - 1))));
-                offsetbytearr += (block_size * delta_nibbles + 1) >> 1;
-                offsetbytearr += (int)delta * SizeHelper.SizeOf(typeof(S2Point));
+                offsetByteArray += (block_size * delta_nibbles + 1) >> 1;
+                offsetByteArray += (int)delta * SizeHelper.SizeOf(typeof(S2Point));
                 var buff = new double[3];
-                Buffer.BlockCopy(bytearr, offsetbytearr, buff, 0, SizeHelper.SizeOf(typeof(S2Point)));
+                Buffer.BlockCopy(byteArray, offsetByteArray, buff, 0, SizeHelper.SizeOf(typeof(S2Point)));
                 return new S2Point(buff);
             }
             delta -= kBlockSize;
@@ -899,21 +894,10 @@ public class EncodedS2PointVector
 
     // Represents a point that can be encoded as an S2CellId center.
     // (If such an encoding is not possible then level < 0.)
-    private readonly struct CellPoint
+    private readonly record struct CellPoint(sbyte Level, sbyte Face, UInt32 Si, UInt32 Ti)
     {
-        public sbyte Level { get; }
-        public sbyte Face { get; }
-        public UInt32 Si { get; }
-        public UInt32 Ti { get; }
-
-        // Constructor necessary in order to narrow "int" arguments to "sbyte".
         public CellPoint(int level, int face, UInt32 si, UInt32 ti)
-        {
-            Level = (sbyte)level;
-            Face = (sbyte)face;
-            Si = si;
-            Ti = ti;
-        }
+            : this((sbyte)level, (sbyte)face, si, ti) { }
     }
 
     // Represents the encoding parameters to be used for a given block (consisting

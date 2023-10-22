@@ -170,7 +170,7 @@ public abstract class S2ShapeIndex : IEnumerable<S2Shape>
     {
         for (var i = 0; i < NumShapeIds(); i++)
         {
-            yield return Shape(i);
+            yield return Shape(i)!;
         }
     }
 
@@ -236,21 +236,9 @@ public abstract class S2ShapeIndex : IEnumerable<S2Shape>
 
     // A random access iterator that provides low-level access to the cells of
     // the index.  Cells are sorted in increasing order of S2CellId.
-    public sealed class Enumerator : S2CellEnumerator<S2ShapeIndexCell>, IEnumerator<S2ShapeIndexCell>
+    public sealed class Enumerator(S2ShapeIndex index, InitialPosition pos = InitialPosition.UNPOSITIONED) : S2CellEnumerator<S2ShapeIndexCell>, IEnumerator<S2ShapeIndexCell>
     {
-        private readonly EnumeratorBase<S2ShapeIndexCell> Enumerator_;
-
-        // Constructs an iterator positioned as specified.  By default iterators
-        // are unpositioned, since this avoids an extra seek in this situation
-        // where one of the seek methods (such as Locate) is immediately called.
-        //
-        // If you want to position the iterator at the beginning, e.g. in order to
-        // loop through the entire index, do this instead:
-        //
-        //   for (S2ShapeIndex.Iterator it(out index, S2ShapeIndex.InitialPosition.BEGIN);
-        //        !it.done(); it.Next()) { ... }
-        public Enumerator(S2ShapeIndex index, InitialPosition pos = InitialPosition.UNPOSITIONED) =>
-            Enumerator_ = index.GetNewEnumerator(pos);
+        private readonly EnumeratorBase<S2ShapeIndexCell> Enumerator_ = index.GetNewEnumerator(pos);
 
         // Returns the S2CellId of the current index cell.  If done() is true,
         // returns a value larger than any valid S2CellId (S2CellId.Sentinel()).
@@ -329,7 +317,7 @@ public abstract class S2ShapeIndex : IEnumerable<S2Shape>
                 S2ShapeIndexCell? cell;
                 lock (this)
                 {
-                    cell = _Cell;
+                    cell = CellInternal;
                 }
                 if (cell is null)
                 {
@@ -342,13 +330,13 @@ public abstract class S2ShapeIndex : IEnumerable<S2Shape>
             {
                 lock (this)
                 {
-                    _Cell = value;
+                    CellInternal = value;
                 }
             }
         }
-        protected S2ShapeIndexCell? _Cell { get; private set; }
+        protected S2ShapeIndexCell? CellInternal { get; private set; }
 
-        protected EnumeratorBase() { _Id = S2CellId.Sentinel; _Cell = null; }
+        protected EnumeratorBase() { _Id = S2CellId.Sentinel; CellInternal = null; }
 
         // Returns true if the iterator is positioned past the last index cell.
         public override bool Done() => _Id == S2CellId.Sentinel;
@@ -754,7 +742,7 @@ public class S2ShapeIndexCell
         shapes_.Add(s);
     }
 
-    private readonly List<S2ClippedShape> shapes_ = new();
+    private readonly List<S2ClippedShape> shapes_ = [];
 }
 
 // S2ClippedShape represents the part of a shape that intersects an S2Cell.
@@ -765,22 +753,22 @@ public class S2ShapeIndexCell
 // Note that the edges themselves are not clipped; we always use the original
 // edges for intersection tests so that the results will be the same as the
 // original shape.
-public class S2ClippedShape
+public class S2ClippedShape(Int32 shape_id, Int32 num_edges, bool containsCenter = false)
 {
     #region Fields and Properties
-    
+
     // The shape id of the clipped shape.
-    public int ShapeId { get; }
+    public int ShapeId { get; } = shape_id;
 
     // Returns true if the center of the S2CellId is inside the shape.  Returns
     // false for shapes that do not have an interior.
     //
     // Set "contains_center_" to indicate whether this clipped shape contains the
     // center of the cell to which it belongs.
-    public bool ContainsCenter { get; set; }
+    public bool ContainsCenter { get; set; } = containsCenter;
 
     // The number of edges that intersect the S2CellId.
-    public int NumEdges { get; }
+    public int NumEdges { get; } = num_edges;
 
     // If there are more than two edges, this field holds a pointer.
     // Otherwise it holds an array of edge ids.
@@ -794,20 +782,10 @@ public class S2ClippedShape
     // original shape.
     //
     // Owned by the containing S2ShapeIndexCell.
-    public Int32[] Edges { get; } 
+    public Int32[] Edges { get; } = new Int32[num_edges];
 
     #endregion
-
     #region Constructor
-
-    // Initialize an S2ClippedShape to hold the given number of edges.
-    public S2ClippedShape(Int32 shape_id, Int32 num_edges, bool containsCenter = false)
-    {
-        ShapeId = shape_id;
-        NumEdges = num_edges;
-        ContainsCenter = containsCenter;
-        Edges = new Int32[num_edges];
-    }
 
     #endregion
 

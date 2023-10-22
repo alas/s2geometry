@@ -986,10 +986,10 @@ public class S2LatLngRectTests
         // Make arrays containing the lo/hi latitudes and the lo/hi longitude edges.
         var lat_a = new S1Angle[2] { a.LatLo(), a.LatHi() };
         var lat_b = new S1Angle[2] { b.LatLo(), b.LatHi() };
-        var lng_edge_a = new S2Point[][] { new S2Point[] { pnt_a[0].ToPoint(), pnt_a[3].ToPoint() },
-                                new S2Point[]{ pnt_a[1].ToPoint(), pnt_a[2].ToPoint() } };
-        var lng_edge_b = new S2Point[][] { new S2Point[] { pnt_b[0].ToPoint(), pnt_b[3].ToPoint() },
-                                new S2Point[]{ pnt_b[1].ToPoint(), pnt_b[2].ToPoint() } };
+        var lng_edge_a = new S2Point[][] { [pnt_a[0].ToPoint(), pnt_a[3].ToPoint()],
+                                [pnt_a[1].ToPoint(), pnt_a[2].ToPoint()] };
+        var lng_edge_b = new S2Point[][] { [pnt_b[0].ToPoint(), pnt_b[3].ToPoint()],
+                                [pnt_b[1].ToPoint(), pnt_b[2].ToPoint()] };
 
         S1Angle min_distance = S1Angle.FromDegrees(180.0);
         for (int i = 0; i < 4; ++i)

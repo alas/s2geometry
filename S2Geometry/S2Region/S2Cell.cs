@@ -517,7 +517,7 @@ public readonly record struct S2Cell : IS2Region<S2Cell>, IComparable<S2Cell>, I
         // through AB.  We can compute the distance PQ^2 perpendicular to the plane
         // from "dirIJ" (the dot product of the target point P with the edge
         // normal) and the squared length the edge normal (1 + uv**2).
-        var pq2 = (dirIJ * dirIJ) / (1 + uv * uv);
+        var pq2 = dirIJ * dirIJ / (1 + uv * uv);
 
         // We can compute the distance QR as (1 - OQ) where O is the sphere origin,
         // and we can compute OQ^2 = 1 - PQ^2 using the Pythagorean theorem.

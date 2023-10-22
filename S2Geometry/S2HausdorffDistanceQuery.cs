@@ -79,42 +79,27 @@ public class S2HausdorffDistanceQuery
     }
 
     // DirectedResult stores the results of directed Hausdorff distance queries
-    public class DirectedResult
+    public class DirectedResult(S1ChordAngle distance, S2Point targetPoint)
     {
         // Returns the resulting directed Hausdorff distance value.
-        public S1ChordAngle Distance { get; }
+        public S1ChordAngle Distance { get; } = distance;
 
         // Returns the point on the target index on which the directed Hausdorff
         // distance is achieved.
-        public S2Point TargetPoint { get; }
-
-        public DirectedResult(S1ChordAngle distance, S2Point targetPoint)
-        {
-            Distance = distance;
-            TargetPoint = targetPoint;
-        }
+        public S2Point TargetPoint { get; } = targetPoint;
     }
 
     // Result stores the output of [undirected] Hausdorff distance query. It
     // consists of two directed query results, forward and reverse.
-    public class Result
+    public class Result(DirectedResult target_to_source, DirectedResult source_to_target)
     {
         // Returns the const reference to the result for the target-to-source
         // directed Hausdorff distance call.
-        public DirectedResult TargetToSource { get; }
+        public DirectedResult TargetToSource { get; } = target_to_source;
 
         // Returns the const reference to the result for the source-to-target
         // directed Hausdorff distance call.
-        public DirectedResult SourceToTarget { get; }
-
-        // Initializes the Result with the directed result of the forward query
-        // (target index to source index) and that of the reverse (source index
-        // to target index) query.
-        public Result(DirectedResult target_to_source, DirectedResult source_to_target)
-             {
-            TargetToSource = target_to_source;
-            SourceToTarget = source_to_target;
-             }
+        public DirectedResult SourceToTarget { get; } = source_to_target;
 
         // Returns the actual Hausdorff distance, which is the maximum of the two
         // directed query results.

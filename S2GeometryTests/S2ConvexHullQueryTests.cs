@@ -1,16 +1,14 @@
 namespace S2Geometry;
 
-public class S2ConvexHullQueryTests
+public class S2ConvexHullQueryTests(ITestOutputHelper logger)
 {
-    private readonly ITestOutputHelper _logger;
-
-    public S2ConvexHullQueryTests(ITestOutputHelper logger) { _logger = logger; }
+    private readonly ITestOutputHelper _logger = logger;
 
     [Fact]
     internal void Test_S2ConvexHullQuery_NoPoints()
     {
         S2ConvexHullQuery query = new();
-        var result = (query.GetConvexHull());
+        var result = query.GetConvexHull();
         Assert.True(result.IsEmpty());
     }
 
@@ -27,7 +25,7 @@ public class S2ConvexHullQueryTests
         // Add some duplicate points and check that the result is the same.
         query.AddPoint(p);
         query.AddPoint(p);
-        var result2 = (query.GetConvexHull());
+        var result2 = query.GetConvexHull();
         Assert.True(result2 == result);
     }
 
@@ -39,7 +37,7 @@ public class S2ConvexHullQueryTests
         S2Point q = new(0, 1, 0);
         query.AddPoint(p);
         query.AddPoint(q);
-        var result = (query.GetConvexHull());
+        var result = query.GetConvexHull();
         Assert.Equal(3, result.NumVertices);
         Assert.True(result.IsNormalized());
         Assert.True(LoopHasVertex(result, p));
@@ -66,9 +64,9 @@ public class S2ConvexHullQueryTests
     internal void Test_S2ConvexHullQuery_EmptyLoop()
     {
         S2ConvexHullQuery query = new();
-        S2Loop empty = (S2Loop.kEmpty);
+        S2Loop empty = S2Loop.KEmpty;
         query.AddLoop(empty);
-        var result = (query.GetConvexHull());
+        var result = query.GetConvexHull();
         Assert.True(result.IsEmpty());
     }
 
@@ -76,9 +74,9 @@ public class S2ConvexHullQueryTests
     internal void Test_S2ConvexHullQuery_FullLoop()
     {
         S2ConvexHullQuery query = new();
-        S2Loop full = (S2Loop.kFull);
+        S2Loop full = S2Loop.KFull;
         query.AddLoop(full);
-        var result = (query.GetConvexHull());
+        var result = query.GetConvexHull();
         Assert.True(result.IsFull());
     }
 
@@ -86,10 +84,10 @@ public class S2ConvexHullQueryTests
     internal void Test_S2ConvexHullQuery_EmptyPolygon()
     {
         S2ConvexHullQuery query = new();
-        List<S2Loop> loops = new();
+        List<S2Loop> loops = [];
         S2Polygon empty = new(loops);
         query.AddPolygon(empty);
-        var result = (query.GetConvexHull());
+        var result = query.GetConvexHull();
         Assert.True(result.IsEmpty());
     }
 
@@ -105,7 +103,7 @@ public class S2ConvexHullQueryTests
         {
             query.AddPoint(S2CellId.FromFace(face).ToPoint());
         }
-        var result = (query.GetConvexHull());
+        var result = query.GetConvexHull();
         Assert.True(result.IsFull());
     }
 
@@ -114,13 +112,13 @@ public class S2ConvexHullQueryTests
     {
         // A polyline is handling identically to a point set, so there is no need
         // for special testing other than code coverage.
-        var polyline = (MakePolylineOrDie(
-  "0:1, 0:9, 1:6, 2:6, 3:10, 4:10, 5:5, 4:0, 3:0, 2:5, 1:5"));
+        var polyline = MakePolylineOrDie(
+  "0:1, 0:9, 1:6, 2:6, 3:10, 4:10, 5:5, 4:0, 3:0, 2:5, 1:5");
         S2ConvexHullQuery query = new();
         query.AddPolyline(polyline);
-        var result = (query.GetConvexHull());
-        var expected_result = (
-            MakeLoopOrDie("0:1, 0:9, 3:10, 4:10, 5:5, 4:0, 3:0"));
+        var result = query.GetConvexHull();
+        var expected_result = 
+            MakeLoopOrDie("0:1, 0:9, 3:10, 4:10, 5:5, 4:0, 3:0");
         Assert.True(result.BoundaryEquals(expected_result));
     }
 
@@ -187,7 +185,7 @@ public class S2ConvexHullQueryTests
                 }
             }
             // Finally, build a new convex hull and check that it hasn't changed.
-            var hull2 = (query.GetConvexHull());
+            var hull2 = query.GetConvexHull();
             _logger.WriteLine("Iteration: " + iter);
             Assert.True(hull2.BoundaryEquals(hull));
         }

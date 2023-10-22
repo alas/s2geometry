@@ -2,7 +2,6 @@ namespace S2Geometry;
 
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Numerics;
 using System.Text;
 
 public static class S2TextFormat
@@ -60,7 +59,7 @@ public static class S2TextFormat
     public static bool ParsePoints(string str, List<S2Point> vertices)
     {
         vertices.Clear();
-        List<S2LatLng> latlngs = new();
+        List<S2LatLng> latlngs = [];
         if (!ParseLatLngs(str, latlngs)) return false;
 
         vertices.AddRange(latlngs.Select(t => t.ToPoint()).ToArray());
@@ -118,7 +117,7 @@ public static class S2TextFormat
     {
         rect = null;
         var latlngs = new List<S2LatLng>();
-        if (!ParseLatLngs(str, latlngs) || !latlngs.Any()) return false;
+        if (!ParseLatLngs(str, latlngs) || latlngs.Count==0) return false;
 
         rect = S2LatLngRect.FromPoint(latlngs[0]);
         foreach (var ll in latlngs.Skip(1))
@@ -219,18 +218,18 @@ public static class S2TextFormat
     {
         if (str == "empty")
         {
-            loop = S2Loop.kEmpty;
+            loop = S2Loop.KEmpty;
             return true;
         }
 
         if (str == "full")
         {
-            loop = S2Loop.kFull;
+            loop = S2Loop.KFull;
             return true;
         }
 
         loop = null;
-        List<S2Point> vertices = new();
+        List<S2Point> vertices = [];
         if (!ParsePoints(str, vertices)) return false;
         loop = new S2Loop(vertices, override_);
         return true;
@@ -250,7 +249,7 @@ public static class S2TextFormat
         polyline = null;
         var vertices = new List<S2Point>();
         if (!ParsePoints(str, vertices)) return false;
-        polyline = new S2Polyline(vertices.ToArray(), override_);
+        polyline = new S2Polyline([.. vertices], override_);
         return true;
     }
 
@@ -266,7 +265,7 @@ public static class S2TextFormat
     public static bool MakeLaxPolyline(string str, [NotNullWhen(true)] out S2LaxPolylineShape? lax_polyline)
     {
         lax_polyline = null;
-        List<S2Point> vertices = new ();
+        List<S2Point> vertices = [];
         if (!ParsePoints(str, vertices)) return false;
         lax_polyline = new S2LaxPolylineShape(vertices);
         return true;
@@ -277,7 +276,7 @@ public static class S2TextFormat
         polygon = null;
         if (str == "empty") str = "";
         var loop_strs = SplitString(str, ';');
-        List<S2Loop> loops = new();
+        List<S2Loop> loops = [];
         foreach (var loop_str in loop_strs)
         {
             if (!MakeLoop(loop_str, out var loop)) return false;
@@ -346,7 +345,7 @@ public static class S2TextFormat
     {
         lax_polygon = null;
         var loop_strs = SplitString(str, ';');
-        List<List<S2Point>> loops = new();
+        List<List<S2Point>> loops = [];
         foreach (var loop_str in loop_strs)
         {
             if (loop_str == "full")
@@ -355,7 +354,7 @@ public static class S2TextFormat
             }
             else if (loop_str != "empty")
             {
-                List<S2Point> points = new();
+                List<S2Point> points = [];
                 if (!ParsePoints(loop_str, points)) return false;
                 loops.Add(points);
             }
@@ -409,9 +408,9 @@ public static class S2TextFormat
             if (!MakePoint(point_str, out var point)) return false;
             points.Add(point);
         }
-        if (points.Any())
+        if (points.Count!=0)
         {
-            result.Add(new S2PointVectorShape(points.ToArray()));
+            result.Add(new S2PointVectorShape([.. points]));
         }
         foreach (var line_str in SplitString(strs[1], '|'))
         {
@@ -511,8 +510,8 @@ public static class S2TextFormat
         StringBuilder sb = new();
         foreach (var edge in graph.Edges)
         {
-            S2Point[] vertices = { graph.Vertex(edge.ShapeId),
-                        graph.Vertex(edge.EdgeId) };
+            S2Point[] vertices = [ graph.Vertex(edge.ShapeId),
+                        graph.Vertex(edge.EdgeId) ];
             sb.Append(vertices.ToDebugString());
             sb.Append("; ");
         }
@@ -533,7 +532,7 @@ public static class S2TextFormat
     {
         if (polyline.NumVertices() > 0)
         {
-            return AppendVertices(polyline!.Vertices(), polyline.NumVertices());
+            return AppendVertices(polyline!.Vertices()!, polyline.NumVertices());
         }
         return "";
     }
@@ -550,7 +549,7 @@ public static class S2TextFormat
             }
             else
             {
-                sb.Add(AppendVertices(polygon.LoopVertices(i, 0, n), n));
+                sb.Add(AppendVertices(polygon.LoopVertices(i, 0), n));
             }
         }
         return String.Join(loop_separator, sb);

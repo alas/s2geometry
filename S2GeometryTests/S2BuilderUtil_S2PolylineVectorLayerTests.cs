@@ -5,13 +5,13 @@ public class S2BuilderUtil_S2PolylineVectorLayerTests
     [Fact]
     internal void Test_S2PolylineVectorLayer_NoEdges()
     {
-        TestS2PolylineVectorUnchanged(new List<string>());
+        TestS2PolylineVectorUnchanged([]);
     }
 
     [Fact]
     internal void Test_S2PolylineVectorLayer_TwoPolylines()
     {
-        TestS2PolylineVectorUnchanged(new List<string> { "0:0, 1:1, 2:2", "4:4, 3:3" });
+        TestS2PolylineVectorUnchanged(["0:0, 1:1, 2:2", "4:4, 3:3"]);
     }
 
     [Fact]
@@ -21,17 +21,17 @@ public class S2BuilderUtil_S2PolylineVectorLayerTests
         // not adjacent in the input.  For undirected edges, the polyline direction
         // should be chosen such that the first edge of the polyline was added to
         // S2Builder before the last edge of the polyline.
-        TestS2PolylineVector(new List<string> { "1:1, 2:2", "3:3, 2:2", "0:0, 1:1" },
-                             new List<string> { "3:3, 2:2", "0:0, 1:1, 2:2" }, EdgeType.DIRECTED);
-        TestS2PolylineVector(new List<string> { "1:1, 2:2", "3:3, 2:2", "0:0, 1:1" },
-                             new List<string> { "3:3, 2:2, 1:1, 0:0" }, EdgeType.UNDIRECTED);
+        TestS2PolylineVector(["1:1, 2:2", "3:3, 2:2", "0:0, 1:1"],
+                             ["3:3, 2:2", "0:0, 1:1, 2:2"], EdgeType.DIRECTED);
+        TestS2PolylineVector(["1:1, 2:2", "3:3, 2:2", "0:0, 1:1"],
+                             ["3:3, 2:2, 1:1, 0:0"], EdgeType.UNDIRECTED);
     }
 
     [Fact]
     internal void Test_S2PolylineVectorLayer_SegmentNetwork()
     {
         // Test a complex network of polylines that meet at shared vertices.
-        TestS2PolylineVectorUnchanged(new List<string>{
+        TestS2PolylineVectorUnchanged([
   "0:0, 1:1, 2:2",
   "2:2, 2:3, 2:4",
   "2:4, 3:4, 4:4",
@@ -45,7 +45,7 @@ public class S2BuilderUtil_S2PolylineVectorLayerTests
   "4:2, 6:1, 5:0",  // Two nested loops
   "4:2, 7:0, 6:-1",
   "11:1, 11:0, 10:0, 10:1, 11:1"  // Isolated loop
-});
+]);
     }
 
     [Fact]
@@ -54,8 +54,10 @@ public class S2BuilderUtil_S2PolylineVectorLayerTests
         // This checks idempotency for directed edges in the case of several
         // polylines that share edges (and that even share loops).  The test
         // happens to pass for undirected edges as well.
-        S2PolylineVectorLayer.Options layer_options = new();
-        layer_options.PolylineType_ = (Graph.PolylineType.WALK);
+        S2PolylineVectorLayer.Options layer_options = new()
+        {
+            PolylineType_ = Graph.PolylineType.WALK
+        };
         var input = new List<string>
 {
 "5:5, 5:6, 6:5, 5:5, 5:4, 5:3",
@@ -71,8 +73,10 @@ public class S2BuilderUtil_S2PolylineVectorLayerTests
         // This checks idempotency for cases where earlier polylines in the input
         // happen to terminate in the middle of later polylines.  This requires
         // building non-maximal polylines.
-        S2PolylineVectorLayer.Options layer_options = new();
-        layer_options.PolylineType_ = (Graph.PolylineType.WALK);
+        S2PolylineVectorLayer.Options layer_options = new()
+        {
+            PolylineType_ = Graph.PolylineType.WALK
+        };
         var input = new List<string>
 {
 "0:1, 1:1",
@@ -88,11 +92,15 @@ public class S2BuilderUtil_S2PolylineVectorLayerTests
     {
         // A single input edge is split into several segments by removing portions
         // of it, and then each of those segments becomes one edge of a loop.
-        S2PolylineVectorLayer.Options layer_options = new();
-        layer_options.PolylineType_ = (Graph.PolylineType.WALK);
-        layer_options.SiblingPairs = (GraphOptions.SiblingPairs.DISCARD);
-        Options builder_options = new();
-        builder_options.SnapFunction = new IntLatLngSnapFunction(7);
+        S2PolylineVectorLayer.Options layer_options = new()
+        {
+            PolylineType_ = Graph.PolylineType.WALK,
+            SiblingPairs = GraphOptions.SiblingPairs.DISCARD
+        };
+        Options builder_options = new()
+        {
+            SnapFunction = new IntLatLngSnapFunction(7)
+        };
         var input = new List<string>
             {
                 "0:10, 0:0",
@@ -117,8 +125,10 @@ public class S2BuilderUtil_S2PolylineVectorLayerTests
     internal void Test_S2PolylineVectorLayer_ValidateFalse()
     {
         // Verifies that calling set_validate(false) does not turn off s2 debugging.
-        S2PolylineVectorLayer.Options layer_options=new();
-        layer_options.Validate = false;
+        S2PolylineVectorLayer.Options layer_options = new()
+        {
+            Validate = false
+        };
         Assert.Equal(layer_options.S2DebugOverride, S2Debug.ALLOW);
     }
 
@@ -126,16 +136,17 @@ public class S2BuilderUtil_S2PolylineVectorLayerTests
     internal void Test_S2PolylineVectorLayer_ValidateTrue()
     {
         // Verifies that the validate() option works.
-        S2PolylineVectorLayer.Options layer_options=new();
-        layer_options.Validate = true;
+        S2PolylineVectorLayer.Options layer_options = new()
+        {
+            Validate = true
+        };
         Assert.Equal(layer_options.S2DebugOverride, S2Debug.DISABLE);
         S2Builder builder=new(new S2Builder.Options());
-        List<S2Polyline> output=new();
+        List<S2Polyline> output=[];
         builder.StartLayer(
             new S2PolylineVectorLayer(output, layer_options));
         builder.AddEdge(new S2Point(1, 0, 0), new S2Point(-1, 0, 0));
-        S2Error error;
-        Assert.False(builder.Build(out error));
+        Assert.False(builder.Build(out S2Error error));
         Assert.Equal(error.Code, S2ErrorCode.ANTIPODAL_VERTICES);
     }
 
@@ -143,12 +154,14 @@ public class S2BuilderUtil_S2PolylineVectorLayerTests
     internal void Test_S2PolylineVectorLayer_SimpleEdgeLabels()
     {
         S2Builder builder = new(new Options());
-        List<S2Polyline> output = new();
-        LabelSetIds label_set_ids = new();
+        List<S2Polyline> output = [];
+        LabelSetIds label_set_ids = [];
         IdSetLexicon label_set_lexicon = new();
-        S2PolylineVectorLayer.Options layer_options = new();
-        layer_options.EdgeType_ = (EdgeType.UNDIRECTED);
-        layer_options.DuplicateEdges_ = (GraphOptions.DuplicateEdges.MERGE);
+        S2PolylineVectorLayer.Options layer_options = new()
+        {
+            EdgeType_ = EdgeType.UNDIRECTED,
+            DuplicateEdges_ = GraphOptions.DuplicateEdges.MERGE
+        };
         builder.StartLayer(new S2PolylineVectorLayer(
             output, label_set_ids, label_set_lexicon, layer_options));
         builder.SetLabel(1);
@@ -160,12 +173,12 @@ public class S2BuilderUtil_S2PolylineVectorLayerTests
         Assert.True(builder.Build(out _));
         var expected = new List<LabelSetIds>
             {
-                new LabelSetIds{
+                new() {
                     new LabelSet {1},
                     new LabelSet {1, 2},
                     new LabelSet {2},
                 },
-                new LabelSetIds{ new LabelSet { } },
+                new() { new LabelSet { } },
             };
         Assert.Equal(expected.Count, label_set_ids.Count);
         for (int i = 0; i < expected.Count; ++i)
@@ -188,7 +201,7 @@ public class S2BuilderUtil_S2PolylineVectorLayerTests
     internal void Test_IndexedS2PolylineVectorLayer_AddsShapes()
     {
         S2Builder builder = new(new Options());
-        MutableS2ShapeIndex index = new();
+        MutableS2ShapeIndex index = [];
         builder.StartLayer(new IndexedS2PolylineVectorLayer(index));
         string polyline0_str = "0:0, 1:1";
         string polyline1_str = "2:2, 3:3";
@@ -231,16 +244,16 @@ public class S2BuilderUtil_S2PolylineVectorLayerTests
     {
         layer_options ??= new S2PolylineVectorLayer.Options();
         builder_options ??= new Options();
-        layer_options.EdgeType_ = (edge_type);
+        layer_options.EdgeType_ = edge_type;
         S2Builder builder = new(builder_options);
-        List<S2Polyline> output = new();
+        List<S2Polyline> output = [];
         builder.StartLayer(new S2PolylineVectorLayer(output, layer_options));
         foreach (var input_str in input_strs)
         {
             builder.AddPolyline(MakePolylineOrDie(input_str));
         }
         Assert.True(builder.Build(out _));
-        List<string> output_strs = new();
+        List<string> output_strs = [];
         foreach (var polyline in output)
         {
             output_strs.Add(polyline.ToDebugString());

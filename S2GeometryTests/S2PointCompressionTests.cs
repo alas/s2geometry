@@ -99,8 +99,8 @@ public class S2PointCompressionTests
     internal void Test_S2PointCompressionTest_RoundtripsEmpty()
     {
         // Just check this doesn't crash.
-        Encode(Array.Empty<S2Point>(), S2.kMaxCellLevel);
-        Decode(S2.kMaxCellLevel, Array.Empty<S2Point>());
+        Encode([], S2.kMaxCellLevel);
+        Decode(S2.kMaxCellLevel, []);
     }
 
     [Fact]
@@ -220,13 +220,13 @@ public class S2PointCompressionTests
         // qi = 256 in 8 bits.
         var points = new S2PointCompression.S2XYZFaceSiTi[]
         {
-            new S2PointCompression.S2XYZFaceSiTi(
+            new(
                 new S2Point(0.054299323861222645, -0.70606358900180299, 0.70606358900180299),
                 2,                      // face
                 956301312, 2147483648,  // si, ti
                 -1                      // level
             ),
-            new S2PointCompression.S2XYZFaceSiTi(
+            new(
                 new S2Point(0.056482651436986935, -0.70781701406865505, 0.70413406726388494),
                 4,                    // face
                 4194304, 1195376640,  // si, ti
@@ -265,7 +265,7 @@ public class S2PointCompressionTests
 
         var unsnapped_points = S2Testing.MakeRegularPoints(center, radius_angle, num_vertices);
 
-        return SnapPointsToLevel(unsnapped_points.ToArray(), level);
+        return SnapPointsToLevel([.. unsnapped_points], level);
     }
 
     private static S2PointCompression.S2XYZFaceSiTi[] MakeXYZFaceSiTiPoints(S2Point[] points) =>

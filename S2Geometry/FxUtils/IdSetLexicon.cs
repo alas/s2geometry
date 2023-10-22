@@ -54,7 +54,7 @@ public class IdSetLexicon
     // duplicates are removed.  Returns a signed integer representing this set.
     public int Add(List<int> ids)
     {
-        if (!ids.Any())
+        if (ids.Count==0)
         {
             // Empty sets have a special id chosen not to conflict with other ids.
             return kEmptySetId;
@@ -81,11 +81,11 @@ public class IdSetLexicon
     {
         if (set_id >= 0)
         {
-            return new List<int> { set_id };
+            return [set_id];
         }
         else if (set_id == kEmptySetId)
         {
-            return new List<int> { };
+            return [];
         }
         else
         {

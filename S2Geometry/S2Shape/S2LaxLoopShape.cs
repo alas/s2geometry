@@ -21,7 +21,7 @@ public class S2LaxLoopShape : S2Shape, IEquatable<S2LaxLoopShape>
     #region Constructors
 
     // Constructs an empty loop.
-    public S2LaxLoopShape() { NumVertices = 0; vertices_ = Array.Empty<S2Point>(); }
+    public S2LaxLoopShape() { NumVertices = 0; vertices_ = []; }
 
     // Constructs an S2LaxLoopShape with the given vertices.
     //
@@ -44,7 +44,7 @@ public class S2LaxLoopShape : S2Shape, IEquatable<S2LaxLoopShape>
         if (loop.IsEmpty())
         {
             NumVertices = 0;
-            vertices_ = Array.Empty<S2Point>();
+            vertices_ = [];
         }
         else
         {
@@ -146,8 +146,8 @@ public class S2VertexIdLaxLoopShape : S2Shape, IEquatable<S2VertexIdLaxLoopShape
     public S2VertexIdLaxLoopShape()
     {
         NumVertices = 0;
-        vertex_ids_ = Array.Empty<Int32>();
-        vertex_array_ = Array.Empty<S2Point>();
+        vertex_ids_ = [];
+        vertex_array_ = [];
     }
 
     // Constructs the shape from the given vertex array and indices.
@@ -162,7 +162,7 @@ public class S2VertexIdLaxLoopShape : S2Shape, IEquatable<S2VertexIdLaxLoopShape
     {
         NumVertices = vertex_ids.Length;
         vertex_ids_ = (Int32[])vertex_ids.Clone();
-        vertex_array_ = vertex_array ?? Array.Empty<S2Point>();
+        vertex_array_ = vertex_array ?? [];
     }
 
     #endregion

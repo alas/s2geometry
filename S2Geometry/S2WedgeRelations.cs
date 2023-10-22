@@ -58,9 +58,9 @@ public static class S2WedgeRelations
         // For A to contain B (where each loop interior is defined to be its left
         // side), the CCW edge order around ab1 must be a2 b2 b0 a0.  We split
         // this test into two parts that test three vertices each.
-        return (
+        return 
             S2Pred.OrderedCCW(a2, b2, b0, ab1) &&
-            S2Pred.OrderedCCW(b0, a0, a2, ab1));
+            S2Pred.OrderedCCW(b0, a0, a2, ab1);
     }
 
     /// <summary>

@@ -95,7 +95,7 @@ public class S2BuilderUtil_ClosedSetNormalizerTests
     [Fact]
     internal void Test_NormalizeTest_PolylineEdgeSuppressedByReversePolygonEdge()
     {
-        normalizeTest.GraphOptionsOut_[1].EdgeType_ = (EdgeType.DIRECTED);
+        normalizeTest.GraphOptionsOut_[1].EdgeType_ = EdgeType.DIRECTED;
         normalizeTest.Run("# 1:0, 0:0 # 0:0, 0:1, 1:0", "# # 0:0, 0:1, 1:0");
         normalizeTest.SuppressLowerDimensions_ = false;
         normalizeTest.Run("# 1:0, 0:0 # 0:0, 0:1, 1:0", "# 1:0, 0:0 # 0:0, 0:1, 1:0");
@@ -110,8 +110,8 @@ public class S2BuilderUtil_ClosedSetNormalizerTests
         normalizeTest.Run("0:0 | 0:0 # 0:0, 0:0 | 0:1, 0:2 # 0:0; 0:1, 0:2",
             "0:0 | 0:0 | 0:0 | 0:0 # 0:1, 0:2 | 0:1, 0:2 #");
         // Now verify that the duplicate edges are merged if requested.
-        normalizeTest.GraphOptionsOut_[0].DuplicateEdges_ = (DuplicateEdges.MERGE);
-        normalizeTest.GraphOptionsOut_[1].DuplicateEdges_ = (DuplicateEdges.MERGE);
+        normalizeTest.GraphOptionsOut_[0].DuplicateEdges_ = DuplicateEdges.MERGE;
+        normalizeTest.GraphOptionsOut_[1].DuplicateEdges_ = DuplicateEdges.MERGE;
         normalizeTest.Run("0:0 | 0:0 # 0:0, 0:0 | 0:1, 0:2 # 0:0; 0:1, 0:2",
             "0:0 # 0:1, 0:2 #");
     }
@@ -133,7 +133,7 @@ public class S2BuilderUtil_ClosedSetNormalizerTests
             "0:10 | 10:0 | 3:3 | 16:16 # " +
             "10:10, 0:10 | 10:10, 10:0 | 5:5, 6:6 # " +
             "19:19, 19:21, 21:21, 21:19");
-        MutableS2ShapeIndex result = new();
+        MutableS2ShapeIndex result = [];
         Assert.True(ComputeUnion(a, b, result, out _));
         Assert.Equal("12:12 # " +
                   "15:15, 16:16 | 10:10, 11:11 # " +
@@ -147,8 +147,8 @@ public class S2BuilderUtil_ClosedSetNormalizerTests
     private class NormalizeTest
     {
         internal bool SuppressLowerDimensions_ { get; set; }
-        internal List<GraphOptions> GraphOptionsOut_ { get; set; } = new();
-        internal List<GraphClone> GraphClones { get; set; } = new();
+        internal List<GraphOptions> GraphOptionsOut_ { get; set; } = [];
+        internal List<GraphClone> GraphClones { get; set; } = [];
 
         internal NormalizeTest()
         {
@@ -174,12 +174,12 @@ public class S2BuilderUtil_ClosedSetNormalizerTests
         {
             ClosedSetNormalizer.Options options = new()
             {
-                SuppressLowerDimensions = (SuppressLowerDimensions_)
+                SuppressLowerDimensions = SuppressLowerDimensions_
             };
             ClosedSetNormalizer normalizer = new(options, GraphOptionsOut_);
 
             S2Builder builder = new(new Options());
-            List<Graph> input = new(), expected = new();
+            List<Graph> input = [], expected = [];
             AddLayers(input_str, normalizer.GraphOptions_, input, builder);
             AddLayers(expected_str, GraphOptionsOut_, expected, builder);
             // Populate the "input" and "expected" vectors.
@@ -217,10 +217,12 @@ public class S2BuilderUtil_ClosedSetNormalizerTests
     // If this code changes, please update the header file comments to match.
     private static bool ComputeUnion(S2ShapeIndex a, S2ShapeIndex b, MutableS2ShapeIndex index, out S2Error error)
     {
-        S2PolylineVectorLayer.Options polyline_options = new();
-        polyline_options.EdgeType_ = (EdgeType.UNDIRECTED);
-        polyline_options.PolylineType_ = (Graph.PolylineType.WALK);
-        polyline_options.DuplicateEdges_ = (DuplicateEdges.MERGE);
+        S2PolylineVectorLayer.Options polyline_options = new()
+        {
+            EdgeType_ = EdgeType.UNDIRECTED,
+            PolylineType_ = Graph.PolylineType.WALK,
+            DuplicateEdges_ = DuplicateEdges.MERGE
+        };
         var layers = new List<Layer>
             {
                 new IndexedS2PointVectorLayer(index),

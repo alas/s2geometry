@@ -7,7 +7,7 @@ public class S2LoopTests
     private readonly ITestOutputHelper _logger;
 
     // The set of all loops declared below.
-    private readonly List<S2Loop> all_loops = new();
+    private readonly List<S2Loop> all_loops = [];
 
     // Some standard loops to use in the tests (see descriptions below).
     private readonly S2Loop empty_;
@@ -44,10 +44,10 @@ public class S2LoopTests
     {
         _logger = logger;
         // The empty loop.
-        empty_ = AddLoop(S2Loop.kEmpty);
+        empty_ = AddLoop(S2Loop.KEmpty);
 
         // The full loop.
-        full_ = AddLoop(S2Loop.kFull);
+        full_ = AddLoop(S2Loop.KFull);
 
         // The northern hemisphere, defined using two pairs of antipodal points.
         north_hemi_ = AddLoop("0:-180, 0:-90, 0:0, 0:90");
@@ -328,7 +328,7 @@ public class S2LoopTests
         vertices[kArmPoints] = new S2Point(0, 0, 1);
         for (int i = 0; i < kArmPoints; ++i)
         {
-            double angle = (S2.M_2_PI / 3) * i;
+            double angle = S2.M_2_PI / 3 * i;
             double x = Math.Cos(angle);
             double y = Math.Sin(angle);
             double r1 = i * kArmRadius / kArmPoints;
@@ -362,8 +362,8 @@ public class S2LoopTests
     {
         // Check the full and empty loops have the correct containment relationship
         // with the special "vertex" that defines them.
-        Assert.False(empty_.Contains(S2Loop.kEmpty[0]));
-        Assert.True(full_.Contains(S2Loop.kFull[0]));
+        Assert.False(empty_.Contains(S2Loop.KEmpty[0]));
+        Assert.True(full_.Contains(S2Loop.KFull[0]));
 
         Assert.True(candy_cane_.Contains(S2LatLng.FromDegrees(5, 71).ToPoint()));
 
@@ -626,8 +626,8 @@ public class S2LoopTests
             var b = MakeCellLoop(b_begin, b_end);
             if (a is not null && b is not null)
             {
-                bool contained = (a_begin <= b_begin && b_end <= a_end);
-                bool intersects = (a_begin < b_end && b_begin < a_end);
+                bool contained = a_begin <= b_begin && b_end <= a_end;
+                bool intersects = a_begin < b_end && b_begin < a_end;
                 Assert.Equal(a.Contains(b), contained);
                 Assert.Equal(a.Intersects(b), intersects);
             }
@@ -710,9 +710,9 @@ public class S2LoopTests
         l.Depth = 3;
         TestEncodeDecode(l);
 
-        S2Loop empty = S2Loop.kEmpty;
+        S2Loop empty = S2Loop.KEmpty;
         TestEncodeDecode(empty);
-        S2Loop full = S2Loop.kFull;
+        S2Loop full = S2Loop.KFull;
         TestEncodeDecode(full);
 
         S2Loop uninitialized = new(Array.Empty<S2Point>());
@@ -749,10 +749,10 @@ public class S2LoopTests
     internal void Test_S2Loop_EmptyFullLossyConversions()
     {
         // Verify that the empty and full loops can be encoded lossily.
-        S2Loop empty = S2Loop.kEmpty;
+        S2Loop empty = S2Loop.KEmpty;
         TestEmptyFullConversions(empty);
 
-        S2Loop full = S2Loop.kFull;
+        S2Loop full = S2Loop.KFull;
         TestEmptyFullConversions(full);
     }
 
@@ -775,7 +775,7 @@ public class S2LoopTests
 
         // Initialize the same loop using Init with a vector of vertices, and
         // check that it doesn't deallocate the original memory.
-        S2Point[] vertices = { loop1.Vertex(0), loop1.Vertex(2), loop1.Vertex(3) };
+        S2Point[] vertices = [loop1.Vertex(0), loop1.Vertex(2), loop1.Vertex(3)];
         loop1 = new S2Loop(vertices);
         var decoder2 = encoder.GetDecoder();
         var (success2, loop2) = S2Loop.Decode(decoder2);
@@ -976,7 +976,7 @@ public class S2LoopTests
     [Fact]
     internal void Test_S2LoopShape_EmptyLoop()
     {
-        S2Loop loop = S2Loop.kEmpty;
+        S2Loop loop = S2Loop.KEmpty;
         var shape = new S2Loop.Shape(loop);
         Assert.Equal(0, shape.NumEdges());
         Assert.Equal(0, shape.NumChains());
@@ -988,7 +988,7 @@ public class S2LoopTests
     [Fact]
     internal void Test_S2LoopShape_FullLoop()
     {
-        S2Loop loop = S2Loop.kFull;
+        S2Loop loop = S2Loop.KFull;
         S2Loop.Shape shape = new(loop);
         Assert.Equal(0, shape.NumEdges());
         Assert.Equal(1, shape.NumChains());
@@ -1001,7 +1001,7 @@ public class S2LoopTests
     internal void Test_S2LoopOwningShape_Ownership()
     {
         // Debug mode builds will catch any memory leak below.
-        var loop = S2Loop.kEmpty;
+        var loop = S2Loop.KEmpty;
         var shape = new S2Loop.Shape(loop);
         _logger.WriteLine("sghape.Id: " + shape.Id);
     }
@@ -1242,7 +1242,7 @@ public class S2LoopTests
                 {
                     edges[a].Add(b);
                 }
-                else if (!edges[b].Any())
+                else if (edges[b].Count==0)
                 {
                     edges.Remove(b);
                 }
@@ -1254,7 +1254,7 @@ public class S2LoopTests
 
         var vertices = new List<S2Point>();
         S2Point p = edges.First().Value.First();
-        while (edges.Any())
+        while (edges.Count!=0)
         {
             Assert.Single(edges[p]);
             S2Point next = edges[p].First();
@@ -1304,7 +1304,7 @@ public class S2LoopTests
     {
         Assert.True(loop.IsEmptyOrFull());
         S2CellId cellid = new S2CellId(loop.Vertex(0)).Parent(level);
-        S2Point[] vertices = { cellid.ToPoint() };
+        S2Point[] vertices = [cellid.ToPoint()];
         S2Loop loop2 = new(vertices);
         Assert.True(loop.BoundaryEquals(loop2));
         Assert.True(loop.BoundaryApproxEquals(loop2));
@@ -1316,7 +1316,7 @@ public class S2LoopTests
     private static void TestEmptyFullLatLng(S2Loop loop)
     {
         Assert.True(loop.IsEmptyOrFull());
-        S2Point[] vertices = { new S2LatLng(loop.Vertex(0)).ToPoint() };
+        S2Point[] vertices = [new S2LatLng(loop.Vertex(0)).ToPoint()];
         S2Loop loop2 = new(vertices);
         Assert.True(loop.BoundaryEquals(loop2));
         Assert.True(loop.BoundaryApproxEquals(loop2));

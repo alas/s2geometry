@@ -53,7 +53,7 @@ public readonly record struct PolygonDegeneracy(
             g.Options.SiblingPairs_ == SiblingPairs.DISCARD)
         {
             error = S2Error.OK;
-            return new List<PolygonDegeneracy>();  // All degeneracies have already been discarded.
+            return [];  // All degeneracies have already been discarded.
         }
         return new DegeneracyFinder(g).Run(out error);
     }
@@ -145,7 +145,7 @@ public class DegeneracyFinder
         // vector, and mark any vertices with unbalanced edges in the
         // "is_vertex_unbalanced_" vector.
         int num_degeneracies = ComputeDegeneracies();
-        if (num_degeneracies == 0) return new List<PolygonDegeneracy>();
+        if (num_degeneracies == 0) return [];
 
         // If all edges are degenerate, then use IsFullPolygon() to classify the
         // degeneracies (they are necessarily all the same type).
@@ -269,13 +269,17 @@ public class DegeneracyFinder
     // the shell/hole status of each such edge relative to the root vertex.
     private Component BuildComponent(int root)
     {
-        var result = new Component { RootSign = 0, Degeneracies = new List<PolygonDegeneracy>() };
-        result.Root = root;
         // We keep track of the frontier of unexplored vertices, and whether each
         // vertex is on the same side of the polygon boundary as the root vertex.
         var frontier = new List<(int, bool)> { (root, true) };
         is_vertex_used_[root] = true;
-        while (frontier.Any())
+        var result = new Component
+        {
+            RootSign = 0,
+            Degeneracies = [],
+            Root = root
+        };
+        while (frontier.Count!=0)
         {
             var last = frontier.Last();
             Int32 v0 = last.Item1;
@@ -394,8 +398,7 @@ public class DegeneracyFinder
     // to find the set of edges that cross a given edge.
     private void ComputeUnknownSignsIndexed(Int32 known_vertex, int known_vertex_sign, List<Component> components)
     {
-        MutableS2ShapeIndex index = new();
-        index.Add(new GraphShape(g_));
+        MutableS2ShapeIndex index = [new GraphShape(g_)];
         var query = new S2CrossingEdgeQuery(index);
         var crossing_edges = new List<Edge>();
         var crosser = new S2EdgeCrosser();
@@ -406,7 +409,7 @@ public class DegeneracyFinder
             var inside = known_vertex_sign > 0;
             crosser.Init(g_.Vertex(known_vertex), g_.Vertex(component.Root));
             query.GetCandidates(g_.Vertex(known_vertex), g_.Vertex(component.Root),
-                               index.Shape(0), crossing_edges);
+                               index.Shape(0)!, crossing_edges);
             foreach (var (_, edgeId) in crossing_edges)
             {
                 int e = edgeId;
@@ -444,7 +447,7 @@ public class DegeneracyFinder
     private readonly Graph g_;
     private readonly Graph.VertexInMap in_;
     private readonly Graph.VertexOutMap out_;
-    private readonly List<bool> is_vertex_used_ = new();        // Has vertex been visited?
-    private readonly List<bool> is_edge_degeneracy_ = new();    // Belongs to a degeneracy?
-    private readonly List<bool> is_vertex_unbalanced_ = new();  // Has unbalanced sibling pairs?
+    private readonly List<bool> is_vertex_used_ = [];        // Has vertex been visited?
+    private readonly List<bool> is_edge_degeneracy_ = [];    // Belongs to a degeneracy?
+    private readonly List<bool> is_vertex_unbalanced_ = [];  // Has unbalanced sibling pairs?
 }

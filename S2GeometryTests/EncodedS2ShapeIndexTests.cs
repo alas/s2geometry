@@ -2,11 +2,9 @@ namespace S2Geometry;
 
 using Options = S2PolylineLayer.Options;
 
-public class EncodedS2ShapeIndexTests
+public class EncodedS2ShapeIndexTests(ITestOutputHelper logger)
 {
-    private readonly ITestOutputHelper _logger;
-
-    public EncodedS2ShapeIndexTests(ITestOutputHelper logger) { _logger = logger; }
+    private readonly ITestOutputHelper _logger = logger;
 
     private static void TestEncodedS2ShapeIndex<Shape>(MutableS2ShapeIndex expected, int expected_bytes)
          where Shape : S2Shape, IInitEncoder<Shape>, new()
@@ -28,22 +26,21 @@ public class EncodedS2ShapeIndexTests
     [Fact]
     internal void Test_EncodedS2ShapeIndex_Empty()
     {
-        MutableS2ShapeIndex index = new();
+        MutableS2ShapeIndex index = [];
         TestEncodedS2ShapeIndex<S2LaxPolylineShape>(index, 4); // S2LaxPolylineShape
     }
 
     [Fact]
     internal void Test_EncodedS2ShapeIndex_OneEdge()
     {
-        MutableS2ShapeIndex index = new();
-        index.Add(MakeLaxPolylineOrDie("1:1, 2:2"));
+        MutableS2ShapeIndex index = [MakeLaxPolylineOrDie("1:1, 2:2")];
         TestEncodedS2ShapeIndex<S2LaxPolylineShape>(index, 8); // S2LaxPolylineShape
     }
 
     [Fact]
     internal void Test_EncodedS2ShapeIndex_RegularLoops()
     {
-        (int num_edges, int expected_bytes)[] test_cases = {
+        (int num_edges, int expected_bytes)[] test_cases = [
             (4, 8),
             (8, 8),
             ( 16, 16),
@@ -51,11 +48,11 @@ public class EncodedS2ShapeIndexTests
             ( 256, 327),
             ( 4096, 8813),
             ( 65536, 168291),
-        };
+        ];
 
         foreach (var (num_edges, expected_bytes) in test_cases)
         {
-            MutableS2ShapeIndex index = new();
+            MutableS2ShapeIndex index = [];
             S2Testing.Random.Reset(num_edges);
             _logger.WriteLine($"num_edges = {num_edges}");
             S2Polygon polygon = new(S2Loop.MakeRegularLoop(new S2Point(3, 2, 1).Normalize(),
@@ -74,26 +71,26 @@ public class EncodedS2ShapeIndexTests
     [Fact]
     internal void Test_EncodedS2ShapeIndex_OverlappingPointClouds()
     {
-        (int num_shapes, int num_points_per_shape, int expected_bytes)[] test_cases = {
+        (int num_shapes, int num_points_per_shape, int expected_bytes)[] test_cases = [
             (1, 50, 83),
             (2, 100, 583),
             (4, 100, 1383),
-        };
+        ];
 
         S2Cap cap = new(new S2Point(0.1, -0.4, 0.3).Normalize(), S1Angle.FromDegrees(1));
         foreach (var (num_shapes, num_points_per_shape, expected_bytes) in test_cases)
         {
-            MutableS2ShapeIndex index = new();
+            MutableS2ShapeIndex index = [];
             S2Testing.Random.Reset(num_shapes);
             _logger.WriteLine($"num_shapes = {num_shapes}");
             for (int i = 0; i < num_shapes; ++i)
             {
-                List<S2Point> points = new();
+                List<S2Point> points = [];
                 for (int j = 0; j < num_points_per_shape; ++j)
                 {
                     points.Add(S2Testing.SamplePoint(cap));
                 }
-                index.Add(new S2PointVectorShape(points.ToArray()));
+                index.Add(new S2PointVectorShape([.. points]));
             }
             TestEncodedS2ShapeIndex<S2PointVectorShape>( // EncodedS2PointVectorShape
                 index, expected_bytes);
@@ -104,23 +101,23 @@ public class EncodedS2ShapeIndexTests
     [Fact]
     internal void Test_EncodedS2ShapeIndex_OverlappingPolylines()
     {
-        (int num_shapes, int num_shape_edges, int expected_bytes)[] test_cases = {
+        (int num_shapes, int num_shape_edges, int expected_bytes)[] test_cases = [
             (2, 50, 139),
             (10, 50, 777),
             (20, 50, 2219),
-        };
+        ];
 
         S2Cap cap = new(new S2Point(-0.2, -0.3, 0.4).Normalize(), S1Angle.FromDegrees(0.1));
         foreach (var (num_shapes, num_shape_edges, expected_bytes) in test_cases)
         {
             S1Angle edge_len = 2 * cap.RadiusAngle() / num_shape_edges;
-            MutableS2ShapeIndex index = new();
+            MutableS2ShapeIndex index = [];
             S2Testing.Random.Reset(num_shapes);
             _logger.WriteLine($"num_shapes = {num_shapes}");
             for (int i = 0; i < num_shapes; ++i)
             {
                 S2Point a = S2Testing.SamplePoint(cap), b = S2Testing.RandomPoint();
-                List<S2Point> vertices = new();
+                List<S2Point> vertices = [];
                 int n = num_shape_edges;
                 for (int j = 0; j <= n; ++j)
                 {
@@ -137,16 +134,16 @@ public class EncodedS2ShapeIndexTests
     [Fact]
     internal void Test_EncodedS2ShapeIndex_OverlappingLoops()
     {
-        (int num_shapes, int max_edges_per_loop, int expected_bytes)[] test_cases = {
+        (int num_shapes, int max_edges_per_loop, int expected_bytes)[] test_cases = [
             (2, 250, 138),
             (5, 250, 1084),
             (25, 50, 3673),
-        };
+        ];
 
         S2Cap cap = new(new S2Point(-0.1, 0.25, 0.2).Normalize(), S1Angle.FromDegrees(3));
         foreach (var (num_shapes, max_edges_per_loop, expected_bytes) in test_cases)
         {
-            MutableS2ShapeIndex index = new();
+            MutableS2ShapeIndex index = [];
             S2Testing.Random.Reset(num_shapes);
             _logger.WriteLine($"num_shapes = {num_shapes}");
             for (int i = 0; i < num_shapes; ++i)
@@ -168,7 +165,7 @@ public class EncodedS2ShapeIndexTests
     [Fact]
     internal void Test_EncodedS2ShapeIndex_SnappedFractalPolylines()
     {
-        MutableS2ShapeIndex index = new();
+        MutableS2ShapeIndex index = [];
         S2Builder builder = new(new S2Builder.Options(new S2CellIdSnapFunction()));
         for (int i = 0; i < 5; ++i)
         {
@@ -177,7 +174,7 @@ public class EncodedS2ShapeIndexTests
             fractal.SetLevelForApproxMaxEdges(3 * 256);
             var frame = S2.GetFrame(S2LatLng.FromDegrees(10, i).ToPoint());
             var loop = fractal.MakeLoop(frame, S1Angle.FromDegrees(0.1));
-            List<S2Point> vertices = new();
+            List<S2Point> vertices = [];
             S2Testing.AppendLoopVertices(loop, vertices);
             S2Polyline polyline = new(vertices.ToArray());
             builder.AddPolyline(polyline);
@@ -205,9 +202,11 @@ public class EncodedS2ShapeIndexTests
     [Fact]
     internal void Test_EncodedS2ShapeIndex_JavaByteCompatibility()
     {
-        MutableS2ShapeIndex expected = new();
-        expected.Add(new S2Polyline.OwningShape(MakePolylineOrDie("0:0, 1:1")));
-        expected.Add(new S2Polyline.OwningShape(MakePolylineOrDie("1:1, 2:2")));
+        MutableS2ShapeIndex expected =
+        [
+            new S2Polyline.OwningShape(MakePolylineOrDie("0:0, 1:1")),
+            new S2Polyline.OwningShape(MakePolylineOrDie("1:1, 2:2")),
+        ];
         expected.Release(0);
 
         // bytes is the encoded data of an S2ShapeIndex with a null shape and a
@@ -217,7 +216,7 @@ public class EncodedS2ShapeIndexTests
             "100036020102000000B4825F3C81FDEF3F27DCF7C958DE913F1EDD892B0BDF913FFC7FB8" +
             "B805F6EF3F28516A6D8FDBA13F27DCF7C958DEA13F28C809010408020010");
         Decoder decoder = new(bytes, 0, bytes.Length);
-        MutableS2ShapeIndex actual = new();
+        MutableS2ShapeIndex actual = [];
         Assert.True(actual.Init(decoder, S2ShapeUtilCoding.FullDecodeShapeFactory(decoder)));
 
         S2ShapeUtil_Testing.ExpectEqual(expected, actual);
@@ -240,7 +239,7 @@ public class EncodedS2ShapeIndexTests
             // different.  Having fewer cells in the index is more likely to trigger
             // race conditions, and so shape 0 has 384 points, shape 1 is a polyline
             // with 96 vertices, and shape 2 is a polygon with 24 vertices.
-            MutableS2ShapeIndex input = new();
+            MutableS2ShapeIndex input = [];
             for (int dim = 0; dim < 3; ++dim)
             {
                 int level = 3 - dim;  // See comments above.
@@ -255,7 +254,7 @@ public class EncodedS2ShapeIndexTests
                     case 0: input.Add(new S2PointVectorShape(vertices)); break;
                     case 1: input.Add(new S2LaxPolylineShape(vertices)); break;
                     default:
-                        input.Add(new S2LaxPolygonShape(new[] { verticesTmp }.ToList()));
+                        input.Add(new S2LaxPolygonShape([verticesTmp]));
                         break;
                 }
             }

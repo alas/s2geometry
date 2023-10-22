@@ -18,7 +18,7 @@ public class StringVectorEncoder
     // A vector consisting of the starting offset of each string in the
     // encoder's data buffer, plus a final entry pointing just past the end of
     // the last string.
-    private readonly List<UInt64> offsets_ = new();
+    private readonly List<UInt64> offsets_ = [];
     private readonly Encoder data_ = new();
 
     public StringVectorEncoder() { }
@@ -112,7 +112,9 @@ public class EncodedStringVector : IInitEncoder<EncodedStringVector>
     }
 
     // Resets the vector to be empty.
+#pragma warning disable CA1822 // Mark members as static
     public void Clear()
+#pragma warning restore CA1822 // Mark members as static
     {
         //offsets_ = null;
         //data_ = Array.Empty<byte>();

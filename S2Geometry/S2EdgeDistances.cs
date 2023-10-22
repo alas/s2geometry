@@ -24,7 +24,7 @@ public static partial class S2
     // kGetPointOnRayPerpendicularError is an upper bound on the distance from the
     // point returned by GetPointOnRay() to the ray itself.  Note that it only
     // bounds the error perpendicular to the ray, not the error parallel to it.
-    public const double kGetPointOnRayPerpendicularError = (3 * S2Pred.DBL_ERR);
+    public const double kGetPointOnRayPerpendicularError = 3 * S2Pred.DBL_ERR;
 
     public static readonly S1Angle kGetPointOnRayPerpendicularErrorS1Angle = S1Angle.FromRadians(kGetPointOnRayPerpendicularError);
 
@@ -462,8 +462,8 @@ public static partial class S2
         // bisector of the endpoints of A in the hemisphere opposite A's midpoint.
         if (planar_angle >= S1Angle.FromRadians(S2.M_PI_2))
         {
-            return ((new S1Angle(b0, a0) < new S1Angle(b0, a1)) ==
-                    (new S1Angle(b1, a0) < new S1Angle(b1, a1)));
+            return (new S1Angle(b0, a0) < new S1Angle(b0, a1)) ==
+                    (new S1Angle(b1, a0) < new S1Angle(b1, a1));
         }
 
         // Otherwise, if either of the two points on circ(B) where circ(B) is
@@ -565,8 +565,8 @@ public static partial class S2
         //
         //        4.75 * DBL_EPSILON * (XA^2 + XB^2 + AB^2) + 8 * DBL_EPSILON ^ 2 .
         var ab2 = (a - b).Norm2();
-        var max_error = (4.75 * S2.DoubleEpsilon * (xa2 + xb2 + ab2) +
-                            8 * S2.DoubleEpsilon * S2.DoubleEpsilon);
+        var max_error = 4.75 * S2.DoubleEpsilon * (xa2 + xb2 + ab2) +
+                            8 * S2.DoubleEpsilon * S2.DoubleEpsilon;
         if (Math.Abs(xa2 - xb2) >= ab2 + max_error)
         {
             return false;

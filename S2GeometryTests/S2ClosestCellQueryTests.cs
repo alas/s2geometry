@@ -3,16 +3,14 @@ namespace S2Geometry;
 using LabelledCell = S2CellIndex.LabelledCell;
 using Target = S2MinDistanceTarget;
 
-public class S2ClosestCellQueryTests
+public class S2ClosestCellQueryTests(ITestOutputHelper logger)
 {
     // The approximate radius of S2Cap from which query cells are chosen.
     private static readonly S1Angle kTestCapRadius = S2Testing.KmToAngle(10);
     private const int kNumIndexes = 20;
     private const int kNumCells = 100;
     private const int kNumQueries = 100;
-    private readonly ITestOutputHelper _logger;
-
-    public S2ClosestCellQueryTests(ITestOutputHelper logger) { _logger = logger; }
+    private readonly ITestOutputHelper _logger = logger;
 
     [Fact]
     internal void Test_S2ClosestCellQuery_NoCells() {
@@ -133,7 +131,7 @@ public class S2ClosestCellQueryTests
         index.Build();
         S2ClosestCellQuery query = new(index);
         query.Options_.MaxDistance = new S1ChordAngle(S1Angle.FromRadians(1e-5));
-        MutableS2ShapeIndex target_index=new();
+        MutableS2ShapeIndex target_index=[];
         S2ClosestCellQuery.ShapeIndexTarget target = new(target_index);
         Assert.Empty(query.FindClosestCells(target));
     }
@@ -209,7 +207,7 @@ public class S2ClosestCellQueryTests
 
     private void TestFindClosestCells(Target target, S2ClosestCellQuery query)
     {
-        List<(S1ChordAngle, LabelledCell)> expected = new(), actual = new();
+        List<(S1ChordAngle, LabelledCell)> expected = [], actual = [];
         query.Options_.UseBruteForce = true;
         GetClosestCells(target, query, expected);
         query.Options_.UseBruteForce = false;
@@ -221,7 +219,7 @@ public class S2ClosestCellQueryTests
                 query.Options_.MaxError,
                 _logger.WriteLine));
 
-        if (!expected.Any()) return;
+        if (expected.Count==0) return;
 
         // Note that when options.max_error() > 0, expected[0].distance() may not be
         // the minimum distance.  It is never larger by more than max_error(), but
@@ -245,8 +243,8 @@ public class S2ClosestCellQueryTests
         int num_indexes, int num_cells, int num_queries)
     {
         // Build a set of S2CellIndexes containing the desired geometry.
-        List<S2Cap> index_caps = new();
-        List<S2CellIndex> indexes = new();
+        List<S2Cap> index_caps = [];
+        List<S2CellIndex> indexes = [];
         for (int i = 0; i < num_indexes; ++i)
         {
             S2Testing.Random.Reset(S2Testing.Random.RandomSeed + i);
@@ -329,14 +327,14 @@ public class S2ClosestCellQueryTests
                 S2Cap cap = new(S2Testing.SamplePoint(query_cap),
                     0.1 * Math.Pow(1e-4, S2Testing.Random.RandDouble()) * query_radius);
                 S2RegionCoverer coverer = new();
-                coverer.Options_.MaxCells=(16);
+                coverer.Options_.MaxCells=16;
                 S2ClosestCellQuery.CellUnionTarget target = new(coverer.GetCovering(cap));
                 TestFindClosestCells(target, query);
             }
             else
             {
                 Assert.Equal(4, target_type);
-                MutableS2ShapeIndex target_index = new();
+                MutableS2ShapeIndex target_index = [];
                 new FractalLoopShapeIndexFactory().AddEdges(index_cap, 100, target_index);
                 S2ClosestCellQuery.ShapeIndexTarget target = new(target_index)
                 {
@@ -359,7 +357,7 @@ public class S2ClosestCellQueryTests
     // adds a leaf S2CellId for each one.
     private struct PointCloudCellIndexFactory : ICellIndexFactory
     {
-        public void AddCells(S2Cap index_cap, int num_cells, S2CellIndex index)
+        public readonly void AddCells(S2Cap index_cap, int num_cells, S2CellIndex index)
         {
             for (int i = 0; i < num_cells; ++i)
             {

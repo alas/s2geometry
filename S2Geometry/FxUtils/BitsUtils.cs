@@ -38,7 +38,7 @@ public static class BitsUtils
         var value = n;
         for (var i = 4; i >= 0; --i)
         {
-            var shift = (1 << i);
+            var shift = 1 << i;
             var x = value >> shift;
             if (x != 0)
             {

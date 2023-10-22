@@ -82,8 +82,8 @@ public class S2CellIndex
     // Default constructor.
     public S2CellIndex()
     {
-        range_nodes_ = new List<RangeNode>();
-        cell_tree_ = new List<CellNode>();
+        range_nodes_ = [];
+        cell_tree_ = [];
     }
 
     // Returns the number of (cell_id, label) pairs in the index.
@@ -185,7 +185,7 @@ public class S2CellIndex
     // once.  (If the index contains duplicates, then each copy is visited.)
     public bool VisitIntersectingCells(S2CellUnion target, CellVisitor visitor)
     {
-        if (!target.CellIds.Any()) return true;
+        if (target.CellIds.Count==0) return true;
 
         var contents = new ContentsEnumerator(this);
 
@@ -251,16 +251,10 @@ public class S2CellIndex
 
     // Represents a node in the (cell_id, label) tree.  Cells are organized in a
     // tree such that the ancestors of a given node contain that node.
-    public readonly struct CellNode
+    public readonly struct CellNode(S2CellId cell_id, Int32 label, Int32 parent)
     {
-        public readonly S2CellId CellId { get; init; }
-        public readonly Int32 Parent { get; init; }
-        public readonly Int32 Label { get; init; }
-
+        public readonly S2CellId CellId { get; init; } = cell_id; public readonly Int32 Parent { get; init; } = parent; public readonly Int32 Label { get; init; } = label;
         public static readonly CellNode Zero = new(S2CellId.None, kDoneContents, -1);
-
-        public CellNode(S2CellId cell_id, Int32 label, Int32 parent)
-        { CellId = cell_id; Label = label; Parent = parent; }
     }
 
     // An iterator that visits the entire set of indexed (cell_id, label) pairs
@@ -287,14 +281,14 @@ public class S2CellIndex
         {
             range_nodes_ = index.range_nodes_;
             Position = -1;
-            MyDebug.Assert(range_nodes_.Any(), "Call Build() first.");
+            MyDebug.Assert(range_nodes_.Count!=0, "Call Build() first.");
         }
 
         public RangeNodeEnumerator(List<RangeNode> rangeNodes, int position)
         {
             range_nodes_ = rangeNodes;
             Position = position;
-            MyDebug.Assert(range_nodes_.Any(), "Call Build() first.");
+            MyDebug.Assert(range_nodes_.Count!=0, "Call Build() first.");
         }
 
         public virtual bool MoveNext()

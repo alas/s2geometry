@@ -18,7 +18,7 @@ public class S2LoopMeasuresTests
     public S2LoopMeasuresTests()
     {
         // The full loop is represented as a loop with no vertices.
-        full_ = new();
+        full_ = [];
 
         // A degenerate loop in the shape of a "V".
         v_loop_ = ParsePointsOrDie("5:1, 0:2, 5:3, 0:2");
@@ -102,14 +102,14 @@ public class S2LoopMeasuresTests
     [Fact]
     internal void Test_GetPerimeter_Empty()
     {
-        Assert.Equal(S1Angle.Zero, S2.GetPerimeter(Array.Empty<S2Point>()));
+        Assert.Equal(S1Angle.Zero, S2.GetPerimeter([]));
     }
 
     [Fact]
     internal void Test_GetPerimeter_Octant()
     {
         var loop = ParsePointsOrDie("0:0, 0:90, 90:0");
-        Assert2.DoubleEqual(3 * S2.M_PI_2, S2.GetPerimeter(loop.ToArray()).Radians);
+        Assert2.DoubleEqual(3 * S2.M_PI_2, S2.GetPerimeter([.. loop]).Radians);
     }
 
     [Fact]
@@ -152,10 +152,10 @@ public class S2LoopMeasuresTests
         // GetSurfaceIntegral() returns an area > 4 * Pi for this loop.  (Note that
         // the result of GetSurfaceIntegral is only correct modulo 4 * Pi, and that
         // S2::GetSignedArea() automatically corrects for this.)
-        S2PointLoopSpan loop1 = new() {
+        S2PointLoopSpan loop1 = [
             new(1, 0, 0), new(0, 1, 1e-150), new S2Point(-1, -2, 0).Normalize(),
             new(-1, 0, 1e-50), new(0, 0, 1)
-        };
+        ];
         Assert.True(new S2Loop(loop1).IsValid());
         Assert.True(S2.GetSurfaceIntegral(loop1, S2.SignedArea) > 4 * S2.M_PI + 0.1);
         TestAreaConsistentWithCurvature(loop1);
@@ -174,7 +174,7 @@ public class S2LoopMeasuresTests
             int num_vertices = 3 + S2Testing.Random.Uniform(kMaxVertices - 3 + 1);
             // Repeatedly choose N vertices that are exactly on the equator until we
             // find some that form a valid loop.
-            S2PointLoopSpan loop = new();
+            S2PointLoopSpan loop = [];
             do
             {
                 for (int i2 = 0; i2 < num_vertices; ++i2)
@@ -231,7 +231,7 @@ public class S2LoopMeasuresTests
             double max_dtheta = 2 * Math.Acos(Math.Tan(Math.Abs(phi)) / Math.Tan(Math.Abs(phi) + kMaxDist));
             max_dtheta = Math.Min(Math.PI, max_dtheta);  // At least 3 vertices.
 
-            S2PointLoopSpan loop = new();
+            S2PointLoopSpan loop = [];
             for (double theta = 0; theta < S2.M_2_PI;
                  theta += S2Testing.Random.RandDouble() * max_dtheta)
             {
@@ -281,11 +281,13 @@ public class S2LoopMeasuresTests
         // This is a pathological loop that contains many long parallel edges.
         int kArmPoints = 10000;    // Number of vertices in each "arm"
         double kArmRadius = 0.01;  // Radius of spiral.
-        S2PointLoopSpan spiral = new(2 * kArmPoints);
-        spiral[kArmPoints] = new S2Point(0, 0, 1);
+        S2PointLoopSpan spiral = new(2 * kArmPoints)
+        {
+            [kArmPoints] = new S2Point(0, 0, 1)
+        };
         for (int i = 0; i < kArmPoints; ++i)
         {
-            double angle = (S2.M_2_PI / 3) * i;
+            double angle = S2.M_2_PI / 3 * i;
             double x = Math.Cos(angle);
             double y = Math.Sin(angle);
             double r1 = i * kArmRadius / kArmPoints;

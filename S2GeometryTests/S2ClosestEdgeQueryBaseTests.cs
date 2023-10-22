@@ -14,8 +14,10 @@ public class S2ClosestEdgeQueryBaseTests
     {
         var index = MakeIndexOrDie("0:0 | 1:0 | 2:0 | 3:0 # #");
         FurthestEdgeQuery query = new(index);
-        FurthestEdgeQuery.Options options = new();
-        options.MaxResults = (1);
+        FurthestEdgeQuery.Options options = new()
+        {
+            MaxResults = 1
+        };
         FurthestPointTarget target = new(MakePointOrDie("4:0"));
         var results = query.FindClosestEdges(target, options);
         Assert.Single(results);

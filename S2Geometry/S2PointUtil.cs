@@ -60,7 +60,7 @@ public static partial class S2
 #else
         int k = a.LargestAbsComponent() - 1;
         if (k < 0) k = 2;
-        double[] temp = { 0.012, 0.0053, 0.00457 };
+        double[] temp = [0.012, 0.0053, 0.00457];
         temp[k] = 1;
         S2Point s2 = new(temp);
         return a.CrossProd(s2).Normalize();

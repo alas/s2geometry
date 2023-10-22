@@ -11,7 +11,7 @@ using SiblingPairs = GraphOptions.SiblingPairs;
 // This layer expects all edges to be degenerate. In case of finding
 // non-degenerate edges it sets S2Error but it still generates the
 // output with degenerate edges.
-public class S2PointVectorLayer : Layer
+public class S2PointVectorLayer(List<S2Point> points, LabelSet? label_set_ids, IdSetLexicon? label_set_lexicon, S2PointVectorLayer.Options? options = null) : Layer
 {
     public class Options
     {
@@ -23,14 +23,6 @@ public class S2PointVectorLayer : Layer
     }
 
     public S2PointVectorLayer(List<S2Point> points, Options? options = null) : this(points, null, null, options ?? new Options()) { }
-
-    public S2PointVectorLayer(List<S2Point> points, LabelSet? label_set_ids, IdSetLexicon? label_set_lexicon, Options? options = null)
-    {
-        points_ = points;
-        label_set_ids_ = label_set_ids;
-        label_set_lexicon_ = label_set_lexicon;
-        options_ = options ?? new Options();
-    }
 
     // Layer interface:
     public override GraphOptions GraphOptions_()
@@ -60,10 +52,10 @@ public class S2PointVectorLayer : Layer
         }
     }
 
-    private readonly List<S2Point> points_;
-    private readonly LabelSet? label_set_ids_;
-    private readonly IdSetLexicon? label_set_lexicon_;
-    private readonly Options options_;
+    private readonly List<S2Point> points_ = points;
+    private readonly LabelSet? label_set_ids_ = label_set_ids;
+    private readonly IdSetLexicon? label_set_lexicon_ = label_set_lexicon;
+    private readonly Options options_ = options ?? new Options();
 }
 
 // Like S2PointVectorLayer, but adds the points to a MutableS2ShapeIndex (if
@@ -81,13 +73,13 @@ public class IndexedS2PointVectorLayer : Layer
     public override void Build(Graph g, out S2Error error)
     {
         layer_.Build(g, out error);
-        if (error.IsOk() && points_.Any())
+        if (error.IsOk() && points_.Count!=0)
         {
-            index_.Add(new S2PointVectorShape(points_.ToArray()));
+            index_.Add(new S2PointVectorShape([.. points_]));
         }
     }
 
     private readonly MutableS2ShapeIndex index_;
-    private readonly List<S2Point> points_ = new();
+    private readonly List<S2Point> points_ = [];
     private readonly S2PointVectorLayer layer_;
 }

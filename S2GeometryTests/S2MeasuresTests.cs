@@ -8,7 +8,7 @@ public class S2MeasuresTests
         S2Point pz = new(0, 0, 1);
         S2Point p000 = new(1, 0, 0);
         S2Point p045 = new S2Point(1, 1, 0).Normalize();
-        S2Point p090 = new(0, 1, 0);
+        _ = new S2Point(0, 1, 0);
         S2Point p180 = new(-1, 0, 0);
 
         Assert2.Near(S2.Angle(p000, pz, p045), S2.M_PI_4);
@@ -104,8 +104,8 @@ public class S2MeasuresTests
             S2Point p2 = S2LatLng.FromRadians(0, p2_lng).Normalized().ToPoint();
             S2Point p3 = S2LatLng.FromRadians(0, lng + Math.PI).Normalized().ToPoint();
             S2Point p4 = S2LatLng.FromRadians(0, lng + 5.0).Normalized().ToPoint();
-            double area = (S2.Area(p0, p1, p2) + S2.Area(p0, p2, p3) +
-                           S2.Area(p0, p3, p4) + S2.Area(p0, p4, p1));
+            double area = S2.Area(p0, p1, p2) + S2.Area(p0, p2, p3) +
+                           S2.Area(p0, p3, p4) + S2.Area(p0, p4, p1);
             Assert2.Near(area, S2.M_2_PI, 2e-15);
         }
 

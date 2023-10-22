@@ -31,9 +31,9 @@ using System.Numerics;
 
 public class SequenceLexicon<T> where T : IComparable<T>, INumber<T>
 {
-    private readonly List<T> values_ = new();
-    private readonly List<int> begins_ = new() { 0 };
-    private readonly Dictionary<ulong, int> id_set_ = new();
+    private readonly List<T> values_ = [];
+    private readonly List<int> begins_ = [0];
+    private readonly Dictionary<ulong, int> id_set_ = [];
 
     public SequenceLexicon() { }
 
@@ -52,7 +52,7 @@ public class SequenceLexicon<T> where T : IComparable<T>, INumber<T>
     public int Add(IEnumerable<T> values)
     {
         var hash = HashMix.GetHash(values);
-        if (!id_set_.ContainsKey(hash))
+        if (!id_set_.TryGetValue(hash, out int value))
         {
             values_.AddRange(values);
             begins_.Add(values_.Count);
@@ -62,7 +62,7 @@ public class SequenceLexicon<T> where T : IComparable<T>, INumber<T>
         }
         else
         {
-            return id_set_[hash];
+            return value;
         }
     }
 
@@ -73,7 +73,7 @@ public class SequenceLexicon<T> where T : IComparable<T>, INumber<T>
     //   for (const auto& value : lexicon.sequence(id)) { ... }
     public List<T> Sequence(int id)
     {
-        List<T> result = new();
+        List<T> result = [];
         for (var i = begins_[id]; i < begins_[id + 1]; i++)
         {
             result.Add(values_[i]);

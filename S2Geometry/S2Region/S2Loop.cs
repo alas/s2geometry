@@ -75,7 +75,7 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
     private S2LatLngRect _subregionBound;
 
     // Spatial index for this loop.
-    private MutableS2ShapeIndex _index = new();
+    private MutableS2ShapeIndex _index = [];
 
     //    "Build the S2ShapeIndex only when it is first needed.  This can save "
     //    "significant amounts of memory and time when geometry is constructed but "
@@ -103,11 +103,11 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
     //
     // The loop may be safely encoded lossily (e.g. by snapping it to an S2Cell
     // center) as long as its position does not move by 90 degrees or more.
-    public static S2Loop kEmpty => new(new S2Point[] { kEmptyVertex });
+    public static S2Loop KEmpty => new(new S2Point[] { kEmptyVertex });
 
     // A special vertex chain of length 1 that creates a full loop (i.e., a loop
     // with no edges that contains all points).  See kEmpty() for details.
-    public static S2Loop kFull => new(new S2Point[] { kFullVertex });
+    public static S2Loop KFull => new(new S2Point[] { kFullVertex });
 
     // Aux key for Dictionaries
     public static S2Loop NullLoop() => new(new S2Point[] { S2Point.Empty }, S2Debug.DISABLE);
@@ -171,7 +171,7 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
     }
 
     // for Clone and Decode
-    private S2Loop() { Vertices = Array.Empty<S2Point>(); }
+    private S2Loop() => Vertices = [];
 
     // Construct a loop corresponding to the given cell.
     //
@@ -448,8 +448,10 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
     // boundary).  "x" should be unit length.
     public S2Point ProjectToBoundary(S2Point x)
     {
-        S2ClosestEdgeQuery.Options options = new();
-        options.IncludeInteriors = false;
+        S2ClosestEdgeQuery.Options options = new()
+        {
+            IncludeInteriors = false
+        };
         var q = new S2ClosestEdgeQuery(_index, options);
         var target = new S2ClosestEdgeQuery.PointTarget(x);
         var edge = q.FindClosestEdge(target);
@@ -1320,7 +1322,7 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
         if (b2 == a0 || b2 == a2)
         {
             // We have a shared or reversed edge.
-            return (b2 == a0) == reverse_b;
+            return b2 == a0 == reverse_b;
         }
         else
         {
@@ -1344,7 +1346,7 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
         var pending = new List<(int i, int j)>();
         var done = new SortedSet<(int i, int j)>();
         pending.Add((0, 0));
-        while (pending.Any())
+        while (pending.Count!=0)
         {
             var (i, j) = pending.Last();
             pending.RemoveAt(pending.Count - 1);
@@ -1667,12 +1669,9 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
     // class does not take ownership of the loop itself (see OwningShape below).
     // You can also subtype this class to store additional data (see S2Shape for
     // details).
-    public class Shape : S2Shape
+    public class Shape(S2Loop loop) : S2Shape
     {
-        public Shape(S2Loop loop) { Loop = loop; }
-
-        public S2Loop Loop { get; private set; }
-
+        public S2Loop Loop { get; private set; } = loop;
         // S2Shape interface:
         public override int NumEdges()
         {
@@ -1774,7 +1773,7 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
 
         // The current S2CellId and cell contents.
         public S2CellId Id => _it.Id;
-        public S2ShapeIndexCell Cell => _it.Cell;
+        public S2ShapeIndexCell Cell => _it.Cell!;
 
         // Various other convenience methods for the current cell.
         public S2ClippedShape Clipped() { return Cell.Clipped(0); }
@@ -1850,7 +1849,7 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
 
         // Temporary data declared here to avoid repeated memory allocations.
         private readonly S2CrossingEdgeQuery b_query_;
-        private readonly List<S2ShapeIndexCell> b_cells_ = new();
+        private readonly List<S2ShapeIndexCell> b_cells_ = [];
 
         #endregion
 
@@ -1988,7 +1987,7 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
                 // Use an S2CrossingEdgeQuery starting at "b_root" to find the index cells
                 // of B that might contain crossing edges.
                 b_query_.GetCells(a_.Vertex(aj), a_.Vertex(aj + 1), b_root, b_cells_);
-                if (!b_cells_.Any()) continue;
+                if (b_cells_.Count==0) continue;
                 StartEdge(aj);
                 foreach (var b_cell in b_cells_)
                 {
@@ -2084,20 +2083,12 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
     }
 
     // Loop relation for CompareBoundary().
-    internal class CompareBoundaryRelation : LoopRelation
+    internal class CompareBoundaryRelation(bool reverse_b) : LoopRelation
     {
-        public bool FoundSharedVertex { get; private set; }
-        public bool ContainsEdge { get; private set; }
-        private readonly bool reverse_b_;      // True if loop B should be reversed.
-        private bool excludes_edge_;        // True if any edge of B is excluded by A.
-
-        public CompareBoundaryRelation(bool reverse_b)
-        {
-            reverse_b_ = reverse_b;
-            FoundSharedVertex = false;
-            ContainsEdge = false;
-            excludes_edge_ = false;
-        }
+        public bool FoundSharedVertex { get; private set; } = false;
+        public bool ContainsEdge { get; private set; } = false;
+        private readonly bool reverse_b_ = reverse_b;      // True if loop B should be reversed.
+        private bool excludes_edge_ = false;        // True if any edge of B is excluded by A.
 
         // The CompareBoundary relation does not have a useful early-exit condition,
         // so we return -1 for both crossing targets.

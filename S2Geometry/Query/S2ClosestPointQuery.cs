@@ -62,6 +62,8 @@ using Target = S2DistanceTarget<S1ChordAngle>;
 
 public class S2ClosestPointQuery<Data> where Data : IComparable<Data>
 {
+    private readonly S2ClosestPointQueryBase<Distance, Data> base_;
+
     // Options that control the set of points returned.  Note that by default
     // *all* points are returned, so you will always want to set either the
     // max_results() option or the max_distance() option (or both).
@@ -86,7 +88,7 @@ public class S2ClosestPointQuery<Data> where Data : IComparable<Data>
         // Like set_max_distance(), except that points whose distance is exactly
         // equal to "max_distance" are also returned.  Equivalent to calling
         // set_max_distance(max_distance.Successor()).
-        public Distance InclusiveMaxDistance { set => MaxDistance = (value.Successor()); }
+        public Distance InclusiveMaxDistance { set => MaxDistance = value.Successor(); }
 
         // Like set_inclusive_max_distance(), except that "max_distance" is also
         // increased by the maximum error in the distance calculation.  This ensures
@@ -99,8 +101,8 @@ public class S2ClosestPointQuery<Data> where Data : IComparable<Data>
         // further (e.g., using S2Pred.CompareDistance).
         public Distance ConservativeMaxDistance
         {
-            set => MaxDistance = (value.PlusError(
-S2.GetUpdateMinDistanceMaxError(value)).Successor());
+            set => MaxDistance = value.PlusError(
+S2.GetUpdateMinDistanceMaxError(value)).Successor();
         }
     }
 
@@ -108,10 +110,8 @@ S2.GetUpdateMinDistanceMaxError(value)).Successor());
     //
     // This class is also available as S2ClosestPointQuery<Data>.PointTarget.
     // (It is defined here to avoid depending on the "Data" template argument.)
-    public sealed class PointTarget : S2MinDistancePointTarget
+    public sealed class PointTarget(S2Point point) : S2MinDistancePointTarget(point)
     {
-        public PointTarget(S2Point point)
-        : base(point) { }
         public override int MaxBruteForceIndexSize =>
             // Using BM_FindClosest (which finds the single closest point), the
             // break-even points are approximately X, Y, and Z points for grid,
@@ -125,9 +125,8 @@ S2.GetUpdateMinDistanceMaxError(value)).Successor());
     //
     // This class is also available as S2ClosestPointQuery<Data>.EdgeTarget.
     // (It is defined here to avoid depending on the "Data" template argument.)
-    public sealed class EdgeTarget : S2MinDistanceEdgeTarget
+    public sealed class EdgeTarget(S2Point a, S2Point b) : S2MinDistanceEdgeTarget(a, b)
     {
-        public EdgeTarget(S2Point a, S2Point b) : base(a, b) { }
         public override int MaxBruteForceIndexSize =>
             // Using BM_FindClosestToEdge (which finds the single closest point), the
             // break-even points are approximately X, Y, and Z points for grid,
@@ -142,9 +141,8 @@ S2.GetUpdateMinDistanceMaxError(value)).Successor());
     //
     // This class is also available as S2ClosestPointQuery<Data>.CellTarget.
     // (It is defined here to avoid depending on the "Data" template argument.)
-    public sealed class CellTarget : S2MinDistanceCellTarget
+    public sealed class CellTarget(S2Cell cell) : S2MinDistanceCellTarget(cell)
     {
-        public CellTarget(S2Cell cell) : base(cell) { }
         public override int MaxBruteForceIndexSize =>
             // Using BM_FindClosestToCell (which finds the single closest point), the
             // break-even points are approximately X, Y, and Z points for grid,
@@ -167,9 +165,8 @@ S2.GetUpdateMinDistanceMaxError(value)).Successor());
     //
     // This class is also available as S2ClosestPointQuery<Data>.ShapeIndexTarget.
     // (It is defined here to avoid depending on the "Data" template argument.)
-    public sealed class ShapeIndexTarget : S2MinDistanceShapeIndexTarget
+    public sealed class ShapeIndexTarget(S2ShapeIndex index) : S2MinDistanceShapeIndexTarget(index)
     {
-        public ShapeIndexTarget(S2ShapeIndex index) : base(index) { }
         public override int MaxBruteForceIndexSize =>
             // For BM_FindClosestToSameSizeAbuttingIndex (which uses a nearby
             // S2ShapeIndex target of similar complexity), the break-even points are
@@ -182,23 +179,16 @@ S2.GetUpdateMinDistanceMaxError(value)).Successor());
 
     // Convenience constructor that calls Init().  Options may be specified here
     // or changed at any time using the Options() accessor method.
-    public S2ClosestPointQuery(S2PointIndex<Data> index, Options? options = null)
-    {
-        Init(index, options ?? new Options());
-    }
-
-    // Default constructor; requires Init() to be called.
-    public S2ClosestPointQuery() { }
-
+    //
     // Initializes the query.  Options may be specified here or changed at any
     // time using the Options() accessor method.
     //
     // REQUIRES: "index" must persist for the lifetime of this object.
     // REQUIRES: ReInit() must be called if "index" is modified.
-    public void Init(S2PointIndex<Data> index, Options? options = null)
+    public S2ClosestPointQuery(S2PointIndex<Data> index, Options? options = null)
     {
         Options_ = options ?? new Options();
-        base_.Init(index);
+        base_ = new(index);
     }
 
     // Reinitializes the query.  This method must be called whenever the
@@ -251,7 +241,7 @@ S2.GetUpdateMinDistanceMaxError(value)).Successor());
     // threshold value, since it is often much faster.
     public Distance GetDistance(Target target)
     {
-        return (Distance)FindClosestPoint(target).Distance;
+        return FindClosestPoint(target).Distance;
     }
 
     // Returns true if the distance to "target" is less than "limit".
@@ -263,9 +253,9 @@ S2.GetUpdateMinDistanceMaxError(value)).Successor());
     {
         // Assert.True(Marshal.SizeOf(typeof(Options)) <= 32); // Consider not copying Options here
         Options tmp_options = Options_;
-        tmp_options.MaxResults = (1);
-        tmp_options.MaxDistance = (limit);
-        tmp_options.MaxError = (Distance.Straight);
+        tmp_options.MaxResults = 1;
+        tmp_options.MaxDistance = limit;
+        tmp_options.MaxError = Distance.Straight;
         return !base_.FindClosestPoint(target, tmp_options).IsEmpty;
     }
 
@@ -275,9 +265,9 @@ S2.GetUpdateMinDistanceMaxError(value)).Successor());
     {
         // Assert.True(Marshal.SizeOf(typeof(Options)) <= 32); // Consider not copying Options here
         Options tmp_options = Options_;
-        tmp_options.MaxResults = (1);
-        tmp_options.InclusiveMaxDistance = (limit);
-        tmp_options.MaxError = (Distance.Straight);
+        tmp_options.MaxResults = 1;
+        tmp_options.InclusiveMaxDistance = limit;
+        tmp_options.MaxError = Distance.Straight;
         return !base_.FindClosestPoint(target, tmp_options).IsEmpty;
     }
 
@@ -297,11 +287,9 @@ S2.GetUpdateMinDistanceMaxError(value)).Successor());
     {
         // Assert.True(Marshal.SizeOf(typeof(Options)) <= 32); // Consider not copying Options here
         Options tmp_options = Options_;
-        tmp_options.MaxResults = (1);
-        tmp_options.ConservativeMaxDistance = (limit);
-        tmp_options.MaxError = (Distance.Straight);
+        tmp_options.MaxResults = 1;
+        tmp_options.ConservativeMaxDistance = limit;
+        tmp_options.MaxError = Distance.Straight;
         return !base_.FindClosestPoint(target, tmp_options).IsEmpty;
     }
-
-    private readonly S2ClosestPointQueryBase<Distance, Data> base_ = new();
 }

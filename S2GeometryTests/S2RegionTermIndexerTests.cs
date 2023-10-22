@@ -1,11 +1,9 @@
 namespace S2Geometry;
 
-public class S2RegionTermIndexerTests
+public class S2RegionTermIndexerTests(ITestOutputHelper logger)
 {
     private const int iters = 400; // number of iterations for testing
-    private readonly ITestOutputHelper _logger;
-
-    public S2RegionTermIndexerTests(ITestOutputHelper logger) { _logger = logger; }
+    private readonly ITestOutputHelper _logger = logger;
 
     // We run one test case for each combination of space vs. time optimization,
     // and indexing regions vs. only points.
@@ -13,57 +11,67 @@ public class S2RegionTermIndexerTests
     [Fact]
     internal void Test_S2RegionTermIndexer_IndexRegionsQueryRegionsOptimizeTime()
     {
-        var options = new S2RegionTermIndexer.Options();
-        options.OptimizeForSpace = false;       // Optimize for time.
-        options.MinLevel = (0);                    // Use face cells.
-        options.MaxLevel = (16);
-        options.MaxCells = (20);
+        var options = new S2RegionTermIndexer.Options
+        {
+            OptimizeForSpace = false,       // Optimize for time.
+            MinLevel = 0,                    // Use face cells.
+            MaxLevel = 16,
+            MaxCells = 20
+        };
         TestRandomCaps(options, QueryType.CAP);
     }
 
     [Fact]
     internal void Test_S2RegionTermIndexer_IndexRegionsQueryPointsOptimizeTime()
     {
-        var options = new S2RegionTermIndexer.Options();
-        options.OptimizeForSpace = (false);       // Optimize for time.
-        options.MinLevel = (0);                    // Use face cells.
-        options.MaxLevel = (16);
-        options.MaxCells = (20);
+        var options = new S2RegionTermIndexer.Options
+        {
+            OptimizeForSpace = false,       // Optimize for time.
+            MinLevel = 0,                    // Use face cells.
+            MaxLevel = 16,
+            MaxCells = 20
+        };
         TestRandomCaps(options, QueryType.POINT);
     }
 
     [Fact]
     internal void Test_S2RegionTermIndexer_IndexRegionsQueryRegionsOptimizeTimeWithLevelMod()
     {
-        var options = new S2RegionTermIndexer.Options();
-        options.OptimizeForSpace = (false);       // Optimize for time.
-        options.MinLevel = (6);                    // Constrain min/max levels.
-        options.MaxLevel = (12);
-        options.LevelMod = (3);
+        var options = new S2RegionTermIndexer.Options
+        {
+            OptimizeForSpace = false,       // Optimize for time.
+            MinLevel = 6,                    // Constrain min/max levels.
+            MaxLevel = 12,
+            LevelMod = 3
+        };
         TestRandomCaps(options, QueryType.CAP);
     }
 
     [Fact]
     internal void Test_S2RegionTermIndexer_IndexRegionsQueryRegionsOptimizeSpace()
     {
-        var options = new S2RegionTermIndexer.Options();
-        options.OptimizeForSpace = (true);        // Optimize for space.
-        options.MinLevel = (4);
-        options.MaxLevel = (S2.kMaxCellLevel);  // Use leaf cells.
-        options.MaxCells = (8);
+        var options = new S2RegionTermIndexer.Options
+        {
+            OptimizeForSpace = true,        // Optimize for space.
+            MinLevel = 4,
+            MaxLevel = S2.kMaxCellLevel,  // Use leaf cells.
+            MaxCells = 8
+        };
         TestRandomCaps(options, QueryType.CAP);
     }
 
     [Fact]
     internal void Test_S2RegionTermIndexer_IndexPointsQueryRegionsOptimizeTime()
     {
-        var options = new S2RegionTermIndexer.Options();
-        options.OptimizeForSpace = (false);       // Optimize for time.
-        options.MinLevel = (0);                    // Use face cells.
-        options.MaxLevel = (S2.kMaxCellLevel);
-        options.LevelMod = (2);
-        options.MaxCells = (20);
-        options.IndexContainsPointsOnly = (true);
+        var options = new S2RegionTermIndexer.Options
+        {
+            OptimizeForSpace = false,       // Optimize for time.
+            MinLevel = 0,                    // Use face cells.
+            MaxLevel = S2.kMaxCellLevel,
+            LevelMod = 2,
+            MaxCells = 20,
+            IndexContainsPointsOnly = true
+        };
         TestRandomCaps(options, QueryType.CAP);
     }
 
@@ -82,20 +90,22 @@ public class S2RegionTermIndexerTests
     [Fact]
     internal void Test_S2RegionTermIndexer_MarkerCharacter()
     {
-        S2RegionTermIndexer.Options options = new();
-        options.MinLevel = 20;
-        options.MaxLevel = 20;
+        S2RegionTermIndexer.Options options = new()
+        {
+            MinLevel = 20,
+            MaxLevel = 20
+        };
 
         S2RegionTermIndexer indexer = new(options);
         S2Point point = S2LatLng.FromDegrees(10, 20).ToPoint();
         Assert.Equal(indexer.Options_.MarkerCharacter, '$');
         Assert.Equal(indexer.GetQueryTerms(point, ""),
-            new List<string>(){ "11282087039", "$11282087039"});
+            ["11282087039", "$11282087039"]);
 
         indexer.Options_.MarkerCharacter = ':';
         Assert.Equal(indexer.Options_.MarkerCharacter, ':');
         Assert.Equal(indexer.GetQueryTerms(point, ""),
-            new List<string>(){ "11282087039", ":11282087039"});
+            ["11282087039", ":11282087039"]);
     }
 
     [Fact]
@@ -103,12 +113,14 @@ public class S2RegionTermIndexerTests
     {
         // Test that correct terms are generated even when (max_level - min_level)
         // is not a multiple of level_mod.
-        var options = new S2RegionTermIndexer.Options();
-        options.MinLevel = (1);
-        options.LevelMod = (2);
-        options.MaxLevel = (19);
+        var options = new S2RegionTermIndexer.Options
+        {
+            MinLevel = 1,
+            LevelMod = 2,
+            MaxLevel = 19
+        };
         var indexer1 = new S2RegionTermIndexer(options);
-        options.MaxLevel = (20);
+        options.MaxLevel = 20;
         var indexer2 = new S2RegionTermIndexer(options);
 
         S2Point point = S2Testing.RandomPoint();
@@ -128,7 +140,7 @@ public class S2RegionTermIndexerTests
     internal void Test_S2RegionTermIndexer_MoveConstructor()
     {
         var x = new S2RegionTermIndexer(new S2RegionTermIndexer.Options());
-        x.Options_.MaxCells = (12345);
+        x.Options_.MaxCells = 12345;
         var y = x;
         Assert.Equal(12345, y.Options_.MaxCells);
     }
@@ -137,9 +149,9 @@ public class S2RegionTermIndexerTests
     internal void Test_S2RegionTermIndexer_MoveAssignmentOperator()
     {
         var x = new S2RegionTermIndexer(new S2RegionTermIndexer.Options());
-        x.Options_.MaxCells = (12345);
+        x.Options_.MaxCells = 12345;
         var y = new S2RegionTermIndexer(new S2RegionTermIndexer.Options());
-        y.Options_.MaxCells = (0);
+        y.Options_.MaxCells = 0;
         y = x;
         Assert.Equal(12345, y.Options_.MaxCells);
     }
@@ -179,7 +191,7 @@ public class S2RegionTermIndexerTests
             foreach (var term in terms)
             {
                 if (!index.ContainsKey(term))
-                    index.Add(term, new List<int>());
+                    index.Add(term, []);
 
                 index[term].Add(i);
             }

@@ -53,24 +53,14 @@ using SiblingPairs = S2Builder.GraphOptions.SiblingPairs;
 
 public class S2WindingOperation
 {
-    private Options options_;
-    private S2Builder builder_;
+    private readonly Options options_;
+    private readonly S2Builder builder_;
     private InputEdgeId ref_input_edge_id_;
     private int ref_winding_in_;
     private WindingRule rule_;
 
-    // Default constructor; requires Init() to be called.
-    public S2WindingOperation() { }
-
-    // Convenience constructor that calls Init().
-    public S2WindingOperation(S2Builder.Layer result_layer, Options? options = null)
-    {
-        Init(result_layer, options);
-    }
-
     // Starts an operation that sends its output to the given S2Builder layer.
-    // This method may be called more than once.
-    public void Init(S2Builder.Layer result_layer, Options? options = null)
+    public S2WindingOperation(S2Builder.Layer result_layer, Options? options = null)
     {
         options_ = options ?? new();
         S2Builder.Options builder_options = new(options_.SnapFunction)
@@ -292,7 +282,7 @@ public class S2WindingOperation
             else
             {
                 S2CrossingEdgeQuery query = new(index_);
-                foreach (var id in query.GetCandidates(CurrentRefPoint, p, index_.Shape(0)))
+                foreach (var id in query.GetCandidates(CurrentRefPoint, p, index_.Shape(0)!))
                 {
                     winding += SignedCrossingDelta(crosser, id.EdgeId);
                 }
@@ -345,14 +335,8 @@ public class S2WindingOperation
     }
 
     // The actual winding number operation is implemented as an S2Builder layer.
-    private class WindingLayer : S2Builder.Layer
+    private class WindingLayer(S2WindingOperation op, S2Builder.Layer result_layer) : S2Builder.Layer
     {
-        public WindingLayer(S2WindingOperation op, S2Builder.Layer result_layer)
-        {
-            op_ = op;
-            result_layer_ = result_layer;
-            tracker_ = new(op.options_.MemoryTracker);
-        }
 
         // Layer interface:
         public override GraphOptions GraphOptions_() =>
@@ -381,8 +365,8 @@ public class S2WindingOperation
             // Now that we have computed the change in winding number, we create a new
             // graph with the reference edge removed.  Note that S2MemoryTracker errors
             // are automatically copied to "error" by S2Builder.
-            List<Edge> new_edges = new();
-            List<InputEdgeIdSetId> new_input_edge_ids = new();
+            List<Edge> new_edges = [];
+            List<InputEdgeIdSetId> new_input_edge_ids = [];
             if (!tracker_.AddSpace(new_edges, g.NumEdges - 1)) return;
             if (!tracker_.AddSpace(new_input_edge_ids, g.NumEdges - 1)) return;
             var new_input_edge_id_set_lexicon = g.InputEdgeIdSetLexicon;
@@ -459,7 +443,7 @@ public class S2WindingOperation
 
             // A map from EdgeId to the winding number of the region it bounds.
             var edge_winding = new List<int>().ReserveSpace(g.NumEdges);
-            List<EdgeId> frontier = new();  // Unexplored sibling edges.
+            List<EdgeId> frontier = [];  // Unexplored sibling edges.
             for (EdgeId e_min = 0; e_min < g.NumEdges; ++e_min)
             {
                 if (left_turn_map[e_min] < 0) continue;  // Already visited.
@@ -480,7 +464,7 @@ public class S2WindingOperation
                 // "frontier" is a stack of unexplored siblings of the edges visited far.
                 if (!tracker_.AddSpace(frontier, 1)) return false;
                 frontier.Add(e0);
-                while (frontier.Any())
+                while (frontier.Count!=0)
                 {
                     EdgeId e = frontier.Last();
                     frontier.RemoveAt(frontier.Count - 1);
@@ -615,13 +599,13 @@ public class S2WindingOperation
         }
 
         // Constructor parameters.
-        private readonly S2WindingOperation op_;
-        private readonly S2Builder.Layer result_layer_;
+        private readonly S2WindingOperation op_ = op;
+        private readonly S2Builder.Layer result_layer_ = result_layer;
 
         // The graph data that will be sent to result_layer_.
-        private readonly List<Edge> result_edges_ = new();
-        private readonly List<InputEdgeIdSetId> result_input_edge_ids_ = new();
+        private readonly List<Edge> result_edges_ = [];
+        private readonly List<InputEdgeIdSetId> result_input_edge_ids_ = [];
 
-        private readonly S2MemoryTracker.Client tracker_;
+        private readonly S2MemoryTracker.Client tracker_ = new(op.options_.MemoryTracker);
     }
 }

@@ -6,8 +6,8 @@ public class S2PointTests
     internal void Test_S2Point_HashSpreads()
     {
         int kTestPoints = 1 << 16;
-        List<int> set = new();
-        SortedSet<S2Point> points = new();
+        List<int> set = [];
+        SortedSet<S2Point> points = [];
         S2Point base_ = new(1, 1, 1);
         for (var i = 0; i < kTestPoints; ++i)
         {

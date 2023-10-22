@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 
 internal static class MyDebug
 {
+    [Conditional("DEBUG")]
     internal static void Assert([DoesNotReturnIf(false)] bool statement, string? message = null)
     {
         if (!statement) throw new InvalidDataException(message ?? string.Empty);

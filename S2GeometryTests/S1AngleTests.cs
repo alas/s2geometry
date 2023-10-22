@@ -94,7 +94,7 @@ public class S1AngleTests
         Assert2.DoubleEqual(0.6, (2 * S1Angle.FromRadians(0.3)).Radians);
         Assert2.DoubleEqual(0.6, (S1Angle.FromRadians(0.3) * 2).Radians);
         Assert2.DoubleEqual(0.15, (S1Angle.FromRadians(0.3) / 2).Radians);
-        Assert2.DoubleEqual(0.5, (S1Angle.FromRadians(0.3) / S1Angle.FromRadians(0.6)));
+        Assert2.DoubleEqual(0.5, S1Angle.FromRadians(0.3) / S1Angle.FromRadians(0.6));
 
         S1Angle tmp = S1Angle.FromRadians(1.0);
         tmp += S1Angle.FromRadians(0.5);

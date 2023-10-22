@@ -52,7 +52,7 @@ public class S2PolylineSimplifier
     // called with a disc that does not contain the source vertex.  At that time
     // all such discs are processed by using them to constrain "window_", and
     // this vector is cleared.
-    private readonly List<RangeToAvoid> ranges_to_avoid_ = new();
+    private readonly List<RangeToAvoid> ranges_to_avoid_ = [];
 
     // Starts a new simplified edge at "src".
     public S2PolylineSimplifier(S2Point src)
@@ -75,7 +75,7 @@ public class S2PolylineSimplifier
         // We define the "y" basis vector as the cross product of "src" and the
         // basis vector for axis "i".  Let "j" and "k" be the indices of the other
         // two components in cyclic order.
-        int j = (i == 2 ? 0 : i + 1), k = (i == 0 ? 2 : i - 1);
+        int j = i == 2 ? 0 : i + 1, k = i == 0 ? 2 : i - 1;
         var np = new double[3];
         np[i] = 0;
         np[j] = Source[k];

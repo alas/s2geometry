@@ -113,7 +113,7 @@ public class S2PolygonLayer : Layer
 
     public override void Build(Graph g, out S2Error error)
     {
-        if (label_set_ids_ is not null) label_set_ids_.Clear();
+        label_set_ids_?.Clear();
 
         // It's tricky to compute the edge labels for S2Polygons because the
         // S2Polygon.Init methods can reorder and/or invert the loops.  We handle
@@ -126,11 +126,11 @@ public class S2PolygonLayer : Layer
             // The polygon is either full or empty.
             if (g.IsFullPolygon(out error))
             {
-                polygon_ = new S2Polygon(S2Loop.kFull);
+                polygon_ = new S2Polygon(S2Loop.KFull);
             }
             else
             {
-                polygon_ = new S2Polygon(new List<S2Loop>());
+                polygon_ = new S2Polygon([]);
             }
         }
         else if (g.Options.EdgeType_ == EdgeType.DIRECTED)
@@ -243,9 +243,7 @@ public class S2PolygonLayer : Layer
         {
             var loop = polygon_.Loop(i);
             var old = loop_map[loop];
-            var tmp = new_ids[i];
-            new_ids[i] = label_set_ids_[old.Item1];
-            label_set_ids_[old.Item1] = tmp;
+            (label_set_ids_[old.Item1], new_ids[i])=(new_ids[i], label_set_ids_[old.Item1]);
             if (loop.ContainsOrigin != old.Item2)
             {
                 // S2Loop.Invert() reverses the order of the vertices, which leaves
