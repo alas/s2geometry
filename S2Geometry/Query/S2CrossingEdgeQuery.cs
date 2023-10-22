@@ -463,7 +463,6 @@ public class S2CrossingEdgeQuery(S2ShapeIndex index)
     //////////// Temporary storage used while processing a query ///////////
 
     private R2Point a0_, a1_;
-    private readonly S2ShapeIndex.Enumerator Enumerator;
     private CellVisitor visitor_;
 
     // Avoids repeated allocation when methods are called many times.

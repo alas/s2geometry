@@ -1513,7 +1513,7 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
         var decoder = encoder.GetDecoder();
         var (success, decoded_polygon) = S2Polygon.Decode(decoder);
         Assert.True(success);
-        Assert.True(cross1_.BoundaryEquals(decoded_polygon));
+        Assert.True(cross1_.BoundaryEquals(decoded_polygon!));
         Assert.Equal(cross1_.GetRectBound(), decoded_polygon.GetRectBound());
     }
 
@@ -1752,7 +1752,7 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
             var vloop = vloops_[S2Testing.Random.Uniform(vloops_.Count)];
             int n = vloop.Count;
             int i = S2Testing.Random.Uniform(n);
-            var tmp = vloop[i]; vloop[i] = vloop[(i + 1) % n]; vloop[(i + 1) % n] = tmp;
+            (vloop[(i + 1) % n], vloop[i])=(vloop[i], vloop[(i + 1) % n]);
             CheckInvalid("crosses edge");
         }
     }
@@ -1785,7 +1785,7 @@ new S2Point(0.044854017712818696, -0.80679210327223405, 0.58913039235179754)
             // crossing by simply exchanging two vertices at the same index position.
             int n = vloops_[0].Count;
             int i = S2Testing.Random.Uniform(n);
-            var tmp = vloops_[0][i]; vloops_[0][i] = vloops_[1][i]; vloops_[1][i] = tmp;
+            (vloops_[1][i], vloops_[0][i])=(vloops_[0][i], vloops_[1][i]);
             if (S2Testing.Random.OneIn(2)) {
                 // By copy the two adjacent vertices from one loop to the other, we can
                 // ensure that the crossings happen at vertices rather than edges.
@@ -2210,7 +2210,7 @@ for (int i = 0; i < 100000; ++i) {
     internal void Test_S2PolygonTestBase_IndexContainsOnePolygonShape() {
         MutableS2ShapeIndex index = near_0_.Index;
         Assert.Equal(1, index.NumShapeIds());
-        var shape = (S2Polygon.Shape)index.Shape(0);
+        var shape = (S2Polygon.Shape)index.Shape(0)!;
         Assert.Equal(near_0_, shape.Polygon);
     }
 
@@ -2868,9 +2868,9 @@ for (int i = 0; i < 100000; ++i) {
 
         internal bool Test()
         {
-            decoder_ = new Decoder(data_array_, 0, encoder_.Length());
+            var decoder = new Decoder(data_array_, 0, encoder_.Length());
             encoder_.Clear();
-            var (success, _) = S2Polygon.Decode(decoder_);
+            var (success, _) = S2Polygon.Decode(decoder);
             return success;
         }
 
@@ -2882,9 +2882,6 @@ for (int i = 0; i < 100000; ++i) {
 
         // Encoder that is used to put data into the array.
         private readonly Encoder encoder_;
-
-        // Decoder used to extract data from the array.
-        private Decoder decoder_;
     };
 
     private static void TestPolygonShape(S2Polygon polygon)
@@ -2976,7 +2973,7 @@ for (int i = 0; i < 100000; ++i) {
         var polygon = new S2Polygon(loops, init_oriented_);
         modify_polygon_hook_?.Invoke(polygon);
         Assert.True(polygon.FindValidationError(out var error));
-        Assert.True(error.Text.IndexOf(snippet) != -1);
+        Assert.Contains(snippet, error.Text);
         Reset();
     }
     

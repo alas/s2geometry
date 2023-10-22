@@ -886,8 +886,8 @@ public static class S2Pred
         return (diff > error) ? 1 : (diff < -error) ? -1 : 0;
     }
 
-    private static int ExactCompareDistance(Vector3<ExactFloat> x, Vector3<ExactFloat> y, ExactFloat r2) =>
-        ExactCompareDistance(x, y, r2.Value);
+    //private static int ExactCompareDistance(Vector3<ExactFloat> x, Vector3<ExactFloat> y, ExactFloat r2) =>
+    //    ExactCompareDistance(x, y, r2.Value);
     private static int ExactCompareDistance(Vector3<ExactFloat> x, Vector3<ExactFloat> y, decimal r2)
     {
         // This code produces the same result as though all points were reprojected
@@ -1593,8 +1593,8 @@ public static class S2Pred
         return (lhs3 > 0) ? Excluded.FIRST : Excluded.SECOND;
     }
 
-    private static Excluded ExactVoronoiSiteExclusion(Vector3<ExactFloat> a, Vector3<ExactFloat> b, Vector3<ExactFloat> x0, Vector3<ExactFloat> x1, ExactFloat r2) =>
-        ExactVoronoiSiteExclusion(a, b, x0, x1, r2.Value);
+    //private static Excluded ExactVoronoiSiteExclusion(Vector3<ExactFloat> a, Vector3<ExactFloat> b, Vector3<ExactFloat> x0, Vector3<ExactFloat> x1, ExactFloat r2) =>
+    //    ExactVoronoiSiteExclusion(a, b, x0, x1, r2.Value);
     private static Excluded ExactVoronoiSiteExclusion(Vector3<ExactFloat> a, Vector3<ExactFloat> b, Vector3<ExactFloat> x0, Vector3<ExactFloat> x1, decimal r2)
     {
         MyDebug.Assert(!ArePointsAntipodal(x0, x1));

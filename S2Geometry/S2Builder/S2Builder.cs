@@ -363,7 +363,7 @@ public partial class S2Builder
             label_set_ids_.Add(label_set_id_);
             label_set_modified_ = false;
         }
-        else if (label_set_ids_.Count!=0)
+        else if (label_set_ids_.Count != 0)
         {
             label_set_ids_.Add(label_set_id_);
         }
