@@ -860,7 +860,7 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoder<S2Polyline>
     // on success.
     public static (bool, S2Polyline) Decode(Decoder decoder)
     {
-        if (decoder.Avail() < sizeof(byte) + sizeof(UInt32)) return (false, default);
+        if (decoder.Avail() < sizeof(byte) + sizeof(uint)) return (false, default);
         byte version = decoder.Get8();
         return version switch
         {
@@ -874,7 +874,7 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoder<S2Polyline>
     // method above.
     public static (bool, S2Polyline) DecodeUncompressed(Decoder decoder)
     {
-        if (decoder.Avail() < sizeof(UInt32)) return (false, default);
+        if (decoder.Avail() < sizeof(uint)) return (false, default);
 
         var count = (int)decoder.Get32();
 

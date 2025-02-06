@@ -34,24 +34,24 @@ public static class BitsInterleave
     // The 0-bit in val0 will be the 0-bit in the return value.
     // The 0-bit in val1 will be the 1-bit in the return value.
     // The 1-bit of val0 will be the 2-bit in the return value, and so on.
-    public static UInt16 InterleaveUsbyte(byte val0, byte val1) =>
-        (UInt16)(kInterleaveLut[val0] | (kInterleaveLut[val1] << 1));
+    public static ushort InterleaveUsbyte(byte val0, byte val1) =>
+        (ushort)(kInterleaveLut[val0] | (kInterleaveLut[val1] << 1));
 
-    public static UInt32 InterleaveUint16(UInt16 val0, UInt16 val1) =>
-        (UInt32)(kInterleaveLut[val0 & 0xff] |
+    public static uint InterleaveUint16(ushort val0, ushort val1) =>
+        (uint)(kInterleaveLut[val0 & 0xff] |
                 (kInterleaveLut[val0 >> 8] << 16) |
                 (kInterleaveLut[val1 & 0xff] << 1) |
                 (kInterleaveLut[val1 >> 8] << 17));
 
-    public static UInt64 InterleaveUInt32(UInt32 val0, UInt32 val1) => 
-        ((UInt64)kInterleaveLut[val0 & 0xff]) |
-        ((UInt64)kInterleaveLut[(val0 >> 8) & 0xff] << 16) |
-        ((UInt64)kInterleaveLut[(val0 >> 16) & 0xff] << 32) |
-        ((UInt64)kInterleaveLut[val0 >> 24] << 48) |
-        ((UInt64)kInterleaveLut[val1 & 0xff] << 1) |
-        ((UInt64)kInterleaveLut[(val1 >> 8) & 0xff] << 17) |
-        ((UInt64)kInterleaveLut[(val1 >> 16) & 0xff] << 33) |
-        ((UInt64)kInterleaveLut[val1 >> 24] << 49);
+    public static ulong InterleaveUInt32(uint val0, uint val1) => 
+        ((ulong)kInterleaveLut[val0 & 0xff]) |
+        ((ulong)kInterleaveLut[(val0 >> 8) & 0xff] << 16) |
+        ((ulong)kInterleaveLut[(val0 >> 16) & 0xff] << 32) |
+        ((ulong)kInterleaveLut[val0 >> 24] << 48) |
+        ((ulong)kInterleaveLut[val1 & 0xff] << 1) |
+        ((ulong)kInterleaveLut[(val1 >> 8) & 0xff] << 17) |
+        ((ulong)kInterleaveLut[(val1 >> 16) & 0xff] << 33) |
+        ((ulong)kInterleaveLut[val1 >> 24] << 49);
 
     #endregion
 
@@ -65,7 +65,7 @@ public static class BitsInterleave
     }
 
     // Extracting the even bits (bit 0, 2, ...).
-    public static ushort ExtractEvenBits(UInt32 bits)
+    public static ushort ExtractEvenBits(uint bits)
     {
         bits &= 0x55555555;
         bits |= bits >> 1;
@@ -78,14 +78,14 @@ public static class BitsInterleave
         return (ushort)bits;
     }
 
-    public static void DeinterleaveUint16(UInt32 code, out UInt16 val0, out UInt16 val1)
+    public static void DeinterleaveUint16(uint code, out ushort val0, out ushort val1)
     {
         val0 = ExtractEvenBits(code);
         val1 = ExtractEvenBits(code >> 1);
     }
 
     // Extracting the even bits (bit 0, 2, ...).
-    public static UInt32 ExtractEvenBits(UInt64 bits)
+    public static uint ExtractEvenBits(ulong bits)
     {
         bits &= 0x5555555555555555;
         bits |= bits >> 1;
@@ -97,10 +97,10 @@ public static class BitsInterleave
         bits |= bits >> 8;
         bits &= 0x0000ffff0000ffff;
         bits |= bits >> 16;
-        return (UInt32)bits;
+        return (uint)bits;
     }
 
-    public static void DeinterleaveUInt32(UInt64 code, out UInt32 val0, out UInt32 val1)
+    public static void DeinterleaveUInt32(ulong code, out uint val0, out uint val1)
     {
         val0 = ExtractEvenBits(code);
         val1 = ExtractEvenBits(code >> 1);
@@ -115,15 +115,15 @@ public static class BitsInterleave
     // The 0-bit in val1 will be the 1-bit in the return value.
     // The 0-bit in val2 will be the 2-bit in the return value.
     // The 1-bit of val0 will be the 3-bit in the return value, and so on.
-    public static UInt32 InterleaveUsbyte(byte val0, byte val1, byte val2) =>
-        (UInt32)((SplitFor3(val0, 0) | SplitFor3(val1, 1) | SplitFor3(val2, 2)) >> 20);
+    public static uint InterleaveUsbyte(byte val0, byte val1, byte val2) =>
+        (uint)((SplitFor3(val0, 0) | SplitFor3(val1, 1) | SplitFor3(val2, 2)) >> 20);
 
     #endregion
 
     #region Deinterleave 3
 
     // These functions will decode the interleaved values.
-    public static void DeinterleaveUsbyte(UInt32 x, out byte a, out byte b, out byte c)
+    public static void DeinterleaveUsbyte(uint x, out byte a, out byte b, out byte c)
     {
         a = UnsplitFor3(x);
         b = UnsplitFor3(x >> 1);
@@ -163,7 +163,7 @@ public static class BitsInterleave
     // BM_3_InterleaveUsbyte                  5          5  141967960
     // BM_3_ReferenceBitInterleave3         58         58   10000000
     // BM_3_InterleaveUsbyte_NoTemplate      11         11   61082024
-    private static UInt64 SplitFor3(byte x, int kShift) => 
+    private static ulong SplitFor3(byte x, int kShift) => 
         (((x * 0x0101010101010101UL) &
                 0x000000C00C003003UL) *
                (0x0000000000500005UL << kShift)) &
@@ -201,13 +201,13 @@ public static class BitsInterleave
     // BM_3_DeinterleaveUsbyte_Using_Template   10         10   67385445
     // BM_3_DeinterleaveUsbyte_Uint64_Param     10         10   70838731
     // BM_3_ReferenceDeinterleaveUsbyte         79         79    8712211
-    private static byte UnsplitFor3(UInt32 x) =>
+    private static byte UnsplitFor3(uint x) =>
         (byte)(((((x & 0x00249249U)
                      * 0x00000015U)
                      & 0x00381C0CU)
                      * 0x00001041U) >> 14);
 
-    private static readonly UInt16[] kInterleaveLut =
+    private static readonly ushort[] kInterleaveLut =
     [
         0x0000, 0x0001, 0x0004, 0x0005, 0x0010, 0x0011, 0x0014, 0x0015,
         0x0040, 0x0041, 0x0044, 0x0045, 0x0050, 0x0051, 0x0054, 0x0055,

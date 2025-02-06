@@ -699,14 +699,14 @@ public class MutableS2ShapeIndexTests
     // Converts the given vector of batches to a human-readable form.
     private static string BatchDescriptorsToString(List<BatchDescriptor> batches)
     {
-        return String.Join(", ", batches);
+        return string.Join(", ", batches);
     }
 
     // Verifies that removing and adding the given combination of shapes with
     // the given memory budget yields the expected vector of batches.
     private static void TestBatchGenerator(
         int num_edges_removed, int[] shape_edges_added,
-        Int64 tmp_memory_budget, int shape_id_begin,
+        long tmp_memory_budget, int shape_id_begin,
         List<BatchDescriptor> expected_batches)
     {
         //absl.FlagSaver fs;

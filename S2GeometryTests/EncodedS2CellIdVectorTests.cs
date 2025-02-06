@@ -51,7 +51,7 @@ public class EncodedS2CellIdVectorTests
     internal void Test_EncodedS2CellIdVector_InvalidCells()
     {
         // Tests that cells with an invalid LSB can be encoded.
-        TestEncodedS2CellIdVector(new List<UInt64> { 0x6, 0xe, 0x7e }, 5);
+        TestEncodedS2CellIdVector(new List<ulong> { 0x6, 0xe, 0x7e }, 5);
     }
 
     [Fact]
@@ -59,7 +59,7 @@ public class EncodedS2CellIdVectorTests
     {
         // Tests that (1) if all cells are leaf cells, the low bit is not encoded,
         // and (2) this can be indicated using the standard 1-byte header.
-        TestEncodedS2CellIdVector(new List<UInt64> { 0x3, 0x7, 0x177 }, 5);
+        TestEncodedS2CellIdVector(new List<ulong> { 0x3, 0x7, 0x177 }, 5);
     }
 
     [Fact]
@@ -67,7 +67,7 @@ public class EncodedS2CellIdVectorTests
     {
         // Tests that (1) if all cells are at level 29, the low bit is not encoded,
         // and (2) this can be indicated using the standard 1-byte header.
-        TestEncodedS2CellIdVector(new List<UInt64> { 0xc, 0x1c, 0x47c }, 5);
+        TestEncodedS2CellIdVector(new List<ulong> { 0xc, 0x1c, 0x47c }, 5);
     }
 
     [Fact]
@@ -75,14 +75,14 @@ public class EncodedS2CellIdVectorTests
     {
         // Tests that (1) if all cells are at level 28, the low bit is not encoded,
         // and (2) this can be indicated using the extended 2-byte header.
-        TestEncodedS2CellIdVector(new List<UInt64> { 0x30, 0x70, 0x1770 }, 6);
+        TestEncodedS2CellIdVector(new List<ulong> { 0x30, 0x70, 0x1770 }, 6);
     }
 
     [Fact]
     internal void Test_EncodedS2CellIdVector_OneByteMixedCellLevels()
     {
         // Tests that cells at mixed levels can be encoded in one byte.
-        TestEncodedS2CellIdVector(new List<UInt64> { 0x300, 0x1c00, 0x7000, 0xff00 }, 6);
+        TestEncodedS2CellIdVector(new List<ulong> { 0x300, 0x1c00, 0x7000, 0xff00 }, 6);
     }
 
     [Fact]
@@ -90,7 +90,7 @@ public class EncodedS2CellIdVectorTests
     {
         // Tests that cells at mixed levels can be encoded in one byte even when
         // they share a multi-byte prefix.
-        TestEncodedS2CellIdVector(new List<UInt64>{
+        TestEncodedS2CellIdVector(new List<ulong>{
                 0x1234567800000300, 0x1234567800001c00,
                 0x1234567800007000, 0x123456780000ff00}, 10);
     }
@@ -101,7 +101,7 @@ public class EncodedS2CellIdVectorTests
         // Tests that cells can be encoded in one byte by choosing a base value
         // whose bit range overlaps the delta values.
         // 1 byte header, 3 bytes base, 1 byte size, 4 bytes deltas
-        TestEncodedS2CellIdVector(new List<UInt64>{
+        TestEncodedS2CellIdVector(new List<ulong>{
                 0x00ffff0000000000, 0x0100fc0000000000,
                 0x0100500000000000, 0x0100330000000000}, 9);
     }
@@ -182,7 +182,7 @@ public class EncodedS2CellIdVectorTests
     [Fact]
     internal void Test_EncodedS2CellIdVector_CoveringCells()
     {
-        List<UInt64> ids =
+        List<ulong> ids =
         [
             0x414a617f00000000, 0x414a61c000000000, 0x414a624000000000,
             0x414a63c000000000, 0x414a647000000000, 0x414a64c000000000,
@@ -263,10 +263,10 @@ public class EncodedS2CellIdVectorTests
     }
 
     // Like the above, but accepts a UInt64[] rather than a S2CellId[].
-    private static void TestEncodedS2CellIdVector(List<UInt64> raw_expected, int expected_bytes)
+    private static void TestEncodedS2CellIdVector(List<ulong> raw_expected, int expected_bytes)
     {
         List<S2CellId> expected = [];
-        foreach (UInt64 raw_id in raw_expected)
+        foreach (ulong raw_id in raw_expected)
         {
             expected.Add(new(raw_id));
         }

@@ -74,7 +74,7 @@ public static class S2PointCompression
             // It isn't necessary to encode the number of faces left for the last run,
             // but since this would only help if there were more than 21 faces, it will
             // be a small overall savings, much smaller than the bound encoding.
-            encoder.PutVarUInt64((UInt64)(S2CellId.kNumFaces * (Int64)Count + Face));
+            encoder.PutVarUInt64((ulong)(S2CellId.kNumFaces * (long)Count + Face));
             MyDebug.Assert(encoder.Avail() >= 0);
         }
 
@@ -84,10 +84,10 @@ public static class S2PointCompression
 
             var face = (int)(face_and_count % S2CellId.kNumFaces);
             // Make sure large counts don't wrap on malicious or random input.
-            UInt64 count64 = face_and_count / S2CellId.kNumFaces;
+            ulong count64 = face_and_count / S2CellId.kNumFaces;
             var count = (int)count64;
 
-            var res = count > 0 && (UInt64)count == count64;
+            var res = count > 0 && (ulong)count == count64;
             if (!res) return (false, null);
 
             return (true, new FaceRun(face, count));
@@ -237,10 +237,10 @@ public static class S2PointCompression
     private static void EncodeFirstPointFixedLength((int, int) vertex_pi_qi, int level, NthDerivativeCoder pi_coder, NthDerivativeCoder qi_coder, Encoder encoder)
     {
         // Do not ZigZagEncode the first point, since it cannot be negative.
-        UInt32 pi = (uint)pi_coder.Encode(vertex_pi_qi.Item1);
-        UInt32 qi = (uint)qi_coder.Encode(vertex_pi_qi.Item2);
+        uint pi = (uint)pi_coder.Encode(vertex_pi_qi.Item1);
+        uint qi = (uint)qi_coder.Encode(vertex_pi_qi.Item2);
         // Interleave to reduce overhead from two partial bytes to one.
-        UInt64 interleaved_pi_qi = BitsInterleave.InterleaveUInt32(pi, qi);
+        ulong interleaved_pi_qi = BitsInterleave.InterleaveUInt32(pi, qi);
 
         // Convert to little endian for architecture independence.
         var little_endian_interleaved_pi_qi = BitConverter.GetBytes(interleaved_pi_qi);
@@ -258,10 +258,10 @@ public static class S2PointCompression
     {
         // ZigZagEncode, as varint requires the maximum number of bytes for
         // negative numbers.
-        UInt32 zig_zag_encoded_deriv_pi = Transforms.ZigZagEncode(pi_coder.Encode(vertex_pi_qi.Item1));
-        UInt32 zig_zag_encoded_deriv_qi = Transforms.ZigZagEncode(qi_coder.Encode(vertex_pi_qi.Item2));
+        uint zig_zag_encoded_deriv_pi = Transforms.ZigZagEncode(pi_coder.Encode(vertex_pi_qi.Item1));
+        uint zig_zag_encoded_deriv_qi = Transforms.ZigZagEncode(qi_coder.Encode(vertex_pi_qi.Item2));
         // Interleave to reduce overhead from two partial bytes to one.
-        UInt64 interleaved_zig_zag_encoded_derivs = BitsInterleave.InterleaveUInt32(zig_zag_encoded_deriv_pi, zig_zag_encoded_deriv_qi);
+        ulong interleaved_zig_zag_encoded_derivs = BitsInterleave.InterleaveUInt32(zig_zag_encoded_deriv_pi, zig_zag_encoded_deriv_qi);
 
         encoder.Ensure(Encoder.kVarintMax64);
         encoder.PutVarUInt64(interleaved_zig_zag_encoded_derivs); // TODO: check if it would be better to use signed int and remove zigzag encoding here, modify "DecodePointCompressed" accordingly
@@ -300,7 +300,7 @@ public static class S2PointCompression
 
         decoder.GetN(little_endian_interleaved_pi_qi, 0, bytes_required);
 
-        UInt64 interleaved_pi_qi = BitConverter.ToUInt64(little_endian_interleaved_pi_qi, 0);
+        ulong interleaved_pi_qi = BitConverter.ToUInt64(little_endian_interleaved_pi_qi, 0);
 
         BitsInterleave.DeinterleaveUInt32(interleaved_pi_qi, out var pi, out var qi);
 

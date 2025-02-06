@@ -158,7 +158,7 @@ internal class IndexMatchingLayer : Layer
         string msg = "";
         foreach (var edge in edges) {
             var vertices = new[] { edge.V0, edge.V1 };
-            if (!String.IsNullOrEmpty(msg)) msg += "; ";
+            if (!string.IsNullOrEmpty(msg)) msg += "; ";
             msg += S2TextFormat.ToDebugString(vertices);
         }
         return msg;

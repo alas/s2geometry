@@ -1523,7 +1523,7 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
         // Perform all checks before modifying vertex state. Empty loops are
         // explicitly allowed here: a newly created loop has zero vertices
         // and such loops encode and decode properly.
-        if (decoder.Avail() < sizeof(UInt32)) return (false, null);
+        if (decoder.Avail() < sizeof(uint)) return (false, null);
         var num_vertices = (int)decoder.Get32();
         if (num_vertices > s2polygon_decode_max_num_vertices)
         {
@@ -1532,7 +1532,7 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
 
         var pvSize = SizeHelper.SizeOf(typeof(S2Point));
 
-        if (decoder.Avail() < (num_vertices * pvSize + sizeof(byte) + sizeof(UInt32)))
+        if (decoder.Avail() < (num_vertices * pvSize + sizeof(byte) + sizeof(uint)))
         {
             return (false, null);
         }

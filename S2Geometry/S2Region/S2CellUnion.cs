@@ -54,7 +54,7 @@ public record class S2CellUnion : IS2Region<S2CellUnion>, IEnumerable<S2CellId>,
         }
     }
 
-    public S2CellUnion(UInt64[] cell_ids, bool checkValidity = true)
+    public S2CellUnion(ulong[] cell_ids, bool checkValidity = true)
         : this(cell_ids.Select(t => new S2CellId(t)).ToList(), checkValidity) { }
 
     #endregion
@@ -485,9 +485,9 @@ public record class S2CellUnion : IS2Region<S2CellUnion>, IEnumerable<S2CellId>,
 
     // The number of leaf cells covered by the union.
     // This will be no more than 6*2^60 for the whole sphere.
-    public UInt64 LeafCellsCovered()
+    public ulong LeafCellsCovered()
     {
-        UInt64 num_leaves = 0;
+        ulong num_leaves = 0;
         foreach (S2CellId id in this)
         {
             int inverted_level = S2.kMaxCellLevel - id.Level();
@@ -694,9 +694,9 @@ public record class S2CellUnion : IS2Region<S2CellUnion>, IEnumerable<S2CellId>,
         // mask that blocks out the two bits that encode the child position of
         // "id" with respect to its parent, then check that the other three
         // children all agree with "mask".
-        UInt64 mask = d.LowestOnBit() << 1;
+        ulong mask = d.LowestOnBit() << 1;
         mask = ~(mask + (mask << 1));
-        UInt64 id_masked = d.Id & mask;
+        ulong id_masked = d.Id & mask;
         return (a.Id & mask) == id_masked &&
                 (b.Id & mask) == id_masked &&
                 (c.Id & mask) == id_masked &&
@@ -805,7 +805,7 @@ public record class S2CellUnion : IS2Region<S2CellUnion>, IEnumerable<S2CellId>,
     {
         // Unsigned char for version number, and N+1 UInt64's for N cell_ids
         // (1 for vector length, N for the ids).
-        encoder.Ensure(sizeof(byte) + sizeof(UInt64) * (1 + CellIds.Count));
+        encoder.Ensure(sizeof(byte) + sizeof(ulong) * (1 + CellIds.Count));
 
         encoder.Put8(S2.kCurrentLosslessEncodingVersionNumber);
         encoder.Put64((ulong)CellIds.Count);
@@ -819,7 +819,7 @@ public record class S2CellUnion : IS2Region<S2CellUnion>, IEnumerable<S2CellId>,
     public static (bool, S2CellUnion?) Decode(Decoder decoder)
     {
         // Should contain at least version and vector length.
-        if (decoder.Avail() < sizeof(byte) + sizeof(UInt64))
+        if (decoder.Avail() < sizeof(byte) + sizeof(ulong))
             return (false, null);
 
         var version = decoder.Get8();

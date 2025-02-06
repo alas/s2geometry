@@ -1,13 +1,13 @@
 namespace S2Geometry;
 
-using Seq = List<Int64>;
+using Seq = List<long>;
 
 public class SequenceLexiconTests
 {
     [Fact]
     internal void Test_SequenceLexicon_int64()
     {
-        SequenceLexicon<Int64> lex = new();
+        SequenceLexicon<long> lex = new();
         Assert.Equal(0, lex.Add(new Seq { }));
         Assert.Equal(1, lex.Add(new Seq { 5 }));
         Assert.Equal(0, lex.Add(new Seq { }));
@@ -28,7 +28,7 @@ public class SequenceLexiconTests
     [Fact]
     internal void Test_SequenceLexicon_Clear()
     {
-        SequenceLexicon<Int64> lex = new();
+        SequenceLexicon<long> lex = new();
         Assert.Equal(0, lex.Add(new Seq { 1 }));
         Assert.Equal(1, lex.Add(new Seq { 2 }));
         lex.Clear();
@@ -39,7 +39,7 @@ public class SequenceLexiconTests
     [Fact]
     internal void Test_SequenceLexicon_CopyConstructor()
     {
-        var original = new SequenceLexicon<Int64>();
+        var original = new SequenceLexicon<long>();
         Assert.Equal(0, original.Add(new Seq { 1, 2 }));
         var lex = original;
         Assert.Equal(1, lex.Add(new Seq { 3, 4 }));
@@ -50,7 +50,7 @@ public class SequenceLexiconTests
     [Fact]
     internal void Test_SequenceLexicon_MoveConstructor()
     {
-        var original = new SequenceLexicon<Int64>();
+        var original = new SequenceLexicon<long>();
         Assert.Equal(0, original.Add(new Seq { 1, 2}));
         var lex = original;
         Assert.Equal(1, lex.Add(new Seq { 3, 4}));
@@ -61,9 +61,9 @@ public class SequenceLexiconTests
     [Fact]
     internal void Test_SequenceLexicon_CopyAssignmentOperator()
     {
-        SequenceLexicon<Int64> original = new();
+        SequenceLexicon<long> original = new();
         Assert.Equal(0, original.Add(new Seq { 1, 2}));
-        SequenceLexicon<Int64> lex = new();
+        SequenceLexicon<long> lex = new();
         Assert.Equal(0, lex.Add(new Seq { 3, 4}));
         Assert.Equal(1, lex.Add(new Seq { 5, 6}));
         lex = original;
@@ -75,9 +75,9 @@ public class SequenceLexiconTests
     [Fact]
     internal void Test_SequenceLexicon_MoveAssignmentOperator()
     {
-        SequenceLexicon<Int64> original = new();
+        SequenceLexicon<long> original = new();
         Assert.Equal(0, original.Add(new Seq { 1, 2}));
-        SequenceLexicon<Int64> lex = new();
+        SequenceLexicon<long> lex = new();
         Assert.Equal(0, lex.Add(new Seq { 3, 4}));
         Assert.Equal(1, lex.Add(new Seq { 5, 6}));
         lex = original;

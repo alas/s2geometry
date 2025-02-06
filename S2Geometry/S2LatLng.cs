@@ -84,24 +84,24 @@ public readonly record struct S2LatLng : IComparable<S2LatLng>
 
     public static S2LatLng FromE5(Int32 latE5, Int32 lngE5) => new(S1Angle.FromE5(latE5), S1Angle.FromE5(lngE5));
 
-    public static S2LatLng FromE5(Int64 latE5, Int64 lngE5) => new(S1Angle.FromE5(latE5), S1Angle.FromE5(lngE5));
+    public static S2LatLng FromE5(long latE5, long lngE5) => new(S1Angle.FromE5(latE5), S1Angle.FromE5(lngE5));
 
     public static S2LatLng FromE6(Int32 latE6, Int32 lngE6) => new(S1Angle.FromE6(latE6), S1Angle.FromE6(lngE6));
 
-    public static S2LatLng FromE6(Int64 latE6, Int64 lngE6) => new(S1Angle.FromE6(latE6), S1Angle.FromE6(lngE6));
+    public static S2LatLng FromE6(long latE6, long lngE6) => new(S1Angle.FromE6(latE6), S1Angle.FromE6(lngE6));
 
     public static S2LatLng FromE7(Int32 latE7, Int32 lngE7) => new(S1Angle.FromE7(latE7), S1Angle.FromE7(lngE7));
 
-    public static S2LatLng FromE7(Int64 latE7, Int64 lngE7) => new(S1Angle.FromE7(latE7), S1Angle.FromE7(lngE7));
+    public static S2LatLng FromE7(long latE7, long lngE7) => new(S1Angle.FromE7(latE7), S1Angle.FromE7(lngE7));
 
     // Convenience functions -- to use when args have been fixed32s in protos.
     //
     // The arguments are static_cast into int32, so very large unsigned values
     // are treated as negative numbers.
 
-    public static S2LatLng FromUnsignedE6(UInt32 latE6, UInt32 lngE6) => new(S1Angle.FromUnsignedE6(latE6), S1Angle.FromUnsignedE6(lngE6));
+    public static S2LatLng FromUnsignedE6(uint latE6, uint lngE6) => new(S1Angle.FromUnsignedE6(latE6), S1Angle.FromUnsignedE6(lngE6));
 
-    public static S2LatLng FromUnsignedE7(UInt32 latE7, UInt32 lngE7) => new(S1Angle.FromUnsignedE7(latE7), S1Angle.FromUnsignedE7(lngE7));
+    public static S2LatLng FromUnsignedE7(uint latE7, uint lngE7) => new(S1Angle.FromUnsignedE7(latE7), S1Angle.FromUnsignedE7(lngE7));
 
     /// <summary>
     /// Convert a direction vector (not necessarily unit length) to an S2LatLng.

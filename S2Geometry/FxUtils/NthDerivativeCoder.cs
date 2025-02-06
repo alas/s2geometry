@@ -67,7 +67,7 @@ public class NthDerivativeCoder
     {
         for (int i = 0; i < m_; ++i)
         {
-            UInt32 delta = (UInt32)((UInt32)k - memory_[i]);
+            uint delta = (uint)((uint)k - memory_[i]);
             memory_[i] = k;
             k = (Int32)delta;
         }
@@ -82,7 +82,7 @@ public class NthDerivativeCoder
         if (m_ < N)
             m_++;
         for (int i = m_ - 1; i >= 0; --i)
-            k = memory_[i] = (Int32)(memory_[i] + (UInt32)k);
+            k = memory_[i] = (Int32)(memory_[i] + (uint)k);
         return k;
     }
 

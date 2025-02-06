@@ -1924,7 +1924,7 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
     // specifies whether to call DecodeWithinScope on the loops.
     private static (bool, S2Polygon?) DecodeUncompressed(Decoder decoder)
     {
-        if (decoder.Avail() < 2 * sizeof(byte) + sizeof(UInt32))
+        if (decoder.Avail() < 2 * sizeof(byte) + sizeof(uint))
             return (false, null);
 
         decoder.Get8();  // Ignore irrelevant serialized owns_loops_ value.

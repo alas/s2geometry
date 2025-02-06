@@ -539,7 +539,7 @@ public static class S2TextFormat
 
     public static string ToDebugString(this S2LaxPolygonShape polygon, string loop_separator = ";\n")
     {
-        var sb = new List<String>();
+        var sb = new List<string>();
         for (var i = 0; i < polygon.NumLoops; ++i)
         {
             var n = polygon.NumLoopVertices(i);
@@ -552,7 +552,7 @@ public static class S2TextFormat
                 sb.Add(AppendVertices(polygon.LoopVertices(i, 0), n));
             }
         }
-        return String.Join(loop_separator, sb);
+        return string.Join(loop_separator, sb);
     }
 
     // Convert the contents of an S2ShapeIndex to the format above.  The index may

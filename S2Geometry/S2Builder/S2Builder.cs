@@ -748,7 +748,7 @@ public partial class S2Builder
         // implementation of SnapEdge() for this case.
         sites_.Clear();
         if (!tracker_.AddSpaceExact(sites_, input_vertices_.Count)) return;
-        Int64 kTempPerVertex = Marshal.SizeOf(typeof(InputVertexKey)) + sizeof(InputVertexId);
+        long kTempPerVertex = Marshal.SizeOf(typeof(InputVertexKey)) + sizeof(InputVertexId);
         if (!tracker_.TallyTemp(input_vertices_.Count * kTempPerVertex)) return;
         var sorted = SortInputVertices();
         var vmap = new int[input_vertices_.Count];
@@ -3100,8 +3100,8 @@ public partial class S2Builder
             //
             //  vector<VertexId> *tmp;      // Graph::FilterVertices
             //  vector<VertexId> used;      // Graph::FilterVertices
-            const Int64 kTempPerSite = sizeof(VertexId);
-            const Int64 kTempPerEdge = 2 * sizeof(VertexId);
+            const long kTempPerSite = sizeof(VertexId);
+            const long kTempPerEdge = 2 * sizeof(VertexId);
 
             int max_layer_edges = 0;
             foreach (var edges in layer_edges) {
@@ -3119,12 +3119,12 @@ public partial class S2Builder
         }
 
         // The amount of non-inline memory used to store edge sites.
-        private Int64 edge_sites_bytes_ = 0;
+        private long edge_sites_bytes_ = 0;
 
         // The amount of memory used by the S2PointIndex for sites.
-        private Int64 site_index_bytes_ = 0;
+        private long site_index_bytes_ = 0;
 
         // The amount of temporary memory used by Graph::FilterVertices().
-        private Int64 filter_vertices_bytes_ = 0;
+        private long filter_vertices_bytes_ = 0;
 }
 }

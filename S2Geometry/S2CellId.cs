@@ -34,7 +34,7 @@ namespace S2Geometry;
 
 using System.Globalization;
 
-public readonly record struct S2CellId(UInt64 Id) : IComparable<S2CellId>, IDecoder<S2CellId>
+public readonly record struct S2CellId(ulong Id) : IComparable<S2CellId>, IDecoder<S2CellId>
 {
     #region Fields, Constants
 
@@ -59,7 +59,7 @@ public readonly record struct S2CellId(UInt64 Id) : IComparable<S2CellId>, IDeco
     // This is the offset required to wrap around from the beginning of the
     // Hilbert curve to the end or vice versa; see NextWrap and PrevWrap.
     // SWIG doesn't understand UInt64{}, so use static_cast.
-    private const UInt64 kWrapOffset = (UInt64)kNumFaces << kPosBits;
+    private const ulong kWrapOffset = (ulong)kNumFaces << kPosBits;
 
     #endregion
 
@@ -90,7 +90,7 @@ public readonly record struct S2CellId(UInt64 Id) : IComparable<S2CellId>, IDeco
     // Return the cell corresponding to a given S2 cube face.
     public static S2CellId FromFace(int face)
     {
-        return new S2CellId(((UInt64)face << kPosBits) + LowestOnBitForLevel(0));
+        return new S2CellId(((ulong)face << kPosBits) + LowestOnBitForLevel(0));
     }
 
     // Return a cell given its face (range 0..5), Hilbert curve position within
@@ -99,9 +99,9 @@ public readonly record struct S2CellId(UInt64 Id) : IComparable<S2CellId>, IDeco
     // to the Hilbert curve position at the center of the returned cell.  This
     // is a static function rather than a constructor in order to indicate what
     // the arguments represent.
-    public static S2CellId FromFacePosLevel(int face, UInt64 pos, int level)
+    public static S2CellId FromFacePosLevel(int face, ulong pos, int level)
     {
-        var cell = new S2CellId(((UInt64)face << kPosBits) + (pos | 1));
+        var cell = new S2CellId(((ulong)face << kPosBits) + (pos | 1));
         return cell.Parent(level);
     }
 
@@ -395,7 +395,7 @@ public readonly record struct S2CellId(UInt64 Id) : IComparable<S2CellId>, IDeco
     {
         MyDebug.Assert(IsValid());
         MyDebug.Assert(!IsFace());
-        UInt64 new_lsb = LowestOnBit() << 2;
+        ulong new_lsb = LowestOnBit() << 2;
         return new S2CellId((Id & (~new_lsb + 1)) | new_lsb);
     }
 
@@ -404,7 +404,7 @@ public readonly record struct S2CellId(UInt64 Id) : IComparable<S2CellId>, IDeco
         MyDebug.Assert(IsValid());
         MyDebug.Assert(level >= 0);
         MyDebug.Assert(level <= Level());
-        UInt64 new_lsb = LowestOnBitForLevel(level);
+        ulong new_lsb = LowestOnBitForLevel(level);
         return new S2CellId((Id & (~new_lsb + 1)) | new_lsb);
     }
 
@@ -418,8 +418,8 @@ public readonly record struct S2CellId(UInt64 Id) : IComparable<S2CellId>, IDeco
         // positions downward.  We do this by subtracting (4 * new_lsb) and adding
         // new_lsb.  Then to advance to the given child cell, we add
         // (2 * position * new_lsb).
-        UInt64 new_lsb = LowestOnBit() >> 2;
-        return new S2CellId(Id + (2 * (UInt64)position + 1 - 4) * new_lsb);
+        ulong new_lsb = LowestOnBit() >> 2;
+        return new S2CellId(Id + (2 * (ulong)position + 1 - 4) * new_lsb);
     }
 
     // Iterator-style methods for traversing the immediate children of a cell or
@@ -438,7 +438,7 @@ public readonly record struct S2CellId(UInt64 Id) : IComparable<S2CellId>, IDeco
     {
         MyDebug.Assert(IsValid());
         MyDebug.Assert(!IsLeaf());
-        UInt64 old_lsb = LowestOnBit();
+        ulong old_lsb = LowestOnBit();
         return new S2CellId(Id - old_lsb + (old_lsb >> 2));
     }
 
@@ -454,7 +454,7 @@ public readonly record struct S2CellId(UInt64 Id) : IComparable<S2CellId>, IDeco
     {
         MyDebug.Assert(IsValid());
         MyDebug.Assert(!IsLeaf());
-        UInt64 old_lsb = LowestOnBit();
+        ulong old_lsb = LowestOnBit();
         return new S2CellId(Id + old_lsb + (old_lsb >> 2));
     }
 
@@ -476,7 +476,7 @@ public readonly record struct S2CellId(UInt64 Id) : IComparable<S2CellId>, IDeco
     // This method advances or retreats the indicated number of steps along the
     // Hilbert curve at the current level, and returns the new position.  The
     // position is never advanced past End() or before Begin().
-    public S2CellId Advance(Int64 steps)
+    public S2CellId Advance(long steps)
     {
         if (steps == 0) return this;
 
@@ -487,25 +487,25 @@ public readonly record struct S2CellId(UInt64 Id) : IComparable<S2CellId>, IDeco
         int step_shift = 2 * (S2.kMaxCellLevel - Level()) + 1;
         if (steps < 0)
         {
-            Int64 min_steps = -(Int64)(Id >> step_shift);
+            long min_steps = -(long)(Id >> step_shift);
             if (steps < min_steps) steps = min_steps;
         }
         else
         {
-            Int64 max_steps = (Int64)((kWrapOffset + LowestOnBit() - Id) >> step_shift);
+            long max_steps = (long)((kWrapOffset + LowestOnBit() - Id) >> step_shift);
             if (steps > max_steps) steps = max_steps;
         }
         // If steps is negative, then shifting it left has undefined behavior.
         // Cast to UInt64 for a 2's complement answer.
-        return new S2CellId(Id + ((UInt64)steps << step_shift));
+        return new S2CellId(Id + ((ulong)steps << step_shift));
     }
 
     // Returns the number of steps that this cell is from Begin(Level). The
     // return value is always non-negative.
-    public Int64 DistanceFromBegin()
+    public long DistanceFromBegin()
     {
         int step_shift = 2 * (S2.kMaxCellLevel - Level()) + 1;
-        return (Int64)(Id >> step_shift);
+        return (long)(Id >> step_shift);
     }
 
     // Like Next and Prev, but these methods wrap around from the last face
@@ -532,7 +532,7 @@ public readonly record struct S2CellId(UInt64 Id) : IComparable<S2CellId>, IDeco
     // Hilbert curve at the current level, and returns the new position.  The
     // position wraps between the first and last faces as necessary.  The input
     // must be a valid cell id.
-    public S2CellId AdvanceWrap(Int64 steps)
+    public S2CellId AdvanceWrap(long steps)
     {
         MyDebug.Assert(IsValid());
         if (steps == 0) return this;
@@ -540,10 +540,10 @@ public readonly record struct S2CellId(UInt64 Id) : IComparable<S2CellId>, IDeco
         int step_shift = 2 * (S2.kMaxCellLevel - Level()) + 1;
         if (steps < 0)
         {
-            Int64 min_steps = -(Int64)(Id >> step_shift);
+            long min_steps = -(long)(Id >> step_shift);
             if (steps < min_steps)
             {
-                Int64 step_wrap = (Int64)(kWrapOffset >> step_shift);
+                long step_wrap = (long)(kWrapOffset >> step_shift);
                 steps %= step_wrap;
                 if (steps < min_steps) steps += step_wrap;
             }
@@ -551,15 +551,15 @@ public readonly record struct S2CellId(UInt64 Id) : IComparable<S2CellId>, IDeco
         else
         {
             // Unlike advance(), we don't want to return End(level).
-            Int64 max_steps = (Int64)((kWrapOffset - Id) >> step_shift);
+            long max_steps = (long)((kWrapOffset - Id) >> step_shift);
             if (steps > max_steps)
             {
-                Int64 step_wrap = (Int64)(kWrapOffset >> step_shift);
+                long step_wrap = (long)(kWrapOffset >> step_shift);
                 steps %= step_wrap;
                 if (steps > max_steps) steps -= step_wrap;
             }
         }
-        return new S2CellId(Id + ((UInt64)steps << step_shift));
+        return new S2CellId(Id + ((ulong)steps << step_shift));
     }
 
     // Return the largest cell with the same RangeMin and such that
@@ -613,7 +613,7 @@ public readonly record struct S2CellId(UInt64 Id) : IComparable<S2CellId>, IDeco
         // Basically we find the first bit position at which the two S2CellIds
         // differ and convert that to a level.  The Math.Max() below is necessary for the
         // case where one S2CellId is a descendant of the other.
-        UInt64 bits = Math.Max(Id ^ other.Id, Math.Max(LowestOnBit(), other.LowestOnBit()));
+        ulong bits = Math.Max(Id ^ other.Id, Math.Max(LowestOnBit(), other.LowestOnBit()));
         MyDebug.Assert(bits != 0, "Because LowestOnBit is non-zero.");
 
         // Compute the position of the most significant bit, and then map the bit
@@ -674,7 +674,7 @@ public readonly record struct S2CellId(UInt64 Id) : IComparable<S2CellId>, IDeco
         if (!allHexa) return None;
 
         token = (token + "0000000000000000")[..16];
-        var success = UInt64.TryParse(token, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var id);
+        var success = ulong.TryParse(token, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var id);
         if (!success) return None;
 
         return new S2CellId(id);
@@ -825,23 +825,23 @@ public readonly record struct S2CellId(UInt64 Id) : IComparable<S2CellId>, IDeco
 
         // Note that this value gets shifted one bit to the left at the end
         // of the function.
-        UInt64 n = (UInt64)face << (kPosBits - 1);
+        ulong n = (ulong)face << (kPosBits - 1);
 
         // Alternating faces have opposite Hilbert curve orientations; this
         // is necessary in order for all faces to have a right-handed
         // coordinate system.
-        UInt64 bits = (UInt64)(face & S2.kSwapMask);
+        ulong bits = (ulong)(face & S2.kSwapMask);
 
         // Each iteration maps 4 bits of "i" and "j" into 8 bits of the Hilbert
         // curve position.  The lookup table transforms a 10-bit key of the form
         // "iiiijjjjoo" to a 10-bit value of the form "ppppppppoo", where the
         // letters [ijpo] denote bits of "i", "j", Hilbert curve position, and
         // Hilbert curve orientation respectively.
-        var i2 = (UInt64)i;
-        var j2 = (UInt64)j;
+        var i2 = (ulong)i;
+        var j2 = (ulong)j;
         for (var k = 7; k >= 0; k--)
         {
-            UInt64 mask = (1UL << kLookupBits) - 1UL;
+            ulong mask = (1UL << kLookupBits) - 1UL;
             bits += ((i2 >> (k * kLookupBits)) & mask) << (kLookupBits + 2);
             bits += ((j2 >> (k * kLookupBits)) & mask) << 2;
             bits = (ulong)LookupPos[bits];
@@ -922,7 +922,7 @@ public readonly record struct S2CellId(UInt64 Id) : IComparable<S2CellId>, IDeco
     public ulong LowestOnBit() => Id & (~Id + 1);
 
     // Return the lowest-numbered bit that is on for cells at the given level.
-    public static UInt64 LowestOnBitForLevel(int level) => 1UL << (2 * (S2.kMaxCellLevel - level));
+    public static ulong LowestOnBitForLevel(int level) => 1UL << (2 * (S2.kMaxCellLevel - level));
 
     // Return the bound in (u,v)-space for the cell at the given level containing
     // the leaf cell with the given (i,j)-coordinates.
@@ -1067,14 +1067,14 @@ public readonly record struct S2CellId(UInt64 Id) : IComparable<S2CellId>, IDeco
     // Can also encode an invalid cell.
     public void Encode(Encoder encoder, CodingHint hint = CodingHint.COMPACT)
     {
-        encoder.Ensure(sizeof(UInt64));  // A single UInt64.
+        encoder.Ensure(sizeof(ulong));  // A single UInt64.
         encoder.Put64(Id);
     }
 
     // Decodes an S2CellId encoded by Encode(). Returns true on success.
     public static (bool, S2CellId) Decode(Decoder decoder)
     {
-        if (decoder.Avail() < sizeof(UInt64)) return (false, default);
+        if (decoder.Avail() < sizeof(ulong)) return (false, default);
         var cell = new S2CellId(decoder.Get64());
         return (true, cell);
     }

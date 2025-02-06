@@ -18,7 +18,7 @@ public class StringVectorEncoder
     // A vector consisting of the starting offset of each string in the
     // encoder's data buffer, plus a final entry pointing just past the end of
     // the last string.
-    private readonly List<UInt64> offsets_ = [];
+    private readonly List<ulong> offsets_ = [];
     private readonly Encoder data_ = new();
 
     public StringVectorEncoder() { }
@@ -151,7 +151,7 @@ public class EncodedStringVector : IInitEncoder<EncodedStringVector>
     // faster than operator[] but returns an unbounded string.
     public (byte[] buffer, int offset) GetStart(int i)
     {
-        UInt64 start = (i == 0) ? 0 : Offsets[i - 1];
+        ulong start = (i == 0) ? 0 : Offsets[i - 1];
         return (Data!, (int)start);
     }
 

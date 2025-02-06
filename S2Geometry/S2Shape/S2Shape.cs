@@ -165,7 +165,7 @@ public abstract class S2Shape : IEncoder
         throw new NotImplementedException("(FATAL) Encoding not implemented for this S2Shape type");
     }
 
-    public enum TypeTag : System.UInt32
+    public enum TypeTag : uint
     {
         // Indicates that a given S2Shape type cannot be encoded.
         kNoTypeTag = 0,

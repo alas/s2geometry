@@ -34,13 +34,13 @@ public class EncodedS2PointVector
 
     // Used to indicate that a point must be encoded as an exception (a 24-byte
     // S2Point) rather than as an S2CellId.
-    public const UInt64 kException = ~0UL;
+    public const ulong kException = ~0UL;
 
     public required Format Format_ { private get; init; }
-    private UInt32 size_;
+    private uint size_;
     private S2Point[]? points;
     private EncodedStringVector? blocks;
-    private UInt64 base_;
+    private ulong base_;
     private byte level;
     private bool have_exceptions;
 
@@ -148,7 +148,7 @@ public class EncodedS2PointVector
         //
         // This is followed by an array of S2Points in little-endian order.
         encoder.Ensure(Encoder.kVarintMax64 + points.Length * SizeHelper.SizeOf(typeof(S2Point)));
-        UInt64 size_format = (ulong)(points.Length << kEncodingFormatBits | (byte)Format.UNCOMPRESSED);
+        ulong size_format = (ulong)(points.Length << kEncodingFormatBits | (byte)Format.UNCOMPRESSED);
         encoder.Put64(size_format);
         encoder.PutPoints(points);
     }
@@ -323,11 +323,11 @@ public class EncodedS2PointVector
         // interleaving operation.
         //
         // TODO(ericv): Benchmark using shifted S2CellIds instead.
-        UInt64[] values = ConvertCellsToValues(cell_points, level, out bool have_exceptions);
+        ulong[] values = ConvertCellsToValues(cell_points, level, out bool have_exceptions);
 
         // 3. Choose the global encoding parameter "base" (consisting of the bit
         // prefix shared by all values to be encoded).
-        UInt64 base_ = ChooseBase(values, level, have_exceptions, out int base_bits);
+        ulong base_ = ChooseBase(values, level, have_exceptions, out int base_bits);
 
         // Now encode the output, starting with the 2-byte header (see above).
         int num_blocks = (values.Length + kBlockSize - 1) >> kBlockShift;
@@ -351,13 +351,13 @@ public class EncodedS2PointVector
         // Now we encode the contents of each block.
         var blocks = new StringVectorEncoder();
         var exceptions = new List<S2Point>();
-        UInt64 offset_bytes_sum = 0UL;
-        UInt64 delta_nibbles_sum = 0UL;
-        UInt64 exceptions_sum = 0UL;
+        ulong offset_bytes_sum = 0UL;
+        ulong delta_nibbles_sum = 0UL;
+        ulong exceptions_sum = 0UL;
         for (int i = 0; i < values.Length; i += kBlockSize)
         {
             int block_size = Math.Min(kBlockSize, values.Length - i);
-            var code = GetBlockCode(new ArraySegment<UInt64>(values, i, block_size), base_, have_exceptions);
+            var code = GetBlockCode(new ArraySegment<ulong>(values, i, block_size), base_, have_exceptions);
 
             // Encode the one-byte block header (see above).
             Encoder block = blocks.AddViaEncoder();
@@ -371,7 +371,7 @@ public class EncodedS2PointVector
             block.Put8((byte)((offset_bytes - overlap_nibbles) | (overlap_nibbles << 3) | (delta_nibbles - 1) << 4));
 
             // Determine the offset for this block, and whether there are exceptions.
-            UInt64 offset = ~0UL;
+            ulong offset = ~0UL;
             int num_exceptions = 0;
             for (int j = 0; j < block_size; ++j)
             {
@@ -401,7 +401,7 @@ public class EncodedS2PointVector
             exceptions.Clear();
             for (int j = 0; j < block_size; ++j)
             {
-                UInt64 delta;
+                ulong delta;
                 if (values[i + j] == kException)
                 {
                     delta = (ulong)exceptions.Count;
@@ -434,9 +434,9 @@ public class EncodedS2PointVector
                 block.Ensure(exceptions_bytes);
                 block.PutPoints(exceptions);
             }
-            offset_bytes_sum += (UInt64)offset_bytes;
-            delta_nibbles_sum += (UInt64)delta_nibbles;
-            exceptions_sum += (UInt64)num_exceptions;
+            offset_bytes_sum += (ulong)offset_bytes;
+            delta_nibbles_sum += (ulong)delta_nibbles;
+            exceptions_sum += (ulong)num_exceptions;
         }
         blocks.Encode(encoder);
     }
@@ -459,7 +459,7 @@ public class EncodedS2PointVector
 
         // Note that the encoding format supports up to 2**59 vertices, but we
         // currently only support decoding up to 2**32 vertices.
-        if (size > UInt32.MaxValue) return false;
+        if (size > uint.MaxValue) return false;
         size_ = (uint)size;
 
         int bytes = (int)(size_ * SizeHelper.SizeOf(typeof(S2Point)));
@@ -494,7 +494,7 @@ public class EncodedS2PointVector
         if (!success) return false;
 
         blocks = shape!;
-        size_ = (UInt32)(kBlockSize * (blocks.Count() - 1) + last_block_count);
+        size_ = (uint)(kBlockSize * (blocks.Count() - 1) + last_block_count);
         return true;
     }
     private S2Point DecodeCellIdsFormat(int i)
@@ -511,14 +511,14 @@ public class EncodedS2PointVector
 
         // Decode the offset for this block.
         int offset_shift = (delta_nibbles - overlap_nibbles) << 2;
-        UInt64 offset = EncodedUIntVector<ulong>.GetUIntWithLength(byteArray, offsetByteArray, offset_bytes) << offset_shift;
+        ulong offset = EncodedUIntVector<ulong>.GetUIntWithLength(byteArray, offsetByteArray, offset_bytes) << offset_shift;
         offsetByteArray += offset_bytes;
 
         // Decode the delta for the requested value.
         int delta_nibble_offset = (i & (kBlockSize - 1)) * delta_nibbles;
         int delta_bytes = (delta_nibbles + 1) >> 1;
         var delta_offset = offsetByteArray + (delta_nibble_offset >> 1);
-        UInt64 delta = EncodedUIntVector<ulong>.GetUIntWithLength(byteArray, delta_offset, delta_bytes);
+        ulong delta = EncodedUIntVector<ulong>.GetUIntWithLength(byteArray, delta_offset, delta_bytes);
         delta >>= (delta_nibble_offset & 1) << 2;
         delta &= BitMask(delta_nibbles << 2);
 
@@ -538,7 +538,7 @@ public class EncodedS2PointVector
         }
 
         // Otherwise convert the 64-bit value back to an S2Point.
-        UInt64 value = base_ + offset + delta;
+        ulong value = base_ + offset + delta;
         int shift = S2.kMaxCellLevel - level;
 
         // The S2CellId version of the following code is:
@@ -554,9 +554,9 @@ public class EncodedS2PointVector
     // Like util_bits.InterleaveUInt32, but interleaves bit pairs rather than
     // individual bits.  This format is faster to decode than the fully interleaved
     // format, and produces the same results for our use case.
-    private static UInt64 InterleaveUInt32BitPairs(UInt32 val0, UInt32 val1)
+    private static ulong InterleaveUInt32BitPairs(uint val0, uint val1)
     {
-        UInt64 v0 = val0, v1 = val1;
+        ulong v0 = val0, v1 = val1;
         v0 = (v0 | (v0 << 16)) & 0x0000ffff0000ffff;
         v1 = (v1 | (v1 << 16)) & 0x0000ffff0000ffff;
         v0 = (v0 | (v0 << 8)) & 0x00ff00ff00ff00ff;
@@ -572,9 +572,9 @@ public class EncodedS2PointVector
     // uses a lookup table.  The speed advantage is expected to be even larger in
     // code that mixes bit interleaving with other significant operations since it
     // doesn't require keeping a 256-byte lookup table in the L1 data cache.
-    private static void DeinterleaveUInt32BitPairs(UInt64 code, out UInt32 val0, out UInt32 val1)
+    private static void DeinterleaveUInt32BitPairs(ulong code, out uint val0, out uint val1)
     {
-        UInt64 v0 = code, v1 = code >> 2;
+        ulong v0 = code, v1 = code >> 2;
         v0 &= 0x3333333333333333;
         v0 |= v0 >> 2;
         v1 &= 0x3333333333333333;
@@ -591,12 +591,12 @@ public class EncodedS2PointVector
         v0 |= v0 >> 16;
         v1 &= 0x0000ffff0000ffff;
         v1 |= v1 >> 16;
-        val0 = (UInt32)v0;
-        val1 = (UInt32)v1;
+        val0 = (uint)v0;
+        val1 = (uint)v1;
     }
 
     // Returns a bit mask with "n" low-order 1 bits, for 0 <= n <= 64.
-    private static UInt64 BitMask(int n) => (n == 0) ? 0 : (~0UL >> (64 - n));
+    private static ulong BitMask(int n) => (n == 0) ? 0 : (~0UL >> (64 - n));
 
     // Returns the maximum number of bits per value at the given S2CellId level.
     private static int MaxBitsForLevel(int level) => 2 * level + 3;
@@ -653,9 +653,9 @@ public class EncodedS2PointVector
     // represented losslessly as the center of an S2CellId at the chosen level are
     // indicated by the value "kException".  "have_exceptions" is set to indicate
     // whether any exceptions were present.
-    private static UInt64[] ConvertCellsToValues(CellPoint[] cell_points, int level, out bool have_exceptions)
+    private static ulong[] ConvertCellsToValues(CellPoint[] cell_points, int level, out bool have_exceptions)
     {
-        var values = new UInt64[cell_points.Length];
+        var values = new ulong[cell_points.Length];
         have_exceptions = false;
         int shift = S2.kMaxCellLevel - level;
         for (var i = 0; i < cell_points.Length; i++)
@@ -674,9 +674,9 @@ public class EncodedS2PointVector
                 // The S2CellId version of the following code is:
                 // UInt64 v = S2CellId.FromFaceIJ(cp.face, cp.si >> 1, cp.ti >> 1).
                 //            parent(level).id() >> (2 * shift + 1);
-                UInt32 sj = (((UInt32)((cp.Face & 3) << 30)) | (cp.Si >> 1)) >> shift;
-                UInt32 tj = (((UInt32)((cp.Face & 4) << 29)) | cp.Ti) >> (shift + 1);
-                UInt64 v = InterleaveUInt32BitPairs(sj, tj);
+                uint sj = (((uint)((cp.Face & 3) << 30)) | (cp.Si >> 1)) >> shift;
+                uint tj = (((uint)((cp.Face & 4) << 29)) | cp.Ti) >> (shift + 1);
+                ulong v = InterleaveUInt32BitPairs(sj, tj);
                 MyDebug.Assert(v <= BitMask(MaxBitsForLevel(level)));
                 values[i] = v;
             }
@@ -684,10 +684,10 @@ public class EncodedS2PointVector
         return values;
     }
 
-    private static UInt64 ChooseBase(UInt64[] values, int level, bool have_exceptions, out int base_bits)
+    private static ulong ChooseBase(ulong[] values, int level, bool have_exceptions, out int base_bits)
     {
         // Find the minimum and maximum non-exception values to be represented.
-        UInt64 v_min = kException, v_max = 0;
+        ulong v_min = kException, v_max = 0;
         foreach (var v in values)
         {
             if (v != kException)
@@ -716,7 +716,7 @@ public class EncodedS2PointVector
         int min_delta_bits = (have_exceptions || values.Length == 1) ? 8 : 4;
         int excluded_bits = Math.Max(BitsUtils.GetBitWidth(v_min ^ v_max),
                                 Math.Max(min_delta_bits, BaseShift(level, 56)));
-        UInt64 base_ = v_min & ~BitMask(excluded_bits);
+        ulong base_ = v_min & ~BitMask(excluded_bits);
 
         // Determine how many bytes are needed to represent this prefix.
         if (base_ == 0)
@@ -743,14 +743,14 @@ public class EncodedS2PointVector
 
     // Returns true if the range of values [d_min, d_max] can be encoded using the
     // specified parameters (delta_bits, overlap_bits, and have_exceptions).
-    private static bool CanEncode(UInt64 d_min, UInt64 d_max, int delta_bits, int overlap_bits, bool have_exceptions)
+    private static bool CanEncode(ulong d_min, ulong d_max, int delta_bits, int overlap_bits, bool have_exceptions)
     {
         // "offset" can't represent the lowest (delta_bits - overlap_bits) of d_min.
         d_min &= ~BitMask(delta_bits - overlap_bits);
 
         // The maximum delta is reduced by kBlockSize if any exceptions exist, since
         // deltas 0..kBlockSize-1 are used to indicate exceptions.
-        UInt64 max_delta = BitMask(delta_bits);
+        ulong max_delta = BitMask(delta_bits);
         if (have_exceptions)
         {
             if (max_delta < kBlockSize) return false;
@@ -764,11 +764,11 @@ public class EncodedS2PointVector
     // the optimal encoding parameters that should be used to encode each block.
     // Also returns the global minimum value "base_" and the number of bits that
     // should be used to encode it ("base_bits").
-    private static BlockCode GetBlockCode(ArraySegment<UInt64> values, UInt64 base_, bool have_exceptions)
+    private static BlockCode GetBlockCode(ArraySegment<ulong> values, ulong base_, bool have_exceptions)
     {
         // "b_min" and "b_max"n are the minimum and maximum values within this block.
-        UInt64 b_min = kException, b_max = 0;
-        foreach (UInt64 v in values)
+        ulong b_min = kException, b_max = 0;
+        foreach (ulong v in values)
         {
             if (v != kException)
             {
@@ -856,15 +856,15 @@ public class EncodedS2PointVector
 
         // Now determine the number of bytes needed to encode "offset", given the
         // chosen delta length.
-        UInt64 max_delta = BitMask(delta_bits) - (UInt64)(have_exceptions ? kBlockSize : 0);
+        ulong max_delta = BitMask(delta_bits) - (ulong)(have_exceptions ? kBlockSize : 0);
         int offset_bits = 0;
         if (b_max > max_delta)
         {
             // At least one byte of offset is required.  Round up the minimum offset
             // to the next encodable value, and determine how many bits it has.
             int offset_shift = delta_bits - overlap_bits;
-            UInt64 mask = BitMask(offset_shift);
-            UInt64 min_offset = (b_max - max_delta + mask) & ~mask;
+            ulong mask = BitMask(offset_shift);
+            ulong min_offset = (b_max - max_delta + mask) & ~mask;
             MyDebug.Assert(min_offset > 0);
             offset_bits = (BitsUtils.FindMSBSetNonZero64(min_offset) + 1 - offset_shift + 7) & ~7;
             // A 64-bit offset can only be encoded with an overlap of 4 bits.
@@ -894,9 +894,9 @@ public class EncodedS2PointVector
 
     // Represents a point that can be encoded as an S2CellId center.
     // (If such an encoding is not possible then level < 0.)
-    private readonly record struct CellPoint(sbyte Level, sbyte Face, UInt32 Si, UInt32 Ti)
+    private readonly record struct CellPoint(sbyte Level, sbyte Face, uint Si, uint Ti)
     {
-        public CellPoint(int level, int face, UInt32 si, UInt32 ti)
+        public CellPoint(int level, int face, uint si, uint ti)
             : this((sbyte)level, (sbyte)face, si, ti) { }
     }
 

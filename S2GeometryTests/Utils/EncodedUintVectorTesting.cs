@@ -3,13 +3,13 @@
 internal class EncodedUIntVectorTesting
 {
     // TestEncodedUIntVector
-    internal static void TestEncodedUIntVector_16(UInt16[] expected, int expected_bytes)
+    internal static void TestEncodedUIntVector_16(ushort[] expected, int expected_bytes)
     {
         Encoder encoder = new();
-        EncodedUIntVector<UInt16>.EncodeUIntVector(expected, encoder);
+        EncodedUIntVector<ushort>.EncodeUIntVector(expected, encoder);
         Assert.Equal(expected_bytes, encoder.Length());
         var decoder = encoder.GetDecoder();
-        var (success, actual) = EncodedUIntVector<UInt16>.Init(decoder);
+        var (success, actual) = EncodedUIntVector<ushort>.Init(decoder);
         Assert.True(success);
         Assert.Equal(actual!.Decode(), expected);
     }
@@ -25,19 +25,19 @@ internal class EncodedUIntVectorTesting
             Assert.Equal(v.GetLowerBound(x), actual.LowerBound(x));
             if (x > 0)
             {
-                Assert.Equal(v.GetLowerBound(x - 1), actual.LowerBound((UInt16)(x - 1)));
+                Assert.Equal(v.GetLowerBound(x - 1), actual.LowerBound((ushort)(x - 1)));
             }
         }
     }
 
-    private static UInt16[] MakeSortedTestVector_16(int bytes_per_value, int num_values)
+    private static ushort[] MakeSortedTestVector_16(int bytes_per_value, int num_values)
     {
-        Assert.True(bytes_per_value <= sizeof(UInt16));
-        UInt16 limit_value = (UInt16)(~0 >> (8 * (sizeof(UInt16) - bytes_per_value)));
-        List<UInt16> values = [];
+        Assert.True(bytes_per_value <= sizeof(ushort));
+        ushort limit_value = (ushort)(~0 >> (8 * (sizeof(ushort) - bytes_per_value)));
+        List<ushort> values = [];
         for (int i = 0; i + 1 < num_values; ++i)
         {
-            values.Add((UInt16)(limit_value * ((double)i / (num_values - 1))));
+            values.Add((ushort)(limit_value * ((double)i / (num_values - 1))));
         }
         // The last value needs special handling since casting it to "double" loses
         // precision when T == UInt64.
@@ -46,23 +46,23 @@ internal class EncodedUIntVectorTesting
         return [.. values];
     }
 
-    internal static EncodedUIntVector<UInt16> MakeEncodedVector_16(UInt16[] values, Encoder encoder)
+    internal static EncodedUIntVector<ushort> MakeEncodedVector_16(ushort[] values, Encoder encoder)
     {
-        EncodedUIntVector<UInt16>.EncodeUIntVector(values, encoder);
+        EncodedUIntVector<ushort>.EncodeUIntVector(values, encoder);
         var decoder = encoder.GetDecoder();
-        var (success, actual) = EncodedUIntVector<UInt16>.Init(decoder);
+        var (success, actual) = EncodedUIntVector<ushort>.Init(decoder);
         Assert.True(success);
         return actual!;
     }
 
     // TestEncodedUIntVector
-    internal static void TestEncodedUIntVector_32(UInt32[] expected, int expected_bytes)
+    internal static void TestEncodedUIntVector_32(uint[] expected, int expected_bytes)
     {
         Encoder encoder = new();
-        EncodedUIntVector<UInt32>.EncodeUIntVector(expected, encoder);
+        EncodedUIntVector<uint>.EncodeUIntVector(expected, encoder);
         Assert.Equal(expected_bytes, encoder.Length());
         var decoder = encoder.GetDecoder();
-        var (success, actual) = EncodedUIntVector<UInt32>.Init(decoder);
+        var (success, actual) = EncodedUIntVector<uint>.Init(decoder);
         Assert.True(success);
         Assert.Equal(actual!.Decode(), expected);
     }
@@ -78,19 +78,19 @@ internal class EncodedUIntVectorTesting
             Assert.Equal(v.GetLowerBound(x), actual.LowerBound(x));
             if (x > 0)
             {
-                Assert.Equal(v.GetLowerBound(x - 1), actual.LowerBound((UInt32)(x - 1)));
+                Assert.Equal(v.GetLowerBound(x - 1), actual.LowerBound((uint)(x - 1)));
             }
         }
     }
 
-    private static UInt32[] MakeSortedTestVector_32(int bytes_per_value, int num_values)
+    private static uint[] MakeSortedTestVector_32(int bytes_per_value, int num_values)
     {
-        Assert.True(bytes_per_value <= sizeof(UInt32));
-        UInt32 limit_value = (UInt32)(~0 >> (8 * (sizeof(UInt32) - bytes_per_value)));
-        List<UInt32> values = [];
+        Assert.True(bytes_per_value <= sizeof(uint));
+        uint limit_value = (uint)(~0 >> (8 * (sizeof(uint) - bytes_per_value)));
+        List<uint> values = [];
         for (int i = 0; i + 1 < num_values; ++i)
         {
-            values.Add((UInt32)(limit_value * ((double)i / (num_values - 1))));
+            values.Add((uint)(limit_value * ((double)i / (num_values - 1))));
         }
         // The last value needs special handling since casting it to "double" loses
         // precision when T == UInt64.
@@ -99,23 +99,23 @@ internal class EncodedUIntVectorTesting
         return [.. values];
     }
 
-    internal static EncodedUIntVector<UInt32> MakeEncodedVector_32(UInt32[] values, Encoder encoder)
+    internal static EncodedUIntVector<uint> MakeEncodedVector_32(uint[] values, Encoder encoder)
     {
-        EncodedUIntVector<UInt32>.EncodeUIntVector(values, encoder);
+        EncodedUIntVector<uint>.EncodeUIntVector(values, encoder);
         var decoder = encoder.GetDecoder();
-        var (success, actual) = EncodedUIntVector<UInt32>.Init(decoder);
+        var (success, actual) = EncodedUIntVector<uint>.Init(decoder);
         Assert.True(success);
         return actual!;
     }
 
     // TestEncodedUIntVector
-    internal static void TestEncodedUIntVector_64(UInt64[] expected, int expected_bytes)
+    internal static void TestEncodedUIntVector_64(ulong[] expected, int expected_bytes)
     {
         Encoder encoder = new();
-        EncodedUIntVector<UInt64>.EncodeUIntVector(expected, encoder);
+        EncodedUIntVector<ulong>.EncodeUIntVector(expected, encoder);
         Assert.Equal(expected_bytes, encoder.Length());
         var decoder = encoder.GetDecoder();
-        var (success, actual) = EncodedUIntVector<UInt64>.Init(decoder);
+        var (success, actual) = EncodedUIntVector<ulong>.Init(decoder);
         Assert.True(success);
         Assert.Equal(actual!.Decode(), expected);
     }
@@ -131,19 +131,19 @@ internal class EncodedUIntVectorTesting
             Assert.Equal(v.GetLowerBound(x), actual.LowerBound(x));
             if (x > 0)
             {
-                Assert.Equal(v.GetLowerBound(x - 1), actual.LowerBound((UInt64)(x - 1)));
+                Assert.Equal(v.GetLowerBound(x - 1), actual.LowerBound((ulong)(x - 1)));
             }
         }
     }
 
-    private static UInt64[] MakeSortedTestVector_64(int bytes_per_value, int num_values)
+    private static ulong[] MakeSortedTestVector_64(int bytes_per_value, int num_values)
     {
-        Assert.True(bytes_per_value <= sizeof(UInt64));
-        UInt64 limit_value = (UInt64)(~0 >> (8 * (sizeof(UInt64) - bytes_per_value)));
-        List<UInt64> values = [];
+        Assert.True(bytes_per_value <= sizeof(ulong));
+        ulong limit_value = (ulong)(~0 >> (8 * (sizeof(ulong) - bytes_per_value)));
+        List<ulong> values = [];
         for (int i = 0; i + 1 < num_values; ++i)
         {
-            values.Add((UInt64)(limit_value * ((double)i / (num_values - 1))));
+            values.Add((ulong)(limit_value * ((double)i / (num_values - 1))));
         }
         // The last value needs special handling since casting it to "double" loses
         // precision when T == UInt64.
@@ -152,11 +152,11 @@ internal class EncodedUIntVectorTesting
         return [.. values];
     }
 
-    internal static EncodedUIntVector<UInt64> MakeEncodedVector_64(UInt64[] values, Encoder encoder)
+    internal static EncodedUIntVector<ulong> MakeEncodedVector_64(ulong[] values, Encoder encoder)
     {
-        EncodedUIntVector<UInt64>.EncodeUIntVector(values, encoder);
+        EncodedUIntVector<ulong>.EncodeUIntVector(values, encoder);
         var decoder = encoder.GetDecoder();
-        var (success, actual) = EncodedUIntVector<UInt64>.Init(decoder);
+        var (success, actual) = EncodedUIntVector<ulong>.Init(decoder);
         Assert.True(success);
         return actual!;
     }

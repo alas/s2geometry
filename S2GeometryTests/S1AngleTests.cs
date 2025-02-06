@@ -61,13 +61,13 @@ public class S1AngleTests
         // Check that unsigned E6/E7 representations work as expected.
         Assert2.DoubleEqual(
             S1Angle.FromDegrees(60).Radians,
-            S1Angle.FromUnsignedE6((UInt32)60000000).Radians);
+            S1Angle.FromUnsignedE6((uint)60000000).Radians);
         Assert2.DoubleEqual(
             S1Angle.FromDegrees(-60).Radians,
             S1Angle.FromUnsignedE6(0xFFFFFFFFFC6C7900U).Radians); // (UInt32)-60000000
         Assert2.DoubleEqual(
             S1Angle.FromDegrees(75).Radians,
-            S1Angle.FromUnsignedE7((UInt32)750000000).Radians);
+            S1Angle.FromUnsignedE7((uint)750000000).Radians);
         Assert2.DoubleEqual(
             S1Angle.FromDegrees(-75).Radians,
             S1Angle.FromUnsignedE7(0xFFFFFFFFD34BE880U).Radians); // (UInt32)-750000000

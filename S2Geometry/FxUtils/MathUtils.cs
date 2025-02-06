@@ -99,7 +99,7 @@ public static class MathUtils
     public static double IPow(double @base, int exp)
     {
         MyDebug.Assert(exp >= 0);
-        var uexp = (UInt32)exp;
+        var uexp = (uint)exp;
 
         if (uexp < 16)
         {

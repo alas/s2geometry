@@ -21,27 +21,27 @@ namespace S2Geometry;
 
 public static class Transforms
 {
-    public static UInt32 ZigZagEncode(Int32 n)
+    public static uint ZigZagEncode(Int32 n)
     {
         // We need the cast to avoid an arithmetic shift.
-        UInt32 sign = ((UInt32)n) >> 31;
-        return ((UInt32)n << 1) ^ (0u - sign);
+        uint sign = ((uint)n) >> 31;
+        return ((uint)n << 1) ^ (0u - sign);
     }
 
-    public static Int32 ZigZagDecode(UInt32 n)
+    public static Int32 ZigZagDecode(uint n)
     {
         return (Int32)((n >> 1) ^ (0u - (n & 1)));
     }
 
-    public static UInt64 ZigZagEncode64(Int64 n)
+    public static ulong ZigZagEncode64(long n)
     {
         // We need the cast to avoid an arithmetic shift.
-        UInt64 sign = ((UInt64)n) >> 63;
-        return ((UInt64)n << 1) ^ (0u - sign);
+        ulong sign = ((ulong)n) >> 63;
+        return ((ulong)n << 1) ^ (0u - sign);
     }
 
-    public static Int64 ZigZagDecode64(UInt64 n)
+    public static long ZigZagDecode64(ulong n)
     {
-        return (Int64)((n >> 1) ^ (0u - (n & 1)));
+        return (long)((n >> 1) ^ (0u - (n & 1)));
     }
 }

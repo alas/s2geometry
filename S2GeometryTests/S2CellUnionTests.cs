@@ -510,7 +510,7 @@ public class S2CellUnionTests(ITestOutputHelper logger)
         ids.Add(S2CellId.FromFace(4).ChildEnd(15).Prev());
         ids.Add(S2CellId.FromFace(5).ChildBegin(30));
         cell_union = new S2CellUnion(ids);
-        UInt64 expected = 1UL + (1UL << 6) + (1UL << 30) + (1UL << 32) +
+        ulong expected = 1UL + (1UL << 6) + (1UL << 30) + (1UL << 32) +
             (2UL << 56) + (1UL << 58) + (1UL << 60);
         Assert.Equal(expected, cell_union.LeafCellsCovered());
     }

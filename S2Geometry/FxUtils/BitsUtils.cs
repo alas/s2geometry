@@ -10,17 +10,17 @@ public static class BitsUtils
 
     #region FindMSBSetNonZero
 
-    public static int FindMSBSetNonZero64(UInt64 n) => Log2FloorNonZero64(n);
+    public static int FindMSBSetNonZero64(ulong n) => Log2FloorNonZero64(n);
 
-    public static int FindMSBSetNonZero(UInt32 n) => Log2FloorNonZero(n);
+    public static int FindMSBSetNonZero(uint n) => Log2FloorNonZero(n);
 
-    private static int Log2FloorNonZero64(UInt64 n)
+    private static int Log2FloorNonZero64(ulong n)
     {
-        var topbits = (UInt32)(n >> 32);
+        var topbits = (uint)(n >> 32);
         if (topbits == 0)
         {
             // Top bits are zero, so scan in bottom bits
-            return Log2FloorNonZero((UInt32)n);
+            return Log2FloorNonZero((uint)n);
         }
         else
         {
@@ -28,9 +28,9 @@ public static class BitsUtils
         }
     }
 
-    public static int Log2FloorNonZero(UInt32 n) => Log2Floor(n);
+    public static int Log2FloorNonZero(uint n) => Log2Floor(n);
 
-    private static int Log2Floor(UInt32 n)
+    private static int Log2Floor(uint n)
     {
         if (n == 0) return -1;
 
@@ -58,13 +58,13 @@ public static class BitsUtils
 
     #region FindLSBSetNonZero
 
-    public static int FindLSBSetNonZero64(UInt64 n)
+    public static int FindLSBSetNonZero64(ulong n)
     {
-        var bottombits = (UInt32)n;
+        var bottombits = (uint)n;
         if (bottombits == 0)
         {
             // Bottom bits are zero, so scan in top bits
-            return 32 + FindLSBSetNonZero((UInt32)(n >> 32));
+            return 32 + FindLSBSetNonZero((uint)(n >> 32));
         }
         else
         {

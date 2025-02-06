@@ -185,14 +185,16 @@ public class S2RegionTests
     internal void Test_S2RegionEncodeDecodeTest_S2Loop()
     {
         const string kCross1 = "-2:1, -1:1, 1:1, 2:1, 2:-1, 1:-1, -1:-1, -2:-1";
-        // string kCrossCenterHole = "-0.5:0.5, 0.5:0.5, 0.5:-0.5, -0.5:-0.5;";
+        //const string kCrossCenterHole = "-0.5:0.5, 0.5:0.5, 0.5:-0.5, -0.5:-0.5;";
 
+        S2Loop loop_empty = S2Loop.KEmpty;
+        S2Loop loop_full = S2Loop.KFull;
         var loop_cross = MakeLoopOrDie(kCross1);
 
-        var loop = TestEncodeDecode(kEncodedLoopEmpty, S2Loop.KEmpty);
-        Assert.True(S2Loop.KEmpty == loop);
-        loop = TestEncodeDecode(kEncodedLoopFull, S2Loop.KFull);
-        Assert.True(S2Loop.KFull == loop);
+        var loop = TestEncodeDecode(kEncodedLoopEmpty, loop_empty);
+        Assert.True(loop_empty == loop);
+        loop = TestEncodeDecode(kEncodedLoopFull, loop_full);
+        Assert.True(loop_full == loop);
         loop = TestEncodeDecode(kEncodedLoopCross, loop_cross);
         Assert.True(loop_cross == loop);
     }

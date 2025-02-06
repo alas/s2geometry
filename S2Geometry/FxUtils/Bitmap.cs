@@ -204,7 +204,7 @@ public class Bitmap64
         return false;
     }
 
-    private static UInt32 Log2(UInt32 n, UInt32 p = 0)
+    private static uint Log2(uint n, uint p = 0)
     {
         return (n <= 1) ? p : Log2(n / 2, p + 1);
     }

@@ -13,10 +13,10 @@ public class Encoder(byte[] buffer, int Limit) : IEquatable<Encoder>
 
     static Encoder()
     {
-        MyDebug.Assert(sizeof(Byte) == 1);
-        MyDebug.Assert(sizeof(UInt16) == 2);
-        MyDebug.Assert(sizeof(UInt32) == 4);
-        MyDebug.Assert(sizeof(UInt64) == 8);
+        MyDebug.Assert(sizeof(byte) == 1);
+        MyDebug.Assert(sizeof(ushort) == 2);
+        MyDebug.Assert(sizeof(uint) == 4);
+        MyDebug.Assert(sizeof(ulong) == 8);
     }
 
     // Initialize encoder to encode into "buf"
@@ -32,18 +32,18 @@ public class Encoder(byte[] buffer, int Limit) : IEquatable<Encoder>
         Buffer[Offset] = v;
         Offset += sizeof(byte);
     }
-    public void Put16(Int16 v) => Put16((UInt16)v);
-    public void Put16(UInt16 v)
+    public void Put16(short v) => Put16((ushort)v);
+    public void Put16(ushort v)
     {
-        MyDebug.Assert(Avail() >= sizeof(UInt16));
+        MyDebug.Assert(Avail() >= sizeof(ushort));
         var bytes = BitConverter.GetBytes(v);
         Buffer[Offset] = bytes[0];
         Buffer[++Offset] = bytes[1];
     }
-    public void Put32(Int32 v) => Put32((UInt32)v);
-    public void Put32(UInt32 v)
+    public void Put32(Int32 v) => Put32((uint)v);
+    public void Put32(uint v)
     {
-        MyDebug.Assert(Avail() >= sizeof(UInt32));
+        MyDebug.Assert(Avail() >= sizeof(uint));
         var bytes = BitConverter.GetBytes(v);
         Buffer[Offset] = bytes[0];
         Buffer[Offset + 1] = bytes[1];
@@ -51,10 +51,10 @@ public class Encoder(byte[] buffer, int Limit) : IEquatable<Encoder>
         Buffer[Offset + 3] = bytes[3];
         Offset += 4;
     }
-    public void Put64(Int64 v) => Put64((UInt64)v);
-    public void Put64(UInt64 v)
+    public void Put64(long v) => Put64((ulong)v);
+    public void Put64(ulong v)
     {
-        MyDebug.Assert(Avail() >= sizeof(UInt64));
+        MyDebug.Assert(Avail() >= sizeof(ulong));
         var bytes = BitConverter.GetBytes(v);
         Buffer[Offset] = bytes[0];
         Buffer[Offset + 1] = bytes[1];
@@ -232,10 +232,10 @@ public class Decoder(byte[] buffer, int offset, int limit)
 
     static Decoder()
     {
-        MyDebug.Assert(sizeof(Byte) == 1);
-        MyDebug.Assert(sizeof(UInt16) == 2);
-        MyDebug.Assert(sizeof(UInt32) == 4);
-        MyDebug.Assert(sizeof(UInt64) == 8);
+        MyDebug.Assert(sizeof(byte) == 1);
+        MyDebug.Assert(sizeof(ushort) == 2);
+        MyDebug.Assert(sizeof(uint) == 4);
+        MyDebug.Assert(sizeof(ulong) == 8);
     }
 
     #region Get
@@ -252,22 +252,22 @@ public class Decoder(byte[] buffer, int offset, int limit)
         Offset += sizeof(byte);
         return v;
     }
-    public UInt16 Get16()
+    public ushort Get16()
     {
-        UInt16 v = BitConverter.ToUInt16(Buffer, Offset);
-        Offset += sizeof(UInt16);
+        ushort v = BitConverter.ToUInt16(Buffer, Offset);
+        Offset += sizeof(ushort);
         return v;
     }
-    public UInt32 Get32()
+    public uint Get32()
     {
-        UInt32 v = BitConverter.ToUInt32(Buffer, Offset);
-        Offset += sizeof(UInt32);
+        uint v = BitConverter.ToUInt32(Buffer, Offset);
+        Offset += sizeof(uint);
         return v;
     }
-    public UInt64 Get64()
+    public ulong Get64()
     {
-        UInt64 v = BitConverter.ToUInt64(Buffer, Offset);
-        Offset += sizeof(UInt64);
+        ulong v = BitConverter.ToUInt64(Buffer, Offset);
+        Offset += sizeof(ulong);
         return v;
     }
     public float GetFloat()

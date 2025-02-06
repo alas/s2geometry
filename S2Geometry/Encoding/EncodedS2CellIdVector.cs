@@ -22,7 +22,7 @@ public class EncodedS2CellIdVector
 {
     // Values are decoded as (base_ + (deltas_[i] << shift_)).
     public required EncodedUIntVector<ulong> Deltas { private get; init; }
-    public required UInt64 Base { private get; init; }
+    public required ulong Base { private get; init; }
     public required byte Shift { private get; init; }
 
     // Encodes a vector of S2CellIds in a format that can later be decoded as an
@@ -61,10 +61,10 @@ public class EncodedS2CellIdVector
         //  Followed by 0-7 bytes of "base"
         //  Followed by an EncodedUintVector of deltas.
 
-        UInt64 v_or = 0;
-        UInt64 v_and = ~0UL;
-        UInt64 v_min = ~0UL;
-        UInt64 v_max = 0;
+        ulong v_or = 0;
+        ulong v_and = ~0UL;
+        ulong v_min = ~0UL;
+        ulong v_max = 0;
 
         foreach (var cellid in v)
         {
@@ -75,7 +75,7 @@ public class EncodedS2CellIdVector
         }
 
         // These variables represent the values that will used during encoding.
-        UInt64 e_base = 0;        // Base value.
+        ulong e_base = 0;        // Base value.
         int e_base_len = 0;       // Number of bytes to represent "base".
         int e_shift = 0;          // Delta shift.
         int e_max_delta_msb = 0;  // Bit position of the MSB of the largest delta.
@@ -91,7 +91,7 @@ public class EncodedS2CellIdVector
             // "base" consists of the "base_len" most significant bytes of the minimum
             // S2CellId.  We consider all possible values of "base_len" (0..7) and
             // choose the one that minimizes the total encoding size.
-            UInt64 e_bytes = ~0UL;  // Best encoding size so far.
+            ulong e_bytes = ~0UL;  // Best encoding size so far.
             for (int len = 0; len < 8; ++len)
             {
                 // "t_base" is the base value being tested (first "len" bytes of v_min).
@@ -99,9 +99,9 @@ public class EncodedS2CellIdVector
                 // minus one) of the largest delta (or zero if there are no deltas, i.e.
                 // if v.size() == 0).  "t_bytes" is the total size of the variable
                 // portion of the encoding.
-                UInt64 t_base = v_min & ~(~0UL >> (8 * len));
+                ulong t_base = v_min & ~(~0UL >> (8 * len));
                 int t_max_delta_msb = Math.Max(0, BitsUtils.GetBitWidth((v_max - t_base) >> e_shift) - 1);
-                UInt64 t_bytes = (ulong)(len + v.Count * ((t_max_delta_msb >> 3) + 1));
+                ulong t_bytes = (ulong)(len + v.Count * ((t_max_delta_msb >> 3) + 1));
                 if (t_bytes < e_bytes)
                 {
                     e_base = t_base;
@@ -134,11 +134,11 @@ public class EncodedS2CellIdVector
             encoder.Put8((byte)(e_shift >> 1));  // Shift is always odd, so 3 bits unused.
         }
         // Encode the "base_len" most-significant bytes of "base".
-        UInt64 base_bytes = e_base >> (64 - 8 * Math.Max(1, e_base_len));
+        ulong base_bytes = e_base >> (64 - 8 * Math.Max(1, e_base_len));
         EncodedUIntVector<ulong>.EncodeUIntWithLength(base_bytes, e_base_len, encoder);
 
         // Finally, encode the vector of deltas.
-        var deltas = new UInt64[v.Count];
+        var deltas = new ulong[v.Count];
         for (var i = 0; i < v.Count; i++)
         {
             var cellid = v[i];
@@ -167,7 +167,7 @@ public class EncodedS2CellIdVector
 
         // Decode the "base_len" most-significant bytes of "base".
         int base_len = code_plus_len & 7;
-        if (!EncodedUIntVector<ulong>.DecodeUIntWithLength(base_len, decoder, out UInt64 base_)) return (false, null);
+        if (!EncodedUIntVector<ulong>.DecodeUIntWithLength(base_len, decoder, out ulong base_)) return (false, null);
         base_ <<= 64 - 8 * Math.Max(1, base_len);
 
         // Invert the encoding of "shift_code" described above.

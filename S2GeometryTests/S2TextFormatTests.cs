@@ -102,9 +102,9 @@ public class S2TextFormatTests
         for (var i = 0; i < kIters; i++)
         {
             var max_digits = S2Testing.Random.Uniform(11);
-            Int64 scale = (long)Math.Round(Math.Pow(10, max_digits));
-            Int64 lat = (long)Math.Round(S2Testing.Random.UniformDouble(-90 * scale, 90 * scale));
-            Int64 lng = (long)Math.Round(S2Testing.Random.UniformDouble(-180 * scale, 180 * scale));
+            long scale = (long)Math.Round(Math.Pow(10, max_digits));
+            long lat = (long)Math.Round(S2Testing.Random.UniformDouble(-90 * scale, 90 * scale));
+            long lng = (long)Math.Round(S2Testing.Random.UniformDouble(-180 * scale, 180 * scale));
             var ll = S2LatLng.FromDegrees(lat / (double)scale, lng / (double)scale);
             ExpectMaxDigits(ll, max_digits);
         }

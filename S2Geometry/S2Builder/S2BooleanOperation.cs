@@ -677,7 +677,7 @@ public class S2BooleanOperation
             // type is a template parameter so that SourceIdMap can be private.)
             public bool TallySourceIdMap<T>(int num_entries) where T : SourceIdMap
             {
-                Int64 delta_bytes = num_entries * GetBtreeMinBytesPerEntry<T>();
+                long delta_bytes = num_entries * GetBtreeMinBytesPerEntry<T>();
                 source_id_map_bytes_ += delta_bytes;
                 return Tally(delta_bytes);
             }
@@ -693,7 +693,7 @@ public class S2BooleanOperation
             }
 
             // The amount of memory used by CrossingProcessor.source_id_map_.
-            private Int64 source_id_map_bytes_ = 0;
+            private long source_id_map_bytes_ = 0;
         }
 
         // CrossingProcessor is a helper class that processes all the edges from one
@@ -2982,9 +2982,9 @@ public class EdgeClippingLayer(
         // The first and last two vectors above are freed upon GraphEdgeClipper
         // destruction.  There is also a temporary vector "indegree" in
         // GetInputEdgeChainOrder() but this does not affect peak memory usage.
-        Int64 tmp_bytes = g.NumEdges * (sizeof(EdgeId) + sizeof(int)) +
+        long tmp_bytes = g.NumEdges * (sizeof(EdgeId) + sizeof(int)) +
                           g.NumVertices * 2 * sizeof(EdgeId);
-        Int64 final_bytes = g.NumEdges * (Marshal.SizeOf(typeof(Edge)) +
+        long final_bytes = g.NumEdges * (Marshal.SizeOf(typeof(Edge)) +
                                              sizeof(InputEdgeIdSetId));
 
         // The order of the calls below is important.  Note that all memory tracked

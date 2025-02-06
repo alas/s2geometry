@@ -167,7 +167,7 @@ public class S2BuilderUtil_SnapFunctionsTests(ITestOutputHelper logger)
     {
         double best_score = 1e10;
         List<IntLatLng> best_configs = [];
-        Int64 scale = 18L;
+        long scale = 18L;
         for (int lat0 = 0; lat0 <= 9; ++lat0)
         {
             best_configs.Add(new(lat0, 0L));
@@ -186,7 +186,7 @@ public class S2BuilderUtil_SnapFunctionsTests(ITestOutputHelper logger)
         // Computes the minimum edge separation (as a fraction of kMinDiag) for any
         // snap radius at each level.
         double score = GetLatLngMinEdgeSeparation("min_sep_for_level",
-            (Int64 scale, S1Angle edge_sep, S1Angle max_snap_radius) =>
+            (long scale, S1Angle edge_sep, S1Angle max_snap_radius) =>
             {
                 double e_unit = Math.PI / scale;
                 return edge_sep.Radians / e_unit;
@@ -200,7 +200,7 @@ public class S2BuilderUtil_SnapFunctionsTests(ITestOutputHelper logger)
         // Computes the minimum edge separation expressed as a fraction of the
         // maximum snap radius that could yield that edge separation.
         double score = GetLatLngMinEdgeSeparation("min_sep_snap_radius_ratio",
-            (Int64 scale, S1Angle edge_sep, S1Angle max_snap_radius) =>
+            (long scale, S1Angle edge_sep, S1Angle max_snap_radius) =>
             {
                 return edge_sep.Radians / max_snap_radius.Radians;
             });
@@ -481,13 +481,13 @@ public class S2BuilderUtil_SnapFunctionsTests(ITestOutputHelper logger)
         return best_score;
     }
 
-    private static bool IsValid(IntLatLng ll, Int64 scale)
+    private static bool IsValid(IntLatLng ll, long scale)
     {
         // A coordinate value of "scale" corresponds to 180 degrees.
         return Math.Abs(ll.Lat) <= scale / 2 && Math.Abs(ll.Lng) <= scale;
     }
 
-    private static bool HasValidVertices(IntLatLng ll, Int64 scale)
+    private static bool HasValidVertices(IntLatLng ll, long scale)
     {
         // Like IsValid, but excludes latitudes of 90 and longitudes of 180.
         // A coordinate value of "scale" corresponds to 180 degrees.
@@ -501,14 +501,14 @@ public class S2BuilderUtil_SnapFunctionsTests(ITestOutputHelper logger)
             Convert.ToInt64(scale_factor * ll.Lng));
     }
 
-    private static S2Point ToPoint(IntLatLng ll, Int64 scale)
+    private static S2Point ToPoint(IntLatLng ll, long scale)
     {
         return S2LatLng.FromRadians(
             ll.Lat * (Math.PI / scale),
             ll.Lng * (Math.PI / scale)).ToPoint();
     }
 
-    private static S2Point GetVertex(IntLatLng ll, Int64 scale, int i)
+    private static S2Point GetVertex(IntLatLng ll, long scale, int i)
     {
         // Return the points in CCW order starting from the lower left.
         int dlat = (i == 0 || i == 3) ? -1 : 1;
@@ -516,7 +516,7 @@ public class S2BuilderUtil_SnapFunctionsTests(ITestOutputHelper logger)
         return ToPoint(new(2 * ll.Lat + dlat, 2 * ll.Lng + dlng), 2 * scale);
     }
 
-    private static S1Angle GetMaxVertexDistance(S2Point p, IntLatLng ll, Int64 scale)
+    private static S1Angle GetMaxVertexDistance(S2Point p, IntLatLng ll, long scale)
     {
         return new[]
         {
@@ -527,7 +527,7 @@ public class S2BuilderUtil_SnapFunctionsTests(ITestOutputHelper logger)
 }.Max();
     }
 
-    private double GetLatLngMinVertexSeparation(Int64 old_scale, Int64 scale, List<IntLatLng> best_configs)
+    private double GetLatLngMinVertexSeparation(long old_scale, long scale, List<IntLatLng> best_configs)
     {
         // The worst-case separation ratios always occur when the snap_radius is not
         // much larger than the minimum, since this allows the site spacing to be
@@ -581,11 +581,11 @@ public class S2BuilderUtil_SnapFunctionsTests(ITestOutputHelper logger)
         return scores[0].ratio;
     }
 
-    private delegate double LatLngMinEdgeSeparationFunction(Int64 scale, S1Angle edge_sep, S1Angle max_snap_radius);
+    private delegate double LatLngMinEdgeSeparationFunction(long scale, S1Angle edge_sep, S1Angle max_snap_radius);
 
     private double GetLatLngMinEdgeSeparation(
         string label, LatLngMinEdgeSeparationFunction objective,
-        Int64 scale, List<LatLngConfig> best_configs)
+        long scale, List<LatLngConfig> best_configs)
     {
         var min_snap_radius_at_scale = S1Angle.FromRadians(S2.M_SQRT1_2 * Math.PI / scale);
         List<LatLngConfigScore> scores = [];
@@ -688,7 +688,7 @@ public class S2BuilderUtil_SnapFunctionsTests(ITestOutputHelper logger)
     {
         double best_score = 1e10;
         List<LatLngConfig> best_configs = [];
-        Int64 scale = 6L;  // Initially points are 30 degrees apart.
+        long scale = 6L;  // Initially points are 30 degrees apart.
         int max_lng = (int)scale;
         int max_lat = (int)(scale / 2);
         for (int lat0 = 0; lat0 <= max_lat; ++lat0)
@@ -712,12 +712,12 @@ public class S2BuilderUtil_SnapFunctionsTests(ITestOutputHelper logger)
                 }
             }
         }
-        Int64 target_scale = 180L;
+        long target_scale = 180L;
         for (int exp = 0; exp <= 10; ++exp, target_scale *= 10)
         {
             while (scale < target_scale)
             {
-                scale = Math.Min((Int64)(1.8 * scale), target_scale);
+                scale = Math.Min((long)(1.8 * scale), target_scale);
                 double score = GetLatLngMinEdgeSeparation(label, objective, scale,
                                                           best_configs);
                 if (scale == target_scale)

@@ -27,11 +27,11 @@ public static partial class S2ShapeUtil
 
     public record class ShapeEdgeIdHash
     {
-        public Int64 Hash { get; private set; }
+        public long Hash { get; private set; }
 
         public ShapeEdgeIdHash(Int32 ShapeId, Int32 EdgeId)
         {
-            Hash = (Int64)(((UInt64)ShapeId << 32) | (UInt32)EdgeId);
+            Hash = (long)(((ulong)ShapeId << 32) | (uint)EdgeId);
         }
     }
 }

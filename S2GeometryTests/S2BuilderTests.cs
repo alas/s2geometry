@@ -190,7 +190,7 @@ public class S2BuilderTests(ITestOutputHelper logger)
             {
                 Assert.True(S2.IsEdgeBNearEdgeA(
                     a, b, output.Vertex(i), output.Vertex(i + 1), max_deviation));
-                _logger.WriteLine(String.Format($"Iteration {0}: ({1}, {2}), {3}",
+                _logger.WriteLine(string.Format($"Iteration {0}: ({1}, {2}), {3}",
                     iter,
                     S2TextFormat.ToDebugString(a),
                     S2TextFormat.ToDebugString(S2.Interpolate(a, b, 0.5)),

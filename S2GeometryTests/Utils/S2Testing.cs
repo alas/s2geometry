@@ -117,7 +117,7 @@ internal static class S2Testing
         /// Return a 64-bit unsigned integer whose lowest "num_bits" are random, and
         /// whose other bits are zero.
         /// </summary>
-        internal static UInt64 GetBits(int num_bits)
+        internal static ulong GetBits(int num_bits)
         {
             Assert.True(num_bits >= 0);
             Assert.True(num_bits <= 64);
@@ -136,7 +136,7 @@ internal static class S2Testing
             // but random() should always adhere to the behavior specified in BSD.
             const int RAND_BITS = 31;
 
-            UInt64 result = 0;
+            ulong result = 0;
             for (int bits = 0; bits < num_bits; bits += RAND_BITS)
             {
                 result = (result << RAND_BITS) + (ulong)(uint)Next(int.MaxValue);
@@ -151,7 +151,7 @@ internal static class S2Testing
         /// <summary>
         /// Return a uniformly distributed 64-bit unsigned integer.
         /// </summary>
-        internal static UInt64 Rand64()
+        internal static ulong Rand64()
         {
             return GetBits(64);
         }
@@ -159,9 +159,9 @@ internal static class S2Testing
         /// <summary>
         /// Return a uniformly distributed 32-bit unsigned integer.
         /// </summary>
-        internal static UInt32 Rand32()
+        internal static uint Rand32()
         {
-            return (UInt32)GetBits(32);
+            return (uint)GetBits(32);
         }
 
         /// <summary>

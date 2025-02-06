@@ -401,7 +401,7 @@ public class EncodedS2PointVectorTests(ITestOutputHelper logger)
         TestRoundtripEncoding(CodingHint.COMPACT);
     }
 
-    private static int TestEncodedS2PointVector(S2Point[] expected, CodingHint hint, Int64 expected_bytes)
+    private static int TestEncodedS2PointVector(S2Point[] expected, CodingHint hint, long expected_bytes)
     {
         Encoder encoder = new();
         EncodedS2PointVector.EncodeS2PointVector(expected, hint, encoder);
@@ -426,7 +426,7 @@ public class EncodedS2PointVectorTests(ITestOutputHelper logger)
     // In order to make it easier to construct tests that encode particular
     // values, this function duplicates the part of EncodedS2PointVector that
     // converts an encoded 64-bit value back to an S2Point.
-    private static S2Point EncodedValueToPoint(UInt64 value, int level)
+    private static S2Point EncodedValueToPoint(ulong value, int level)
     {
         BitsInterleave.DeinterleaveUInt32(value, out var sj, out var tj);
         int shift = S2.kMaxCellLevel - level;

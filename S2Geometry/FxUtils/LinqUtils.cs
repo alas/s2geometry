@@ -413,7 +413,7 @@ public static class LinqUtils
     }
 
     /// <summary>
-    /// Determines whether a System.Collections.Generic.List\<TObject\> is a subset of the specified collection.
+    /// Determines whether a IEnumerable is a subset of the specified collection.
     /// http://stackoverflow.com/questions/332973/linq-check-whether-an-array-is-a-subset-of-another
     /// </summary>
     /// <param name="list"></param>

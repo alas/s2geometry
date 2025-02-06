@@ -193,12 +193,12 @@ public class EncodedUIntVector<T> where T : IUnsignedNumber<T>, IBinaryInteger<T
         index += length;
         if (size > 4 && (length & 4) != 0)
         {
-            index -= sizeof(UInt32);
+            index -= sizeof(uint);
             x = (T)Convert.ChangeType(BitConverter.ToUInt32(ptr, index), typeof(T));
         }
         if (size > 2 && (length & 2) != 0)
         {
-            index -= sizeof(UInt16);
+            index -= sizeof(ushort);
             x = (x << 16) + (T)Convert.ChangeType(BitConverter.ToUInt16(ptr, index), typeof(T));
         }
         if (size > 1 && (length & 1) != 0)

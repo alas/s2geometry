@@ -8,7 +8,7 @@ public class EncodedUintVectorTests
     {
         // Make sure that this class is compact since it is extensively used.
         // 16 for 64-bit, 12 for 32-bit.
-        Assert.True(typeof(EncodedUIntVector<UInt64>).SizeOf() <= 16);
+        Assert.True(typeof(EncodedUIntVector<ulong>).SizeOf() <= 16);
     }
 
     [Fact]
@@ -18,37 +18,37 @@ public class EncodedUintVectorTests
 
     [Fact]
     internal void Test_EncodedUintVectorTest_Zero() {
-        TestEncodedUintVector(new UInt64[] { 0 }, 2);
+        TestEncodedUintVector(new ulong[] { 0 }, 2);
     }
 
     [Fact]
     internal void Test_EncodedUintVectorTest_RepeatedZeros() {
-        TestEncodedUintVector(new UInt16[] { 0, 0, 0}, 4);
+        TestEncodedUintVector(new ushort[] { 0, 0, 0}, 4);
     }
 
     [Fact]
     internal void Test_EncodedUintVectorTest_MaxInt() {
-        TestEncodedUintVector(new UInt64[]{ ~0UL}, 9);
+        TestEncodedUintVector(new ulong[]{ ~0UL}, 9);
     }
 
     [Fact]
     internal void Test_EncodedUintVectorTest_OneByte() {
-        TestEncodedUintVector(new UInt64[]{ 0, 255, 1, 254}, 5);
+        TestEncodedUintVector(new ulong[]{ 0, 255, 1, 254}, 5);
     }
 
     [Fact]
     internal void Test_EncodedUintVectorTest_TwoBytes() {
-        TestEncodedUintVector(new UInt64[]{ 0, 255, 256, 254}, 9);
+        TestEncodedUintVector(new ulong[]{ 0, 255, 256, 254}, 9);
     }
 
     [Fact]
     internal void Test_EncodedUintVectorTest_ThreeBytes() {
-        TestEncodedUintVector(new UInt64[]{ 0xffffff, 0x0102, 0, 0x050403}, 13);
+        TestEncodedUintVector(new ulong[]{ 0xffffff, 0x0102, 0, 0x050403}, 13);
     }
 
     [Fact]
     internal void Test_EncodedUintVectorTest_EightBytes() {
-        TestEncodedUintVector(new UInt64[]{ ~0UL, 0, 0x0102030405060708}, 25);
+        TestEncodedUintVector(new ulong[]{ ~0UL, 0, 0x0102030405060708}, 25);
     }
 
     [Fact]
@@ -81,7 +81,7 @@ public class EncodedUintVectorTests
         a.Encode(b_encoder);
         var decoder = b_encoder.GetDecoder();
 
-        var (success, v2) = EncodedUIntVector<UInt64>.Init(decoder);
+        var (success, v2) = EncodedUIntVector<ulong>.Init(decoder);
         Assert.True(success);
 
         Assert.Equal(v2!.Decode(), values);

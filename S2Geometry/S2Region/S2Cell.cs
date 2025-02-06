@@ -76,7 +76,7 @@ public readonly record struct S2Cell : IS2Region<S2Cell>, IComparable<S2Cell>, I
     // to the Hilbert curve position at the center of the returned cell.  This
     // is a static function rather than a constructor in order to indicate what
     // the arguments represent.
-    public static S2Cell FromFacePosLevel(int face, UInt64 pos, int level)
+    public static S2Cell FromFacePosLevel(int face, ulong pos, int level)
         => new(S2CellId.FromFacePosLevel(face, pos, level));
 
     #endregion

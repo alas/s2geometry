@@ -109,7 +109,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
     //
     // If more memory than this is needed, updates will automatically be split
     // into batches internally.
-    private const Int64 s2shape_index_tmp_memory_budget = 100L << 20 /*100 MB*/;
+    private const long s2shape_index_tmp_memory_budget = 100L << 20 /*100 MB*/;
 
     // FLAGS_s2shape_index_cell_size_to_long_edge_ratio
     //
@@ -358,7 +358,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         // time we need 5 versions the first version can be permanently retired.
         // This only saves 1 byte, but that's significant for very small indexes.
         encoder.Ensure(Encoder.kVarintMax64);
-        var max_edges = (UInt64)Options_.MaxEdgesPerCell;
+        var max_edges = (ulong)Options_.MaxEdgesPerCell;
         encoder.PutVarUInt64(max_edges << 2 | kCurrentEncodingVersionNumber);
 
         // The index will be built anyway when we iterate through it, but building
@@ -395,7 +395,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         var version = (int)(max_edges_version & 3);
         if (version != kCurrentEncodingVersionNumber) return false;
         Options_.MaxEdgesPerCell = (int)(max_edges_version >> 2);
-        var num_shapes = (UInt32)shape_factory.Count;
+        var num_shapes = (uint)shape_factory.Count;
         shapes_.Capacity = (int)num_shapes;
         for (var shape_id = 0; shape_id < num_shapes; ++shape_id)
         {
@@ -880,7 +880,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
     {
         // The following accounts for the temporary space needed for everything
         // except the FaceEdge vectors (which are allocated separately below).
-        Int64 other_usage = batch.NumEdges * (kTmpBytesPerEdge - Marshal.SizeOf(typeof(FaceEdge)));
+        long other_usage = batch.NumEdges * (kTmpBytesPerEdge - Marshal.SizeOf(typeof(FaceEdge)));
 
         // If the number of edges is relatively small, then the fastest approach is
         // to simply reserve space on every face for the maximum possible number of
@@ -889,10 +889,10 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         // ratio is different.  Here the only extra expense is that we need to
         // sample the edges to estimate how many edges per face there are, and
         // therefore we generally use a lower threshold.)
-        Int64 kMaxCheapBytes =
+        long kMaxCheapBytes =
             Math.Min(s2shape_index_tmp_memory_budget / 2,
                 30L << 20 /*30 MB*/);
-        Int64 face_edge_usage = batch.NumEdges * 6 * Marshal.SizeOf(typeof(FaceEdge));
+        long face_edge_usage = batch.NumEdges * 6 * Marshal.SizeOf(typeof(FaceEdge));
         if (face_edge_usage <= kMaxCheapBytes)
         {
             if (!mem_tracker_.TallyTemp(face_edge_usage + other_usage))

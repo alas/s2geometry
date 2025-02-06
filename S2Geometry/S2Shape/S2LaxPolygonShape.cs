@@ -69,7 +69,7 @@ public class S2LaxPolygonShape : S2Shape, IInitEncoder<S2LaxPolygonShape>
 
     // When num_loops_ > 1, stores an array of size (num_loops_ + 1) where
     // element "i" represents the total number of vertices in loops 0..i-1.
-    private UInt32[]? loop_starts_;
+    private uint[]? loop_starts_;
 
     public const byte kCurrentEncodingVersionNumber = 1;
 
@@ -153,7 +153,7 @@ public class S2LaxPolygonShape : S2Shape, IInitEncoder<S2LaxPolygonShape>
         }
         else
         {
-            loop_starts_ = new UInt32[NumLoops + 1];
+            loop_starts_ = new uint[NumLoops + 1];
             NumVertices = 0;
             for (int i = 0; i < NumLoops; ++i)
             {
@@ -235,7 +235,7 @@ public class S2LaxPolygonShape : S2Shape, IInitEncoder<S2LaxPolygonShape>
 
         var numVertices = 0;
         S2Point[]? vertices_ = null;
-        UInt32[]? loop_starts_ = null;
+        uint[]? loop_starts_ = null;
         if (numLoops != 0)
         {
             numVertices = vertices!.Count();
@@ -247,9 +247,9 @@ public class S2LaxPolygonShape : S2Shape, IInitEncoder<S2LaxPolygonShape>
 
             if (numLoops > 1)
             {
-                var (success2, loop_starts) = EncodedUIntVector<UInt32>.Init(decoder);
+                var (success2, loop_starts) = EncodedUIntVector<uint>.Init(decoder);
                 if (!success2) return (false, null);
-                loop_starts_ = new UInt32[loop_starts!.Count];
+                loop_starts_ = new uint[loop_starts!.Count];
                 for (int i = 0; i < loop_starts.Count; ++i)
                 {
                     loop_starts_[i] = loop_starts[i];
@@ -393,7 +393,7 @@ public class EncodedS2LaxPolygonShape : S2Shape, IInitEncoder<EncodedS2LaxPolygo
     private int prev_loop_ = 0;
 
     public required EncodedS2PointVector Vertices { private get; init; }
-    public EncodedUIntVector<UInt32>? LoopStarts { private get; init; }
+    public EncodedUIntVector<uint>? LoopStarts { private get; init; }
 
     // Constructs an uninitialized object; requires Init() to be called.
     public EncodedS2LaxPolygonShape() { }
@@ -411,10 +411,10 @@ public class EncodedS2LaxPolygonShape : S2Shape, IInitEncoder<EncodedS2LaxPolygo
 
         var (success_e, v) = EncodedS2PointVector.Init(decoder);
         if (!success_e) return (false, null);
-        EncodedUIntVector<UInt32>? loop_starts_ = null;
+        EncodedUIntVector<uint>? loop_starts_ = null;
         if (num_loops > 1)
         {
-            var (success, ls) = EncodedUIntVector<UInt32>.Init(decoder);
+            var (success, ls) = EncodedUIntVector<uint>.Init(decoder);
             if (!success) return (false, null);
             loop_starts_ = ls;
         }

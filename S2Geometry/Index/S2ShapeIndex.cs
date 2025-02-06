@@ -711,7 +711,7 @@ public class S2ShapeIndexCell
             else
             {
                 // Otherwise decode the count and edge delta.
-                UInt32 count = (delta & 7) + 1;
+                uint count = (delta & 7) + 1;
                 delta >>= 3;
                 if (count == 8)
                 {

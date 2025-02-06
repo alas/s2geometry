@@ -73,7 +73,7 @@ using System.Runtime.InteropServices;
 public class S2MemoryTracker
 {
     // Indicates that memory usage is unlimited.
-    public const Int64 kNoLimit = Int64.MaxValue;
+    public const long kNoLimit = long.MaxValue;
 
     // The current tracked memory usage.
     //
@@ -82,13 +82,13 @@ public class S2MemoryTracker
     // this method reports attempted rather than actual memory allocation, and
     // S2 operations often attempt to allocate memory even on their failure /
     // early exit code paths.
-    public Int64 UsageBytes { get; private set; } = 0;
+    public long UsageBytes { get; private set; } = 0;
 
     // The maximum tracked memory usage.
     //
     // CAVEAT: When an operation is cancelled the return value may be wildly
     // inaccurate (see usage() for details).
-    public Int64 MaxUsageBytes  { get; private set; } = 0;
+    public long MaxUsageBytes  { get; private set; } = 0;
 
     // Specifies a memory limit in bytes.  Whenever the tracked memory usage
     // would exceed this value, an error of type S2Error::RESOURCE_EXHAUSTED is
@@ -96,9 +96,9 @@ public class S2MemoryTracker
     // kNoLimit then memory usage is tracked but not limited.
     //
     // DEFAULT: kNoLimit
-    public Int64 LimitBytes { get; set; } = kNoLimit;
+    public long LimitBytes { get; set; } = kNoLimit;
 
-    private Int64 AllocBytes = 0;
+    private long AllocBytes = 0;
 
     // Returns true if no memory tracking errors have occurred.  If this method
     // returns false then the current S2 operation will be cancelled.
@@ -129,15 +129,15 @@ public class S2MemoryTracker
     // should be cancelled.  The callback may also be called periodically during
     // calculations that take a long time.  Once an error has occurred, further
     // callbacks are suppressed.
-    public void SetPeriodicCallback(Int64 callbackAllocDeltaBytes, Action periodicCallback)
+    public void SetPeriodicCallback(long callbackAllocDeltaBytes, Action periodicCallback)
     {
         CallbackAllocDeltaBytes = callbackAllocDeltaBytes;
         PeriodicCallback = periodicCallback;
         CallbackAllocLimitBytes = AllocBytes + CallbackAllocDeltaBytes;
     }
-    public Int64 CallbackAllocDeltaBytes { get; private set; } = 0;
+    public long CallbackAllocDeltaBytes { get; private set; } = 0;
     public Action? PeriodicCallback { get; private set; }
-    private Int64 CallbackAllocLimitBytes = kNoLimit;
+    private long CallbackAllocLimitBytes = kNoLimit;
 
     // Resets usage() and max_usage() to zero and clears any error.  Leaves all
     // other parameters unchanged.
@@ -188,7 +188,7 @@ public class S2MemoryTracker
         // client and transferring the current memory usage to a new client).
         public void Init(S2MemoryTracker? tracker)
         {
-            Int64 usage_bytes = ClientUsageBytes;
+            long usage_bytes = ClientUsageBytes;
             Tally(-usage_bytes);
             Tracker = tracker;
             Tally(usage_bytes);
@@ -211,11 +211,11 @@ public class S2MemoryTracker
 
         // Returns the current tracked memory usage.
         // XXX(ericv): Return 0 when not active.
-        public Int64 UsageBytes() => Tracker?.UsageBytes ?? 0;
+        public long UsageBytes() => Tracker?.UsageBytes ?? 0;
 
         // Returns the current tracked memory usage of this client only.
         // Returns zero if tracker() has not been initialized.
-        public Int64 ClientUsageBytes { get; private set; } = 0;
+        public long ClientUsageBytes { get; private set; } = 0;
 
         // Returns the tracker's current error status.
         public S2Error Error() => Tracker?.Error ?? S2Error.OK;
@@ -226,7 +226,7 @@ public class S2MemoryTracker
 
         // Records a "delta" bytes of memory use (positive or negative), returning
         // false if the current operation should be cancelled.
-        public bool Tally(Int64 delta_bytes)
+        public bool Tally(long delta_bytes)
         {
             if (!IsActive()) return true;
             ClientUsageBytes += delta_bytes;
@@ -235,7 +235,7 @@ public class S2MemoryTracker
 
         // Specifies that "delta" bytes of memory will be allocated and then later
         // freed.  Returns false if the current operation should be cancelled.
-        public bool TallyTemp(Int64 delta_bytes)
+        public bool TallyTemp(long delta_bytes)
         {
             Tally(delta_bytes);
             return Tally(-delta_bytes);
@@ -323,7 +323,7 @@ public class S2MemoryTracker
         }
     }
 
-    private bool Tally(Int64 delta_bytes)
+    private bool Tally(long delta_bytes)
     {
         UsageBytes += delta_bytes;
         AllocBytes += Math.Max(0L, delta_bytes);
