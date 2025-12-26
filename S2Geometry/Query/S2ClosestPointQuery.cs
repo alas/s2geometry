@@ -60,7 +60,7 @@ namespace S2Geometry;
 using Distance = S1ChordAngle;
 using Target = S2DistanceTarget<S1ChordAngle>;
 
-public class S2ClosestPointQuery<Data> where Data : IComparable<Data>
+public class S2ClosestPointQuery<Data> where Data : struct, IComparable<Data>
 {
     private readonly S2ClosestPointQueryBase<Distance, Data> base_;
 

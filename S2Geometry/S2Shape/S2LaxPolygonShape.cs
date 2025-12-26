@@ -126,7 +126,7 @@ public class S2LaxPolygonShape : S2Shape, IInitEncoder<S2LaxPolygonShape>
         {
             if (polygon.Loop(i).IsHole())
             {
-                Array.Reverse(vertices_, (int)loop_starts_[i], NumLoopVertices(i));
+                Array.Reverse(vertices_!, (int)loop_starts_[i], NumLoopVertices(i));
             }
         }
     }
@@ -161,7 +161,7 @@ public class S2LaxPolygonShape : S2Shape, IInitEncoder<S2LaxPolygonShape>
                 NumVertices += loops[i].Count;
             }
             loop_starts_[NumLoops] = (uint)NumVertices;
-            vertices_ = loops.SelectMany(t => t).ToArray();  // TODO(see above)
+            vertices_ = [.. loops.SelectMany(t => t)];  // TODO(see above)
         }
     }
 
@@ -190,11 +190,11 @@ public class S2LaxPolygonShape : S2Shape, IInitEncoder<S2LaxPolygonShape>
         MyDebug.Assert(j < NumLoopVertices(i));
         if (i == 0)
         {
-            return vertices_.Skip(j).FirstOrDefault();
+            return vertices_!.Skip(j).FirstOrDefault();
         }
         else
         {
-            return vertices_.Skip((int)loop_starts_![i] + j).FirstOrDefault();
+            return vertices_!.Skip((int)loop_starts_![i] + j).FirstOrDefault();
         }
     }
 
@@ -207,11 +207,11 @@ public class S2LaxPolygonShape : S2Shape, IInitEncoder<S2LaxPolygonShape>
         MyDebug.Assert(j < NumLoopVertices(i));
         if (NumLoops == 1)
         {
-            return vertices_.Skip(j);
+            return vertices_!.Skip(j);
         }
         else
         {
-            return vertices_.Skip((int)loop_starts_[i] + j);
+            return vertices_!.Skip((int)loop_starts_[i] + j);
         }
     }
 
@@ -276,7 +276,7 @@ public class S2LaxPolygonShape : S2Shape, IInitEncoder<S2LaxPolygonShape>
         encoder.Ensure(1 + Encoder.kVarintMax32);
         encoder.Put8(kCurrentEncodingVersionNumber);
         encoder.PutVarInt32(NumLoops);
-        EncodedS2PointVector.EncodeS2PointVector(vertices_, hint, encoder);
+        EncodedS2PointVector.EncodeS2PointVector(vertices_!, hint, encoder);
         if (NumLoops > 1)
         {
             EncodedUIntVector<uint>.EncodeUIntVector(loop_starts_!, encoder);

@@ -523,7 +523,7 @@ public partial class S2Builder
     // Returns a predicate that returns a constant value (true or false);
     public static IsFullPolygonPredicate IsFullPolygon(bool is_full)
     {
-        return (Graph g, out S2Error error) =>
+        return (g, out error) =>
         {
             error = S2Error.OK;
             return is_full;
@@ -748,7 +748,7 @@ public partial class S2Builder
         // implementation of SnapEdge() for this case.
         sites_.Clear();
         if (!tracker_.AddSpaceExact(sites_, input_vertices_.Count)) return;
-        long kTempPerVertex = Marshal.SizeOf(typeof(InputVertexKey)) + sizeof(InputVertexId);
+        long kTempPerVertex = Marshal.SizeOf<InputVertexKey>() + sizeof(InputVertexId);
         if (!tracker_.TallyTemp(input_vertices_.Count * kTempPerVertex)) return;
         var sorted = SortInputVertices();
         var vmap = new int[input_vertices_.Count];
@@ -828,7 +828,7 @@ public partial class S2Builder
         {
             keys.Add(new(new(input_vertices_[i]), i));
         }
-        keys.Sort((InputVertexKey a, InputVertexKey b) =>
+        keys.Sort((a, b) =>
         {
             if (a.Item1 < b.Item1) return -1;
             if (b.Item1 < a.Item1) return 1;
@@ -851,7 +851,7 @@ public partial class S2Builder
         try
         {
             S2ShapeUtil.EdgePairs.VisitCrossingEdgePairs(input_edge_index, CrossingType.INTERIOR,
-                (ShapeEdge a, ShapeEdge b, bool c) =>
+                (a, b, c) =>
                 {
                     if (!tracker_.AddSpace(new_vertices, 1)) return false;
                     new_vertices.Add(S2.GetIntersection(a.V0, a.V1, b.V0, b.V1, null));
@@ -872,7 +872,7 @@ public partial class S2Builder
     private void AddForcedSites(S2PointIndex<int> site_index)
     {
         // Sort the forced sites and remove duplicates.
-        SortedSet<S2Point> tmp = new(sites_);
+        SortedSet<S2Point> tmp = [.. sites_];
         sites_.Clear();
         sites_.AddRange(tmp);
         // Add the forced sites to the index.
@@ -910,7 +910,7 @@ public partial class S2Builder
         // input points to "0:0".  "Snap first" produces "0:0, 0:1" as expected.
         //
         // Track the memory used by SortInputVertices() before calling it.
-        if (!tracker_.Tally(input_vertices_.Count * Marshal.SizeOf(typeof(InputVertexKey)))) return;
+        if (!tracker_.Tally(input_vertices_.Count * Marshal.SizeOf<InputVertexKey>())) return;
         var sorted_keys = SortInputVertices();
         try
         {
@@ -993,7 +993,7 @@ public partial class S2Builder
         var site_query = new S2ClosestPointQuery<int>(site_index, options);
         var results = new List<S2ClosestPointQueryBase<S1ChordAngle, int>.Result>();
         if (!tracker_.AddSpaceExact(edge_sites_, input_edges_.Count)) return;
-        edge_sites_.ReserveSpace(input_edges_.Count);  // Construct all elements.
+        edge_sites_.Capacity = input_edges_.Count;  // Construct all elements. Note (Alas): this does not contruct inner lists.
         for (var e = 0; e < input_edges_.Count; ++e)
         {
             var edge = input_edges_[e];
@@ -1004,11 +1004,11 @@ public partial class S2Builder
 
             S2ClosestPointQuery<int>.EdgeTarget target = new(v0, v1);
             site_query.FindClosestPoints(target, results);
-            var sites = edge_sites_[e];
+            var sites = edge_sites_.Count > e ? edge_sites_[e] : null;
             if (sites is null)
             {
                 sites = [];
-                edge_sites_[e] = sites;
+                edge_sites_.Add(sites);
             }
             sites.Capacity = Math.Max(results.Count, sites.Count);
             foreach (var result in results)
@@ -1714,7 +1714,7 @@ public partial class S2Builder
                 order.Add(new(i, e));
             }
         }
-        order.Sort((LayerEdgeId ai, LayerEdgeId bi) =>
+        order.Sort((ai, bi) =>
         {
             return StableLessThan(layer_edges[ai.Item1][ai.Item2],
                                   layer_edges[bi.Item1][bi.Item2], ai, bi);
@@ -2692,7 +2692,7 @@ public partial class S2Builder
             {
                 if (merged_ids[i].Count!=0) order.Add(i);
             }
-            order.Sort((int i, int j) => merged_ids[i][0].CompareTo(merged_ids[j][0]));
+            order.Sort((i, j) => merged_ids[i][0].CompareTo(merged_ids[j][0]));
 
             // Now determine where each degenerate edge should be assigned.
             var comp = new MergedIdsComp(merged_ids);
@@ -3061,7 +3061,7 @@ public partial class S2Builder
             //  Graph::VertexInMap in_;     // EdgeChainSimplifier
             //  Graph::VertexOutMap out_;   // EdgeChainSimplifier
             var kTempPerSite =
-                Marshal.SizeOf(typeof(List<InputVertexId>)) + sizeof(bool) + 2 * sizeof(EdgeId);
+                Marshal.SizeOf<InputEdgeLoop>() + sizeof(bool) + 2 * sizeof(EdgeId);
 
             // Per output edge:
             //  vector<bool> used_;                              // EdgeChainSimplifier
@@ -3076,7 +3076,7 @@ public partial class S2Builder
             // Note that the temporary vector<LayerEdgeId> in MergeLayerEdges() does not
             // affect peak usage.
             var kTempPerEdge =
-                sizeof(bool) + sizeof(EdgeId) + 2 * Marshal.SizeOf(typeof(Edge)) +
+                sizeof(bool) + sizeof(EdgeId) + 2 * Marshal.SizeOf<OutputEdge>() +
                 2 * sizeof(InputEdgeIdSetId) + 2 * sizeof(int);
             var simplify_bytes = site_vertices.Count * kTempPerSite;
             foreach (var array in site_vertices) {

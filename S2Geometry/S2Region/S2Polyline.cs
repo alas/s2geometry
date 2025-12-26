@@ -681,7 +681,7 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoder<S2Polyline>
 
     // Returns the total number of bytes used by the polyline.
     public readonly int SpaceUsed() =>
-        Marshal.SizeOf(typeof(S2Polyline)) + Vertices.Length * SizeHelper.SizeOf(typeof(S2Point));
+        Marshal.SizeOf<S2Polyline>() + Vertices.Length * SizeHelper.SizeOf<S2Point>();
 
     // Return the first i > "index" such that the ith vertex of "pline" is not at
     // the same point as the "index"th vertex.  Returns pline.num_vertices() if
@@ -778,7 +778,7 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoder<S2Polyline>
     // "encoder".
     public readonly void EncodeUncompressed(Encoder encoder)
     {
-        encoder.Ensure(Vertices.Length * SizeHelper.SizeOf(typeof(S2Point)) + 10);  // sufficient
+        encoder.Ensure(Vertices.Length * SizeHelper.SizeOf<S2Point>() + 10);  // sufficient
 
         encoder.Put8(S2.kCurrentLosslessEncodingVersionNumber);
         encoder.Put32(Vertices.Length);
@@ -831,10 +831,10 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoder<S2Polyline>
         // The compressed encoding requires approximately 4 bytes per vertex plus
         // "exact_point_size" for each unsnapped vertex (encoded as an S2Point plus
         // the index at which it is located).
-        int exact_point_size = SizeHelper.SizeOf(typeof(S2Point)) + 2;
+        int exact_point_size = SizeHelper.SizeOf<S2Point>() + 2;
         int num_unsnapped = NumVertices() - num_snapped;
         int compressed_size = 4 * NumVertices() + exact_point_size * num_unsnapped;
-        int lossless_size = SizeHelper.SizeOf(typeof(S2Point)) * NumVertices();
+        int lossless_size = SizeHelper.SizeOf<S2Point>() * NumVertices();
         if (compressed_size < lossless_size)
         {
             EncodeCompressed(encoder, all_vertices, snap_level);
@@ -880,7 +880,7 @@ public record struct S2Polyline : IS2Region<S2Polyline>, IDecoder<S2Polyline>
 
         // Check the bytes available before allocating memory in case of
         // corrupt/malicious input.
-        if (decoder.Avail() < count * SizeHelper.SizeOf(typeof(S2Point))) return (false, default);
+        if (decoder.Avail() < count * SizeHelper.SizeOf<S2Point>()) return (false, default);
         var verts = new S2Point[count];
         decoder.GetPoints(verts, 0, count);
 

@@ -366,9 +366,7 @@ public record class S2CellUnion : IS2Region<S2CellUnion>, IEnumerable<S2CellId>,
     // Returns the union of the two given cell unions.
     public S2CellUnion Union(S2CellUnion y)
     {
-        List<S2CellId> cell_ids = new(CellIds.Count + y.CellIds.Count);
-        cell_ids.AddRange(CellIds);
-        cell_ids.AddRange(y.CellIds);
+        List<S2CellId> cell_ids = [.. CellIds, .. y.CellIds];
         return new S2CellUnion(cell_ids);
     }
 

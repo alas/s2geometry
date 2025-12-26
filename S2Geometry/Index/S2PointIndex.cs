@@ -64,9 +64,8 @@
 namespace S2Geometry;
 
 using System.Collections;
-using System.Runtime.InteropServices;
 
-public class S2PointIndex<Data> : IEnumerable<TreeNode<Data>>
+public class S2PointIndex<Data> : IEnumerable<TreeNode<Data>> where Data : struct
 {
     // Default constructor.
     public S2PointIndex() { }
@@ -127,7 +126,7 @@ public class S2PointIndex<Data> : IEnumerable<TreeNode<Data>>
     // Returns the number of bytes currently occupied by the index.
     public int SpaceUsed()
     {
-        var sizeoftreenode = SizeHelper.SizeOf(typeof(List<TreeNode<Data>>));
+        var sizeoftreenode = SizeHelper.SizeOf<List<TreeNode<Data>>>();
         return SizeHelper.SizeOf(this) - sizeoftreenode + SizeHelper.SizeOf(map_);
     }
 

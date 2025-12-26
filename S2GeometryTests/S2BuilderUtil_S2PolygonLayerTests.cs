@@ -202,7 +202,7 @@ public class S2BuilderUtil_S2PolygonLayerTests
         builder.AddPolygon(MakePolygonOrDie(polygon_str));
         Assert.True(builder.Build(out _));
         Assert.Equal(1, index.NumShapeIds());
-        S2Polygon polygon = ((S2Polygon.Shape)index.Shape(0)).Polygon;
+        S2Polygon polygon = ((S2Polygon.Shape)index.Shape(0)!).Polygon;
         Assert.Equal(polygon_str, polygon.ToDebugString());
     }
 

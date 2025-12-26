@@ -16,9 +16,9 @@ internal class GraphClone
         edges_ = g.Edges;
         input_edge_id_set_ids_ = g.InputEdgeIdSetIds;
         input_edge_id_set_lexicon_ = g.InputEdgeIdSetLexicon;
-        label_set_ids_ = g.LabelSetIds;
-        label_set_lexicon_ = g.LabelSetLexicon;
-        is_full_polygon_predicate_ = g.IsFullPolygonPredicate();
+        label_set_ids_ = g.LabelSetIds!;
+        label_set_lexicon_ = g.LabelSetLexicon!;
+        is_full_polygon_predicate_ = g.IsFullPolygonPredicate()!;
         g_ = new Graph(
             options_, vertices_, edges_, input_edge_id_set_ids_,
             input_edge_id_set_lexicon_, label_set_ids_, label_set_lexicon_,

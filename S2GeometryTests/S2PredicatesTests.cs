@@ -1181,23 +1181,23 @@ public class S2PredicatesTests
 
     internal delegate int Triage(S2Point x, S2Point y, S1ChordAngle r);
 
-    internal static readonly Triage Sin2Distance = (S2Point x, S2Point y, S1ChordAngle r)
+    internal static readonly Triage Sin2Distance = (x, y, r)
         => S2Pred.TriageCompareSin2Distance_Test(x, y, r.Length2);
 
-    internal static readonly Triage CosDistance = (S2Point x, S2Point y, S1ChordAngle r)
+    internal static readonly Triage CosDistance = (x, y, r)
         => S2Pred.TriageCompareCosDistance_Test(x, y, r.Length2);
 
     // The following helper classes allow us to test the various distance
     // calculation methods using a common test framework.
     internal delegate int TriagePoints(S2Point x, S2Point y, S2Point b);
-    internal static readonly TriagePoints Sin2Distances = (S2Point x, S2Point a, S2Point b)
+    internal static readonly TriagePoints Sin2Distances = (x, a, b)
         => S2Pred.TriageCompareSin2Distances_Test(x, a, b);
 
-    internal static readonly TriagePoints CosDistances = (S2Point x, S2Point a, S2Point b)
+    internal static readonly TriagePoints CosDistances = (x, a, b)
         => S2Pred.TriageCompareCosDistances_Test(x, a, b);
 
     // Compares distances greater than 90 degrees using sin^2(distance).
-    internal static readonly TriagePoints MinusSin2Distances = (S2Point x, S2Point a, S2Point b)
+    internal static readonly TriagePoints MinusSin2Distances = (x, a, b)
         => -S2Pred.TriageCompareSin2Distances_Test(-x, a, b);
 
     #endregion

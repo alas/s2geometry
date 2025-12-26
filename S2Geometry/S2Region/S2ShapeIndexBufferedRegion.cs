@@ -45,9 +45,6 @@ public sealed class S2ShapeIndexBufferedRegion : IS2Region<S2ShapeIndexBufferedR
 
     #region Constructors
 
-    // Default constructor; requires Init() to be called.
-    public S2ShapeIndexBufferedRegion() { }
-
     // Constructs a region representing all points within the given radius of
     // any point in the given S2ShapeIndex.
     public S2ShapeIndexBufferedRegion(S2ShapeIndex index, S1ChordAngle radius)
@@ -109,8 +106,7 @@ public sealed class S2ShapeIndexBufferedRegion : IS2Region<S2ShapeIndexBufferedR
         // This increases the number of cells in the covering by a factor of 4 and
         // increases the covered area by a factor of 16, so it is not a very good
         // covering, but it is much better than always returning the 6 face cells.
-        var orig_cellids = new List<S2CellId>();
-        Index().MakeS2ShapeIndexRegion().GetCellUnionBound(orig_cellids);
+        var orig_cellids = Index().MakeS2ShapeIndexRegion().GetCellUnionBound();
 
         double radians = Radius.ToAngle().Radians;
         int max_level = S2.kMinWidth.GetLevelForMinValue(radians) - 1;

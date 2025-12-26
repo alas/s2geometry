@@ -12,7 +12,7 @@ using System.Collections;
 public class S2PointSpan : IList<S2Point>
 {
     private readonly IList<S2Point> Path;
-    public S2PointSpan() => Path = new List<S2Point>();
+    public S2PointSpan() => Path = [];
     public S2PointSpan(int capacity) => Path = new List<S2Point>(capacity);
     public S2PointSpan(IList<S2Point> path) => Path = path;
 

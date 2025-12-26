@@ -142,7 +142,7 @@ public class S2BuilderUtil_FindPolygonDegeneraciesTests
         S2Builder builder = new(new Options());
         builder.StartLayer(new DegeneracyCheckingLayer(expected));
         var polygon = MakeLaxPolygonOrDie(polygon_str);
-        builder.AddIsFullPolygonPredicate((IsFullPolygonPredicate)((Graph graph, out S2Error error) => {
+        builder.AddIsFullPolygonPredicate((IsFullPolygonPredicate)((graph, out error) => {
             error = S2Error.OK;
             return (bool)polygon.GetReferencePoint().Contained;
         }));

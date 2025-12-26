@@ -59,12 +59,12 @@ public class S2LaxLoopShapeTests
         Assert.Equal(index.NumShapeIds(), 2);
 
         // Verify that the move constructor moves the id.
-        var shape0 = (S2LaxLoopShape)index.Shape(0);
+        var shape0 = (S2LaxLoopShape)index.Shape(0)!;
         S2LaxLoopShape moved_shape0 = shape0;
         Assert.Equal(moved_shape0.Id, 0);
 
         // Verify that the move-assignment operator moves the id.
-        var shape1 = (S2LaxLoopShape)index.Shape(1);
+        var shape1 = (S2LaxLoopShape)index.Shape(1)!;
         S2LaxLoopShape moved_shape1;
         moved_shape1 = shape1;
         Assert.Equal(moved_shape1.Id, 1);

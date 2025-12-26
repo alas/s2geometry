@@ -2,9 +2,9 @@
 
 internal static class S2Extensions
 {
-    public static double[] Bounds(this R2Point me) => new double[2] { me.X, me.Y };
+    public static double[] Bounds(this R2Point me) => [me.X, me.Y];
 
-    public static double[] Bounds(this S1Interval me) => new double[2] { me.Lo, me.Hi };
+    public static double[] Bounds(this S1Interval me) => [me.Lo, me.Hi];
 
     /// <summary>
     /// Exports the latitude and longitude in degrees, separated by a comma.

@@ -33,7 +33,7 @@ public class S2MaxDistancePointTarget(S2Point point) : S2MaxDistanceTargets
         // antipode of the target point.  (These are the polygons whose
         // S2MaxDistance to the target is S2MaxDistance.Zero().)
         index.MakeS2ContainsPointQuery().VisitContainingShapes(
-            -point_, (S2Shape shape) => visitor(shape, point_));
+            -point_, shape => visitor(shape, point_));
 
     private readonly S2Point point_ = point;
 }

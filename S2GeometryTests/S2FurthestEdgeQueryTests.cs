@@ -365,8 +365,8 @@ public class S2FurthestEdgeQueryTests
     // s2closest_edge_query.cc.
     private static List<(S2MaxDistance, Edge)> ConvertResults(List<S2FurthestEdgeQuery.Result> edges)
     {
-        return edges.Select(edge => (new S2MaxDistance(edge.Distance),
-                        new Edge(edge.ShapeId, edge.EdgeId))).ToList();
+        return [.. edges.Select(edge => (new S2MaxDistance(edge.Distance),
+                        new Edge(edge.ShapeId, edge.EdgeId)))];
     }
 
     // Use "query" to find the furthest edge(s) to the given target.  Verify that

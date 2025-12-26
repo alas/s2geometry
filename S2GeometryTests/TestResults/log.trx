@@ -1,0 +1,131 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="3e7df65e-6878-4c27-a673-ea8cab8eb8cd" name="Office@DESKTOP-6FC0FHH 2025-12-26 13:15:39" runUser="DESKTOP-6FC0FHH\Office" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2025-12-26T13:15:39.1018567-03:00" queuing="2025-12-26T13:15:39.1018570-03:00" start="2025-12-26T13:15:37.9080072-03:00" finish="2025-12-26T13:15:39.1170025-03:00" />
+  <TestSettings name="default" id="b7036ae4-fe98-4de6-94b1-9e9fcfbe6015">
+    <Deployment runDeploymentRoot="Office_DESKTOP-6FC0FHH_2025-12-26_13_15_39" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="ce800a26-85ac-4526-b843-b87947f9ce65" testId="05ab47ae-c752-ec0c-0eff-bcf0666cf91f" testName="S2Geometry.S2WindingOperationTests.Test_S2WindingOperation_BowTie" computerName="DESKTOP-6FC0FHH" duration="00:00:00.0897937" startTime="2025-12-26T13:15:38.9779637-03:00" endTime="2025-12-26T13:15:38.9780161-03:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ce800a26-85ac-4526-b843-b87947f9ce65">
+      <Output>
+        <ErrorInfo>
+          <Message>Microsoft.VisualStudio.TestPlatform.TestHost.DebugAssertException : Method Debug.Fail failed with '&#xD;
+', and was translated to Microsoft.VisualStudio.TestPlatform.TestHost.DebugAssertException to avoid terminating the process hosting the test.</Message>
+          <StackTrace>   at Microsoft.VisualStudio.TestPlatform.TestHost.TestHostTraceListener.GetException(String message)&#xD;
+   at Microsoft.VisualStudio.TestPlatform.TestHost.TestHostTraceListener.Fail(String message, String detailMessage)&#xD;
+   at System.Diagnostics.TraceInternal.Fail(String message, String detailMessage)&#xD;
+   at System.Diagnostics.Debug.Fail(String message, String detailMessage)&#xD;
+   at S2Geometry.MyDebug.Assert(Boolean statement, String message) in C:\Users\Office\source\repos\alas\s2geometry\S2Geometry\FxUtils\MyDebug.cs:line 13&#xD;
+   at S2Geometry.S2Builder.Graph..ctor(GraphOptions options, List`1 vertices, List`1 edges, List`1 input_edge_id_set_ids, IdSetLexicon input_edge_id_set_lexicon, List`1 label_set_ids, IdSetLexicon label_set_lexicon, IsFullPolygonPredicate is_full_polygon_predicate) in C:\Users\Office\source\repos\alas\s2geometry\S2Geometry\S2Builder\Graph.cs:line 119&#xD;
+   at S2Geometry.S2Builder.BuildLayers() in C:\Users\Office\source\repos\alas\s2geometry\S2Geometry\S2Builder\S2Builder.cs:line 1521&#xD;
+   at S2Geometry.S2Builder.Build(S2Error&amp; error) in C:\Users\Office\source\repos\alas\s2geometry\S2Geometry\S2Builder\S2Builder.cs:line 635&#xD;
+   at S2Geometry.S2WindingOperation.Build(Vector3`1 ref_p, Int32 ref_winding, WindingRule rule, S2Error&amp; error) in C:\Users\Office\source\repos\alas\s2geometry\S2Geometry\S2WindingOperation.cs:line 109&#xD;
+   at S2Geometry.S2WindingOperationTests.ExpectWindingResult(Options options, List`1 loop_strs, String ref_point_str, Int32 ref_winding, WindingRule rule, String expected_str) in C:\Users\Office\source\repos\alas\s2geometry\S2GeometryTests\S2WindingOperationTests.cs:line 29&#xD;
+   at S2Geometry.S2WindingOperationTests.Test_S2WindingOperation_BowTie() in C:\Users\Office\source\repos\alas\s2geometry\S2GeometryTests\S2WindingOperationTests.cs:line 111&#xD;
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)&#xD;
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)&#xD;
+   at System.Reflection.MethodBase.Invoke(Object obj, Object[] parameters)&#xD;
+   at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine&amp; stateMachine)&#xD;
+   at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine&amp; stateMachine)&#xD;
+   at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine&amp; stateMachine)&#xD;
+   at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine&amp; stateMachine)&#xD;
+   at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine&amp; stateMachine)&#xD;
+   at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine&amp; stateMachine)&#xD;
+   at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine&amp; stateMachine)&#xD;
+   at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine&amp; stateMachine)&#xD;
+   at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine&amp; stateMachine)&#xD;
+   at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine&amp; stateMachine)&#xD;
+   at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine&amp; stateMachine)&#xD;
+   at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine&amp; stateMachine)&#xD;
+   at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine&amp; stateMachine)&#xD;
+   at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine&amp; stateMachine)&#xD;
+   at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine&amp; stateMachine)&#xD;
+   at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine&amp; stateMachine)&#xD;
+   at System.Threading.Tasks.Task`1.InnerInvoke()&#xD;
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)&#xD;
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task&amp; currentTaskSlot, Thread threadPoolThread)&#xD;
+   at System.Threading.Tasks.Task.ExecuteEntry()&#xD;
+   at System.Threading.Tasks.SynchronizationContextTaskScheduler.&lt;&gt;c.&lt;.cctor&gt;b__8_0(Object s)&#xD;
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)&#xD;
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)&#xD;
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task&amp; currentTaskSlot, Thread threadPoolThread)&#xD;
+   at System.Threading.Thread.StartCallback()&#xD;
+</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="S2Geometry.S2WindingOperationTests.Test_S2WindingOperation_BowTie" storage="c:\users\office\source\repos\alas\s2geometry\s2geometrytests\bin\debug\net10.0\s2geometrytests.dll" id="05ab47ae-c752-ec0c-0eff-bcf0666cf91f">
+      <Execution id="ce800a26-85ac-4526-b843-b87947f9ce65" />
+      <TestMethod codeBase="C:\Users\Office\source\repos\alas\s2geometry\S2GeometryTests\bin\Debug\net10.0\S2GeometryTests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="S2Geometry.S2WindingOperationTests" name="Test_S2WindingOperation_BowTie" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="05ab47ae-c752-ec0c-0eff-bcf0666cf91f" executionId="ce800a26-85ac-4526-b843-b87947f9ce65" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="1" executed="1" passed="0" failed="1" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.4.5+1caef2f33e (64-bit .NET 10.0.1)&#xD;
+[xUnit.net 00:00:00.35]   Discovering: S2GeometryTests&#xD;
+[xUnit.net 00:00:00.47]   Discovered:  S2GeometryTests&#xD;
+[xUnit.net 00:00:00.48]   Starting:    S2GeometryTests&#xD;
+[xUnit.net 00:00:00.62]       Microsoft.VisualStudio.TestPlatform.TestHost.DebugAssertException : Method Debug.Fail failed with '&#xD;
+[xUnit.net 00:00:00.62]       ', and was translated to Microsoft.VisualStudio.TestPlatform.TestHost.DebugAssertException to avoid terminating the process hosting the test.&#xD;
+[xUnit.net 00:00:00.62]       Stack Trace:&#xD;
+[xUnit.net 00:00:00.62]            at Microsoft.VisualStudio.TestPlatform.TestHost.TestHostTraceListener.GetException(String message)&#xD;
+[xUnit.net 00:00:00.62]            at Microsoft.VisualStudio.TestPlatform.TestHost.TestHostTraceListener.Fail(String message, String detailMessage)&#xD;
+[xUnit.net 00:00:00.62]            at System.Diagnostics.TraceInternal.Fail(String message, String detailMessage)&#xD;
+[xUnit.net 00:00:00.62]            at System.Diagnostics.Debug.Fail(String message, String detailMessage)&#xD;
+[xUnit.net 00:00:00.62]         C:\Users\Office\source\repos\alas\s2geometry\S2Geometry\FxUtils\MyDebug.cs(13,0): at S2Geometry.MyDebug.Assert(Boolean statement, String message)&#xD;
+[xUnit.net 00:00:00.62]         C:\Users\Office\source\repos\alas\s2geometry\S2Geometry\S2Builder\Graph.cs(119,0): at S2Geometry.S2Builder.Graph..ctor(GraphOptions options, List`1 vertices, List`1 edges, List`1 input_edge_id_set_ids, IdSetLexicon input_edge_id_set_lexicon, List`1 label_set_ids, IdSetLexicon label_set_lexicon, IsFullPolygonPredicate is_full_polygon_predicate)&#xD;
+[xUnit.net 00:00:00.62]         C:\Users\Office\source\repos\alas\s2geometry\S2Geometry\S2Builder\S2Builder.cs(1521,0): at S2Geometry.S2Builder.BuildLayers()&#xD;
+[xUnit.net 00:00:00.62]         C:\Users\Office\source\repos\alas\s2geometry\S2Geometry\S2Builder\S2Builder.cs(635,0): at S2Geometry.S2Builder.Build(S2Error&amp; error)&#xD;
+[xUnit.net 00:00:00.62]         C:\Users\Office\source\repos\alas\s2geometry\S2Geometry\S2WindingOperation.cs(109,0): at S2Geometry.S2WindingOperation.Build(Vector3`1 ref_p, Int32 ref_winding, WindingRule rule, S2Error&amp; error)&#xD;
+[xUnit.net 00:00:00.62]         C:\Users\Office\source\repos\alas\s2geometry\S2GeometryTests\S2WindingOperationTests.cs(29,0): at S2Geometry.S2WindingOperationTests.ExpectWindingResult(Options options, List`1 loop_strs, String ref_point_str, Int32 ref_winding, WindingRule rule, String expected_str)&#xD;
+[xUnit.net 00:00:00.62]         C:\Users\Office\source\repos\alas\s2geometry\S2GeometryTests\S2WindingOperationTests.cs(111,0): at S2Geometry.S2WindingOperationTests.Test_S2WindingOperation_BowTie()&#xD;
+[xUnit.net 00:00:00.62]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)&#xD;
+[xUnit.net 00:00:00.62]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)&#xD;
+[xUnit.net 00:00:00.62]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)&#xD;
+[xUnit.net 00:00:00.62]            at System.Reflection.MethodBase.Invoke(Object obj, Object[] parameters)&#xD;
+[xUnit.net 00:00:00.62]            at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine&amp; stateMachine)&#xD;
+[xUnit.net 00:00:00.62]            at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine&amp; stateMachine)&#xD;
+[xUnit.net 00:00:00.62]            at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine&amp; stateMachine)&#xD;
+[xUnit.net 00:00:00.62]            at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine&amp; stateMachine)&#xD;
+[xUnit.net 00:00:00.62]            at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine&amp; stateMachine)&#xD;
+[xUnit.net 00:00:00.62]            at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine&amp; stateMachine)&#xD;
+[xUnit.net 00:00:00.62]            at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine&amp; stateMachine)&#xD;
+[xUnit.net 00:00:00.62]            at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine&amp; stateMachine)&#xD;
+[xUnit.net 00:00:00.62]            at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine&amp; stateMachine)&#xD;
+[xUnit.net 00:00:00.62]            at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine&amp; stateMachine)&#xD;
+[xUnit.net 00:00:00.62]            at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine&amp; stateMachine)&#xD;
+[xUnit.net 00:00:00.62]            at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine&amp; stateMachine)&#xD;
+[xUnit.net 00:00:00.62]            at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine&amp; stateMachine)&#xD;
+[xUnit.net 00:00:00.62]            at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine&amp; stateMachine)&#xD;
+[xUnit.net 00:00:00.62]            at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine&amp; stateMachine)&#xD;
+[xUnit.net 00:00:00.62]            at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine&amp; stateMachine)&#xD;
+[xUnit.net 00:00:00.62]            at System.Threading.Tasks.Task`1.InnerInvoke()&#xD;
+[xUnit.net 00:00:00.62]            at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)&#xD;
+[xUnit.net 00:00:00.62]            at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task&amp; currentTaskSlot, Thread threadPoolThread)&#xD;
+[xUnit.net 00:00:00.62]            at System.Threading.Tasks.Task.ExecuteEntry()&#xD;
+[xUnit.net 00:00:00.62]            at System.Threading.Tasks.SynchronizationContextTaskScheduler.&lt;&gt;c.&lt;.cctor&gt;b__8_0(Object s)&#xD;
+[xUnit.net 00:00:00.62]            at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)&#xD;
+[xUnit.net 00:00:00.62]            at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)&#xD;
+[xUnit.net 00:00:00.62]            at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task&amp; currentTaskSlot, Thread threadPoolThread)&#xD;
+[xUnit.net 00:00:00.62]            at System.Threading.Thread.StartCallback()&#xD;
+[xUnit.net 00:00:00.62]         &#xD;
+[xUnit.net 00:00:00.63]   Finished:    S2GeometryTests&#xD;
+</StdOut>
+    </Output>
+    <RunInfos>
+      <RunInfo computerName="DESKTOP-6FC0FHH" outcome="Error" timestamp="2025-12-26T13:15:38.9712743-03:00">
+        <Text>[xUnit.net 00:00:00.61]     S2Geometry.S2WindingOperationTests.Test_S2WindingOperation_BowTie [FAIL]</Text>
+      </RunInfo>
+    </RunInfos>
+  </ResultSummary>
+</TestRun>

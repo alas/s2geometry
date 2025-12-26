@@ -28,7 +28,7 @@ internal static class S2TestingCheckDistance<Id, Distance> where Distance : IEqu
                     string label, WriteLineDelegate writeline)
     {
         // Results should be sorted by distance, but not necessarily then by Id.
-        Assert.True(x.IsSorted(((Distance, Id) x, (Distance, Id) y) =>
+        Assert.True(x.IsSorted((x, y) =>
         {
             return x.Item1.CompareTo(y.Item1);
         }));
@@ -62,7 +62,7 @@ internal static class S2TestingCheckDistance<Id, Distance> where Distance : IEqu
         foreach (var yp in y)
         {
             // Note that this test also catches duplicate values.
-            int count = x.Count(((Distance, Id) xp) =>
+            int count = x.Count(xp =>
             {
                 return Equals(xp.Item2, yp.Item2);
             });

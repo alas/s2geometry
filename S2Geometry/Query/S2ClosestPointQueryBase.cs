@@ -25,7 +25,7 @@ namespace S2Geometry;
 
 using Delta = S1ChordAngle;
 
-public class S2ClosestPointQueryBase<Distance, Data> where Distance : IEquatable<Distance>, IComparable<Distance>, IDistance<Distance> where Data : IComparable<Data>
+public class S2ClosestPointQueryBase<Distance, Data> where Distance : IEquatable<Distance>, IComparable<Distance>, IDistance<Distance> where Data : struct, IComparable<Data>
 {
     #region Fields, Constants
 

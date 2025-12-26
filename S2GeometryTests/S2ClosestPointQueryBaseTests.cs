@@ -37,7 +37,7 @@ public class S2ClosestPointQueryBaseTests
     // compiles and does something reasonable.
     private class FurthestPointQuery<Data>
         : S2ClosestPointQueryBase<S2MaxDistance, Data>
-        where Data : IComparable<Data>
+        where Data : struct, IComparable<Data>
     {
         internal FurthestPointQuery(S2PointIndex<Data> index) : base(index) { }
     }

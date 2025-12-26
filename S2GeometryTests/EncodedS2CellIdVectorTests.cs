@@ -11,19 +11,19 @@ public class EncodedS2CellIdVectorTests
     [Fact]
     internal void Test_EncodedS2CellIdVector_None()
     {
-        TestEncodedS2CellIdVector(new List<S2CellId> { S2CellId.None }, 3);
+        TestEncodedS2CellIdVector([S2CellId.None], 3);
     }
 
     [Fact]
     internal void Test_EncodedS2CellIdVector_NoneNone()
     {
-        TestEncodedS2CellIdVector(new List<S2CellId> { S2CellId.None, S2CellId.None }, 4);
+        TestEncodedS2CellIdVector([S2CellId.None, S2CellId.None], 4);
     }
 
     [Fact]
     internal void Test_EncodedS2CellIdVector_Sentinel()
     {
-        TestEncodedS2CellIdVector(new List<S2CellId> { S2CellId.Sentinel }, 10);
+        TestEncodedS2CellIdVector([S2CellId.Sentinel], 10);
     }
 
     [Fact]
@@ -31,27 +31,26 @@ public class EncodedS2CellIdVectorTests
     {
         // Tests the encoding of a single cell at level 2, which corresponds the
         // maximum encodable shift value (56).
-        TestEncodedS2CellIdVector(new List<S2CellId> { MakeCellIdOrDie("0/00") }, 3);
+        TestEncodedS2CellIdVector([MakeCellIdOrDie("0/00")], 3);
     }
 
     [Fact]
     internal void Test_EncodedS2CellIdVector_SentinelSentinel()
     {
-        TestEncodedS2CellIdVector(new List<S2CellId> { S2CellId.Sentinel, S2CellId.Sentinel }, 11);
+        TestEncodedS2CellIdVector([S2CellId.Sentinel, S2CellId.Sentinel], 11);
     }
 
     [Fact]
     internal void Test_EncodedS2CellIdVector_NoneSentinelNone()
     {
-        TestEncodedS2CellIdVector(new List<S2CellId>
-            { S2CellId.None, S2CellId.Sentinel, S2CellId.None}, 26);
+        TestEncodedS2CellIdVector([S2CellId.None, S2CellId.Sentinel, S2CellId.None], 26);
     }
 
     [Fact]
     internal void Test_EncodedS2CellIdVector_InvalidCells()
     {
         // Tests that cells with an invalid LSB can be encoded.
-        TestEncodedS2CellIdVector(new List<ulong> { 0x6, 0xe, 0x7e }, 5);
+        TestEncodedS2CellIdVector([0x6, 0xe, 0x7e], 5);
     }
 
     [Fact]
@@ -59,7 +58,7 @@ public class EncodedS2CellIdVectorTests
     {
         // Tests that (1) if all cells are leaf cells, the low bit is not encoded,
         // and (2) this can be indicated using the standard 1-byte header.
-        TestEncodedS2CellIdVector(new List<ulong> { 0x3, 0x7, 0x177 }, 5);
+        TestEncodedS2CellIdVector([0x3, 0x7, 0x177], 5);
     }
 
     [Fact]
@@ -67,7 +66,7 @@ public class EncodedS2CellIdVectorTests
     {
         // Tests that (1) if all cells are at level 29, the low bit is not encoded,
         // and (2) this can be indicated using the standard 1-byte header.
-        TestEncodedS2CellIdVector(new List<ulong> { 0xc, 0x1c, 0x47c }, 5);
+        TestEncodedS2CellIdVector([0xc, 0x1c, 0x47c], 5);
     }
 
     [Fact]
@@ -75,14 +74,14 @@ public class EncodedS2CellIdVectorTests
     {
         // Tests that (1) if all cells are at level 28, the low bit is not encoded,
         // and (2) this can be indicated using the extended 2-byte header.
-        TestEncodedS2CellIdVector(new List<ulong> { 0x30, 0x70, 0x1770 }, 6);
+        TestEncodedS2CellIdVector([0x30, 0x70, 0x1770], 6);
     }
 
     [Fact]
     internal void Test_EncodedS2CellIdVector_OneByteMixedCellLevels()
     {
         // Tests that cells at mixed levels can be encoded in one byte.
-        TestEncodedS2CellIdVector(new List<ulong> { 0x300, 0x1c00, 0x7000, 0xff00 }, 6);
+        TestEncodedS2CellIdVector([0x300, 0x1c00, 0x7000, 0xff00], 6);
     }
 
     [Fact]
@@ -90,9 +89,9 @@ public class EncodedS2CellIdVectorTests
     {
         // Tests that cells at mixed levels can be encoded in one byte even when
         // they share a multi-byte prefix.
-        TestEncodedS2CellIdVector(new List<ulong>{
+        TestEncodedS2CellIdVector([
                 0x1234567800000300, 0x1234567800001c00,
-                0x1234567800007000, 0x123456780000ff00}, 10);
+                0x1234567800007000, 0x123456780000ff00], 10);
     }
 
     [Fact]
@@ -101,9 +100,9 @@ public class EncodedS2CellIdVectorTests
         // Tests that cells can be encoded in one byte by choosing a base value
         // whose bit range overlaps the delta values.
         // 1 byte header, 3 bytes base, 1 byte size, 4 bytes deltas
-        TestEncodedS2CellIdVector(new List<ulong>{
+        TestEncodedS2CellIdVector([
                 0x00ffff0000000000, 0x0100fc0000000000,
-                0x0100500000000000, 0x0100330000000000}, 9);
+                0x0100500000000000, 0x0100330000000000], 9);
     }
 
     [Fact]

@@ -57,7 +57,7 @@ public abstract class ArrayN<T> : IEnumerable<T>
 
         public T Current => arrayn[position];
 
-        object IEnumerator.Current => Current;
+        object IEnumerator.Current => Current!;
 
         public void Dispose() { }
         public bool MoveNext() => ++position >= 0 && position < arrayn.Size;

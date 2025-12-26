@@ -12,7 +12,7 @@ public static class SizeHelper
 
     public static int SizeOf<T>(T _)
     {
-        return SizeOf(typeof(T));
+        return SizeOf<T>();
     }
 
     public static int SizeOf(this Type type)

@@ -22,13 +22,14 @@ public class S2LaxPolylineShape : S2Shape, IInitEncoder<S2LaxPolylineShape>
 
     // Constructs an S2LaxPolylineShape with the given vertices, by copying
     // its data.
-    public S2LaxPolylineShape(IEnumerable<S2Point> vertices) => vertices_ = vertices.ToArray();
+    public S2LaxPolylineShape(IEnumerable<S2Point> vertices) => vertices_ = [.. vertices];
 
     // Constructs an S2LaxPolylineShape from the given S2Polyline.
     public S2LaxPolylineShape(S2Polyline polyline) : this(polyline.Vertices) { }
 
     public S2LaxPolylineShape(S2LaxPolylineShape other)
     {
+        SetId(other.Id);
         vertices_ = other.vertices_;
         other.vertices_ = null;
     }
@@ -44,7 +45,7 @@ public class S2LaxPolylineShape : S2Shape, IInitEncoder<S2LaxPolylineShape>
     // REQUIRES: "encoder" uses the default constructor, so that its buffer
     //           can be enlarged as necessary by calling Ensure(int).
     public override void Encode(Encoder encoder, CodingHint hint = CodingHint.COMPACT) =>
-        EncodedS2PointVector.EncodeS2PointVector(vertices_, hint, encoder);
+        EncodedS2PointVector.EncodeS2PointVector(vertices_!, hint, encoder);
 
     // Decodes an S2LaxPolylineShape, returning true on success.  (The method
     // name is chosen for compatibility with EncodedS2LaxPolylineShape below.)

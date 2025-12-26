@@ -56,7 +56,7 @@ public class S2BuilderUtil_LaxPolygonLayerTests(ITestOutputHelper logger)
             var polygon = MakeLaxPolygonOrDie("0:0, 0:1, 1:1");
             builder.AddShape(polygon);
             // If the predicate is called, it will return an error.
-            builder.AddIsFullPolygonPredicate((Graph g, out S2Error error) => IsFullPolygonUnspecified(out error));
+            builder.AddIsFullPolygonPredicate((g, out error) => IsFullPolygonUnspecified(out error));
             Assert.True(builder.Build(out var error));
         }
     }
@@ -233,7 +233,7 @@ public class S2BuilderUtil_LaxPolygonLayerTests(ITestOutputHelper logger)
         builder.AddPolygon(MakePolygonOrDie(polygon_str));
         Assert.True(builder.Build(out _));
         Assert.Equal(1, index.NumShapeIds());
-        var polygon = (S2LaxPolygonShape)index.Shape(0);
+        var polygon = (S2LaxPolygonShape)index.Shape(0)!;
         Assert.Equal(polygon_str, polygon.ToDebugString());
     }
 

@@ -385,7 +385,7 @@ public class S2CellIndexTests
             }
         }
         _index.VisitIntersectingCells(
-            target, (S2CellId cell_id, int label) =>
+            target, (cell_id, label) =>
             {
                 actual.Add(new(cell_id, label));
                 return true;

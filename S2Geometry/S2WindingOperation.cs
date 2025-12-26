@@ -442,7 +442,7 @@ public class S2WindingOperation
             MyDebug.Assert(error.IsOk());
 
             // A map from EdgeId to the winding number of the region it bounds.
-            var edge_winding = new List<int>().ReserveSpace(g.NumEdges);
+            var edge_winding = new int[g.NumEdges];
             List<EdgeId> frontier = [];  // Unexplored sibling edges.
             for (EdgeId e_min = 0; e_min < g.NumEdges; ++e_min)
             {

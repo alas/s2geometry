@@ -269,11 +269,11 @@ public class S2PointCompressionTests
     }
 
     private static S2PointCompression.S2XYZFaceSiTi[] MakeXYZFaceSiTiPoints(S2Point[] points) =>
-        points.Select(t =>
+        [.. points.Select(t =>
         {
             var cellLevel = S2.XYZtoFaceSiTi(t, out var face, out var si, out var ti);
             return new S2PointCompression.S2XYZFaceSiTi(t, face, si, ti, cellLevel);
-        }).ToArray();
+        })];
 
     private void Encode(S2Point[] points, int level)
     {

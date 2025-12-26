@@ -1260,52 +1260,52 @@ public class S2BooleanOperationTests(ITestOutputHelper logger)
                 }
                 else if (ch == 'P')
                 {  // Polyline consisting only of the point A
-                    index.Add(new S2LaxPolylineShape(new S2Point[] { a, a }));
+                    index.Add(new S2LaxPolylineShape([a, a]));
                 }
                 else if (ch == 'B')
                 {  // Polyline consisting only of the point B
-                    index.Add(new S2LaxPolylineShape(new S2Point[] { b, b }));
+                    index.Add(new S2LaxPolylineShape([b, b]));
                 }
                 else if (ch == 'u')
                 {  // Upwards polyline edge
-                    index.Add(new S2LaxPolylineShape(new S2Point[] { a, b }));
+                    index.Add(new S2LaxPolylineShape([a, b]));
                 }
                 else if (ch == 'd')
                 {  // Downwards polyline edge
-                    index.Add(new S2LaxPolylineShape(new S2Point[] { b, a }));
+                    index.Add(new S2LaxPolylineShape([b, a]));
                 }
                 else if (ch == 's')
                 {  // Point shell
-                    index.Add(new S2LaxPolygonShape([new() { a }]));
+                    index.Add(new S2LaxPolygonShape([[a]]));
                 }
                 else if (ch == 'S')
                 {  // Sibling pair shell
-                    index.Add(new S2LaxPolygonShape([new() { a, b }]));
+                    index.Add(new S2LaxPolygonShape([[a, b]]));
                 }
                 else if (ch == 'U')
                 {  // Upwards polygon edge
-                    int i2 = index.Add(new S2LaxPolygonShape([new() { a, b, -c }]));
+                    int i2 = index.Add(new S2LaxPolygonShape([[a, b, -c]]));
                     // Some test results require that the U polygon contains A but not B.
-                    Assert.True(index.Shape(i2).ContainsBruteForce(a));
-                    Assert.True(!index.Shape(i2).ContainsBruteForce(b));
+                    Assert.True(index.Shape(i2)!.ContainsBruteForce(a));
+                    Assert.True(!index.Shape(i2)!.ContainsBruteForce(b));
                 }
                 else if (ch == 'D')
                 {  // Downwards polygon edge
-                    int i2 = index.Add(new S2LaxPolygonShape([new() { b, a, c }]));
+                    int i2 = index.Add(new S2LaxPolygonShape([[b, a, c]]));
                     // Some test cases require that the D polygon excludes both A and B.
-                    Assert.True(!index.Shape(i2).ContainsBruteForce(a));
-                    Assert.True(!index.Shape(i2).ContainsBruteForce(b));
+                    Assert.True(!index.Shape(i2)!.ContainsBruteForce(a));
+                    Assert.True(!index.Shape(i2)!.ContainsBruteForce(b));
                 }
                 else if (ch == '~')
                 {  // Complement of following region (U or D)
                     ch = chars[++i];
                     if (ch == 'U')
                     {
-                        index.Add(new S2LaxPolygonShape([new() { -c, b, a }]));
+                        index.Add(new S2LaxPolygonShape([[-c, b, a]]));
                     }
                     else if (ch == 'D')
                     {
-                        index.Add(new S2LaxPolygonShape([new() { c, a, b }]));
+                        index.Add(new S2LaxPolygonShape([[c, a, b]]));
                     }
                     else
                     {
@@ -1314,19 +1314,19 @@ public class S2BooleanOperationTests(ITestOutputHelper logger)
                 }
                 else if (ch == 'Q')
                 {  // Union of 'U' and 'D' shapes
-                    index.Add(new S2LaxPolygonShape([new() { a, c, b, -c }]));
+                    index.Add(new S2LaxPolygonShape([[a, c, b, -c]]));
                 }
                 else if (ch == 'H')
                 {  // Sibling pair hole
-                    index.Add(new S2LaxPolygonShape([new() { a, b }, new() { }]));
+                    index.Add(new S2LaxPolygonShape([[a, b], []]));
                 }
                 else if (ch == 'h')
                 {  // Point hole
-                    index.Add(new S2LaxPolygonShape([new() { a }, new() { }]));
+                    index.Add(new S2LaxPolygonShape([[a], []]));
                 }
                 else if (ch == '*')
                 {  // Full sphere
-                    index.Add(new S2LaxPolygonShape([new() { }]));
+                    index.Add(new S2LaxPolygonShape([[]]));
                 }
                 else
                 {
@@ -1859,23 +1859,21 @@ public class S2BooleanOperationTests(ITestOutputHelper logger)
         // as the possible crossing vertices.
         Loops a_loops =
         [
-            new()
-            {
+            [
                 new(-0.38306437985388492, -0.74921955334206214, 0.54030708099846292),
                 new(-0.3830643798552798, -0.74921955334134249, 0.5403070809984718),
                 new(-0.38306437985529124, -0.74921955334136414, 0.54030708099843361),
                 new(-0.38306437985389635, -0.74921955334208379, 0.54030708099842473),
-            },
+            ],
         ];
         Loops b_loops =
         [
-            new()
-            {
+            [
                 new(-0.38306437985390962, -0.74921955334210588, 0.54030708099838465),
                 new(-0.38306437985527797, -0.74921955334134205, 0.54030708099847369),
                 new(-0.38306437985527941, -0.74921955334134405, 0.54030708099847014),
                 new(-0.38306437985391095, -0.74921955334210777, 0.54030708099838098),
-            },
+            ],
         ];
         S2LaxPolygonShape result = new();
         ComputeTestUnion(a_loops, b_loops, S2.kIntersectionMergeRadiusS1Angle,
@@ -1891,8 +1889,7 @@ public class S2BooleanOperationTests(ITestOutputHelper logger)
         // link up the crossings in the correct order.
         Loops a_loops =
         [
-            new()
-            {
+            [
                 new(-0.3837392878495085, -0.7477800800281974, 0.5418201831546835),
                 new(-0.38373928785696076, -0.7477800800212292, 0.54182018315902258),
                 new(-0.38373928785701278, -0.74778008002124685, 0.5418201831589613),
@@ -1911,12 +1908,11 @@ public class S2BooleanOperationTests(ITestOutputHelper logger)
                 new(-0.38373928784641037, -0.7477800800310942, 0.54182018315287972),
                 new(-0.38373928783578648, -0.74778008004093421, 0.54182018314682368),
                 new(-0.383739287835765, -0.74778008004092666, 0.54182018314684921),
-            },
+            ],
         ];
         Loops b_loops =
         [
-            new()
-            {
+            [
                 new(-0.38373923813692823, -0.7477800632164362, 0.54182024156551456),
                 new(-0.3837392878569364, -0.74778008002122087, 0.54182018315905123),
                 new(-0.38373928784640354, -0.74778008003106944, 0.54182018315291858),
@@ -1930,7 +1926,7 @@ public class S2BooleanOperationTests(ITestOutputHelper logger)
                 new(-0.38373923811582744, -0.74778006323616641, 0.54182024155322883),
                 new(-0.38373857650312843, -0.74777983961840766, 0.54182101875399913),
                 new(-0.38373857652422921, -0.74777983959867744, 0.54182101876628486),
-            },
+            ],
         ];
         S2LaxPolygonShape result = new();
         ComputeTestUnion(a_loops, b_loops, S2.kIntersectionMergeRadiusS1Angle,
@@ -1950,21 +1946,19 @@ public class S2BooleanOperationTests(ITestOutputHelper logger)
         // S2.RobustCrossProd() actually robust.
         Loops a_loops =
         [
-            new()
-            {
+            [
                 new(1, 0, 2.4678234835261742e-72),
                 new(0.99984769515639127, 0.017452406437283512, 1.8530922845942552e-27),
                 new(0.99740259703611311, 0.069881849826437858, 0.017452406437283512),
-            },
+            ],
         ];
         Loops b_loops =
         [
-            new()
-            {
+            [
                 new(0.99999999999999989, 2.4674476220564615e-72, 2.4678234835261742e-72),
                 new(0.99999999999999989, 2.8837981406657438e-169, 2.4678234835261742e-72),
                 new(1, 2.8837981406657432e-169, 2.4678234835261742e-72),
-            },
+            ],
         ];
         S2LaxPolygonShape result = new();
         ComputeTestUnion(a_loops, b_loops, S1Angle.Zero, result);
@@ -2218,18 +2212,16 @@ ExpectPolygon(OpType.SYMMETRIC_DIFFERENCE, k6FaceShell1Minus, k6FaceHole1,kFull)
         // have quite the correct test to decide when this was necessary.
         Loops a_loops =
         [
-            new()
-            {
+            [
                 new(0.99984769515639127, 0, 0.017452406437283512),
                 new(0.99923861495548261, 0.017441774902830158, 0.034899496702500969),
                 new(0.99847743863945992, 0.052327985223313139, 0.017452406437283512),
                 new(0.99802119662406841, 0.034851668155187324, 0.052335956242943835),
-            },
+            ],
         ];
         Loops b_loops =
         [
-            new()
-            {
+            [
                 new(0.99802119662406841, 0.034851668155187324, 0.052335956242943835),
                 new(0.99619692339885657, 0.052208468483931986, 0.069756473744125302),
                 new(0.99802098681615425, 0.034839714972148959, 0.052347914334467859),
@@ -2241,14 +2233,13 @@ ExpectPolygon(OpType.SYMMETRIC_DIFFERENCE, k6FaceShell1Minus, k6FaceHole1,kFull)
                 new(0.99984769515639116, 3.3065924905014365e-16, 0.017452406437284504),
                 new(0.99984769515639127, 9.9060035932242025e-16, 0.017452406437284504),
                 new(0.99969541350954794, 0.017449748351250485, 0.017452406437283512),
-            },
-            new()
-            {
+            ],
+            [
                 new(0.99984769515639116, 3.3065924905014365e-16, 0.017452406437284504),
                 new(0.99984769515639116, 3.3006856770496304e-16, 0.017452406437284504),
                 new(0.99984769515639127, 0, 0.017452406437284504),
                 new(0.99984769515639127, 0, 0.017452406437283512),
-            },
+            ],
         ];
         S2LaxPolygonShape result = new();
         ComputeTestUnion(a_loops, b_loops, S1Angle.Zero, result);
@@ -2261,8 +2252,7 @@ ExpectPolygon(OpType.SYMMETRIC_DIFFERENCE, k6FaceShell1Minus, k6FaceHole1,kFull)
         // whether the B subchain contains an interior vertex of the A edge.
         Loops a_loops =
         [
-            new()
-            {
+            [
                 new(0.99870488823558456, 0.026138065586168355, 0.043650289137205818),
                 new(0.99876259434149239, 0.030513215246694664, 0.0392711578586665),
                 new(0.99984769515639127, 0.017452406437283512, 0),
@@ -2276,25 +2266,22 @@ ExpectPolygon(OpType.SYMMETRIC_DIFFERENCE, k6FaceShell1Minus, k6FaceHole1,kFull)
                 new(0.99847674250410212, 0.017444393356200013, 0.052343937746706169),
                 new(0.99847743863945992, 0.017428488520812163, 0.052335956242943835),
                 new(0.99984769515639127, 0, 0.017452406437283512),
-            },
-            new()
-            {
+            ],
+            [
                 new(0.99619692339885657, 0.052208468483931986, 0.069756473744125302),
                 new(0.99802119661969568, 0.034851668280404598, 0.052335956242943835),
                 new(0.9987605225894034, 0.030527121154938986, 0.039313018084772409),
                 new(0.99870321796526884, 0.026161932439896601, 0.043674199670139441),
-            },
-            new()
-            {
+            ],
+            [
                 new(0.99619692339885657, 0.052208468483931986, 0.069756473744125302),
                 new(0.99619692339885657, 0.06966087492121549, 0.052335956242943835),
                 new(0.99513403437078507, 0.069586550480032719, 0.069756473744125302),
-            },
+            ],
         ];
         Loops b_loops =
         [
-            new()
-            {
+            [
                 new(0.99802200429988497, 0.034828499898458924, 0.052335977377554299),
                 new(0.99862953475457383, 0, 0.052335956242943835),
                 new(0.99923793061512223, 0.017455729388178846, 0.034912111530741322),
@@ -2309,9 +2296,8 @@ ExpectPolygon(OpType.SYMMETRIC_DIFFERENCE, k6FaceShell1Minus, k6FaceHole1,kFull)
                 new(0.99862953475457383, 0.052335956242943835, 1.700986599320836e-73),
                 new(0.99838518277004218, 0.038347188759395717, 0.041910857059723181),
                 new(0.99619692339885668, 0.052208468483931979, 0.069756473744125289),
-            },
-            new()
-            {
+            ],
+            [
                 new(0.99802119662406841, 0.052304074592470849, 0.034899496702500969),
                 new(0.99847743834686298, 0.052327990806397578, 0.017452406437283512),
                 new(0.99619645281505653, 0.052208443821680058, 0.069763212314351342),
@@ -2320,7 +2306,7 @@ ExpectPolygon(OpType.SYMMETRIC_DIFFERENCE, k6FaceShell1Minus, k6FaceHole1,kFull)
                 new(0.99619692339885679, 0.052208468483931993, 0.069756473744125316),
                 new(0.99619692339885679, 0.052208468483931986, 0.069756473744125302),
                 new(0.99619692339885668, 0.052208468483931979, 0.069756473744125289),
-            },
+            ],
         ];
         S2LaxPolygonShape result = new();
         ComputeTestUnion(a_loops, b_loops, S1Angle.Zero, result);

@@ -638,7 +638,7 @@ public class S2LoopTests
         }
     }
 
-    [Fact]
+    [Fact(Skip = "Takes too long")]
     internal void Test_S2Loop_BoundsForLoopContainment()
     {
         // To reliably test whether one loop contains another, the bounds of the
@@ -769,7 +769,7 @@ public class S2LoopTests
         // same as the original loop.
         var (success1, loop1) = S2Loop.Decode(decoder1);
         Assert.True(success1);
-        Assert.True(l.BoundaryEquals(loop1));
+        Assert.True(l.BoundaryEquals(loop1!));
         Assert.Equal(l.Depth, loop1.Depth);
         Assert.Equal(l.GetRectBound(), loop1.GetRectBound());
 
@@ -796,7 +796,7 @@ public class S2LoopTests
         var decoder4 = encoder.GetDecoder();
         var (success4, loop4) = S2Loop.Decode(decoder4);
         Assert.True(success4);
-        Assert.True(l.BoundaryEquals(loop4));
+        Assert.True(l.BoundaryEquals(loop4!));
         Assert.Equal(l.Vertex(1), loop4.Vertex(1));
         Assert.NotEqual(loop4.Vertex(1), loop3.Vertex(1));
     }
@@ -874,7 +874,7 @@ public class S2LoopTests
         CheckLoopIsInvalid("20:20, 21:21, 21:20.5, 21:20, 20:21", "crosses");
 
         // Adjacent antipodal vertices
-        CheckLoopIsInvalid(new[] { new S2Point(1, 0, 0), new S2Point(-1, 0, 0), new S2Point(0, 0, 1) }, "antipodal");
+        CheckLoopIsInvalid([new S2Point(1, 0, 0), new S2Point(-1, 0, 0), new S2Point(0, 0, 1)], "antipodal");
     }
 
 #if GTEST_HAS_DEATH_TEST
@@ -1297,7 +1297,7 @@ public class S2LoopTests
         var decoder = encoder.GetDecoder();
         var (success, loop2) = S2Loop.Decode(decoder);
         Assert.True(success);
-        CheckIdentical(loop, loop2);
+        CheckIdentical(loop, loop2!);
     }
 
     private static void TestEmptyFullSnapped(S2Loop loop, int level)

@@ -136,15 +136,14 @@ public readonly record struct Vector3<T>(T X, T Y, T Z) : IComparable<Vector3<T>
     /// <summary>
     /// return the index of the smallest, median ,largest component of the vector
     /// </summary>
-    public int[] ComponentOrder() => new[]
+    public int[] ComponentOrder() => [.. new[]
         {
             (0, X),
             (1, Y),
             (2, Z),
         }
         .OrderBy(t => t.Item2)
-        .Select(t => t.Item1)
-        .ToArray();
+        .Select(t => t.Item1)];
 
     /// <summary>
     /// Compare two vectors, return true if all their components are within a

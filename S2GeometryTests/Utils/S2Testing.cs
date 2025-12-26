@@ -86,7 +86,7 @@ internal static class S2Testing
         internal static string PointsToStr(IEnumerable<S2Point> points)
         {
             return Encoding.ASCII.GetString(
-                points.Select(t => (byte)t[0]).ToArray());
+                [.. points.Select(t => (byte)t[0])]);
         }
     }
 

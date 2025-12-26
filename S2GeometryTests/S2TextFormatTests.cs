@@ -338,8 +338,8 @@ public class S2TextFormatTests
     internal void Test_MakeCellUnion_ValidInput()
     {
         Assert.True(MakeCellUnion("1/3, 4/", out var cellUnion));
-        var expected = new S2CellUnion(new List<S2CellId> {
-                S2CellId.FromFace(1).Child(3), S2CellId.FromFace(4) });
+        var expected = new S2CellUnion([
+                S2CellId.FromFace(1).Child(3), S2CellId.FromFace(4) ]);
         Assert.Equal(cellUnion, expected);
     }
 
@@ -354,12 +354,12 @@ public class S2TextFormatTests
     internal void Test_MakeLoop_ValidInput()
     {
         Assert.True(MakeLoop("-20:150, -20:151, -19:150", out var loop));
-        S2Loop expected = new (new[]
-        {
+        S2Loop expected = new (
+        [
             S2LatLng.FromDegrees(-20, 150).ToPoint(),
             S2LatLng.FromDegrees(-20, 151).ToPoint(),
             S2LatLng.FromDegrees(-19, 150).ToPoint(),
-        });
+        ]);
         Assert.True(loop.BoundaryApproxEquals(expected));
     }
 
@@ -389,11 +389,11 @@ public class S2TextFormatTests
     internal void Test_MakePolyline_ValidInput()
     {
         Assert.True(MakePolyline("-20:150, -20:151, -19:150", out var polyline));
-        var expected = new S2Polyline(new[] {
+        var expected = new S2Polyline([
                 S2LatLng.FromDegrees(-20, 150).ToPoint(),
                 S2LatLng.FromDegrees(-20, 151).ToPoint(),
                 S2LatLng.FromDegrees(-19, 150).ToPoint(),
-            });
+            ]);
         Assert.True(polyline == expected);
     }
 

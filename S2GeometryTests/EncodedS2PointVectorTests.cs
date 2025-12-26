@@ -122,13 +122,14 @@ public class EncodedS2PointVectorTests(ITestOutputHelper logger)
         const int level = 3;
         var points = new S2Point[kBlockSize]
             .Fill(EncodedValueToPoint(0, level));
-        points = new List<S2Point>(points)
-            {
+        points =
+            [
+                .. points,
                 EncodedValueToPoint(0x72, level),
                 EncodedValueToPoint(0x74, level),
                 EncodedValueToPoint(0x75, level),
                 EncodedValueToPoint(0x7e, level)
-            }.ToArray();
+            ];
         TestEncodedS2PointVector(points, CodingHint.COMPACT, 10 + kBlockSize / 2);
     }
 
@@ -150,13 +151,14 @@ public class EncodedS2PointVectorTests(ITestOutputHelper logger)
         const int level = 3;
         var points = new S2Point[kBlockSize]
             .Fill(EncodedValueToPoint(0, level));
-        points = new List<S2Point>(points)
-            {
+        points =
+            [
+                .. points,
                 EncodedValueToPoint(0x78, level),
                 EncodedValueToPoint(0x7a, level),
                 EncodedValueToPoint(0x7c, level),
                 EncodedValueToPoint(0x84, level),
-            }.ToArray();
+            ];
         TestEncodedS2PointVector(points, CodingHint.COMPACT, 10 + kBlockSize / 2);
     }
 
@@ -177,13 +179,14 @@ public class EncodedS2PointVectorTests(ITestOutputHelper logger)
         const int level = 3;
         var points = new S2Point[kBlockSize]
             .Fill(EncodedValueToPoint(0, level));
-        points = new List<S2Point>(points)
-            {
+        points =
+            [
+                .. points,
                 EncodedValueToPoint(0x08, level),
                 EncodedValueToPoint(0x4e, level),
                 EncodedValueToPoint(0x82, level),
                 EncodedValueToPoint(0x104, level),
-            }.ToArray();
+            ];
         TestEncodedS2PointVector(points, CodingHint.COMPACT, 13 + kBlockSize / 2);
     }
 
@@ -228,11 +231,12 @@ public class EncodedS2PointVectorTests(ITestOutputHelper logger)
         const int level = S2.kMaxCellLevel;
         var points = new S2Point[kBlockSize]
             .Fill(S2CellId.Begin(level).ToPoint());
-        points = new List<S2Point>(points)
-            {
+        points =
+            [
+                .. points,
                 S2CellId.End(level).Prev().ToPoint(),
                 S2CellId.End(level).Prev().Prev().ToPoint(),
-            }.ToArray();
+            ];
         TestEncodedS2PointVector(points, CodingHint.COMPACT, 16 + kBlockSize / 2);
     }
 
@@ -242,11 +246,12 @@ public class EncodedS2PointVectorTests(ITestOutputHelper logger)
         // The encoding consists of two blocks; the first contains 16 encodable
         // values, while the second contains two exceptions.
         var points = new S2Point[kBlockSize].Fill(EncodedValueToPoint(0, S2.kMaxCellLevel));
-        points = new List<S2Point>(points)
-            {
+        points =
+            [
+                .. points,
                 new S2Point(0.1, 0.2, 0.3).Normalize(),
                 new S2Point(0.3, 0.2, 0.1).Normalize(),
-            }.ToArray();
+            ];
         // Encoding: header (2 bytes), block count (1 byte), block offsets (2 bytes).
         // 1st block header (1 byte), 16 deltas (16 bytes).
         // 2nd block header (1 byte), 2 deltas (1 byte), 2 exceptions (48 bytes).

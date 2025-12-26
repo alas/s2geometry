@@ -140,20 +140,18 @@ public sealed class S2ShapeIndexRegion<TIndex>(TIndex index) : IS2Region<S2Shape
 
     public S2Cap GetCapBound()
     {
-        var covering = new List<S2CellId>();
-        GetCellUnionBound(covering);
+        var covering = GetCellUnionBound();
         return new S2CellUnion(covering).GetCapBound();
     }
     public S2LatLngRect GetRectBound()
     {
-        var covering = new List<S2CellId>();
-        GetCellUnionBound(covering);
+        var covering = GetCellUnionBound();
         return new S2CellUnion(covering).GetRectBound();
     }
 
     // This method currently returns at most 4 cells, unless the index spans
     // multiple faces in which case it may return up to 6 cells.
-    public void GetCellUnionBound(List<S2CellId> cell_ids)
+    public List<S2CellId> GetCellUnionBound()
     {
         // We find the range of S2Cells spanned by the index and choose a level such
         // that the entire index can be covered with just a few cells.  There are
@@ -176,11 +174,11 @@ public sealed class S2ShapeIndexRegion<TIndex>(TIndex index) : IS2Region<S2Shape
         // The following code uses only a single Iterator object because creating an
         // Iterator may be relatively expensive for some S2ShapeIndex types (e.g.,
         // it may involve memory allocation).
-        cell_ids = new List<S2CellId>().ReserveSpace(6);
+        List<S2CellId> cell_ids = new(6);
 
         // Find the last S2CellId in the index.
         Iter.Finish();
-        if (!Iter.MovePrevious()) return;  // Empty index.
+        if (!Iter.MovePrevious()) return cell_ids;  // Empty index.
 
         var last_index_id = Iter.Id;
         Iter.Reset();
@@ -209,6 +207,8 @@ public sealed class S2ShapeIndexRegion<TIndex>(TIndex index) : IS2Region<S2Shape
             }
         }
         CoverRange(Iter.Id, last_index_id, cell_ids);
+
+        return cell_ids;
     }
 
     // Returns true if "target" is contained by any single shape.  If the cell

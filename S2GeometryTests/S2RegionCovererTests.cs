@@ -272,7 +272,7 @@ public class S2RegionCovererTests(ITestOutputHelper testOutputHelper)
             new S2CellId(S2Testing.RandomPoint()).Parent(level + 2);
         S2CellId large_cell = small_cell.Parent(level);
         S2CellUnion diff =
-            new S2CellUnion(new List<S2CellId> { large_cell }).Difference(new S2CellUnion(new List<S2CellId> { small_cell }));
+            new S2CellUnion([large_cell]).Difference(new S2CellUnion([small_cell]));
         S2RegionCoverer.Options options = new()
         {
             MaxCells = 3,

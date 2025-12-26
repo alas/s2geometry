@@ -1450,7 +1450,7 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
         bool done;
         do
         {
-            children = loop_map.GetOrCreate(parent, () => new List<S2Loop>());
+            children = loop_map.GetOrCreate(parent, () => []);
             done = true;
             foreach (var child in children)
             {
@@ -1465,7 +1465,7 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
 
         // Some of the children of the parent loop may now be children of
         // the new loop.
-        var new_children = loop_map.GetOrCreate(new_loop, () => new List<S2Loop>());
+        var new_children = loop_map.GetOrCreate(new_loop, () => []);
         for (var i = 0; i < children.Count;)
         {
             var child = children[i];
@@ -1628,7 +1628,7 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
                     // move, and so that nearby interior edges are snapped to them.
                     MyDebug.Assert(!in_interior);
                     builder.ForceVertex(v1);
-                    polylines.Add(new S2Polyline(new S2Point[] { v0, v1 }));
+                    polylines.Add(new S2Polyline([v0, v1]));
                 }
                 else
                 {
@@ -1739,9 +1739,9 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
         return bound_.GetCapBound();
     }
     public S2LatLngRect GetRectBound() { return bound_; }
-    public void GetCellUnionBound(List<S2CellId> cell_ids)
+    public List<S2CellId> GetCellUnionBound()
     {
-        Index.MakeS2ShapeIndexRegion().GetCellUnionBound(cell_ids);
+        return Index.MakeS2ShapeIndexRegion().GetCellUnionBound();
     }
 
     public bool Contains(S2Cell cell)
@@ -1844,10 +1844,10 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
         // The compressed encoding requires approximately 4 bytes per vertex plus
         // "exact_point_size" for each unsnapped vertex (encoded as an S2Point plus
         // the index at which it is located).
-        var exact_point_size = SizeHelper.SizeOf(typeof(S2Point)) + 2;
+        var exact_point_size = SizeHelper.SizeOf<S2Point>() + 2;
         var num_unsnapped = NumVertices - num_snapped;
         var compressed_size = 4 * NumVertices + exact_point_size * num_unsnapped;
-        var lossless_size = SizeHelper.SizeOf(typeof(S2Point)) * NumVertices;
+        var lossless_size = SizeHelper.SizeOf<S2Point>() * NumVertices;
         if (compressed_size < lossless_size)
         {
             EncodeCompressed(encoder, all_vertices, snap_level);
@@ -2085,10 +2085,10 @@ public sealed record class S2Polygon : IS2Region<S2Polygon>, IDecoder<S2Polygon>
                 }
                 for (var i = 0; i < num_loops; ++i)
                 {
-                    if (loop_starts_ is not null) loop_starts_[i] = offset;
+                    loop_starts_?[i] = offset;
                     offset += polygon.Loop(i).NumVertices;
                 }
-                if (loop_starts_ is not null) loop_starts_[num_loops] = offset;
+                loop_starts_?[num_loops] = offset;
             }
         }
 

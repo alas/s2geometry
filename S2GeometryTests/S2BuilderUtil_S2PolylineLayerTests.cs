@@ -170,8 +170,7 @@ public class S2BuilderUtil_S2PolylineLayerTests
         builder.AddPolyline(MakePolylineOrDie(polyline_str));
         Assert.True(builder.Build(out _));
         Assert.Equal(1, index.NumShapeIds());
-        S2Polyline polyline = ((S2Polyline.Shape)
-            index.Shape(0)).Polyline;
+        S2Polyline polyline = ((S2Polyline.Shape)index.Shape(0)!).Polyline;
         Assert.Equal(polyline_str, polyline.ToDebugString());
     }
 
@@ -206,7 +205,7 @@ public class S2BuilderUtil_S2PolylineLayerTests
 
     // Convenience function that tests both directed and undirected edges.
     private static void TestS2Polyline(string[] input_strs,
-        string expected_str, Options options = null)
+        string expected_str, Options? options = null)
     {
         options ??= new Options();
         TestS2Polyline(input_strs, expected_str, EdgeType.DIRECTED, options);

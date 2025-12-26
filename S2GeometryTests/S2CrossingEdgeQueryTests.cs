@@ -175,7 +175,7 @@ public class S2CrossingEdgeQueryTests(ITestOutputHelper logger)
             MutableS2ShapeIndex index =
             [
                 new S2Polyline.OwningShape(
-                    new S2Polyline(new S2Point[] { b, c })),
+                    new S2Polyline([b, c])),
             ];
 
             // Check that the intersection between AB and BC is detected when the face
@@ -184,7 +184,7 @@ public class S2CrossingEdgeQueryTests(ITestOutputHelper logger)
             // returns true.)
             S2CrossingEdgeQuery query = new(index);
             S2PaddedCell root = new(S2CellId.FromFace(b_face), 0);
-            Assert.False(query.VisitCells(a, b, root, (S2ShapeIndexCell x) => false));
+            Assert.False(query.VisitCells(a, b, root, x => false));
         }
     }
 
@@ -358,7 +358,7 @@ public class S2CrossingEdgeQueryTests(ITestOutputHelper logger)
         // Also test that no edges are missing.
         for (int i = 0; i < index.NumShapeIds(); ++i)
         {
-            var shape = (S2Polyline.Shape)index.Shape(i);
+            var shape = (S2Polyline.Shape)index.Shape(i)!;
             var polyline = shape.Polyline;
             for (int e = 0; e < polyline.NumVertices() - 1; ++e)
             {

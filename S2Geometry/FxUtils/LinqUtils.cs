@@ -40,7 +40,7 @@ public static class LinqUtils
 
     public static IList<T> Fill<T>(this IList<T> arr, T value, int count)
     {
-        for (int i = 0; i < count; i++)
+        for (int i = arr.Count; i < count; i++)
         {
             arr.Add(value);
         }
@@ -49,16 +49,16 @@ public static class LinqUtils
 
     public static List<T> Fill<T>(this List<T> arr, Func<T> getNewValue, int count)
     {
-        for (int i = 0; i < count; i++)
+        for (int i = arr.Count; i < count; i++)
         {
             arr.Add(getNewValue());
         }
         return arr;
     }
 
-    public static List<T> ReserveSpace<T>(this List<T> arr, int count)
+    public static List<T> ReserveSpace<T>(this List<T> arr, int count) where T : struct
     {
-        for (int i = 0; i < count; i++)
+        for (int i = arr.Count; i < count; i++)
         {
             arr.Add(default);
         }
@@ -462,11 +462,22 @@ public static class LinqUtils
     /// <summary>
     /// https://stackoverflow.com/questions/16192906/net-dictionary-get-or-create-new
     /// </summary>
-    public static TValue GetOrCreate<TKey, TValue>(this IDictionary<TKey, TValue> dict, TKey key, Func<TValue>? createNew = null)
+    public static TValue GetOrCreate<TKey, TValue>(this IDictionary<TKey, TValue> dict, TKey key, Func<TValue> createNew) where TValue : class
     {
         if (!dict.TryGetValue(key, out var val))
         {
-            val = createNew is not null ? createNew() : default;
+            val = createNew();
+            dict.Add(key, val);
+        }
+
+        return val!;
+    }
+
+    public static TValue GetOrCreate<TKey, TValue>(this IDictionary<TKey, TValue> dict, TKey key) where TValue : struct
+    {
+        if (!dict.TryGetValue(key, out var val))
+        {
+            val = default;
             dict.Add(key, val);
         }
 

@@ -153,7 +153,7 @@ public class S2BuilderUtil_LaxPolylineLayerTests
         builder.SetLabel(11);
         builder.AddShape(MakeLaxPolylineOrDie("0:6, 0:5"));
         Assert.True(builder.Build(out S2Error error));
-        List<List<int>> expected = [new() { 5 }, new() { 5 }, new() { 5, 7 }, new() { }, new() { }, new() { 11 }];
+        List<List<int>> expected = [[5], [5], [5, 7], [], [], [11]];
         Assert.Equal(expected.Count, label_set_ids.Count);
         for (int i = 0; i < expected.Count; ++i)
         {
@@ -188,7 +188,7 @@ public class S2BuilderUtil_LaxPolylineLayerTests
         builder.AddShape(MakeLaxPolylineOrDie(polyline_str));
         Assert.True(builder.Build(out S2Error error));
         Assert.Equal(1, index.NumShapeIds());
-        S2LaxPolylineShape polyline = (S2LaxPolylineShape)index.Shape(0);
+        S2LaxPolylineShape polyline = (S2LaxPolylineShape)index.Shape(0)!;
         Assert.Equal(polyline_str, S2TextFormat.ToDebugString(polyline));
     }
 

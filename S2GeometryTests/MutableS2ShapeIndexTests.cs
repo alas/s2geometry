@@ -394,13 +394,13 @@ public class MutableS2ShapeIndexTests
         // Verify move construction moves the id value.
         S2LaxPolylineShape c=new(a);
         Assert.Equal(c.Id, 1);
-        Assert.Equal(c, MakeLaxPolylineOrDie("3:3, 4:4"));
+        S2ShapeUtil_Testing.ExpectEqual(c, MakeLaxPolylineOrDie("3:3, 4:4"));
 
         // Verify move assignment moves the id value.
         S2LaxPolylineShape d;
         d = b;
         Assert.Equal(d.Id, 2);
-        Assert.Equal(d, MakeLaxPolylineOrDie("5:5, 6:6"));
+        S2ShapeUtil_Testing.ExpectEqual(d, MakeLaxPolylineOrDie("5:5, 6:6"));
     }
 
     // NOTE(ericv): The tests below are all somewhat fragile since they depend on

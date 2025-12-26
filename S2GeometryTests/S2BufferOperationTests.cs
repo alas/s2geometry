@@ -54,33 +54,32 @@ public class S2BufferOperationTests(ITestOutputHelper logger)
 
     [Fact]
     internal void Test_S2BufferOperation_NoInput() =>
-        TestBufferEmpty((S2BufferOperation op) => { });
+        TestBufferEmpty(op => { });
 
     [Fact]
     internal void Test_S2BufferOperation_EmptyPolyline() =>
         // Note that polylines with 1 vertex are defined to have no edges.
-        TestBufferEmpty((S2BufferOperation op) =>
-            op.AddPolyline(new List<S2Point>() { new(1, 0, 0) }));
+        TestBufferEmpty(op => op.AddPolyline(new List<S2Point>() { new(1, 0, 0) }));
 
     [Fact]
     internal void Test_S2BufferOperation_EmptyLoop() =>
-        TestBufferEmpty((S2BufferOperation op) => op.AddLoop([]));
+        TestBufferEmpty(op => op.AddLoop([]));
 
     [Fact]
     internal void Test_S2BufferOperation_EmptyPointShape() =>
-        TestBufferEmpty((S2BufferOperation op) => op.AddShape(new S2PointVectorShape()));
+        TestBufferEmpty(op => op.AddShape(new S2PointVectorShape()));
 
     [Fact]
     internal void Test_S2BufferOperation_EmptyPolylineShape() =>
-        TestBufferEmpty((S2BufferOperation op) => { op.AddShape(MakeLaxPolylineOrDie("")); });
+        TestBufferEmpty(op => { op.AddShape(MakeLaxPolylineOrDie("")); });
 
     [Fact]
     internal void Test_S2BufferOperation_EmptyPolygonShape() =>
-        TestBufferEmpty((S2BufferOperation op) => op.AddShape(MakeLaxPolygonOrDie("")));
+        TestBufferEmpty(op => op.AddShape(MakeLaxPolygonOrDie("")));
 
     [Fact]
     internal void Test_S2BufferOperation_EmptyShapeIndex() =>
-        TestBufferEmpty((S2BufferOperation op) => op.AddShapeIndex(MakeIndexOrDie("# #")));
+        TestBufferEmpty(op => op.AddShapeIndex(MakeIndexOrDie("# #")));
 
     [Fact]
     internal void Test_S2BufferOperation_Options()
@@ -100,7 +99,7 @@ public class S2BufferOperationTests(ITestOutputHelper logger)
         //
         // The purpose of this test is not to check that the result is correct
         // (which is done elsewhere), simply that no assertions occur.
-        DoBuffer((S2BufferOperation op) =>
+        DoBuffer(op =>
         {
             S2Point p = new(1 - 2 * S2.DoubleEpsilon, 0, 0);  // Maximum error allowed.
             Assert.True(p.IsUnitLength());
@@ -123,18 +122,17 @@ public class S2BufferOperationTests(ITestOutputHelper logger)
 
     [Fact]
     internal void Test_S2BufferOperation_FullPolygonShape() =>
-        TestBufferFull((S2BufferOperation op) => op.AddShape(MakeLaxPolygonOrDie("full")));
+        TestBufferFull(op => op.AddShape(MakeLaxPolygonOrDie("full")));
 
     [Fact]
     internal void Test_S2BufferOperation_FullShapeIndex() =>
-        TestBufferFull((S2BufferOperation op) => op.AddShapeIndex(MakeIndexOrDie("# # full")));
+        TestBufferFull(op => op.AddShapeIndex(MakeIndexOrDie("# # full")));
 
     [Fact]
     internal void Test_S2BufferOperation_PointsAndPolylinesAreRemoved()
     {
         // Test that points and polylines are removed with a negative buffer radius.
-        var output = DoBuffer((S2BufferOperation op) =>
-            op.AddShapeIndex(MakeIndexOrDie("0:0 # 2:2, 2:3#")), S1Angle.FromDegrees(-1), 0.1);
+        var output = DoBuffer(op => op.AddShapeIndex(MakeIndexOrDie("0:0 # 2:2, 2:3#")), S1Angle.FromDegrees(-1), 0.1);
         Assert.True(output.IsEmpty());
     }
 
@@ -143,8 +141,7 @@ public class S2BufferOperationTests(ITestOutputHelper logger)
     {
         // Test that points are buffered into regular polygons.  (This is not
         // guaranteed by the API but makes the output nicer to look at. :)
-        var output = DoBuffer((S2BufferOperation op) =>
-            op.AddPoint(new S2Point(1, 0, 0)), S1Angle.FromDegrees(5), 0.001234567);
+        var output = DoBuffer(op => op.AddPoint(new S2Point(1, 0, 0)), S1Angle.FromDegrees(5), 0.001234567);
 
         // We use the length of the last edge as our reference length.
         int n = output.NumVertices;
@@ -169,7 +166,7 @@ public class S2BufferOperationTests(ITestOutputHelper logger)
         {
             options.CircleSegments = circle_segments;
             Assert.Equal(circle_segments, options.CircleSegments);
-            var output = DoBuffer((S2BufferOperation op) =>
+            var output = DoBuffer(op =>
             {
                 op.AddPoint(new S2Point(1, 0, 0));
             }, options);
@@ -186,8 +183,7 @@ public class S2BufferOperationTests(ITestOutputHelper logger)
         {
             SnapFunction_ = new IntLatLngSnapFunction(0),
         };
-        var output = DoBuffer((S2BufferOperation op) =>
-            op.AddPoint(MakePointOrDie("0.1:-0.4")), options);
+        var output = DoBuffer(op => op.AddPoint(MakePointOrDie("0.1:-0.4")), options);
         Assert.Equal(output.NumVertices, 1);
         Assert.Equal(output.LoopVertex(0, 0), MakePointOrDie("0:0"));
     }
@@ -354,7 +350,7 @@ public class S2BufferOperationTests(ITestOutputHelper logger)
         };
         MutableS2ShapeIndex output =
         [
-            DoBuffer((S2BufferOperation op) => op.AddShapeIndex(input), options)
+            DoBuffer(op => op.AddShapeIndex(input), options)
         ];
 
         _logger.WriteLine(@$"
@@ -446,7 +442,7 @@ output = {S2TextFormat.ToDebugString(output)}");
         // Buffering by this amount or more is guaranteed to yield the full polygon.
         // (Note that the bound is not tight for S2CellIds at low levels.)
         S1Angle full_radius = S1Angle.FromRadians(0.5 * S2.kMaxDiag.GetValue(kLevel));
-        Assert.True(DoBuffer((S2BufferOperation op) =>
+        Assert.True(DoBuffer(op =>
         {
             op.AddShape(new S2LaxClosedPolylineShape(pointsArr));
         }, full_radius, 0.1).IsFull());
@@ -537,7 +533,7 @@ output = {S2TextFormat.ToDebugString(output)}");
 
             MutableS2ShapeIndex input = [MakeLaxPolylineOrDie(input_str)];
             output_.Add(DoBuffer(
-                (S2BufferOperation op) => op.AddShapeIndex(input), options));
+                op => op.AddShapeIndex(input), options));
 
             // Even with one-sided buffering and flat end caps the Hausdorff distance
             // criterion should still be true.  (This checks that the buffered result

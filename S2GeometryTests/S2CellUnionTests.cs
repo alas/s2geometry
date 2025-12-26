@@ -16,7 +16,7 @@ public class S2CellUnionTests(ITestOutputHelper logger)
     internal void Test_S2CellUnion_S2CellIdConstructor()
     {
         var face1_id = S2CellId.FromFace(1);
-        S2CellUnion face1_union = new(new List<S2CellId> { face1_id });
+        S2CellUnion face1_union = new([face1_id]);
         Assert.Equal(1, face1_union.Size());
         Assert.Equal(face1_id, face1_union.CellId(0));
     }
@@ -332,13 +332,13 @@ public class S2CellUnionTests(ITestOutputHelper logger)
         S2CellId initial_id = S2CellId.FromFace(3);
 
         // Test an empty range before the minimum S2CellId.
-        S2CellUnion cell_union = new(new List<S2CellId> { initial_id });
+        S2CellUnion cell_union = new([initial_id]);
         S2CellId id_begin = S2CellId.Begin(S2.kMaxCellLevel);
         cell_union.InitFromBeginEnd(id_begin, id_begin);
         Assert.True(cell_union.IsEmpty());
 
         // Test an empty range after the maximum S2CellId.
-        cell_union = new S2CellUnion(new List<S2CellId> { initial_id });
+        cell_union = new S2CellUnion([initial_id]);
         S2CellId id_end = S2CellId.End(S2.kMaxCellLevel);
         cell_union.InitFromBeginEnd(id_end, id_end);
         Assert.True(cell_union.IsEmpty());
@@ -382,7 +382,7 @@ public class S2CellUnionTests(ITestOutputHelper logger)
     {
         S2CellUnion empty_cell_union = new();
         S2CellId face1_id = S2CellId.FromFace(1);
-        S2CellUnion non_empty_cell_union = new(new List<S2CellId> { face1_id });
+        S2CellUnion non_empty_cell_union = new([face1_id]);
 
         // Contains(...)
         Assert.False(empty_cell_union.Contains(face1_id));
@@ -432,7 +432,7 @@ public class S2CellUnionTests(ITestOutputHelper logger)
     internal void Test_S2CellUnion_Clear()
     {
         S2CellId face1_id = S2CellId.FromFace(1);
-        S2CellUnion face1_union = new(new List<S2CellId> { face1_id });
+        S2CellUnion face1_union = new([face1_id]);
 
         Assert.Equal(1, face1_union.Size());
         Assert.True(1 == face1_union.CellIds.Count);
@@ -466,7 +466,7 @@ public class S2CellUnionTests(ITestOutputHelper logger)
     internal void Test_S2CellUnion_Release()
     {
         S2CellId face1_id = S2CellId.FromFace(1);
-        S2CellUnion face1_union = new(new List<S2CellId> { face1_id });
+        S2CellUnion face1_union = new([face1_id]);
         Assert.Equal(1, face1_union.Size());
         Assert.Equal(face1_id, face1_union.CellId(0));
 
@@ -532,7 +532,7 @@ public class S2CellUnionTests(ITestOutputHelper logger)
     [Fact]
     internal void Test_S2CellUnion_ToStringOneCell()
     {
-        Assert.Equal(new S2CellUnion(new List<S2CellId> { S2CellId.FromFace(1)}).ToString(),
+        Assert.Equal(new S2CellUnion([S2CellId.FromFace(1)]).ToString(),
             "Size:1 S2CellIds:3");
     }
 
@@ -540,7 +540,7 @@ public class S2CellUnionTests(ITestOutputHelper logger)
     internal void Test_S2CellUnion_ToStringTwoCells()
     {
         Assert.Equal(
-            new S2CellUnion(new List<S2CellId> { S2CellId.FromFace(1), S2CellId.FromFace(2)}).ToString(),
+            new S2CellUnion([S2CellId.FromFace(1), S2CellId.FromFace(2)]).ToString(),
             "Size:2 S2CellIds:3,5");
     }
 
@@ -548,7 +548,7 @@ public class S2CellUnionTests(ITestOutputHelper logger)
     internal void Test_S2CellUnion_ToStringOver500Cells()
     {
         List<S2CellId> ids=[];
-        new S2CellUnion(new List<S2CellId> { S2CellId.FromFace(1)}).Denormalize(6, 1, ids);  // 4096 cells
+        new S2CellUnion([S2CellId.FromFace(1)]).Denormalize(6, 1, ids);  // 4096 cells
         var result = S2CellUnion.FromVerbatim(ids).ToString();
         Assert.Equal(result.Count(t => t == ','), 500);
         Assert.Equal(result[^4..], ",...");
@@ -558,7 +558,7 @@ public class S2CellUnionTests(ITestOutputHelper logger)
     internal void Test_S2CellUnion_IntersectionOneInputNormalized()
     {
         S2CellId id = S2CellId.FromFace(3);  // arbitrary
-        S2CellUnion parent=new(new List<S2CellId> { id });
+        S2CellUnion parent=new([id]);
         S2CellUnion children = S2CellUnion.FromVerbatim(
           [id.Child(0), id.Child(1), id.Child(2), id.Child(3)]);
         S2CellUnion intersection = parent.Intersection(children);

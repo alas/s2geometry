@@ -209,8 +209,8 @@ public class S2BuilderUtil_S2PolylineVectorLayerTests
         builder.AddPolyline(MakePolylineOrDie(polyline1_str));
         Assert.True(builder.Build(out _));
         Assert.Equal(2, index.NumShapeIds());
-        var polyline0 = ((S2Polyline.Shape)index.Shape(0)).Polyline;
-        var polyline1 = ((S2Polyline.Shape)index.Shape(1)).Polyline;
+        var polyline0 = ((S2Polyline.Shape)index.Shape(0)!).Polyline;
+        var polyline1 = ((S2Polyline.Shape)index.Shape(1)!).Polyline;
         Assert.Equal(polyline0_str, polyline0.ToDebugString());
         Assert.Equal(polyline1_str, polyline1.ToDebugString());
     }

@@ -79,6 +79,7 @@ namespace S2Geometry;
 
 using System;
 using System.Runtime.InteropServices;
+using System.Threading;
 using ShapeEdgeId = S2ShapeUtil.ShapeEdgeId;
 
 public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
@@ -277,7 +278,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
     // make this class thread-safe in general, but simply to hide the fact that
     // we defer some of the indexing work until query time.
     private int _channelPendingOperations = 0;
-    private readonly object _channelLock = new();
+    private readonly Lock _channelLock = new();
 
     private readonly S2MemoryTracker.Client mem_tracker_ = new();
 
@@ -619,15 +620,15 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
     public override int SpaceUsed()
     {
         var size = SizeHelper.SizeOf(this);
-        size += NumShapeIds() * SizeHelper.SizeOf(typeof(S2Shape));
+        size += NumShapeIds() * SizeHelper.SizeOf<S2Shape>();
         // cell_map_ itself is already included in sizeof(*this).
         size += cell_map_.Count - SizeHelper.SizeOf(cell_map_);
-        size += cell_map_.Count * SizeHelper.SizeOf(typeof(S2ShapeIndexCell));
+        size += cell_map_.Count * SizeHelper.SizeOf<S2ShapeIndexCell>();
         MutableS2ShapeIndex.Enumerator it_;
         for (it_ = new(this, InitialPosition.BEGIN); !it_.Done(); it_.MoveNext())
         {
             var cell = it_.Cell;
-            size += cell!.NumClipped() * SizeHelper.SizeOf(typeof(S2ClippedShape));
+            size += cell!.NumClipped() * SizeHelper.SizeOf<S2ClippedShape>();
             for (var s = 0; s < cell.NumClipped(); ++s)
             {
                 var clipped = cell.Clipped(s);
@@ -637,11 +638,11 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         if (pending_removals_ is not null)
         {
             size += Marshal.SizeOf(pending_removals_);
-            size += pending_removals_.Count * Marshal.SizeOf(typeof(RemovedShape));
+            size += pending_removals_.Count * Marshal.SizeOf<RemovedShape>();
 
             foreach (var removed in pending_removals_)
             {
-                size += removed.Edges.Capacity * Marshal.SizeOf(typeof(S2Shape.Edge));
+                size += removed.Edges.Capacity * Marshal.SizeOf<S2Shape.Edge>();
             }
         }
 
@@ -769,7 +770,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
                 {
                     MyDebug.Assert(mem_tracker_.ClientUsageBytes == SpaceUsed(), "Invariant.");
                 }
-                Array6<List<FaceEdge>> all_edges = new(() => new());
+                Array6<List<FaceEdge>> all_edges = new(() => []);
 
                 ReserveSpace(ref batch, all_edges);
                 if (!mem_tracker_.Ok())
@@ -880,7 +881,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
     {
         // The following accounts for the temporary space needed for everything
         // except the FaceEdge vectors (which are allocated separately below).
-        long other_usage = batch.NumEdges * (kTmpBytesPerEdge - Marshal.SizeOf(typeof(FaceEdge)));
+        long other_usage = batch.NumEdges * (kTmpBytesPerEdge - Marshal.SizeOf<FaceEdge>());
 
         // If the number of edges is relatively small, then the fastest approach is
         // to simply reserve space on every face for the maximum possible number of
@@ -892,7 +893,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         long kMaxCheapBytes =
             Math.Min(s2shape_index_tmp_memory_budget / 2,
                 30L << 20 /*30 MB*/);
-        long face_edge_usage = batch.NumEdges * 6 * Marshal.SizeOf(typeof(FaceEdge));
+        long face_edge_usage = batch.NumEdges * 6 * Marshal.SizeOf<FaceEdge>();
         if (face_edge_usage <= kMaxCheapBytes)
         {
             if (!mem_tracker_.TallyTemp(face_edge_usage + other_usage))
@@ -983,7 +984,7 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         {
             if (face_count[face] != 0) multiplier += kMaxSemiWidth;
         }
-        face_edge_usage = Convert.ToInt32(multiplier * batch.NumEdges * Marshal.SizeOf(typeof(FaceEdge)));
+        face_edge_usage = Convert.ToInt32(multiplier * batch.NumEdges * Marshal.SizeOf<FaceEdge>());
         if (!mem_tracker_.TallyTemp(face_edge_usage + other_usage))
         {
             return;
@@ -1058,9 +1059,9 @@ public sealed class MutableS2ShapeIndex : S2ShapeIndex, IDisposable
         {
             var new_usage = Convert.ToInt64(
                 SpaceUsed() - mem_tracker_.ClientUsageBytes +
-                0.1 * shape!.NumEdges() * (1.5 * Marshal.SizeOf(typeof(S2ShapeIndexCell)) + //cell_map_.value_type
-                                            Marshal.SizeOf(typeof(S2ShapeIndexCell)) +
-                                            Marshal.SizeOf(typeof(S2ClippedShape))));
+                0.1 * shape!.NumEdges() * (1.5 * Marshal.SizeOf<S2ShapeIndexCell>() + //cell_map_.value_type
+                                            Marshal.SizeOf<S2ShapeIndexCell>() +
+                                            Marshal.SizeOf<S2ClippedShape>()));
             if (!mem_tracker_.TallyTemp(new_usage)) return;
         }
 

@@ -156,7 +156,7 @@ public class S2MinDistanceTargetsTests
         var cellid1 = new S2CellId(MakePointOrDie("1:1"));
         var cellid2 = new S2CellId(MakePointOrDie("7:7"));
         var target1 = new S2MinDistanceCellUnionTarget(new S2CellUnion(
-            new List<S2CellId>{ cellid1, cellid2}));
+            [cellid1, cellid2]));
         Assert.True(IsSubsetOfSize(GetContainingShapes(target1, index, 1),
                                    [2, 3, 4], 1));
         Assert.Equal([2, 3, 4], GetContainingShapes(target1, index, 5));
@@ -212,7 +212,7 @@ public class S2MinDistanceTargetsTests
     {
         var shape_ids = new SortedSet<Int32>();
         target.VisitContainingShapes(
-            index, (S2Shape containing_shape, S2Point target_point) => {
+            index, (containing_shape, target_point) => {
                 shape_ids.Add(containing_shape.Id);
                 return shape_ids.Count < max_shapes;
             });

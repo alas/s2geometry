@@ -248,7 +248,7 @@ public class S2ShapeNestingQueryTests
         // We should be able to override the default datum shell strategy.
         S2ShapeNestingQuery.Options options = new()
         {
-            DatumStrategy = (S2Shape s) => 1
+            DatumStrategy = s => 1
         };
         S2ShapeNestingQuery query = new(index, options);
 

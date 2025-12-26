@@ -617,7 +617,7 @@ public class S2BooleanOperation
 
                     // Add a predicate that decides whether a result with no polygon edges should
                     // be interpreted as the empty polygon or the full polygon.
-                    builder.AddIsFullPolygonPredicate((Graph g, out S2Error error) => IsFullPolygonResult(/*g,*/ out error, op, builderOptions));
+                    builder.AddIsFullPolygonPredicate((g, out error) => IsFullPolygonResult(/*g,*/ out error, op, builderOptions));
                     BuildOpType(op.OpType_, op, builder);
 
                     // Release memory that is no longer needed.
@@ -1875,7 +1875,7 @@ public class S2BooleanOperation
         private bool ProcessIncidentEdges(ShapeEdge a, S2ContainsPointQuery<S2ShapeIndex> query, CrossingProcessor cp, S2Builder? builder)
         {
             tmp_crossings_.Clear();
-            query.VisitIncidentEdges(a.V0, (ShapeEdge b) => AddIndexCrossing(a, b, false /*is_interior*/, tmp_crossings_, builder));
+            query.VisitIncidentEdges(a.V0, b => AddIndexCrossing(a, b, false /*is_interior*/, tmp_crossings_, builder));
             // Fast path for the common case where there are no incident edges.  We
             // return false (terminating early) if the first chain edge will be emitted.
             if (tmp_crossings_.Count==0)
@@ -1950,7 +1950,7 @@ public class S2BooleanOperation
                 // returned the sign (+1 or -1) of the interior crossing, i.e.
                 // "int interior_crossing_sign" rather than "bool is_interior".
                 if (!S2ShapeUtil.EdgePairs.VisitCrossingEdgePairs(op.regions_[0], op.regions_[1], CrossingType.ALL,
-                    (ShapeEdge a, ShapeEdge b, bool is_interior) =>
+                    (a, b, is_interior) =>
                     {
                         // For all supported operations (union, intersection, and
                         // difference), if the input edges have an interior crossing
@@ -2984,7 +2984,7 @@ public class EdgeClippingLayer(
         // GetInputEdgeChainOrder() but this does not affect peak memory usage.
         long tmp_bytes = g.NumEdges * (sizeof(EdgeId) + sizeof(int)) +
                           g.NumVertices * 2 * sizeof(EdgeId);
-        long final_bytes = g.NumEdges * (Marshal.SizeOf(typeof(Edge)) +
+        long final_bytes = g.NumEdges * (Marshal.SizeOf<ShapeEdgeId>() +
                                              sizeof(InputEdgeIdSetId));
 
         // The order of the calls below is important.  Note that all memory tracked

@@ -10,4 +10,13 @@ dotnet_diagnostic.IDE0055.severity = none
 dotnet_diagnostic.xUnit2000.severity = none
 
 # CS8602: Dereference of a possibly null reference.
-dotnet_diagnostic.CS8602.severity = silent
+dotnet_diagnostic.CS8602.severity = none
+
+# IDE0160: Convert to block scoped namespace
+dotnet_diagnostic.IDE0160.severity = none
+
+# IDE0130: Namespace does not match folder structure
+dotnet_diagnostic.IDE0130.severity = none
+
+# CA1861: Avoid constant arrays as arguments
+dotnet_diagnostic.CA1861.severity = none

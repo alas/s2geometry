@@ -103,14 +103,14 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
     //
     // The loop may be safely encoded lossily (e.g. by snapping it to an S2Cell
     // center) as long as its position does not move by 90 degrees or more.
-    public static S2Loop KEmpty => new(new S2Point[] { kEmptyVertex });
+    public static S2Loop KEmpty => new([kEmptyVertex]);
 
     // A special vertex chain of length 1 that creates a full loop (i.e., a loop
     // with no edges that contains all points).  See kEmpty() for details.
-    public static S2Loop KFull => new(new S2Point[] { kFullVertex });
+    public static S2Loop KFull => new([kFullVertex]);
 
     // Aux key for Dictionaries
-    public static S2Loop NullLoop() => new(new S2Point[] { S2Point.Empty }, S2Debug.DISABLE);
+    public static S2Loop NullLoop() => new([S2Point.Empty], S2Debug.DISABLE);
 
     // Allows overriding the automatic validity checks controlled by the
     // --s2debug flag.  If this flag is true, then loops are automatically
@@ -165,7 +165,7 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
         S2DebugOverride = override_;
         ClearIndex();
         NumVertices = vertices.Count();
-        Vertices = vertices.ToArray();
+        Vertices = [.. vertices];
         InitOriginAndBound();
         InitFirstLogicalVertex();
     }
@@ -705,7 +705,7 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
     public int SpaceUsed()
     {
         int size = Marshal.SizeOf(this);
-        size += NumVertices * SizeHelper.SizeOf(typeof(S2Point));
+        size += NumVertices * SizeHelper.SizeOf<S2Point>();
         // index_ itself is already included in sizeof(*this).
         size += _index.SpaceUsed() - Marshal.SizeOf(_index);
         return size;
@@ -1028,7 +1028,7 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
         encoder.Ensure(Encoder.kVarintMax32);
         encoder.PutVarUInt32((uint)NumVertices);
 
-        S2PointCompression.S2EncodePointsCompressed(vertices.Skip(offset).Take(NumVertices).ToArray(), snap_level, encoder);
+        S2PointCompression.S2EncodePointsCompressed([.. vertices.Skip(offset).Take(NumVertices)], snap_level, encoder);
 
         var properties = GetCompressedEncodingProperties();
 
@@ -1496,7 +1496,7 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
     //           can be enlarged as necessary by calling Ensure(int).
     public void Encode(Encoder encoder, CodingHint hint = CodingHint.COMPACT)
     {
-        encoder.Ensure(NumVertices * SizeHelper.SizeOf(typeof(S2Point)) + 20);  // sufficient
+        encoder.Ensure(NumVertices * SizeHelper.SizeOf<S2Point>() + 20);  // sufficient
 
         encoder.Put8(S2.kCurrentLosslessEncodingVersionNumber);
         encoder.Put32(NumVertices);
@@ -1530,7 +1530,7 @@ public sealed record class S2Loop : IS2Region<S2Loop>, IComparable<S2Loop>, IDec
             return (false, null);
         }
 
-        var pvSize = SizeHelper.SizeOf(typeof(S2Point));
+        var pvSize = SizeHelper.SizeOf<S2Point>();
 
         if (decoder.Avail() < (num_vertices * pvSize + sizeof(byte) + sizeof(uint)))
         {

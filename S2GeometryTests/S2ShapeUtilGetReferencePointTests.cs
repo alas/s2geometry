@@ -47,7 +47,7 @@ public class S2ShapeUtilGetReferencePointTests
             // First we construct a long convoluted edge chain that follows the
             // S2CellId Hilbert curve.  At some random point along the curve, we
             // insert a small triangular loop.
-            List<List<S2Point>> loops = new(1) { new() };
+            List<List<S2Point>> loops = [new()];
             var loop = loops[0];
             int num_vertices = 100;
             var start = S2Testing.GetRandomCellId(S2.kMaxCellLevel - 1);

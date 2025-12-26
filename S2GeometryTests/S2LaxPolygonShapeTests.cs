@@ -40,7 +40,7 @@ public class S2LaxPolygonShapeTests(ITestOutputHelper logger)
         List<int> edge_ids=new(count);
         LinqUtils.Iota(edge_ids, 0, count);
         var mt = new PseudoRandom.MersenneTwister();
-        edge_ids = edge_ids.Shuffle(mt.GenerateRandomN).ToList();
+        edge_ids = [.. edge_ids.Shuffle(mt.GenerateRandomN)];
         foreach (var e in edge_ids)
         {
             Assert.Equal(encoded.GetChainPosition(e), original.GetChainPosition(e));
@@ -58,9 +58,9 @@ public class S2LaxPolygonShapeTests(ITestOutputHelper logger)
     internal void Test_S2LaxPolygonShape_EmptyPolygon()
     {
         _logger.WriteLine(
-            $"(INFO) sizeof(S2LaxPolygonShape) == {SizeHelper.SizeOf(typeof(S2LaxPolygonShape))}");
+            $"(INFO) sizeof(S2LaxPolygonShape) == {SizeHelper.SizeOf<S2LaxPolygonShape>()}");
         _logger.WriteLine(
-            $"(INFO) sizeof(EncodedS2LaxPolygonShape) == {SizeHelper.SizeOf(typeof(EncodedS2LaxPolygonShape))}");
+            $"(INFO) sizeof(EncodedS2LaxPolygonShape) == {SizeHelper.SizeOf<EncodedS2LaxPolygonShape>()}");
 
         S2LaxPolygonShape shape = new(new S2Polygon());
         Assert.Equal(0, shape.NumLoops);
@@ -320,7 +320,7 @@ public class S2LaxPolygonShapeTests(ITestOutputHelper logger)
             }
         }
         var mt = new PseudoRandom.MersenneTwister();
-        edges = edges.Shuffle(mt.GenerateRandomN).ToList();
+        edges = [.. edges.Shuffle(mt.GenerateRandomN)];
         // TODO(user,b/210097200): Use structured bindings when we require
         // C++17 in opensource.
         foreach (var (e, i, j) in edges)
@@ -367,7 +367,7 @@ public class S2LaxPolygonShapeTests(ITestOutputHelper logger)
         {
             S2Point point = S2Testing.SamplePoint(cap);
             Assert.Equal(loop.Contains(point),
-                query.ShapeContains(index.Shape(0), point));
+                query.ShapeContains(index.Shape(0)!, point));
         }
     }
 

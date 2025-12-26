@@ -6,10 +6,10 @@ using System.Text;
 
 public static class S2TextFormat
 {
-    private static List<string> SplitString(string s, char separator) => (
+    private static List<string> SplitString(string s, char separator) => [.. (
         from t in s.Split(separator,
             StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-        select t).ToList();
+        select t)];
 
     #region ParseLatLngs
 
@@ -350,7 +350,7 @@ public static class S2TextFormat
         {
             if (loop_str == "full")
             {
-                loops.Add(new(0));
+                loops.Add([]);
             }
             else if (loop_str != "empty")
             {

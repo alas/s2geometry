@@ -323,16 +323,16 @@ public class S2RegionCoverer
     // If the cell intersects the given region, return a new candidate with no
     // children, otherwise return null.  Also marks the candidate as "terminal"
     // if it should not be expanded further.
-    private Candidate? NewCandidate(S2Cell cell)
+    private Candidate? NewCandidate(S2Cell cell, IS2Region region)
     {
-        if (!region_.MayIntersect(cell)) return null;
+        if (!region.MayIntersect(cell)) return null;
 
         bool is_terminal = false;
         if (cell.Level >= Options_.MinLevel)
         {
             if (interior_covering_)
             {
-                if (region_.Contains(cell))
+                if (region.Contains(cell))
                 {
                     is_terminal = true;
                 }
@@ -344,7 +344,7 @@ public class S2RegionCoverer
             else
             {
                 if (cell.Level + Options_.LevelMod > Options_.MaxLevel ||
-                    region_.Contains(cell))
+                    region.Contains(cell))
                 {
                     is_terminal = true;
                 }
@@ -372,7 +372,7 @@ public class S2RegionCoverer
     // Processes a candidate by either adding it to the result vector or
     // expanding its children and inserting it into the priority queue.
     // Passing an argument of null does nothing.
-    private void AddCandidate(Candidate candidate, List<S2CellId> result)
+    private void AddCandidate(Candidate candidate, List<S2CellId> result, IS2Region region)
     {
         if (candidate is null) return;
 
@@ -388,7 +388,7 @@ public class S2RegionCoverer
         // don't skip over it.
         int num_levels = (candidate.Cell.Level < Options_.MinLevel) ?
                           1 : Options_.LevelMod;
-        int num_terminals = ExpandChildren(candidate, candidate.Cell, num_levels);
+        int num_terminals = ExpandChildren(candidate, candidate.Cell, num_levels, region);
 
         if (candidate.NumChildren == 0)
         {
@@ -404,7 +404,7 @@ public class S2RegionCoverer
             // intersect the region, but may not be contained by it - we need to
             // subdivide them further.
             candidate.IsTerminal = true;
-            AddCandidate(candidate, result);
+            AddCandidate(candidate, result, region);
 
         }
         else
@@ -425,7 +425,7 @@ public class S2RegionCoverer
     // Populates the children of "candidate" by expanding the given number of
     // levels from the given cell.  Returns the number of children that were
     // marked "terminal".
-    private int ExpandChildren(Candidate candidate, S2Cell cell, int num_levels)
+    private int ExpandChildren(Candidate candidate, S2Cell cell, int num_levels, IS2Region region)
     {
         num_levels--;
         var child_cells = new S2Cell[4];
@@ -435,13 +435,13 @@ public class S2RegionCoverer
         {
             if (num_levels > 0)
             {
-                if (region_.MayIntersect(child_cells[i]))
+                if (region.MayIntersect(child_cells[i]))
                 {
-                    num_terminals += ExpandChildren(candidate, child_cells[i], num_levels);
+                    num_terminals += ExpandChildren(candidate, child_cells[i], num_levels, region);
                 }
                 continue;
             }
-            var child = NewCandidate(child_cells[i]);
+            var child = NewCandidate(child_cells[i], region);
             if (child is not null)
             {
                 candidate.Children[candidate.NumChildren++] = child;
@@ -452,7 +452,7 @@ public class S2RegionCoverer
     }
 
     // Computes a set of initial candidates that cover the given region.
-    private void GetInitialCandidates(List<S2CellId> result)
+    private void GetInitialCandidates(List<S2CellId> result, IS2Region region)
     {
         // Optimization: start with a small (usually 4 cell) covering of the
         // region's bounding cap.
@@ -460,11 +460,11 @@ public class S2RegionCoverer
         tmp_coverer.Options_.MaxCells = Math.Min(4, Options_.MaxCells);
         tmp_coverer.Options_.MaxLevel = Options_.MaxLevel;
         var cells = new List<S2CellId>();
-        tmp_coverer.GetFastCovering(region_, cells);
+        tmp_coverer.GetFastCovering(region, cells);
         AdjustCellLevels(cells);
         foreach (var cell_id in cells)
         {
-            AddCandidate(NewCandidate(new S2Cell(cell_id)), result);
+            AddCandidate(NewCandidate(new S2Cell(cell_id), region)!, result, region);
         }
     }
 
@@ -490,10 +490,9 @@ public class S2RegionCoverer
 
         MyDebug.Assert(pq_.Count==0);
         var result = new List<S2CellId>();
-        region_ = region;
         //candidates_created_counter_ = 0;
 
-        GetInitialCandidates(result);
+        GetInitialCandidates(result, region);
         while (pq_.Count!=0 && (!interior_covering_ || result.Count < Options_.MaxCells))
         {
             var top = pq_.First();
@@ -522,7 +521,7 @@ public class S2RegionCoverer
                     }
                     else
                     {
-                        AddCandidate(candidate.Children[i], result);
+                        AddCandidate(candidate.Children[i], result, region);
                     }
                 }
                 DeleteCandidate(candidate, false);
@@ -530,7 +529,7 @@ public class S2RegionCoverer
             else
             {
                 candidate.IsTerminal = true;
-                AddCandidate(candidate, result);
+                AddCandidate(candidate, result, region);
             }
         }
         while (pq_.Count!=0)
@@ -539,7 +538,6 @@ public class S2RegionCoverer
             DeleteCandidate(top.Item2, true);
             pq_.Remove(top);
         }
-        region_ = null;
 
         // Rather than just returning the raw list of cell ids, we construct a cell
         // union and then denormalize it.  This has the effect of replacing four
@@ -617,11 +615,6 @@ public class S2RegionCoverer
         covering.RemoveRange(begin + 1, end);
         covering[begin] = id;
     }
-
-    // We save a temporary copy of the pointer passed to GetCovering() in order
-    // to avoid passing this parameter around internally.  It is only used (and
-    // only valid) for the duration of a single GetCovering() call.
-    private IS2Region? region_ = null;
 
     public class Options
     {

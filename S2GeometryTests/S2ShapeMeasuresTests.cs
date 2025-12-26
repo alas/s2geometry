@@ -8,7 +8,7 @@ public class S2ShapeMeasuresTests
     [Fact]
     internal void Test_GetLength_WrongDimension()
     {
-        Assert.Equal(S1Angle.Zero, S2.GetLength(MakeIndexOrDie("0:0 # #").Shape(0)));
+        Assert.Equal(S1Angle.Zero, S2.GetLength(MakeIndexOrDie("0:0 # #").Shape(0)!));
         Assert.Equal(S1Angle.Zero,
                   S2.GetLength(MakeLaxPolygonOrDie("0:0, 0:1, 1:0")));
     }
@@ -33,7 +33,7 @@ public class S2ShapeMeasuresTests
     internal void Test_GetPerimeter_WrongDimension()
     {
         Assert.Equal(S1Angle.Zero,
-                  S2.GetPerimeter(MakeIndexOrDie("0:0 # #").Shape(0)));
+                  S2.GetPerimeter(MakeIndexOrDie("0:0 # #").Shape(0)!));
         Assert.Equal(S1Angle.Zero,
                   S2.GetPerimeter(MakeLaxPolylineOrDie("0:0, 0:1, 1:0")));
     }
@@ -61,7 +61,7 @@ public class S2ShapeMeasuresTests
     [Fact]
     internal void Test_GetArea_WrongDimension()
     {
-        Assert.Equal(0.0, S2.GetArea(MakeIndexOrDie("0:0 # #").Shape(0)));
+        Assert.Equal(0.0, S2.GetArea(MakeIndexOrDie("0:0 # #").Shape(0)!));
         Assert.Equal(0.0, S2.GetArea(MakeLaxPolylineOrDie("0:0, 0:1, 1:0")));
     }
 
@@ -113,7 +113,7 @@ public class S2ShapeMeasuresTests
     {
         // GetCentroid() returns the centroid multiplied by the number of points.
         Assert.Equal(new S2Point(1, 1, 0),
-            S2.GetCentroid(MakeIndexOrDie("0:0 | 0:90 # #").Shape(0)));
+            S2.GetCentroid(MakeIndexOrDie("0:0 | 0:90 # #").Shape(0)!));
     }
 
     [Fact]

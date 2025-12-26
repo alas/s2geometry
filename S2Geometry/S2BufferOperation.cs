@@ -281,7 +281,7 @@ public class S2BufferOperation
         {
             if (!tracker_.AddSpace(path_, 2 * (n - 1))) return;
 
-            path_ = polyline.Take(polyline.Count - 1).ToList();
+            path_ = [.. polyline.Take(polyline.Count - 1)];
             path_.AddRange(polyline.Skip(1).Reverse());
         }
         else

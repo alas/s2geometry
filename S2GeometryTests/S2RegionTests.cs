@@ -150,7 +150,7 @@ public class S2RegionTests
     internal void Test_S2RegionEncodeDecodeTest_S2CellUnion()
     {
         S2CellUnion cu_empty = new();
-        S2CellUnion cu_face1 = new(new List<S2CellId>{ S2CellId.FromFace(1)});
+        S2CellUnion cu_face1 = new([S2CellId.FromFace(1)]);
         // Cell ids taken from S2CellUnion EncodeDecode test.
         S2CellUnion cu_latlngs = S2CellUnion.FromNormalized(
             [

@@ -129,7 +129,7 @@ public class S2BuilderUtil_SnapFunctionsTests(ITestOutputHelper logger)
         // Computes the minimum edge separation (as a fraction of kMinDiag) for any
         // snap radius at each level.
         double score = GetS2CellIdMinEdgeSeparation("min_sep_for_level",
-            (int level, S1Angle edge_sep, S1Angle min_snap_radius, S1Angle max_snap_radius) =>
+            (level, edge_sep, min_snap_radius, max_snap_radius) =>
             edge_sep.Radians / S2.kMinDiag.GetValue(level));
         _logger.WriteLine($"min_edge_vertex_sep / kMinDiag ratio: {score:f15}");
     }
@@ -140,7 +140,7 @@ public class S2BuilderUtil_SnapFunctionsTests(ITestOutputHelper logger)
         // Computes the minimum edge separation (as a fraction of kMinDiag) for the
         // special case where the minimum snap radius is being used.
         double score = GetS2CellIdMinEdgeSeparation("min_sep_at_min_radius",
-            (int level, S1Angle edge_sep, S1Angle min_snap_radius, S1Angle max_snap_radius) =>
+            (level, edge_sep, min_snap_radius, max_snap_radius) =>
             {
                 double min_radius_at_level = S2.kMaxDiag.GetValue(level) / 2;
                 return (min_snap_radius.Radians <= (1 + 1e-10) * min_radius_at_level) ?
@@ -155,7 +155,7 @@ public class S2BuilderUtil_SnapFunctionsTests(ITestOutputHelper logger)
         // Computes the minimum edge separation expressed as a fraction of the
         // maximum snap radius that could yield that edge separation.
         double score = GetS2CellIdMinEdgeSeparation("min_sep_snap_radius_ratio",
-            (int level, S1Angle edge_sep, S1Angle min_snap_radius, S1Angle max_snap_radius) =>
+            (level, edge_sep, min_snap_radius, max_snap_radius) =>
             {
                 return edge_sep.Radians / max_snap_radius.Radians;
             });
@@ -186,7 +186,7 @@ public class S2BuilderUtil_SnapFunctionsTests(ITestOutputHelper logger)
         // Computes the minimum edge separation (as a fraction of kMinDiag) for any
         // snap radius at each level.
         double score = GetLatLngMinEdgeSeparation("min_sep_for_level",
-            (long scale, S1Angle edge_sep, S1Angle max_snap_radius) =>
+            (scale, edge_sep, max_snap_radius) =>
             {
                 double e_unit = Math.PI / scale;
                 return edge_sep.Radians / e_unit;
@@ -200,7 +200,7 @@ public class S2BuilderUtil_SnapFunctionsTests(ITestOutputHelper logger)
         // Computes the minimum edge separation expressed as a fraction of the
         // maximum snap radius that could yield that edge separation.
         double score = GetLatLngMinEdgeSeparation("min_sep_snap_radius_ratio",
-            (long scale, S1Angle edge_sep, S1Angle max_snap_radius) =>
+            (scale, edge_sep, max_snap_radius) =>
             {
                 return edge_sep.Radians / max_snap_radius.Radians;
             });
@@ -442,10 +442,10 @@ public class S2BuilderUtil_SnapFunctionsTests(ITestOutputHelper logger)
                 var (c1, c2) = best_configs[id];
                 _logger.WriteLine($"  {label} = {ratio:f15} u={uv[0]:f7.4} v={uv[1]:f7.4} {id.ToToken()} {c1.ToToken()} {c2.ToToken()}");
             }
-            List<S2CellId> nbrs = new(1)
-            {
+            List<S2CellId> nbrs =
+            [
                 id
-            };
+            ];
             id.AppendAllNeighbors(id.Level(), nbrs);
             foreach (var nbr in nbrs)
             {

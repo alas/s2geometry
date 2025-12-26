@@ -129,7 +129,7 @@ public class S2CrossingEdgeQuery(S2ShapeIndex index)
         edges.Clear();
         var sorted = new SortedSet<Edge>();
         int num_edges = Index.GetCountEdgesUpTo(kMaxBruteForceEdges + 1);
-        VisitRawCandidates(a0, a1, (Edge id) =>
+        VisitRawCandidates(a0, a1, id =>
         {
             sorted.Add(id);
             return true;
@@ -141,7 +141,7 @@ public class S2CrossingEdgeQuery(S2ShapeIndex index)
     {
         edges.Clear();
         var sorted = new SortedSet<Edge>();
-        VisitRawCandidates(a0, a1, shape, (Edge id) =>
+        VisitRawCandidates(a0, a1, shape, id =>
         {
             sorted.Add(id);
             return true;
@@ -177,7 +177,7 @@ public class S2CrossingEdgeQuery(S2ShapeIndex index)
             }
             return true;
         }
-        return VisitCells(a0, a1, (S2ShapeIndexCell cell) =>
+        return VisitCells(a0, a1, cell =>
         {
             for (int s = 0; s < cell.NumClipped(); ++s)
             {
@@ -205,7 +205,7 @@ public class S2CrossingEdgeQuery(S2ShapeIndex index)
             }
             return true;
         }
-        return VisitCells(a0, a1, (S2ShapeIndexCell cell) =>
+        return VisitCells(a0, a1, cell =>
         {
             var clipped = cell.FindClipped(shape.Id);
             if (clipped is null) return true;
@@ -311,7 +311,7 @@ public class S2CrossingEdgeQuery(S2ShapeIndex index)
     public void GetCells(S2Point a0, S2Point a1, S2PaddedCell root, List<S2ShapeIndexCell> cells)
     {
         cells.Clear();
-        VisitCells(a0, a1, root, (S2ShapeIndexCell cell) =>
+        VisitCells(a0, a1, root, cell =>
         {
             cells.Add(cell);
             return true;

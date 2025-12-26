@@ -44,7 +44,7 @@ public class S2MinDistancePointTarget(S2Point point) : S2MinDistanceTarget
     public sealed override bool VisitContainingShapes(S2ShapeIndex index, ShapeVisitor visitor)
     {
         return index.MakeS2ContainsPointQuery().VisitContainingShapes(
-            point_, (S2Shape shape) => visitor(shape, point_));
+            point_, shape => visitor(shape, point_));
     }
 
     private readonly S2Point point_ = point;

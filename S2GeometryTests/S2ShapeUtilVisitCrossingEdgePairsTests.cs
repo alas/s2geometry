@@ -103,7 +103,7 @@ public class S2ShapeUtilVisitCrossingEdgePairsTests(ITestOutputHelper logger)
     private static List<EdgePair> GetCrossings(S2ShapeIndex index, CrossingType type)
     {
         List<EdgePair> edge_pairs = [];
-        EdgePairs.VisitCrossingEdgePairs(index, type, (ShapeEdge a, ShapeEdge b, bool bo) =>
+        EdgePairs.VisitCrossingEdgePairs(index, type, (a, b, bo) =>
         {
             edge_pairs.Add(new(a.Id, b.Id));
             return true;  // Continue visiting.

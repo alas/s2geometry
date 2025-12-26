@@ -86,7 +86,7 @@ public static partial class S2ShapeUtil
             MyDebug.Assert(i + 1 == outer_loops.Count, "Component is not a subdivision");
         }
         // Find the loops containing each component.
-        var ancestors = new List<List<S2Shape>>().ReserveSpace(components.Count);
+        var ancestors = new List<List<S2Shape>>(components.Count);
         var contains_query = index.MakeS2ContainsPointQuery();
         for (int i = 0; i < outer_loops.Count; ++i)
         {
@@ -119,11 +119,11 @@ public static partial class S2ShapeUtil
         }
         // There is one face per loop that is not an outer loop, plus one for the
         // outer loops of components at depth 0.
-        polygons.Resize(index.NumShapeIds() + 1, () => new List<S2Shape>());
+        polygons.Resize(index.NumShapeIds() + 1, () => []);
         for (int i = 0; i < index.NumShapeIds(); ++i)
         {
             var polygon = polygons[i];
-            var loop = index.Shape(i);
+            var loop = index.Shape(i)!;
             ValueTuple<S2Shape?> loopKey = new(loop);
             var itr = children.TryGetValue(loopKey, out List<S2Shape>? value) ? value : null;
             if (itr is not null)

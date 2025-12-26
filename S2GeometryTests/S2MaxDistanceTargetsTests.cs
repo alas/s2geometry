@@ -367,7 +367,7 @@ public class S2MaxDistanceTargetsTests
     {
         SortedSet<Int32> shape_ids = [];
         target.VisitContainingShapes(
-            index, (S2Shape containing_shape, S2Point target_point) =>
+            index, (containing_shape, target_point) =>
             {
                 shape_ids.Add(containing_shape.Id);
                 return shape_ids.Count < max_shapes;

@@ -105,14 +105,14 @@ public class S2PolylineTests(ITestOutputHelper logger)
     internal void Test_S2Polyline_GetSnapLevel()
     {
         // Points snapped to the same level.
-        Assert.Equal(new S2Polyline(new[]{
+        Assert.Equal(new S2Polyline([
                 new S2CellId(S2LatLng.FromDegrees(10, 10)).Parent(20).ToPoint(),
-                new S2CellId(S2LatLng.FromDegrees(20, 20)).Parent(20).ToPoint()}).GetSnapLevel(), 20);
+                new S2CellId(S2LatLng.FromDegrees(20, 20)).Parent(20).ToPoint()]).GetSnapLevel(), 20);
 
         // Points snapped to different levels.
-        Assert.Equal(new S2Polyline(new[]{
+        Assert.Equal(new S2Polyline([
                 new S2CellId(S2LatLng.FromDegrees(10, 10)).Parent(20).ToPoint(),
-                new S2CellId(S2LatLng.FromDegrees(20, 20)).Parent(22).ToPoint()}).GetSnapLevel(), -1);
+                new S2CellId(S2LatLng.FromDegrees(20, 20)).Parent(22).ToPoint()]).GetSnapLevel(), -1);
 
         // Unsnapped polyline.
         Assert.Equal(new S2Polyline([
@@ -325,7 +325,7 @@ public class S2PolylineTests(ITestOutputHelper logger)
     internal void Test_S2Polyline_SpaceUsedNonEmptyPolyline()
     {
         var line = MakePolyline("1:1, 4:4, 4:6");
-        Assert.True(line.SpaceUsed() > 3 * SizeHelper.SizeOf(typeof(S2Point)));
+        Assert.True(line.SpaceUsed() > 3 * SizeHelper.SizeOf<S2Point>());
     }
 
     [Fact]

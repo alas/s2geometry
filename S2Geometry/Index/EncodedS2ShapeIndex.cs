@@ -271,8 +271,8 @@ public sealed class EncodedS2ShapeIndex : S2ShapeIndex, IDisposable
         // TODO(ericv): Add SpaceUsed() method to S2Shape base class,and include
         // memory owned by the allocated S2Shapes (here and in S2ShapeIndex).
         int size = SizeHelper.SizeOf(this);
-        size += Shapes.Count * SizeHelper.SizeOf(typeof(S2Shape));
-        size += CellIds.Count * Marshal.SizeOf(typeof(S2ShapeIndexCell));  // cells_
+        size += Shapes.Count * SizeHelper.SizeOf<S2Shape>();
+        size += CellIds.Count * Marshal.SizeOf<S2ShapeIndexCell>();  // cells_
         size += CellCache.Count * sizeof(int);
         return size;
     }

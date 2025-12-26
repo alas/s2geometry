@@ -21,10 +21,10 @@ public class S2ContainsPointQueryTests
 
         // Test the last few cases using the Init() method instead.
         S2ContainsPointQuery<MutableS2ShapeIndex> q2 = new(index, options);
-        Assert.False(q2.ShapeContains(index.Shape(1), MakePointOrDie("1:6")));
-        Assert.True(q2.ShapeContains(index.Shape(2), MakePointOrDie("1:6")));
-        Assert.False(q2.ShapeContains(index.Shape(2), MakePointOrDie("0:5")));
-        Assert.False(q2.ShapeContains(index.Shape(2), MakePointOrDie("0:7")));
+        Assert.False(q2.ShapeContains(index.Shape(1)!, MakePointOrDie("1:6")));
+        Assert.True(q2.ShapeContains(index.Shape(2)!, MakePointOrDie("1:6")));
+        Assert.False(q2.ShapeContains(index.Shape(2)!, MakePointOrDie("0:5")));
+        Assert.False(q2.ShapeContains(index.Shape(2)!, MakePointOrDie("0:7")));
     }
 
     [Fact]
@@ -45,10 +45,10 @@ public class S2ContainsPointQueryTests
 
         // Test the last few cases using the Init() method instead.
         S2ContainsPointQuery<MutableS2ShapeIndex> q2 = new(index, options);
-        Assert.False(q2.ShapeContains(index.Shape(1), MakePointOrDie("1:6")));
-        Assert.True(q2.ShapeContains(index.Shape(2), MakePointOrDie("1:6")));
-        Assert.False(q2.ShapeContains(index.Shape(2), MakePointOrDie("0:5")));
-        Assert.True(q2.ShapeContains(index.Shape(2), MakePointOrDie("0:7")));
+        Assert.False(q2.ShapeContains(index.Shape(1)!, MakePointOrDie("1:6")));
+        Assert.True(q2.ShapeContains(index.Shape(2)!, MakePointOrDie("1:6")));
+        Assert.False(q2.ShapeContains(index.Shape(2)!, MakePointOrDie("0:5")));
+        Assert.True(q2.ShapeContains(index.Shape(2)!, MakePointOrDie("0:7")));
     }
 
     [Fact]
@@ -69,10 +69,10 @@ public class S2ContainsPointQueryTests
 
         // Test the last few cases using the Init() method instead.
         S2ContainsPointQuery<MutableS2ShapeIndex> q2 = new(index, options);
-        Assert.False(q2.ShapeContains(index.Shape(1), MakePointOrDie("1:6")));
-        Assert.True(q2.ShapeContains(index.Shape(2), MakePointOrDie("1:6")));
-        Assert.True(q2.ShapeContains(index.Shape(2), MakePointOrDie("0:5")));
-        Assert.True(q2.ShapeContains(index.Shape(2), MakePointOrDie("0:7")));
+        Assert.False(q2.ShapeContains(index.Shape(1)!, MakePointOrDie("1:6")));
+        Assert.True(q2.ShapeContains(index.Shape(2)!, MakePointOrDie("1:6")));
+        Assert.True(q2.ShapeContains(index.Shape(2)!, MakePointOrDie("0:5")));
+        Assert.True(q2.ShapeContains(index.Shape(2)!, MakePointOrDie("0:7")));
     }
 
     [Fact]
@@ -130,7 +130,7 @@ public class S2ContainsPointQueryTests
         EdgeVector actual = [];
         var q = index.MakeS2ContainsPointQuery();
         Assert.True(
-            q.VisitIncidentEdges(p, (S2ShapeUtil.ShapeEdge e) =>
+            q.VisitIncidentEdges(p, e =>
             {
                 actual.Add(e.Id);
                 return true;

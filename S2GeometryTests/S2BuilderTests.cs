@@ -19,7 +19,7 @@ public class S2BuilderTests(ITestOutputHelper logger)
         S2Polygon output = new();
         builder.StartLayer(new S2PolygonLayer(output));
         var input = MakePolygonOrDie("0:0, 0:5, 5:5, 5:0; 1:1, 1:4, 4:4, 4:1");
-        builder.AddShape(input.Index.Shape(0));
+        builder.AddShape(input.Index.Shape(0)!);
         Assert.True(builder.Build(out _));
         ExpectPolygonsEqual(input, output);
     }
@@ -284,7 +284,7 @@ public class S2BuilderTests(ITestOutputHelper logger)
         S2Point a = S2LatLng.FromDegrees(0, 0).ToPoint();
         S2Point b = S2LatLng.FromDegrees(0.01, 0.6).ToPoint();
         Assert.True(new S2CellId(a) < new S2CellId(b));
-        S2Polyline input1 = new(new[] { a, b }), output1 = new();
+        S2Polyline input1 = new([a, b]), output1 = new();
         builder.StartLayer(new S2PolylineLayer(output1));
         builder.AddPolyline(input1);
         Assert.True(builder.Build(out _));
@@ -296,7 +296,7 @@ public class S2BuilderTests(ITestOutputHelper logger)
         S2Point c = S2LatLng.FromDegrees(0.01, 0.4).ToPoint();
         S2Point d = S2LatLng.FromDegrees(0, 1).ToPoint();
         Assert.True(new S2CellId(c) < new S2CellId(d));
-        S2Polyline input2 = new(new[] { c, d }), output2 = new();
+        S2Polyline input2 = new([c, d]), output2 = new();
         builder.StartLayer(new S2PolylineLayer(output2));
         builder.AddPolyline(input2);
         Assert.True(builder.Build(out _));
@@ -975,7 +975,7 @@ public class S2BuilderTests(ITestOutputHelper logger)
     {
         // Check that input edge ids are assigned in order.
         TestInputEdgeIds(["0:0, 0:1, 0:2"], [
-  ("0:0, 0:1", new[]{ 0 }), ("0:1, 0:2", new[]{ 1 })],
+  ("0:0, 0:1", [0]), ("0:1, 0:2", [1])],
   new GraphOptions(), new Options());
     }
 
@@ -988,7 +988,7 @@ public class S2BuilderTests(ITestOutputHelper logger)
             EdgeType_ = EdgeType.UNDIRECTED
         };
         TestInputEdgeIds(["0:0, 0:1, 0:2"], [
-  ("0:0, 0:1", new[]{0}), ("0:1, 0:2", new[]{1}),
+  ("0:0, 0:1", [0]), ("0:1, 0:2", [1]),
   ("0:1, 0:0", Array.Empty<int>()), ("0:2, 0:1", Array.Empty<int>())],
                graph_options, new Options());
     }
@@ -1003,7 +1003,7 @@ public class S2BuilderTests(ITestOutputHelper logger)
             SiblingPairs_ = SiblingPairs.CREATE
         };
         TestInputEdgeIds(["0:0, 0:1, 0:2"], [
-  ("0:0, 0:1", new[]{0}), ("0:1, 0:2", new[]{1})],
+  ("0:0, 0:1", [0]), ("0:1, 0:2", [1])],
   new GraphOptions(), new Options());
     }
 
@@ -1015,7 +1015,7 @@ public class S2BuilderTests(ITestOutputHelper logger)
         {
             DuplicateEdges_ = DuplicateEdges.MERGE
         };
-        TestInputEdgeIds(["0:0, 0:1", "0:0, 0:1"], [("0:0, 0:1", new[] { 0, 1 })],
+        TestInputEdgeIds(["0:0, 0:1", "0:0, 0:1"], [("0:0, 0:1", [0, 1])],
                graph_options, new Options());
     }
 
@@ -1029,7 +1029,7 @@ public class S2BuilderTests(ITestOutputHelper logger)
             SiblingPairs_ = SiblingPairs.KEEP
         };
         TestInputEdgeIds(["0:0, 0:1, 0:2", "0:0, 0:1", "0:2, 0:1"], [
-  ("0:0, 0:1", new[]{0, 2}), ("0:1, 0:2", new[]{1}), ("0:2, 0:1", new[]{3})
+  ("0:0, 0:1", [0, 2]), ("0:1, 0:2", [1]), ("0:2, 0:1", [3])
 ], graph_options, new Options());
     }
 
@@ -1058,7 +1058,7 @@ public class S2BuilderTests(ITestOutputHelper logger)
             SimplifyEdgeChains = true
         };
         TestInputEdgeIds(["0:0, 0:0.1, 0:1.1, 0:1, 0:0.9, 0:2, 0:2.1"], [
-  ("0:0, 0:0", new[]{0}), ("0:0, 0:2", new[]{1, 2, 3, 4}), ("0:2, 0:2", new[]{5})
+  ("0:0, 0:0", [0]), ("0:0, 0:2", [1, 2, 3, 4]), ("0:2, 0:2", [5])
 ], graph_options, options);
     }
 
@@ -1441,7 +1441,7 @@ new(-0.10531192039116592, -0.80522217309701472, 0.58354661457028933),
     {
         // Test that S2Builder operations don't crash when some vertices are NaN.
         List<List<S2Point>> loops = [
-new(){ new(double.NaN, double.NaN, double.NaN), new(double.NaN, double.NaN, double.NaN), new(double.NaN, double.NaN, double.NaN) }
+[new(double.NaN, double.NaN, double.NaN), new(double.NaN, double.NaN, double.NaN), new(double.NaN, double.NaN, double.NaN)]
 ];
         S2LaxPolygonShape output = new();
         S2Builder builder = new(
@@ -1510,25 +1510,25 @@ new(){ new(double.NaN, double.NaN, double.NaN), new(double.NaN, double.NaN, doub
         builder.StartLayer(
             new S2PolylineVectorLayer(output, layer_options));
         List<List<S2Point>> input_polylines = [
-            new(){new(0.99482894039096326, 0.087057485575229562, 0.05231035811301657),
-                  new(0.19008255728509718, 0.016634125542513145, 0.98162718344766398)},
-            new(){new(0.99802098666373784, 0.052325259429907504, 0.034873735164620751),
+            [new(0.99482894039096326, 0.087057485575229562, 0.05231035811301657),
+                  new(0.19008255728509718, 0.016634125542513145, 0.98162718344766398)],
+            [new(0.99802098666373784, 0.052325259429907504, 0.034873735164620751),
                   new(0.99585181570926085, 0.087146997393412709, 0.026164135641767797),
                   new(0.99939172130835197, 6.9770704216017258e-20, 0.034873878194564757),
                   new(0.99939172130835197, 1.7442676054004314e-202, 0.034873878194564757),
                   new(0.99939172130835197, 2.4185105853059967e-57, 0.034873878194564757),
                   new(0.99939091697091686, 0, 0.034896920724182809),
-                  new(0.99543519482327569, 0.088840224357046416, 0.034873879097925588)},
-            new(){new(-0.86549861898490243, 0.49969586065415578, 0.034873878194564757),
+                  new(0.99543519482327569, 0.088840224357046416, 0.034873879097925588)],
+            [new(-0.86549861898490243, 0.49969586065415578, 0.034873878194564757),
                   new(0.99939172130835197, 1.542605867912342e-181, 0.034873878194564757),
                   new(0.99939172130835197, 1.5426058679123417e-281, 0.034873878194564757),
                   new(0.99939172130835197, 1.5426058504696658e-231, 0.034873878194564757),
-                  new(0.19080899537654492, 3.3302452117433465e-113, 0.98162718344766398)},
-            new(){new(0.99802098660295513, 0.052325259426720727, 0.034873736908888363),
+                  new(0.19080899537654492, 3.3302452117433465e-113, 0.98162718344766398)],
+            [new(0.99802098660295513, 0.052325259426720727, 0.034873736908888363),
                   new(0.99558688908226523, 0.08712381366290145, 0.034873878194564757),
                   new(0.99939172130835197, 1.0221039496805218e-23, 0.034873878194564757),
                   new(0.99939172127682907, 3.4885352106908273e-20, 0.034873879097925602),
-                  new(0.99391473614090387, 0.10448593114531293, 0.03487387954694085)}
+                  new(0.99391473614090387, 0.10448593114531293, 0.03487387954694085)]
         ];
         foreach (var polyline in input_polylines) {
             for (int i = 0; i + 1 < polyline.Count; ++i)

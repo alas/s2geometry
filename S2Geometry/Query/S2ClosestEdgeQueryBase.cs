@@ -225,7 +225,7 @@ public class S2ClosestEdgeQueryBase<Distance> where Distance : IEquatable<Distan
         {
             var shape_ids = new SortedSet<Int32>(); // absl.btree_set
             target.VisitContainingShapes(
-                Index, (S2Shape containing_shape, S2Point target_point) =>
+                Index, (containing_shape, target_point) =>
                 {
                     shape_ids.Add(containing_shape.Id);
                     return shape_ids.Count < options.MaxResults;

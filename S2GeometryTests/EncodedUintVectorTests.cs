@@ -28,7 +28,7 @@ public class EncodedUintVectorTests
 
     [Fact]
     internal void Test_EncodedUintVectorTest_MaxInt() {
-        TestEncodedUintVector(new ulong[]{ ~0UL}, 9);
+        TestEncodedUintVector([~0UL], 9);
     }
 
     [Fact]

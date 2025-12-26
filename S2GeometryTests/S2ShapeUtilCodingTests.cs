@@ -16,7 +16,7 @@ public class S2ShapeUtilCodingTests
         Encoder encoder = new();
         Assert.True(S2ShapeUtilCoding.FastEncodeShape(shape, encoder));
         var decoder = encoder.GetDecoder();
-        var shape2 = S2ShapeUtilCoding.FullDecodeShape(S2Shape.TypeTag.S2Polygon, decoder);
+        var shape2 = S2ShapeUtilCoding.FullDecodeShape(S2Shape.TypeTag.S2Polygon, decoder)!;
         Assert.True(shape.Polygon == ((S2Polygon.Shape)shape2).Polygon);
     }
 
@@ -101,7 +101,7 @@ public class S2ShapeUtilCodingTests
 
         // Returns the shape the first time.
         var shape2 = shape_factory[0];
-        Assert.True(polygon.Equals(((S2Polygon.Shape)shape2).Polygon));
+        Assert.True(polygon.Equals(((S2Polygon.Shape)shape2!).Polygon));
 
         // And nullptr after that.
         var shape3 = shape_factory[0];

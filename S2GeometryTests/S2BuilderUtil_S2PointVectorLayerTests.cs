@@ -93,7 +93,7 @@ public class S2BuilderUtil_S2PointVectorLayerTests
         builder.AddPoint(MakePointOrDie(point1_str));
         Assert.True(builder.Build(out _));
         Assert.Equal(1, index.NumShapeIds());
-        var shape = (S2PointVectorShape)index.Shape(0);
+        var shape = (S2PointVectorShape)index.Shape(0)!;
         Assert.Equal(2, shape.NumPoints);
         Assert.Equal(point0_str, shape.Point(0).ToDebugString());
         Assert.Equal(point1_str, shape.Point(1).ToDebugString());

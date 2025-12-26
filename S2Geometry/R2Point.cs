@@ -97,15 +97,14 @@ public readonly record struct R2Point(double X, double Y) : IComparable<R2Point>
     /// return the index of the smallest, median ,largest component of the vector
     /// </summary>
     public int[] ComponentOrder =>
-        new[]
+        [.. new[]
         {
             (0, this[0]),
             (1, this[1]),
             (2, this[2]),
         }
         .OrderBy(t => t.Item2)
-        .Select(t => t.Item1)
-        .ToArray();
+        .Select(t => t.Item1)];
 
     #endregion
 

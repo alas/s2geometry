@@ -141,7 +141,7 @@ public partial class S2Builder
         {
             EdgeLoop in_edge_ids = new(NumEdges);
             in_edge_ids.Iota(0, NumEdges);
-            in_edge_ids.Sort((int ai, int bi) => StableLessThan(Reverse(GetEdge(ai)), Reverse(GetEdge(bi)), ai, bi));
+            in_edge_ids.Sort((ai, bi) => StableLessThan(Reverse(GetEdge(ai)), Reverse(GetEdge(bi)), ai, bi));
             return in_edge_ids;
         }
 
@@ -253,7 +253,7 @@ public partial class S2Builder
             var order = new EdgeLoop(min_input_edge_ids.Count);
             order.Iota(0, min_input_edge_ids.Count);
             // Comparison function ensures sort is stable.
-            order.Sort((int a, int b) => (min_input_edge_ids[a], a).CompareTo((min_input_edge_ids[b], b)));
+            order.Sort((a, b) => (min_input_edge_ids[a], a).CompareTo((min_input_edge_ids[b], b)));
             return order;
         }
 
@@ -495,7 +495,7 @@ public partial class S2Builder
         // same order as they were provided in the input.
         public static void CanonicalizeVectorOrder(InputEdgeLoop min_input_ids, List<EdgeLoop> chains) =>
             // Comparison function ensures sort is stable.
-            chains.Sort((EdgeLoop a, EdgeLoop b) => (min_input_ids[a[0]], a[0]).CompareTo((min_input_ids[b[0]], b[0])));
+            chains.Sort((a, b) => (min_input_ids[a[0]], a[0]).CompareTo((min_input_ids[b[0]], b[0])));
 
         // Builds loops from a set of directed edges, turning left at each vertex
         // until either a repeated vertex (for LoopType.SIMPLE) or a repeated edge
@@ -665,7 +665,7 @@ public partial class S2Builder
                 components.Add(component);
             }
             // Sort the components to correspond to the input edge ordering.
-            components.Sort((DirectedComponent a, DirectedComponent b) => min_input_ids[a[0][0]].CompareTo(min_input_ids[b[0][0]]));
+            components.Sort((a, b) => min_input_ids[a[0][0]].CompareTo(min_input_ids[b[0][0]]));
             return true;
         }
 
@@ -730,7 +730,7 @@ public partial class S2Builder
 
                 // Build a connected component by keeping a stack of unexplored siblings
                 // of the edges used so far.
-                var component = new UndirectedComponent(() => new List<List<int>>());
+                var component = new UndirectedComponent(() => []);
                 frontier.Add((min_start, 0));
                 while (frontier.Count!=0)
                 {
@@ -800,7 +800,7 @@ public partial class S2Builder
                 components.Add(component);
             }
             // Sort the components to correspond to the input edge ordering.
-            components.Sort((UndirectedComponent a, UndirectedComponent b) => min_input_ids[a[0][0][0]].CompareTo(min_input_ids[b[0][0][0]]));
+            components.Sort((a, b) => min_input_ids[a[0][0][0]].CompareTo(min_input_ids[b[0][0][0]]));
             return true;
         }
 
@@ -886,7 +886,7 @@ public partial class S2Builder
             // EdgeProcessor discards the "edges" and "input_ids" vectors and replaces
             // them with new vectors that could be larger or smaller.  To handle this
             // correctly, we untally these vectors now and retally them at the end.
-            var kFinalPerEdge = SizeHelper.SizeOf(typeof(Edge)) + sizeof(InputEdgeIdSetId);
+            var kFinalPerEdge = SizeHelper.SizeOf<OutputEdge>() + sizeof(InputEdgeIdSetId);
             var kTempPerEdge = kFinalPerEdge + 2 * sizeof(EdgeId);
             if (tracker is not null)
             {
@@ -1139,7 +1139,7 @@ public partial class S2Builder
                 var val = new Edge(v0, v1);
                 var lb = edges_.GetLowerBound(val, edge_begins_[v0], edge_begins_[v0 + 1]);
                 var ub = edges_.GetUpperBound(val, edge_begins_[v0], edge_begins_[v0 + 1]);
-                return edge_begins_.Skip(lb).Take(ub - lb).ToList();
+                return [.. edge_begins_.Skip(lb).Take(ub - lb)];
                 /*var range = equal_range(edges_ + edge_begins_[v0],
                     edges_ + edge_begins_[v0 + 1],
                     new Edge(v0, v1));
@@ -1258,9 +1258,9 @@ public partial class S2Builder
                 // stable sort to ensure that each undirected edge becomes a sibling pair,
                 // even if there are multiple identical input edges.
                 out_edges_.Iota(0, edges_.Count);
-                out_edges_.Sort((int a, int b) => StableLessThan(edges_[a], edges_[b], a, b));
+                out_edges_.Sort((a, b) => StableLessThan(edges_[a], edges_[b], a, b));
                 in_edges_.Iota(0, edges_.Count);
-                in_edges_.Sort((int a, int b) => StableLessThan(Reverse(edges_[a]), Reverse(edges_[b]), a, b));
+                in_edges_.Sort((a, b) => StableLessThan(Reverse(edges_[a]), Reverse(edges_[b]), a, b));
                 new_edges_.Fill(() => new(0, 0), edges_.Count);
                 new_input_ids_.Fill(0, edges_.Count);
             }

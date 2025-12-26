@@ -33,7 +33,6 @@ public class S2ClosestCellQueryBase<Distance> where Distance : IEquatable<Distan
     // rather than processing its contents immediately.
     private const int kMinRangesToEnqueue = 6;
 
-    private Options Options_ { get; set; }
     private S2DistanceTarget<Distance> target_;
 
     // Return a reference to the underlying S2CellIndex.
@@ -184,8 +183,6 @@ public class S2ClosestCellQueryBase<Distance> where Distance : IEquatable<Distan
     private void FindClosestCellsInternal(S2DistanceTarget<Distance> target, Options options)
     {
         target_ = target;
-        Options_ = options;
-
         tested_cells_.Clear();
         contents_it_.Reset();
         distance_limit_ = options.MaxDistance;
@@ -232,26 +229,26 @@ public class S2ClosestCellQueryBase<Distance> where Distance : IEquatable<Distan
             Index.NumCells() <= target_.MaxBruteForceIndexSize)
         {
             avoid_duplicates_ = false;
-            FindClosestCellsBruteForce();
+            FindClosestCellsBruteForce(options);
         }
         else
         {
             // If the target takes advantage of max_error() then we need to avoid
             // duplicate edges explicitly.  (Otherwise it happens automatically.)
             avoid_duplicates_ = target_uses_max_error && options.MaxResults > 1;
-            FindClosestCellsOptimized();
+            FindClosestCellsOptimized(options);
         }
     }
-    private void FindClosestCellsBruteForce()
+    private void FindClosestCellsBruteForce(Options options)
     {
         foreach (var cell in Index.GetCellEnumerable())
         {
-            MaybeAddResult(cell.CellId, cell.Label);
+            MaybeAddResult(cell.CellId, cell.Label, options);
         }
     }
-    private void FindClosestCellsOptimized()
+    private void FindClosestCellsOptimized(Options options)
     {
-        InitQueue();
+        InitQueue(options);
         while (queue_.Count!=0)
         {
             // We need to copy the top entry before removing it, and we need to remove
@@ -274,11 +271,11 @@ public class S2ClosestCellQueryBase<Distance> where Distance : IEquatable<Distan
             var range = Index.GetNERNEnum();
             for (int i = 0; i < 4; ++i, child = child.Next())
             {
-                seek = ProcessOrEnqueue(child, range, seek);
+                seek = ProcessOrEnqueue(child, range, seek, options);
             }
         }
     }
-    private void InitQueue()
+    private void InitQueue(Options options)
     {
         MyDebug.Assert(queue_.Count==0);
 
@@ -288,7 +285,7 @@ public class S2ClosestCellQueryBase<Distance> where Distance : IEquatable<Distan
         // save a lot of work when the search region is small.
         S2Cap cap = target_.GetCapBound();
         if (cap.IsEmpty()) return;  // Empty target.
-        if (Options_.MaxResults == 1)
+        if (options.MaxResults == 1)
         {
             // If the user is searching for just the closest cell, we can compute an
             // upper bound on search radius by seeking to the center of the target's
@@ -303,14 +300,14 @@ public class S2ClosestCellQueryBase<Distance> where Distance : IEquatable<Distan
             var range = Index.GetNERNEnum();
             var target = new S2CellId(cap.Center);
             range.Seek(target);
-            AddRange(range);
+            AddRange(range, options);
             if (Equals(distance_limit_, Distance.Zero)) return;
 
             // If the range immediately follows "center" (rather than containing it),
             // then check the previous non-empty range as well.
             if (range.Current.StartId > target && range.MovePrevious())
             {
-                AddRange(range);
+                AddRange(range, options);
                 if (Equals(distance_limit_, Distance.Zero)) return;
             }
         }
@@ -347,7 +344,7 @@ public class S2ClosestCellQueryBase<Distance> where Distance : IEquatable<Distan
         {
             var id = initial_cells[i];
             bool seek = (i == 0) || id.RangeMin() >= range2.GetLimitId();
-            ProcessOrEnqueue(id, range2, seek);
+            ProcessOrEnqueue(id, range2, seek, options);
             if (range2.Done()) break;
         }
     }
@@ -411,7 +408,7 @@ public class S2ClosestCellQueryBase<Distance> where Distance : IEquatable<Distan
         MyDebug.Assert(level >= 0);
         index_covering_.Add(first_id.Parent(level));
     }
-    private void MaybeAddResult(S2CellId cell_id, Int32 label)
+    private void MaybeAddResult(S2CellId cell_id, Int32 label, Options options)
     {
         // TODO(ericv): Consider having this method return false when distance_limit_
         // is reduced to zero, and terminating any calling loops early.
@@ -431,17 +428,17 @@ public class S2ClosestCellQueryBase<Distance> where Distance : IEquatable<Distan
         Distance distance = distance_limit_;
         if (!target_.UpdateMinDistance(cell, ref distance)) return;
 
-        var region = Options_.Region;
+        var region = options.Region;
         if (region is not null && !region.MayIntersect(cell)) return;
 
         var result = new Result(distance, cell_id, label);
-        if (Options_.MaxResults == 1)
+        if (options.MaxResults == 1)
         {
             // Optimization for the common case where only the closest cell is wanted.
             result_singleton_ = result;
-            distance_limit_ = result.Distance - Options_.MaxError;
+            distance_limit_ = result.Distance - options.MaxError;
         }
-        else if (Options_.MaxResults == Options.kMaxMaxResults)
+        else if (options.MaxResults == Options.kMaxMaxResults)
         {
             result_vector_.Add(result);  // Sort/unique at end.
         }
@@ -452,13 +449,13 @@ public class S2ClosestCellQueryBase<Distance> where Distance : IEquatable<Distan
             // edge might in fact be a duplicate.
             result_set_.Add(result);
             int size = result_set_.Count;
-            if (size >= Options_.MaxResults)
+            if (size >= options.MaxResults)
             {
-                if (size > Options_.MaxResults)
+                if (size > options.MaxResults)
                 {
                     result_set_.Remove(result_set_.Last());
                 }
-                distance_limit_ = result_set_.Last().Distance - Options_.MaxError;
+                distance_limit_ = result_set_.Last().Distance - options.MaxError;
             }
         }
     }
@@ -469,7 +466,7 @@ public class S2ClosestCellQueryBase<Distance> where Distance : IEquatable<Distan
     // Returns "true" if the cell was added to the queue, and "false" if it was
     // processed immediately, in which case "iter" is positioned at the first
     // non-empty range (if any) with start_id() > id.RangeMax.
-    private bool ProcessOrEnqueue(S2CellId id, NonEmptyRangeEnumerator iter, bool seek)
+    private bool ProcessOrEnqueue(S2CellId id, NonEmptyRangeEnumerator iter, bool seek, Options options)
     {
         if (seek) iter.Seek(id.RangeMin());
         var last = id.RangeMax();
@@ -489,12 +486,12 @@ public class S2ClosestCellQueryBase<Distance> where Distance : IEquatable<Distan
             var distance = distance_limit_;
             // We check "region_" second because it may be relatively expensive.
             if (target_.UpdateMinDistance(cell, ref distance) &&
-                (Options_.Region is null || Options_.Region.MayIntersect(cell)))
+                (options.Region is null || options.Region.MayIntersect(cell)))
             {
                 if (use_conservative_cell_distance_)
                 {
                     // Ensure that "distance" is a lower bound on distance to the cell.
-                    distance -= Options_.MaxError;
+                    distance -= options.MaxError;
                 }
                 queue_.Add(new ReverseKeyData<Distance, S2CellId>(distance, id));
             }
@@ -503,16 +500,16 @@ public class S2ClosestCellQueryBase<Distance> where Distance : IEquatable<Distan
         // There were few enough ranges that we might as well process them now.
         for (; iter.Current.StartId <= last; iter.MoveNext())
         {
-            AddRange(iter);
+            AddRange(iter, options);
         }
         return false;  // No need to seek to next child.
     }
-    private void AddRange(NonEmptyRangeEnumerator it)
+    private void AddRange(NonEmptyRangeEnumerator it, Options options)
     {
         for (contents_it_.StartUnion(it.Current);
              contents_it_.MoveNext();)
         {
-            MaybeAddResult(contents_it_.Current.CellId, contents_it_.Current.Label);
+            MaybeAddResult(contents_it_.Current.CellId, contents_it_.Current.Label, options);
         }
     }
 

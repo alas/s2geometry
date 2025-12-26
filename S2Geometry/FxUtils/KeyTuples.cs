@@ -3,7 +3,7 @@
 /// <summary>
 /// A tuple where Item1 is the identifier and has 2 Items in total
 /// </summary>
-public readonly record struct KeyData<T, U>(T Item1, U Item2)
+public readonly record struct KeyData<T, U>(T Item1, U? Item2)
     : IComparable<KeyData<T, U>>
      where T : IEquatable<T>, IComparable<T>
 {

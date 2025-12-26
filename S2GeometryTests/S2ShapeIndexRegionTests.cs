@@ -7,7 +7,7 @@ public class S2ShapeIndexRegionTests
     // Pad by at least twice the maximum error for reliable results.
     private static readonly double kPadding = 2 * (S2EdgeClipping.kFaceClipErrorUVCoord + S2EdgeClipping.kIntersectsRectErrorUVDist);
 
-    private static S2Shape NewPaddedCell(S2CellId id, double padding_uv)
+    private static S2LaxLoopShape NewPaddedCell(S2CellId id, double padding_uv)
     {
         var ij = new int[2];
         var face = id.ToFaceIJOrientation(out ij[0], out ij[1], out _, false);
@@ -54,8 +54,7 @@ public class S2ShapeIndexRegionTests
         var ids = new List<S2CellId> { MakeCellId("3/00123"), MakeCellId("2/11200013") };
         MutableS2ShapeIndex index = [];
         foreach (var id in ids) index.Add(NewPaddedCell(id, -kPadding));
-        var covering = new List<S2CellId>();
-        index.MakeS2ShapeIndexRegion().GetCellUnionBound(covering);
+        var covering = index.MakeS2ShapeIndexRegion().GetCellUnionBound();
         ids.Sort();
         Assert.Equal(ids, covering);
     }
@@ -86,8 +85,7 @@ public class S2ShapeIndexRegionTests
                 index.Add(NewPaddedCell(id, -kPadding));
             }
         }
-        List<S2CellId> actual = [];
-        index.MakeS2ShapeIndexRegion().GetCellUnionBound(actual);
+        var actual = index.MakeS2ShapeIndexRegion().GetCellUnionBound();
         Assert.Equal(expected, actual);
     }
 
@@ -170,7 +168,7 @@ public class S2ShapeIndexRegionTests
             {
                 var shape_index = new MutableS2ShapeIndex
                 {
-                    new S2WrappedShape(index_.Shape(s))
+                    new S2WrappedShape(index_.Shape(s)!)
                 };
                 shape_indexes_.Add(shape_index);
             }
@@ -189,7 +187,7 @@ public class S2ShapeIndexRegionTests
             // Indicates whether each shape that intersects "target" also contains it.
             Dictionary<int, bool> shape_contains = [];
             Assert.True(region_.VisitIntersectingShapes(
-                target, (S2Shape shape, bool contains_target) => {
+                target, (shape, contains_target) => {
                     // Verify that each shape is visited at most once.
                     Assert.False(shape_contains.ContainsKey(shape.Id));
                     shape_contains[shape.Id] = contains_target;

@@ -263,7 +263,7 @@ public class S2PolygonTests
         #region IsValidTest
         
         init_oriented_ = false;
-        modify_polygon_hook_ = null;
+        modify_polygon_hook_ = null!;
         S2Testing.Random.Reset(S2Testing.Random.RandomSeed);
 
         #endregion

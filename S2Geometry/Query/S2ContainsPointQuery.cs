@@ -115,7 +115,7 @@ public class S2ContainsPointQuery<TIndex>(TIndex index, Options? options = null)
     public List<S2Shape> GetContainingShapes(S2Point p)
     {
         var results = new List<S2Shape>();
-        VisitContainingShapes(p, (S2Shape shape) =>
+        VisitContainingShapes(p, shape =>
         {
             results.Add(shape);
             return true;

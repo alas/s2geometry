@@ -245,14 +245,14 @@ public class S2MemoryTracker
         // false if the current operation should be cancelled.
         public /*inline*/ bool Tally<T>(List<T> v)
         {
-            return Tally(v.Capacity * SizeHelper.SizeOf(typeof(T)));
+            return Tally(v.Capacity * SizeHelper.SizeOf<T>());
         }
 
         // Subtracts the memory used by the given vector from the current tally.
         // Returns false if the current operation should be cancelled.
         public /*inline*/ bool Untally<T>(List<T> v)
         {
-            return Tally(-v.Capacity * SizeHelper.SizeOf(typeof(T)));
+            return Tally(-v.Capacity * SizeHelper.SizeOf<T>());
         }
 
         // Ensures that the given vector has space for "n" additional elements and
@@ -280,10 +280,10 @@ public class S2MemoryTracker
             if (new_size <= old_capacity) return true;
             var new_capacity = exact ? new_size : Math.Max(new_size, 2 * old_capacity);
             // Note that reserve() allocates new storage before freeing the old storage.
-            if (!Tally(new_capacity * SizeHelper.SizeOf(typeof(T)))) return false;
+            if (!Tally(new_capacity * SizeHelper.SizeOf<T>())) return false;
             v.Capacity = new_capacity;
             MyDebug.Assert(v.Capacity == new_capacity);
-            return Tally(-old_capacity * SizeHelper.SizeOf(typeof(T)));
+            return Tally(-old_capacity * SizeHelper.SizeOf<T>());
         }
 
         // Deallocates storage for the given vector and updates the memory
@@ -293,7 +293,7 @@ public class S2MemoryTracker
         {
             var old_capacity = v.Capacity;
             v.Clear();
-            return Tally(-old_capacity * SizeHelper.SizeOf(typeof(T)));
+            return Tally(-old_capacity * SizeHelper.SizeOf<T>());
         }
 
         // Returns the number of allocated bytes used by gtl::compact_array<T>.
@@ -303,9 +303,9 @@ public class S2MemoryTracker
         {
             // Unfortunately this information isn't part of the public API.
             var kMaxInlinedBytes = 11;
-            var kInlined = kMaxInlinedBytes / Marshal.SizeOf(typeof(T));
+            var kInlined = kMaxInlinedBytes / Marshal.SizeOf<T>();
             int n = array.Capacity;
-            return (n <= kInlined) ? 0 : n * Marshal.SizeOf(typeof(T));
+            return (n <= kInlined) ? 0 : n * Marshal.SizeOf<T>();
         }
 
         // Returns the estimated minimum number of allocated bytes for each
@@ -319,7 +319,7 @@ public class S2MemoryTracker
         // exact memory usage can be determined using "container.bytes_used()".
         public static int GetBtreeMinBytesPerEntry<T>()
         {
-            return (int)(1.12 * SizeHelper.SizeOf(typeof(T)));
+            return (int)(1.12 * SizeHelper.SizeOf<T>());
         }
     }
 

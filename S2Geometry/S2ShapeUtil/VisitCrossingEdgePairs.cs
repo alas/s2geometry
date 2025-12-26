@@ -18,7 +18,7 @@ public static partial class S2ShapeUtil
             for (int s = 0; s < cell.NumClipped(); ++s)
             {
                 var clipped = cell.Clipped(s);
-                var shape = index.Shape(clipped.ShapeId);
+                var shape = index.Shape(clipped.ShapeId)!;
                 var num_edges = clipped.NumEdges;
                 for (int i = 0; i < num_edges; i++)
                 {
@@ -345,8 +345,7 @@ public static partial class S2ShapeUtil
                 {
                     // Use an S2CrossingEdgeQuery starting at "b_root" to find the index cells
                     // of B that might contain crossing edges.
-                    var result = b_query_.VisitCells(a.V0, a.V1, b_root, (S2ShapeIndexCell cell) =>
-                        VisitEdgeCellCrossings(a, cell));
+                    var result = b_query_.VisitCells(a.V0, a.V1, b_root, cell => VisitEdgeCellCrossings(a, cell));
                     if (!result) return false;
                 }
                 return true;
@@ -493,7 +492,7 @@ public static partial class S2ShapeUtil
             }
 
             MyDebug.Assert(index.NumShapeIds() == 1);
-            var shape = index.Shape(0);
+            var shape = index.Shape(0)!;
 
             // Visit all crossing pairs except possibly for ones of the form (AB, BC),
             // since such pairs are very common and FindCrossingError() only needs pairs

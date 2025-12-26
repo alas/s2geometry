@@ -232,7 +232,7 @@ public class S2CellIndex
     public SortedSet<Int32> GetIntersectingLabels(S2CellUnion target)
     {
         var labels = new SortedSet<Int32>();
-        VisitIntersectingCells(target, (S2CellId cell_id, Int32 label) =>
+        VisitIntersectingCells(target, (cell_id, label) =>
         {
             labels.Add(label);
             return true;
